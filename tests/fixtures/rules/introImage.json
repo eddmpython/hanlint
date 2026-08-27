@@ -1,0 +1,11 @@
+{
+  "rule": "introImage",
+  "catch": [
+    "도입 문단입니다.\n\n![첫 그림](https://example.com/a.webp)\n\n![둘째 그림](https://example.com/b.webp)\n\n## 절\n\n본문입니다.\n"
+  ],
+  "spare": [
+    "도입 문단입니다.\n\n![첫 그림](https://example.com/a.webp)\n\n## 절\n\n본문입니다.\n\n![둘째 그림](https://example.com/b.webp)\n",
+    "도입 문단입니다.\n\n## 절\n\n본문입니다.\n",
+    "그림만 있는 글입니다.\n\n![첫 그림](https://example.com/a.webp)\n\n![둘째 그림](https://example.com/b.webp)\n"
+  ]
+}

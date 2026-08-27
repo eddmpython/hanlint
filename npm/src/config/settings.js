@@ -11,6 +11,8 @@ export const ANALYZERS = ["surface", "kiwi"];
  * @property {Set<string>} disable 끌 규칙 이름
  * @property {string} analyzer
  * @property {string | null} keywordField
+ * @property {string[]} introFields
+ * @property {string[]} endingFields
  * @property {string | null} profile
  * @property {Record<string, unknown[]>} dictionary
  * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
@@ -26,6 +28,10 @@ export const ANALYZERS = ["surface", "kiwi"];
  * @property {number} duplicateBlockRatio
  * @property {number} firstResultMaxParagraphs
  * @property {number} sectionResultMinParagraphs
+ * @property {number} introMaxImages
+ * @property {number} headingQuestionRatio
+ * @property {number} moreLaterMaxChars
+ * @property {number} tableOddCellMinRows
  */
 
 /** @returns {Config} */
@@ -34,6 +40,8 @@ export function defaultConfig() {
     disable: new Set(),
     analyzer: "surface",
     keywordField: null,
+    introFields: [],
+    endingFields: [],
     profile: null,
     dictionary: {},
     source: null,
@@ -49,6 +57,10 @@ export function defaultConfig() {
     duplicateBlockRatio: 0.9,
     firstResultMaxParagraphs: 4,
     sectionResultMinParagraphs: 3,
+    introMaxImages: 1,
+    headingQuestionRatio: 0.5,
+    moreLaterMaxChars: 150,
+    tableOddCellMinRows: 4,
   };
 }
 

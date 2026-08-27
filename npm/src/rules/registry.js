@@ -7,10 +7,13 @@
 import { enabled } from "../config/settings.js";
 import { loadRuleDocs } from "../data/load.js";
 import * as countMismatch from "./document/countMismatch.js";
+import * as enoughOnce from "./document/enoughOnce.js";
+import * as fieldEcho from "./document/fieldEcho.js";
 import * as keywordMissing from "./document/keywordMissing.js";
 import * as noQuestion from "./document/noQuestion.js";
 import * as promiseRecall from "./document/promiseRecall.js";
 import * as readerAbsent from "./document/readerAbsent.js";
+import * as tableOddCell from "./document/tableOddCell.js";
 import * as duplicateBlock from "./code/duplicateBlock.js";
 import * as firstResultDistance from "./code/firstResultDistance.js";
 import * as inputFileSource from "./code/inputFileSource.js";
@@ -26,6 +29,8 @@ import * as cliche from "./sentence/cliche.js";
 import * as hardWord from "./sentence/hardWord.js";
 import * as connectorRepeat from "./sentence/connectorRepeat.js";
 import * as danglingDeixis from "./sentence/danglingDeixis.js";
+import * as draftHistory from "./sentence/draftHistory.js";
+import * as numberOrphan from "./sentence/numberOrphan.js";
 import * as dash from "./sentence/dash.js";
 import * as deixis from "./sentence/deixis.js";
 import * as doubleNegative from "./sentence/doubleNegative.js";
@@ -41,7 +46,12 @@ import * as negationRedefine from "./sentence/negationRedefine.js";
 import * as nounPile from "./sentence/nounPile.js";
 import * as redundantPair from "./sentence/redundantPair.js";
 import * as translationese from "./sentence/translationese.js";
+import * as blockUnread from "./structure/blockUnread.js";
 import * as emojiBullet from "./structure/emojiBullet.js";
+import * as headingQuestion from "./structure/headingQuestion.js";
+import * as introImage from "./structure/introImage.js";
+import * as loneSubheading from "./structure/loneSubheading.js";
+import * as moreLater from "./structure/moreLater.js";
 import * as headingSentence from "./structure/headingSentence.js";
 import * as headingSkip from "./structure/headingSkip.js";
 import * as headingUniform from "./structure/headingUniform.js";
@@ -61,6 +71,8 @@ export const RULES = [
   connectorRepeat,
   danglingDeixis,
   dash,
+  draftHistory,
+  numberOrphan,
   deixis,
   doubleNegative,
   doublePassive,
@@ -79,7 +91,12 @@ export const RULES = [
   factListParagraph,
   paraFragment,
   topicBreak,
+  blockUnread,
   emojiBullet,
+  headingQuestion,
+  introImage,
+  loneSubheading,
+  moreLater,
   headingSentence,
   headingSkip,
   headingUniform,
@@ -87,6 +104,9 @@ export const RULES = [
   sectionNoProse,
   sectionResult,
   countMismatch,
+  enoughOnce,
+  fieldEcho,
+  tableOddCell,
   keywordMissing,
   noQuestion,
   promiseRecall,

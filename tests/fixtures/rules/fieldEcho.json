@@ -1,0 +1,11 @@
+{
+  "rule": "fieldEcho",
+  "config": { "introFields": ["readerQuestion"], "endingFields": ["readerTakeaway"] },
+  "catch": [
+    "---\ntitle: QR코드 만들기\nreaderQuestion: 파이썬으로 명함에 넣을 QR코드를 만들려는데 크기가 안 맞는다\n---\n\n엑셀 파일이 열리지 않습니다. 표가 너무 큽니다.\n\n## 절\n\n본문입니다.\n"
+  ],
+  "spare": [
+    "---\ntitle: QR코드 만들기\nreaderQuestion: 파이썬으로 명함에 넣을 QR코드를 만들려는데 크기가 안 맞는다\n---\n\n파이썬으로 QR코드를 만들면 크기가 33픽셀입니다. 명함에 넣기에는 작습니다.\n\n## 절\n\n본문입니다.\n",
+    "---\ntitle: QR코드 만들기\n---\n\n엑셀 파일이 열리지 않습니다.\n\n## 절\n\n본문입니다.\n"
+  ]
+}

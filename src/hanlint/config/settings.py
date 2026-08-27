@@ -30,6 +30,10 @@ class Config:
     """분석기. surface 는 의존성 0, kiwi 는 `pip install hanlint[kiwi]` 가 필요하다."""
     keywordField: str | None = None
     """대표 검색어를 읽을 frontmatter 필드. 없으면 keywordMissing 은 돌지 않는다."""
+    introFields: list[str] = field(default_factory=list)
+    """도입이 답해야 하는 frontmatter 필드 이름들. 비어 있으면 fieldEcho 는 돌지 않는다."""
+    endingFields: list[str] = field(default_factory=list)
+    """마지막 절이 담아야 하는 frontmatter 필드 이름들. 비어 있으면 fieldEcho 는 돌지 않는다."""
     profile: str | None = None
     """프로파일 파일 경로. 있으면 편차 구간을 notice 로 낸다."""
     dictionary: dict[str, list] = field(default_factory=dict)
@@ -61,6 +65,15 @@ class Config:
     """첫 코드나 표나 그림 전에 둘 수 있는 산문 문단 수. 글쓰기 스킬의 도입 문단 넷과 같다."""
     sectionResultMinParagraphs: int = 3
     """이보다 문단이 많은 본문 절만 결과 (코드, 표, 파일) 를 요구한다. 짧은 절 (설치, 계정) 은 뺀다."""
+    introMaxImages: int = 1
+    """도입에 둘 수 있는 그림 수. 스킬: 도입은 문단 넷과 이미지 한 장을 넘지 않는다."""
+    headingQuestionRatio: float = 0.5
+    """H2 가운데 이 비율 넘게 물음표로 끝나면 과정이 아니라 FAQ 로 읽힌다."""
+    moreLaterMaxChars: int = 150
+    """마지막 절 목록 항목의 글자 상한. 실측: 다섯 편의 마지막 절 항목 24개가 17~196자였고 149자부터가
+    문장 셋 이상으로 본문만큼 설명하는 것이었다."""
+    tableOddCellMinRows: int = 4
+    """한 칸만 딴 것을 물으려면 그 열에 몇 줄이 있어야 하는가. 셋 이하는 모양을 정할 수 없다."""
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable

@@ -1,0 +1,11 @@
+{
+  "rule": "blockUnread",
+  "catch": [
+    "도입입니다.\n\n## 절\n\n아래 코드를 실행합니다.\n\n```python\nprint(count)\n```\n\n```text\n5247597\n```\n\n## 다음 절\n\n마무리입니다.\n"
+  ],
+  "spare": [
+    "도입입니다.\n\n## 절\n\n아래 코드를 실행합니다.\n\n```python\nprint(count)\n```\n\n```text\n5247597\n```\n\n답은 5247597 줄입니다. 이 숫자가 나오면 제대로 읽은 것입니다.\n",
+    "도입입니다.\n\n## 절\n\n폴더 모양은 아래와 같습니다.\n\n```text\nproject/\n  main.py\n```\n\n## 다음 절\n\n마무리입니다.\n",
+    "도입입니다.\n\n## 절\n\n아래 코드를 실행합니다.\n\n```python\nprint(count)\n```\n\n## 다음 절\n\n마무리입니다.\n"
+  ]
+}

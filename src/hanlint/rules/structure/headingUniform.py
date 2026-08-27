@@ -30,9 +30,9 @@ def headingUniform(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     if count / len(eligible) >= config.headingUniformRatio:
         yield Finding(
             "headingUniform",
-            headings[0][2],
-            " / ".join(text for _, text, _ in headings),
-            f"H2 {len(headings)}개 중 {count}개가 `{char}` 로 끝난다. 목차가 한 어미로 끝나면 과정이 아니라 나열로 읽힌다. "
+            eligible[0][2],
+            " / ".join(text for _, text, _ in eligible),
+            f"H2 {len(eligible)}개 중 {count}개가 `{char}` 로 끝난다. 목차가 한 어미로 끝나면 과정이 아니라 나열로 읽힌다. "
             "형태를 섞는다",
             None,
             "error",

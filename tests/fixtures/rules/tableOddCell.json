@@ -1,0 +1,11 @@
+{
+  "rule": "tableOddCell",
+  "catch": [
+    "도입입니다.\n\n## 절\n\n표입니다.\n\n| 라이브러리 | 시간 |\n|---|---|\n| pandas | 3.72초 |\n| Polars | 0.18초 |\n| DuckDB | 0.013초 |\n| PyArrow | 직접 부르지 않음 |\n| Dask | 2.12초 |\n"
+  ],
+  "spare": [
+    "도입입니다.\n\n## 절\n\n표입니다.\n\n| 라이브러리 | 시간 |\n|---|---|\n| pandas | 3.72초 |\n| Polars | 0.18초 |\n| DuckDB | 0.013초 |\n| PyArrow | 1.20초 |\n| Dask | 2.12초 |\n",
+    "도입입니다.\n\n## 절\n\n표입니다.\n\n| 라이브러리 | 시간 |\n|---|---|\n| pandas | 3.72초 |\n| Polars | 직접 부르지 않음 |\n| DuckDB | 0.013초 |\n| PyArrow | 재지 않음 |\n| Dask | 2.12초 |\n",
+    "도입입니다.\n\n## 절\n\n표입니다.\n\n| 라이브러리 | 시간 |\n|---|---|\n| pandas | 3.72초 |\n| Polars | 0.18초 |\n| PyArrow | 직접 부르지 않음 |\n"
+  ]
+}
