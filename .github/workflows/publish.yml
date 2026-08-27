@@ -49,7 +49,7 @@ jobs:
       - name: 세 버전 일치 검증
         run: |
           set -eu
-          pyVersion="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          pyVersion="$(python -c 'import sys; sys.path.insert(0, "src"); from hanlint import __version__; print(__version__)')"
           npmVersion="$(node -p "require('./npm/package.json').version")"
           echo "pyproject=$pyVersion package.json=$npmVersion"
           test "$pyVersion" = "$npmVersion"

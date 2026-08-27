@@ -6,7 +6,7 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
-## [0.0.6] - 2026-08-27
+## [0.0.7] - 2026-08-27
 
 ### Fixed
 
@@ -21,8 +21,9 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 - 버전 태그가 옛 커밋을 가리킨 채 나가던 실수. pre-push 훅이 태그 이름과 그 커밋의 `__version__` 을
   대조해 막는다
 
-0.0.3, 0.0.4, 0.0.5 는 게시 전 폐기했다. 태그가 잘못된 커밋에 찍히거나 npm 동등성 게이트가 CI 에서
-터진 것으로, 매번 배포 워크플로의 대조가 게시를 막아 어느 레지스트리에도 없다.
+0.0.3 부터 0.0.6 까지는 게시 전 폐기했다. 태그가 잘못된 커밋에 찍히거나, npm 동등성 게이트가 CI 에서
+터지거나, 버전 일원화 파일이 커밋에서 빠진 것으로, 매번 배포 워크플로의 대조가 게시를 막아 어느
+레지스트리에도 없다.
 
 ## [0.0.2] - 2026-08-27
 
@@ -57,7 +58,7 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   저장 시 진단과 quick fix), AI 스킬 (`skills/use-hanlint/SKILL.md`)
 - 형태소 정밀 모드 (`pip install hanlint[kiwi]`) 는 선택이고 기본은 표층 근사다
 
-[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.6...HEAD
-[0.0.6]: https://github.com/eddmpython/hanlint/compare/v0.0.2...v0.0.6
+[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/eddmpython/hanlint/compare/v0.0.2...v0.0.7
 [0.0.2]: https://github.com/eddmpython/hanlint/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/eddmpython/hanlint/releases/tag/v0.0.1

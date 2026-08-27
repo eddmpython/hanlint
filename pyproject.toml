@@ -4,7 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hanlint"
-version = "0.0.2"
+# 버전 정본은 src/hanlint/__init__.py 의 __version__ 하나다. hatch 가 거기서 읽는다 (아래 tool.hatch.version).
+dynamic = ["version"]
 description = "한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터"
 readme = "README.md"
 license = "MIT"
@@ -31,6 +32,9 @@ Issues = "https://github.com/eddmpython/hanlint/issues"
 
 [project.scripts]
 hanlint = "hanlint.cli.main:main"
+
+[tool.hatch.version]
+path = "src/hanlint/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hanlint"]

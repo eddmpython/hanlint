@@ -36,9 +36,11 @@ status: curated
 
 ## 릴리즈 커밋
 
-버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. `pyproject.toml` 의 version, `npm/package.json` 의 version, 태그는
-항상 같은 값이고 워크플로가 셋을 대조해 어긋나면 멈춘다. `npm/data/version.json` 은 투영이라
-`python scripts/exportData.py` 를 같은 커밋에서 돌린다.
+버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전을 손으로 적는 곳은 `src/hanlint/__init__.py` 의
+`__version__` 과 `npm/package.json` 둘뿐이다. `pyproject.toml` 은 hatch 가 `__version__` 을 읽고 (dynamic),
+`npm/data/version.json` 은 투영이라 `python scripts/exportData.py` 를 같은 커밋에서 돌린다. 워크플로가
+`__version__`, `package.json`, 태그를 대조하고 `tests/gates/testVersion.py` 가 로컬에서 같은 것을 강제한다.
+0.0.2 에서 pyproject 만 올리고 `__version__` 을 빼먹어 `--version` 이 낡은 채 게시된 것이 이 구조의 이유다.
 
 체인지로그의 정본은 루트 `CHANGELOG.md` (Keep a Changelog 형식) 다. 변경은 `[Unreleased]` 에 쌓고 릴리즈
 커밋에서 그 내용을 `[X.Y.Z] - 날짜` 절로 내린다. 태그는 annotated 로 만들고 메시지는 dartlab 관례대로
@@ -46,14 +48,19 @@ status: curated
 정본이다.
 
 ```powershell
-# pyproject.toml 과 npm/package.json 의 version 을 올리고 CHANGELOG 의 Unreleased 를 버전 절로 내린 뒤
+# src/hanlint/__init__.py 의 __version__ 과 npm/package.json 의 version 을 올리고
+# CHANGELOG 의 Unreleased 를 버전 절로 내린 뒤
 .venv/Scripts/python.exe -X utf8 -B scripts/exportData.py
 .venv/Scripts/python.exe -X utf8 -B -m pytest -q
-git add pyproject.toml npm/package.json npm/data/version.json CHANGELOG.md
+git add src/hanlint/__init__.py npm/package.json npm/data/version.json CHANGELOG.md
 git commit -F 메시지파일
+git status --short   # tracked 수정이 남아 있으면 커밋에 빠진 파일이 있는 것이다. 비기 전에는 태그를 만들지 않는다
 git tag -a v0.0.x -m "hanlint 0.0.x 요약"
-git push origin main --tags
+git push origin main v0.0.x
 ```
+
+0.0.6 이 이 확인의 이유다. 버전 일원화 파일 (pyproject, publish.yml, 버전 게이트) 이 로컬에만 있고
+커밋에서 빠진 채 태그가 나가, CI 의 옛 대조 스크립트가 옛 pyproject 를 읽고 게시를 막았다.
 
 ## 워크플로가 하는 일
 
