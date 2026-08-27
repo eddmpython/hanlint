@@ -1,0 +1,13 @@
+{
+  "rule": "keywordHeading",
+  "config": { "keywordField": "primaryKeyword" },
+  "catch": [
+    "---\ntitle: 파이썬으로 QR코드 만들기\nprimaryKeyword: 파이썬 QR코드\n---\n\n도입입니다.\n\n## QR코드 파일 만들기\n\n첫 문단.\n\n## 휴대폰이 읽는가\n\n둘째 문단.\n\n## 인쇄물에 넣을 크기\n\n셋째 문단.\n"
+  ],
+  "spare": [
+    "---\ntitle: 파이썬으로 QR코드 만들기\nprimaryKeyword: 파이썬 QR코드\n---\n\n도입입니다.\n\n## 파이썬으로 QR코드 파일 만들기\n\n첫 문단.\n\n## 휴대폰이 읽는가\n\n둘째 문단.\n\n## 인쇄물에 넣을 크기\n\n셋째 문단.\n",
+    "---\ntitle: QR코드 만들기\nprimaryKeyword: 파이썬 QR코드\n---\n\n도입입니다.\n\n## QR코드 파일 만들기\n\n첫 문단.\n\n## 휴대폰이 읽는가\n\n둘째 문단.\n\n## 인쇄물에 넣을 크기\n\n셋째 문단.\n",
+    "---\ntitle: 파이썬으로 QR코드 만들기\nprimaryKeyword: 파이썬 QR코드\n---\n\n도입입니다.\n\n## QR코드 파일 만들기\n\n첫 문단.\n\n## 휴대폰이 읽는가\n\n둘째 문단.\n",
+    "---\ntitle: 파이썬으로 QR코드 만들기\n---\n\n도입입니다.\n\n## QR코드 파일 만들기\n\n첫 문단.\n\n## 휴대폰이 읽는가\n\n둘째 문단.\n\n## 인쇄물에 넣을 크기\n\n셋째 문단.\n"
+  ]
+}

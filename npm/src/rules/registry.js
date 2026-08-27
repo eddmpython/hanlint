@@ -9,6 +9,7 @@ import { loadRuleCategories, loadRuleDocs } from "../data/load.js";
 import * as countMismatch from "./document/countMismatch.js";
 import * as enoughOnce from "./document/enoughOnce.js";
 import * as fieldEcho from "./document/fieldEcho.js";
+import * as keywordHeading from "./document/keywordHeading.js";
 import * as keywordMissing from "./document/keywordMissing.js";
 import * as noQuestion from "./document/noQuestion.js";
 import * as promiseRecall from "./document/promiseRecall.js";
@@ -107,6 +108,7 @@ export const RULES = [
   enoughOnce,
   fieldEcho,
   tableOddCell,
+  keywordHeading,
   keywordMissing,
   noQuestion,
   promiseRecall,

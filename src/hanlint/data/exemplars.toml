@@ -211,6 +211,12 @@ after = "---\ntitle: 파이썬 데이터프레임 라이브러리 여섯 가지\
 moved = "독자가 검색창에 친 말을 제목에 그대로 넣었다"
 
 [[entry]]
+rule = "keywordHeading"
+before = "---\ntitle: 파이썬으로 QR코드 만들기\nprimaryKeyword: 파이썬 QR코드\n---\n\n도입.\n\n## QR코드 파일 만들기\n\n하나.\n\n## 휴대폰이 읽는가\n\n둘.\n\n## 인쇄물에 넣을 크기\n\n셋.\n"
+after = "---\ntitle: 파이썬으로 QR코드 만들기\nprimaryKeyword: 파이썬 QR코드\n---\n\n도입.\n\n## 파이썬으로 QR코드 파일 만들기\n\n하나.\n\n## 휴대폰이 읽는가\n\n둘.\n\n## 인쇄물에 넣을 크기\n\n셋.\n"
+moved = "제목이 약속한 말을 그 일을 맡은 절 제목에 한 번 넣었다"
+
+[[entry]]
 rule = "loneSubheading"
 before = "## 파일 저장 자리\n\n첫 문단.\n\n### 파일 저장\n\n둘째 문단.\n\n## 다음 절\n\n끝.\n"
 after = "## 파일 저장 자리\n\n첫 문단.\n\n둘째 문단.\n\n## 다음 절\n\n끝.\n"
