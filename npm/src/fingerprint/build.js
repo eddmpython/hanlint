@@ -119,7 +119,8 @@ function quotedIn(sentence, blockCodeSpans) {
  * @param {[number, number][]} quoted
  * @returns {SentencePrint}
  */
-function makeSentencePrint(text, index, line, block, paragraphIndex, sectionIndex, analyzer, entries, quoted) {
+function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
+  const { analyzer, entries } = build;
   const ending = markers.endingOf(text);
   const deixis = markers
     .matchedSpans(text, "deixis.txt")
@@ -127,11 +128,11 @@ function makeSentencePrint(text, index, line, block, paragraphIndex, sectionInde
     .map(([, , found]) => found);
   const matches = matchesIn(text, entries).filter((m) => !markers.insideAny(m.start, m.end, quoted));
   return {
-    index,
+    index: build.sentences.length,
     line,
     text,
     blockIndex: block.index,
-    paragraphIndex,
+    paragraphIndex: build.paragraphs.length,
     sectionIndex,
     length: wordCount(text),
     ending,
@@ -164,11 +165,11 @@ function makeSentencePrint(text, index, line, block, paragraphIndex, sectionInde
  * @param {boolean} followsProseDirectly
  * @returns {ParagraphPrint}
  */
-function makeParagraphPrint(sentences, index, block, sectionIndex, previous, followsProseDirectly) {
+function makeParagraphPrint(build, sentences, block, sectionIndex, previous, followsProseDirectly) {
   const lengths = sentences.map((s) => s.length);
   const topics = unionOf(sentences.map((s) => s.topics));
   return {
-    index,
+    index: build.paragraphs.length,
     blockIndex: block.index,
     sectionIndex,
     startLine: block.startLine,
@@ -195,7 +196,8 @@ function makeParagraphPrint(sentences, index, block, sectionIndex, previous, fol
  * @param {ParagraphPrint[]} paragraphs
  * @returns {SectionPrint}
  */
-function buildSection(section, sectionIndex, analyzer, entries, sentences, paragraphs) {
+function buildSection(build, section, sectionIndex) {
+  const { analyzer, sentences, paragraphs } = build;
   /** @type {ParagraphPrint[]} */
   const sectionParagraphs = [];
   /** @type {import("../document/model.js").Block | null} */
@@ -211,17 +213,16 @@ function buildSection(section, sectionIndex, analyzer, entries, sentences, parag
     const blockSentences = [];
     for (const sentence of analyzer.sentences(text)) {
       const line = block.startLine + countIn(text, "\n", sentence.start);
-      const index = sentences.length + blockSentences.length;
       const quoted = quotedIn(sentence, blockCodeSpans);
-      blockSentences.push(
-        makeSentencePrint(sentence.text, index, line, block, paragraphs.length, sectionIndex, analyzer, entries, quoted),
-      );
+      const made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted);
+      // 만든 자리에서 바로 쌓는다. 다음 문장의 index 가 이 길이에서 나오므로 미루면 셈이 어긋난다.
+      sentences.push(made);
+      blockSentences.push(made);
     }
-    sentences.push(...blockSentences);
     const previous = sectionParagraphs.length ? sectionParagraphs[sectionParagraphs.length - 1] : null;
     const paragraph = makeParagraphPrint(
+      build,
       blockSentences,
-      paragraphs.length,
       block,
       sectionIndex,
       previous,
@@ -251,13 +252,10 @@ function buildSection(section, sectionIndex, analyzer, entries, sentences, parag
  * @returns {DocumentPrint}
  */
 export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
-  const entries = entriesFor(config);
-  /** @type {SentencePrint[]} */
-  const sentences = [];
-  /** @type {ParagraphPrint[]} */
-  const paragraphs = [];
+  const build = { analyzer, entries: entriesFor(config), sentences: /** @type {SentencePrint[]} */ ([]), paragraphs: /** @type {ParagraphPrint[]} */ ([]) };
+  const { sentences, paragraphs } = build;
   const sections = doc.sections.map((section, index) =>
-    buildSection(section, index, analyzer, entries, sentences, paragraphs),
+    buildSection(build, section, index),
   );
   const headingBlocks = doc.blocks.filter((b) => b.kind === HEADING);
   /** @type {[number, string, number][]} */

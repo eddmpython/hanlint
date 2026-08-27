@@ -19,7 +19,7 @@ HELP = "설정, 분석기, 꺼진 규칙을 한 화면에 보인다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    addCommonOptions(parser, ("text",))
+    addCommonOptions(parser, ("text",), output=False)
 
 
 def kiwiState() -> str:

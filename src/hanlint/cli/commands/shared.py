@@ -19,16 +19,29 @@ MARKDOWN = (".md", ".markdown")
 """폴더를 주면 이 확장자만 찾는다. 글 폴더에 섞여 있는 이미지와 설정을 검사하지 않는다."""
 
 
-def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] = ("text", "json")) -> None:
+def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] = ("text", "json"), output: bool = True) -> None:
+    """설정과 출력 꼴 옵션. `output` 은 그 명령이 실제로 파일로 쓸 수 있을 때만 켠다.
+
+    받아 놓고 안 쓰는 옵션은 거짓말이다. 특히 `--output` 은 조용히 무시되면 사용자가 기다리던 파일이
+    안 생긴다 (실측: rules, doctor, fix, watch 넷이 그랬다). 그래서 emit 을 부르는 명령만 받는다.
+    `--no-color` 는 아직 색이 없는 출력에서도 받는다. 스크립트가 관례로 붙이는 것을 막을 이유가 없고
+    무시돼도 잃는 것이 없다.
+    """
     parser.add_argument("--config", type=Path, help="설정 파일. 없으면 hanlint.toml 이나 pyproject.toml 을 찾는다")
     parser.add_argument(
         "--disable", action="append", default=[], metavar="RULE", help="이번 실행에서 끌 규칙. 여러 번 줄 수 있다"
     )
     parser.add_argument("--analyzer", choices=("surface", "kiwi"), help="분석기. 기본은 설정이나 surface")
     parser.add_argument("--format", choices=formats, default=formats[0], help=f"출력 꼴. 기본 {formats[0]}")
-    parser.add_argument("--output", type=Path, help="출력을 파일로 쓴다")
+    if output:
+        addOutputOption(parser)
     parser.add_argument("--no-color", dest="noColor", action="store_true", help="색을 끈다")
     parser.add_argument("--quiet", action="store_true", help="설정 출처 줄을 뺀다")
+
+
+def addOutputOption(parser: argparse.ArgumentParser) -> None:
+    """`--output`. 이 옵션을 받는 명령은 반드시 `emit` 으로 그 값을 쓴다."""
+    parser.add_argument("--output", type=Path, help="출력을 파일로 쓴다")
 
 
 def addSeverityOptions(parser: argparse.ArgumentParser) -> None:

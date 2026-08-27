@@ -11,7 +11,7 @@
  * hanlint explain <규칙>        규칙의 기술서
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
  * hanlint doctor                설정, 분석기, 꺼진 규칙
- * hanlint init                  주석 달린 hanlint.toml. --preset blog|report|docs
+ * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
  * ```
  * audit, map, watch, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.
  */
@@ -69,7 +69,7 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
         hanlint explain <규칙>
         hanlint patterns [--rule 규칙]
         hanlint doctor
-        hanlint init [--path hanlint.toml] [--preset blog|report|docs] [--force]
+        hanlint init [--output hanlint.toml] [--preset blog|report|docs] [--force]
         hanlint --version
 
 파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다. 인자가 없으면 첫 화면이 나온다.
@@ -347,12 +347,24 @@ function runPrint(args) {
 function runRules(args) {
   const { options } = parseArgs(args);
   const names = ruleNames();
+  const output = /** @type {string | undefined} */ (options["--output"]);
   if (options["--names"]) {
-    process.stdout.write(`${names.join("\n")}\n`);
+    emit(names.join("\n"), output);
     return 0;
   }
   const config = configFrom(options, []);
   const off = new Set(offRules(config));
+  if (options["--format"] === "json") {
+    const rules = names.map((name) => {
+      const exemplar = exemplarFor(name);
+      /** @type {Record<string, unknown>} */
+      const entry = { name, category: ruleCategory(name), summary: ruleSummary(name), doc: ruleDoc(name), enabled: !off.has(name) };
+      if (exemplar) entry.exemplar = { before: exemplar.before, after: exemplar.after, moved: exemplar.moved };
+      return entry;
+    });
+    emit(JSON.stringify({ version: 1, rules }, null, 2), output);
+    return 0;
+  }
   const width = Math.max(...names.map((name) => name.length));
   const lines = [];
   for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
@@ -369,7 +381,7 @@ function runRules(args) {
   }
   lines.push(`${tail}. 하나를 자세히 보려면 hanlint explain <규칙>`);
   lines.push(`프리셋은 ${PRESET_NAMES.join(", ")} 이고 hanlint init --preset <이름> 이 설정에 적는다`);
-  process.stdout.write(`${lines.join("\n")}\n`);
+  emit(lines.join("\n"), output);
   return 0;
 }
 
@@ -400,7 +412,7 @@ function nearNames(query, names) {
 
 /** @param {string[]} args */
 function runExplain(args) {
-  const { positionals } = parseArgs(args);
+  const { options, positionals } = parseArgs(args);
   const names = ruleNames();
   if (!positionals.length) {
     process.stdout.write("규칙 이름 하나가 필요하다. 예: hanlint explain doublePassive\n");
@@ -415,8 +427,18 @@ function runExplain(args) {
     throw new Error(`모르는 규칙: ${wanted}.${hint}`);
   }
   const category = ruleCategory(wanted);
+  const exemplarOf = exemplarFor(wanted);
+  if (options["--format"] === "json") {
+    /** @type {Record<string, unknown>} */
+    const data = { version: 1, rule: wanted, category, doc: ruleDoc(wanted) };
+    if (exemplarOf) data.exemplar = { before: exemplarOf.before, after: exemplarOf.after, moved: exemplarOf.moved };
+    const forms = patternsAvoiding(wanted);
+    if (forms.length) data.patterns = forms;
+    emit(JSON.stringify(data, null, 2), /** @type {string | undefined} */ (options["--output"]));
+    return 0;
+  }
   process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n\n${ruleDoc(wanted)}\n`);
-  const exemplar = exemplarFor(wanted);
+  const exemplar = exemplarOf;
   if (exemplar) {
     process.stdout.write("\n본보기\n");
     process.stdout.write(`${indent(exemplar.before, "  전  ")}\n`);
@@ -531,7 +553,7 @@ export function renderInit(preset = "blog") {
 /** @param {string[]} args */
 function runInit(args) {
   const { options } = parseArgs(args);
-  const path = /** @type {string} */ (options["--path"] ?? "hanlint.toml");
+  const path = /** @type {string} */ (options["--output"] ?? "hanlint.toml");
   const preset = choose(/** @type {string} */ (options["--preset"] ?? "blog"), PRESET_NAMES, "--preset");
   if (existsSync(path) && !options["--force"]) throw new Error(`${path} 가 이미 있다. 덮어쓰려면 --force`);
   writeFileSync(path, renderInit(preset), "utf-8");

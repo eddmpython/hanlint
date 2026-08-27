@@ -105,6 +105,12 @@ def testRuleListsAgree():
     assert python.returncode == node.returncode == 2
     assert "doubleNegative, doublePassive" in node.stderr
 
+    # 기계가 읽는 꼴. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 판이 같아야 한다.
+    for args in (["rules", "--format", "json"], ["explain", "nounPile", "--format", "json"]):
+        python, node = runBoth(args)
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout, args
+
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testEntryPointsAgree(tmp_path):
@@ -138,14 +144,14 @@ def testInitPresetsAgree(tmp_path):
         pythonPath = tmp_path / f"{preset}Python.toml"
         nodePath = tmp_path / f"{preset}Node.toml"
         python = subprocess.run(
-            [sys.executable, "-X", "utf8", "-B", "-m", "hanlint", "init", "--path", str(pythonPath), "--preset", preset],
+            [sys.executable, "-X", "utf8", "-B", "-m", "hanlint", "init", "--output", str(pythonPath), "--preset", preset],
             capture_output=True,
             text=True,
             encoding="utf-8",
             cwd=ROOT,
         )
         node = subprocess.run(
-            [str(NODE), str(NODE_CLI), "init", "--path", str(nodePath), "--preset", preset],
+            [str(NODE), str(NODE_CLI), "init", "--output", str(nodePath), "--preset", preset],
             capture_output=True,
             text=True,
             encoding="utf-8",

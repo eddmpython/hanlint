@@ -33,7 +33,9 @@ THRESHOLD_FIELDS = (
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--path", type=Path, default=Path("hanlint.toml"), help="만들 파일. 기본 hanlint.toml")
+    # `--output` 이다. `--path` 는 다른 명령에서 stdin 으로 넣은 글의 이름을 뜻하므로 한 낱말이 두 가지를
+    # 뜻하지 않게 했다. 부르는 쪽이 이름만 보고 무엇을 넘길지 맞힐 수 있어야 한다.
+    parser.add_argument("--output", type=Path, default=Path("hanlint.toml"), help="만들 파일. 기본 hanlint.toml")
     parser.add_argument(
         "--preset", choices=PRESET_NAMES, default="blog", help="글의 종류. 그 종류에 안 맞는 규칙을 처음부터 끈다"
     )
@@ -95,10 +97,10 @@ def render(preset: str = "blog") -> str:
 
 
 def run(args: argparse.Namespace) -> int:
-    if args.path.exists() and not args.force:
-        raise ValueError(f"{args.path} 가 이미 있다. 덮어쓰려면 --force")
-    args.path.write_text(render(args.preset), encoding="utf-8")
+    if args.output.exists() and not args.force:
+        raise ValueError(f"{args.output} 가 이미 있다. 덮어쓰려면 --force")
+    args.output.write_text(render(args.preset), encoding="utf-8")
     off = PRESETS[args.preset]
     tail = f"preset {args.preset} 이 {len(off)}개를 끈다" if off else f"preset {args.preset} 은 규칙을 전부 켠다"
-    print(f"{args.path} 를 만들었다. {tail}. 더 끄려면 disable 에 이름을 넣는다")
+    print(f"{args.output} 를 만들었다. {tail}. 더 끄려면 disable 에 이름을 넣는다")
     return 0

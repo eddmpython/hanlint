@@ -12,7 +12,7 @@ hanlint rules                      규칙 목록을 부류로 묶어서
 hanlint explain <규칙>             규칙의 기술서
 hanlint patterns --rule <규칙>     그 규칙을 피하는 문장 틀
 hanlint doctor                     설정, 분석기, 꺼진 규칙
-hanlint init                       주석 달린 hanlint.toml. --preset blog|report|docs
+hanlint init                       주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
 hanlint profile build 글들/         승인된 글의 문체 분포. lint 의 --profile 로 견준다
 hanlint coverage review.json 글.md 평가자 지적 가운데 hanlint 가 같은 자리를 집은 비율
 hanlint diff 전.md 후.md           두 초안의 지문 차이

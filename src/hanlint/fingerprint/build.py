@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from statistics import mean, pstdev
 
 from ..analysis import Analyzer, Sentence
@@ -28,28 +29,40 @@ def quotedIn(sentence: Sentence, blockCodeSpans: tuple[tuple[int, int], ...]) ->
     return tuple(sorted(set(spans)))
 
 
+@dataclass
+class Build:
+    """지문을 쌓는 동안 들고 다니는 것. 분석기와 사전은 안 바뀌고 두 목록은 쌓인다.
+
+    자리 (문장 index 와 문단 index) 는 넘겨받지 않고 쌓인 길이에서 얻는다. 넘겨받으면 부르는 쪽이 셈을
+    맞춰야 하고 그 셈이 틀려도 아무도 모른다. 여기서 세면 틀릴 자리가 없다.
+    """
+
+    analyzer: Analyzer
+    entries: tuple[Entry, ...]
+    sentences: list[SentencePrint] = field(default_factory=list)
+    paragraphs: list[ParagraphPrint] = field(default_factory=list)
+
+
 def makeSentencePrint(
+    build: Build,
     text: str,
-    index: int,
     line: int,
     block: Block,
-    paragraphIndex: int,
     sectionIndex: int,
-    analyzer: Analyzer,
-    entries: tuple[Entry, ...],
     quoted: tuple[tuple[int, int], ...],
 ) -> SentencePrint:
+    analyzer = build.analyzer
     ending = markers.endingOf(text)
     deixis = tuple(
         found for start, end, found in markers.matchedSpans(text, "deixis.txt") if not markers.insideAny(start, end, quoted)
     )
-    matches = tuple(m for m in matchesIn(text, entries) if not markers.insideAny(m.start, m.end, quoted))
+    matches = tuple(m for m in matchesIn(text, build.entries) if not markers.insideAny(m.start, m.end, quoted))
     return SentencePrint(
-        index=index,
+        index=len(build.sentences),
         line=line,
         text=text,
         blockIndex=block.index,
-        paragraphIndex=paragraphIndex,
+        paragraphIndex=len(build.paragraphs),
         sectionIndex=sectionIndex,
         length=len(text.split()),
         ending=ending,
@@ -74,8 +87,8 @@ def makeSentencePrint(
 
 
 def makeParagraphPrint(
+    build: Build,
     sentences: list[SentencePrint],
-    index: int,
     block: Block,
     sectionIndex: int,
     previous: ParagraphPrint | None,
@@ -84,7 +97,7 @@ def makeParagraphPrint(
     lengths = [s.length for s in sentences]
     topics = frozenset().union(*(s.topics for s in sentences)) if sentences else frozenset()
     return ParagraphPrint(
-        index=index,
+        index=len(build.paragraphs),
         blockIndex=block.index,
         sectionIndex=sectionIndex,
         startLine=block.startLine,
@@ -100,14 +113,7 @@ def makeParagraphPrint(
     )
 
 
-def buildSection(
-    section: Section,
-    sectionIndex: int,
-    analyzer: Analyzer,
-    entries: tuple[Entry, ...],
-    sentences: list[SentencePrint],
-    paragraphs: list[ParagraphPrint],
-) -> SectionPrint:
+def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPrint:
     sectionParagraphs: list[ParagraphPrint] = []
     previousBlock: Block | None = None
     for block in section.blocks:
@@ -117,24 +123,23 @@ def buildSection(
         text = plainText(block.text)
         blockCodeSpans = codeSpans(block.text, text)
         blockSentences: list[SentencePrint] = []
-        for sentence in analyzer.sentences(text):
+        for sentence in build.analyzer.sentences(text):
             line = block.startLine + text.count("\n", 0, sentence.start)
-            index = len(sentences) + len(blockSentences)
             quoted = quotedIn(sentence, blockCodeSpans)
-            blockSentences.append(
-                makeSentencePrint(sentence.text, index, line, block, len(paragraphs), sectionIndex, analyzer, entries, quoted)
-            )
-        sentences.extend(blockSentences)
+            made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted)
+            # 만든 자리에서 바로 쌓는다. 다음 문장의 index 가 이 길이에서 나오므로 미루면 셈이 어긋난다.
+            build.sentences.append(made)
+            blockSentences.append(made)
         previous = sectionParagraphs[-1] if sectionParagraphs else None
         paragraph = makeParagraphPrint(
+            build,
             blockSentences,
-            len(paragraphs),
             block,
             sectionIndex,
             previous,
             previousBlock is not None and previousBlock.kind == PROSE,
         )
-        paragraphs.append(paragraph)
+        build.paragraphs.append(paragraph)
         sectionParagraphs.append(paragraph)
         previousBlock = block
     topics = frozenset().union(*(p.topics for p in sectionParagraphs)) if sectionParagraphs else frozenset()
@@ -151,12 +156,9 @@ def buildSection(
 
 def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = None) -> DocumentPrint:
     config = config or Config()
-    entries = entriesFor(config)
-    sentences: list[SentencePrint] = []
-    paragraphs: list[ParagraphPrint] = []
-    sections = [
-        buildSection(section, index, analyzer, entries, sentences, paragraphs) for index, section in enumerate(doc.sections)
-    ]
+    build = Build(analyzer, entriesFor(config))
+    sections = [buildSection(build, section, index) for index, section in enumerate(doc.sections)]
+    sentences, paragraphs = build.sentences, build.paragraphs
     headings = tuple((b.level, b.text, b.startLine) for b in doc.blocks if b.kind == HEADING)
     headingQuestions = sum(1 for b in doc.blocks if b.kind == HEADING and "?" in b.text)
     return DocumentPrint(

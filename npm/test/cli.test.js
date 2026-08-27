@@ -116,13 +116,13 @@ test("rules, explain, version", () => {
 
 test("init writes config and refuses to overwrite", () => {
   const target = join(dir, "hanlint.toml");
-  assert.equal(run(["init", "--path", target]).code, 0);
+  assert.equal(run(["init", "--output", target]).code, 0);
   const text = readFileSync(target, "utf-8");
   assert.ok(text.includes("disable = []") && text.includes("#   doublePassive:"));
-  const again = run(["init", "--path", target]);
+  const again = run(["init", "--output", target]);
   assert.equal(again.code, 2);
   assert.ok(again.err.includes("이미 있다"));
-  assert.equal(run(["init", "--path", target, "--force"]).code, 0);
+  assert.equal(run(["init", "--output", target, "--force"]).code, 0);
 });
 
 test("welcome screen when no arguments", () => {
@@ -166,7 +166,7 @@ test("next step line tells what to do", () => {
 test("doctor and presets", () => {
   const room = mkdtempSync(join(tmpdir(), "hanlintDoctor-"));
   const config = join(room, "hanlint.toml");
-  const made = run(["init", "--path", config, "--preset", "docs"]);
+  const made = run(["init", "--output", config, "--preset", "docs"]);
   assert.equal(made.code, 0);
   assert.ok(made.out.includes("preset docs 이"));
   assert.ok(readFileSync(config, "utf-8").includes('preset = "docs"'));

@@ -7,9 +7,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 
-from ...data import exemplarFor
+from ...data import exemplarFor, patternsAvoiding
 from ...rules import CATEGORY_TITLES, ruleCategory, ruleDoc, ruleNames
+from .shared import addOutputOption, emit
 
 HELP = "규칙 하나의 기술서를 보여 준다. 왜 나쁜지, 어디서 왔는지, 어떻게 고치는지"
 NEAR_LIMIT = 3
@@ -27,6 +29,25 @@ def indent(text: str, label: str) -> str:
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("rule", nargs="?", help="규칙 이름. hanlint rules 로 목록을 본다")
+    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    addOutputOption(parser)
+
+
+def asJson(rule: str) -> str:
+    """규칙 하나를 기계가 읽는 꼴로. 기술서와 본보기와 다시 쓸 틀을 한 덩어리로 준다."""
+    exemplar = exemplarFor(rule)
+    data: dict = {
+        "version": 1,
+        "rule": rule,
+        "category": ruleCategory(rule),
+        "doc": ruleDoc(rule),
+    }
+    if exemplar:
+        data["exemplar"] = exemplar.asDict()
+    patterns = patternsAvoiding(rule)
+    if patterns:
+        data["patterns"] = [p.asDict() for p in patterns]
+    return json.dumps(data, ensure_ascii=False, indent=2)
 
 
 def nearNames(query: str, names: list[str]) -> list[str]:
@@ -52,6 +73,9 @@ def run(args: argparse.Namespace) -> int:
         near = nearNames(args.rule, names)
         hint = f" 이것을 찾았나: {', '.join(near)}" if near else " hanlint rules 로 목록을 본다"
         raise KeyError(f"모르는 규칙: {args.rule}.{hint}")
+    if args.format == "json":
+        emit(asJson(args.rule), args.output)
+        return 0
     category = ruleCategory(args.rule)
     print(f"{args.rule}  ({CATEGORY_TITLES[category]})\n")
     print(ruleDoc(args.rule))

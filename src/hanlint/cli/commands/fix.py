@@ -22,7 +22,7 @@ HELP = "기계가 고칠 수 있는 지적을 원문에 적용한다"
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("files", nargs="+", help="고칠 마크다운 파일이나 폴더")
     parser.add_argument("--dry-run", dest="dryRun", action="store_true", help="파일을 바꾸지 않고 무엇을 바꿀지만 보여 준다")
-    addCommonOptions(parser, ("text",))
+    addCommonOptions(parser, ("text",), output=False)
 
 
 def readRaw(path: Path) -> str:

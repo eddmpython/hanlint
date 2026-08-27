@@ -59,7 +59,7 @@ hanlint 는 그 셀 수 있는 것만 맡는다. 재미있는지, 설득력이 �
 
 **왜 본보기인가.** 실제 발행된 글 다섯 편에 돌려 재 봤다. 지적 104건 가운데 기계가 자동으로 고칠 수 있는
 것은 0건이었다. 나머지 100%는 "무엇이 틀렸다"만 듣고 "그럼 어떻게 쓰나"는 글쓴이가 알아서 해야 했다.
-금지 목록은 사람을 고치게 만들지 못한다. 그래서 규칙 52개마다 실제로 검증된 전후 짝을 달았고, 지금은
+금지 목록은 사람을 고치게 만들지 못한다. 그래서 규칙마다 실제로 검증된 전후 짝을 달았고, 지금은
 그 104건 전부에 본보기가 붙는다. 재는 방법과 숫자는 [tests/_attempts/fixReach/](tests/_attempts/fixReach/)
 에 있다.
 
@@ -114,7 +114,7 @@ hanlint init --preset docs
 
 ## 잘 읽히는 글을 쓰는 법
 
-규칙 52개는 결국 다섯 가지를 말한다. 각 항목의 오른쪽이 hanlint 가 그것을 세는 방식이다.
+규칙은 결국 다섯 가지를 말한다. 각 항목의 오른쪽이 hanlint 가 그것을 세는 방식이다.
 
 ### 1. 명사를 쌓지 말고 동사로 되돌린다
 
@@ -262,6 +262,8 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` |
 | `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. 스크립트가 쓴다 |
 | `hanlint 글.md --format json` | 본보기가 붙은 기계 판. `github` 은 GitHub Actions 주석 |
+| `hanlint rules --format json` | 규칙 전부를 기술서와 본보기와 함께. 에이전트가 훑을 때 |
+| `hanlint explain <규칙> --format json` | 규칙 하나의 기술서와 본보기와 틀을 한 덩어리로 |
 | `hanlint - --path 초안.md` | stdin 으로 넣은 글을 그 이름으로 검사한다 |
 | `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 |
 | `hanlint map 글.md --format html` | 지도를 단일 HTML 로 |

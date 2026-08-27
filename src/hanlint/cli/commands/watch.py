@@ -42,7 +42,7 @@ DEFAULT_INTERVAL = 0.5
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("files", nargs="+", help="지켜볼 마크다운 파일이나 폴더")
     parser.add_argument("--interval", type=float, default=DEFAULT_INTERVAL, help=f"몇 초마다 보는가. 기본 {DEFAULT_INTERVAL}")
-    addCommonOptions(parser, ("text", "compact"))
+    addCommonOptions(parser, ("text", "compact"), output=False)
     addSeverityOptions(parser)
 
 

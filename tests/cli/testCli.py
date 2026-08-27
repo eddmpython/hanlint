@@ -167,12 +167,12 @@ def testProfileBuildAndCompare(tmp_path, capsys):
 
 def testInitWritesConfigAndRefusesToOverwrite(tmp_path, capsys):
     target = tmp_path / "hanlint.toml"
-    assert main(["init", "--path", str(target)]) == 0
+    assert main(["init", "--output", str(target)]) == 0
     text = target.read_text(encoding="utf-8")
     assert "disable = []" in text and "#   doublePassive:" in text
-    assert main(["init", "--path", str(target)]) == 2
+    assert main(["init", "--output", str(target)]) == 2
     assert "이미 있다" in capsys.readouterr().err
-    assert main(["init", "--path", str(target), "--force"]) == 0
+    assert main(["init", "--output", str(target), "--force"]) == 0
 
 
 def testWelcomeScreenWhenNoArguments(monkeypatch, tmp_path, capsys):
@@ -235,7 +235,7 @@ def testDoctorShowsConfigAnalyzerAndOffRules(tmp_path, capsys):
 
 def testPresetTurnsRulesOffAndInitWritesIt(tmp_path, capsys):
     target = tmp_path / "hanlint.toml"
-    assert main(["init", "--path", str(target), "--preset", "docs"]) == 0
+    assert main(["init", "--output", str(target), "--preset", "docs"]) == 0
     assert 'preset = "docs"' in target.read_text(encoding="utf-8")
     assert "preset docs 이" in capsys.readouterr().out
     reference = write(tmp_path, "참고.md", "## 절\n\n파일을 엽니다. 값을 넣습니다.\n")
