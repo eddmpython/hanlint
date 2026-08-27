@@ -41,11 +41,14 @@ testpaths = ["tests"]
 python_files = ["test*.py"]
 python_functions = ["test*"]
 pythonpath = ["src", "."]
+# 캐시는 저장소 밖 형제 폴더로. 저장소 안에 임시 산출물을 두지 않는다 (강행규칙).
+cache_dir = "../hanlint.out/pytestCache"
 
 [tool.ruff]
 line-length = 110
 target-version = "py311"
 src = ["src", "tests", "hooks", "scripts"]
+cache-dir = "../hanlint.out/ruffCache"
 
 [tool.ruff.lint]
 # N (pep8-naming) 은 선택하지 않는다. camelCase 와 충돌한다. 이름은 tests/gates/testNaming.py 가 본다.

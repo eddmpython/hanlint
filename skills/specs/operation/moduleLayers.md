@@ -9,7 +9,7 @@ whenToUse:
   - 규칙 파일끼리 왜 import 못 하나
   - 새 층을 만들어도 되나
 verify:
-  - .venv/Scripts/python.exe -X utf8 -m pytest tests/gates/testLayers.py -q
+  - .venv/Scripts/python.exe -X utf8 -B -m pytest tests/gates/testLayers.py -q
 status: curated
 ---
 

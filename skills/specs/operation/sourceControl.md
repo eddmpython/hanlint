@@ -10,7 +10,7 @@ whenToUse:
   - 릴리즈는 어떻게 하나
   - 새 클론에서 훅 켜기
 verify:
-  - .venv/Scripts/python.exe -X utf8 -m pytest tests/gates/testCommitMessage.py -q
+  - .venv/Scripts/python.exe -X utf8 -B -m pytest tests/gates/testCommitMessage.py -q
   - git config core.hooksPath
 status: curated
 ---

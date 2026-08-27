@@ -10,7 +10,7 @@ whenToUse:
   - 테스트 파일 이름
   - 린터 설정
 verify:
-  - .venv/Scripts/python.exe -X utf8 -m pytest tests/gates/testNaming.py -q
+  - .venv/Scripts/python.exe -X utf8 -B -m pytest tests/gates/testNaming.py -q
 status: curated
 ---
 
@@ -100,7 +100,8 @@ def doublePassive(prints, config):
 - ruff: 포맷과 E, F, W, I, B, UP. **N (pep8-naming) 은 선택하지 않는다.** camelCase 와 충돌한다. 이름은
   우리 게이트가 본다.
 - pytest 는 `python_files = ["test*.py"]` 로 camelCase 테스트 파일을 수집한다. 설정은 `pyproject.toml`.
-- `python` 은 항상 `-X utf8`.
+- `python` 은 항상 `-X utf8 -B`. `-B` 가 `__pycache__` 를 막고, pytest 와 ruff 의 캐시는 `pyproject.toml` 이
+  저장소 밖 `../hanlint.out/` 으로 보낸다. 저장소 안에 임시 산출물을 두지 않는다.
 
 ## 되돌리기
 

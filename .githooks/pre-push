@@ -27,8 +27,8 @@ if [ -z "$python_bin" ]; then
   exit 1
 fi
 
-if ! "$python_bin" -X utf8 -m pytest -q "$repo_root/tests" >/dev/null 2>&1; then
+if ! "$python_bin" -X utf8 -B -m pytest -q "$repo_root/tests" >/dev/null 2>&1; then
   echo "blocked: pytest 가 red 다. 고치고 다시 push 한다" >&2
-  "$python_bin" -X utf8 -m pytest -q "$repo_root/tests" 2>&1 | tail -20 >&2
+  "$python_bin" -X utf8 -B -m pytest -q "$repo_root/tests" 2>&1 | tail -20 >&2
   exit 1
 fi
