@@ -82,8 +82,8 @@ status: curated
 ## 이미 쓴 글이 많은 저장소에 들이는 법
 
 새 도구를 이미 쌓인 문서에 대면 첫날 지적이 쏟아진다. 실측: 남의 저장소 문서 여섯 편에 `docs` 프리셋으로
-돌려 error 21건이었고 (cinch, 2026-08-27) 규칙 분포는 paraFragment 7, headingSentence 6, noQuestion 4 로
-전부 참이었다. 규칙이 틀린 것이 아니라 첫날 양이 문제다. 그래서 `hanlint baseline 글들/` 이 지금 있는
+돌려 error 21건이었고 (cinch, 2026-08-27) 규칙 분포는 paraFragment 7, headingSentence 6, deixis 3,
+introLong 2, sectionNoProse 2, danglingDeixis 1 로 전부 참이었다. 규칙이 틀린 것이 아니라 첫날 양이 문제다. 그래서 `hanlint baseline 글들/` 이 지금 있는
 지적을 잠그고 그 뒤로 새로 생긴 것만 막는다.
 
 잠금은 줄 번호가 아니라 **인용문**으로 건다. 글은 문단 하나만 고쳐도 아래 줄 번호가 전부 밀려서 줄로
