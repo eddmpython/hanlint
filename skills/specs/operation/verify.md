@@ -44,6 +44,7 @@ node --test npm/test/*.test.js
 | `tests/gates/testDash.py` | 추적 파일의 em 대시, en 대시 | fixture 로 양방향 |
 | `tests/gates/testCommitMessage.py` | 커밋 메시지 형식, 검증 줄 부재, 도구 흔적 | fixture 로 양방향 |
 | `tests/gates/testSelfLint.py` | README 와 specs 가 hanlint 의 error 지적을 받는 것 | 상투어가 든 문서로 잡히는지 본다 |
+| `tests/gates/testExemplars.py` | 본보기 없는 규칙, before 가 안 잡히거나 after 가 잡히는 본보기 | 규칙을 좁혀 before 가 안 잡히게 하면 red. 만들 때 일곱이 실제로 빨갰다 |
 | `tests/gates/testNpmData.py` | `npm/data` 가 파이썬 정본의 투영과 다른 것 | 정본을 고치고 투영을 안 돌리면 red |
 | `tests/gates/testNpmParity.py` | npm 구현이 파이썬과 다른 출력을 내는 것. 지적 출력, `print`, `fix`, 규칙 목록과 기술서, 첫 화면, 폴더 인자, 프리셋별 `init` 파일 | 규칙이나 진입점을 한쪽만 고치면 red. node 없으면 건너뛴다 |
 | `npm/test/rules.test.js` | npm 규칙이 같은 fixture 를 어기는 것. 규칙, fixture, 기술서, 파일의 넷이 짝인지 | fixture 로 양방향 |
@@ -53,8 +54,9 @@ node --test npm/test/*.test.js
 
 ## 자기 검사
 
-이 저장소의 문서는 hanlint 자신이 검사한다. 설정은 루트 `hanlint.toml` 이고 참고 문서라 `noQuestion` 과
-`readerAbsent` 만 끈다. 문서를 고쳤으면 `hanlint README.md` 로 먼저 본다.
+이 저장소의 문서는 hanlint 자신이 검사한다. 설정은 루트 `hanlint.toml` 이고 참고 문서라 `preset = "docs"`
+하나로 여덟 규칙이 꺼진다. 무엇이 꺼졌는지는 `hanlint doctor` 가 답한다. 문서를 고쳤으면
+`hanlint README.md` 로 먼저 본다.
 
 ## 표면 검증
 

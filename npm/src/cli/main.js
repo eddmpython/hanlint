@@ -21,6 +21,7 @@ import { analyzerFor, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, ve
 import { loadConfig } from "../config/loadConfig.js";
 import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
+import { exemplarFor } from "../data/exemplars.js";
 import { CATEGORY_TITLES, ruleCategory, runAll } from "../rules/registry.js";
 import { welcome } from "./welcome.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -367,6 +368,12 @@ function runRules(args) {
   return 0;
 }
 
+/** 여러 줄짜리 본보기를 첫 줄에만 표를 달고 나머지는 맞춰 들여쓴다. @param {string} text @param {string} label */
+function indent(text, label) {
+  const pad = " ".repeat(label.length);
+  return text.replace(/\n+$/, "").split("\n").map((line, index) => (index === 0 ? label : pad) + line).join("\n");
+}
+
 /** 가까운 이름을 몇 개까지 보이는가. */
 const NEAR_LIMIT = 3;
 /** 앞 몇 글자가 같으면 가까운 이름으로 보는가. */
@@ -404,6 +411,13 @@ function runExplain(args) {
   }
   const category = ruleCategory(wanted);
   process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n\n${ruleDoc(wanted)}\n`);
+  const exemplar = exemplarFor(wanted);
+  if (exemplar) {
+    process.stdout.write("\n본보기\n");
+    process.stdout.write(`${indent(exemplar.before, "  전  ")}\n`);
+    process.stdout.write(`${indent(exemplar.after, "  후  ")}\n`);
+    process.stdout.write(`  달라진 것: ${exemplar.moved}\n`);
+  }
   const siblings = names.filter((name) => ruleCategory(name) === category && name !== wanted);
   process.stdout.write(`\n같은 부류: ${siblings.join(", ")}\n`);
   process.stdout.write(`끄려면 hanlint.toml 의 disable 에 ${wanted} 를 넣는다. 한 자리만 끄려면 <!-- hanlint-disable ${wanted} -->\n`);

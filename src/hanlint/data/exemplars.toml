@@ -1,0 +1,325 @@
+# 규칙마다 고치기 전과 후의 본보기. 지적은 무엇이 틀렸는지 말하고 본보기는 무엇이 맞는지 보인다.
+#
+# 왜 필요한가. 실측 (tests/_attempts/fixReach) 에서 발행본 다섯 편의 지적 104건 가운데 기계가 고쳐 주는
+# 것이 0건이었다. 100%가 이유만 받고 어떻게 쓰는지는 글쓴이 몫으로 남았다. 사람은 금지 목록보다 본보기를
+# 보고 더 잘 고치고, AI 는 특히 그렇다. 규칙 이름만 준 AI 와 본보기를 준 AI 의 결과가 다르다.
+#
+# 규칙 하나에 본보기 하나가 계약이다 (tests/gates/testExemplars.py 가 강제한다).
+# before 는 실제로 그 규칙에 잡히는 글이어야 하고 after 는 잡히지 않아야 한다. 게이트가 둘 다 확인한다.
+# moved 는 무엇이 달라졌는지 한 마디다. 규칙 이름을 되풀이하지 않고 손이 한 일을 적는다.
+#
+# 자리표시자 둘이 있다. fixture 와 같은 규약이다. `{em}` 은 긴 줄표, `{dot}` 은 마침표이고 읽을 때 제
+# 글자가 된다. 그 둘을 글자 그대로 두면 이 저장소의 쓰기 훅이 파일을 막는다. 결함을 보여야 하는 자리라
+# 결함을 파일에 담을 수 없는 것이 이 규약의 까닭이다.
+
+[[entry]]
+rule = "blockUnread"
+before = "```python\nprint(count)\n```\n\n```text\n5247597\n```\n\n## 다음 절\n\n마무리입니다.\n"
+after = "```python\nprint(count)\n```\n\n```text\n5247597\n```\n\n답은 5백만 줄이 조금 넘습니다. 이 숫자가 나오면 파일을 다 읽은 것입니다.\n"
+moved = "출력 바로 아래에 그 숫자를 읽어 주는 문장을 붙였다"
+
+[[entry]]
+rule = "cliche"
+before = "핵심은 속도입니다."
+after = "같은 질문에 pandas 는 3.7초, Polars 는 0.18초가 걸립니다."
+moved = "포장하는 말을 지우고 핵심이라던 것을 그 자리에 숫자로 썼다"
+
+[[entry]]
+rule = "confusable"
+before = "학생으로써 할 일을 합니다."
+after = "학생으로서 할 일을 합니다."
+moved = "자격은 로서, 수단은 로써다"
+
+[[entry]]
+rule = "connectorRepeat"
+before = "그런데 표가 큽니다. 그런데 열은 두 개면 됩니다."
+after = "그런데 표가 큽니다. 필요한 열은 두 개뿐입니다."
+moved = "둘째 문장의 접속부사를 지우고 앞 문장이 만든 것을 이어받게 했다"
+
+[[entry]]
+rule = "countMismatch"
+before = "여섯 가지를 소개합니다.\n\n## 절\n\n다섯 가지를 봤습니다.\n"
+after = "여섯 가지를 소개합니다.\n\n## 절\n\n여섯 가지를 봤습니다.\n"
+moved = "도입이 약속한 수와 결말이 센 수를 맞췄다"
+
+[[entry]]
+rule = "danglingDeixis"
+before = "터미널을 엽니다.\n\n이것을 실행합니다.\n"
+after = "터미널을 엽니다.\n\n`make_qr.py` 를 실행합니다.\n"
+moved = "앞 문장에 없던 것을 가리키던 지시어를 파일 이름으로 바꿨다"
+
+[[entry]]
+rule = "dash"
+before = "결과는 둘입니다 {em} 빠르거나 느리거나."
+after = "결과는 둘입니다. 빠르거나 느립니다."
+moved = "긴 줄표를 마침표로 끊었다"
+
+[[entry]]
+rule = "deixis"
+before = "표를 엽니다. 이것을 표에 다시 넣습니다."
+after = "표를 엽니다. 첫 열의 값을 표에 다시 넣습니다."
+moved = "지시어를 독자가 화면에서 찾을 이름으로 바꿨다"
+
+[[entry]]
+rule = "doubleNegative"
+before = "설치하지 않으면 안 됩니다."
+after = "먼저 설치합니다."
+moved = "부정을 두 번 겹치지 않고 할 일을 바로 시켰다"
+
+[[entry]]
+rule = "doublePassive"
+before = "결과가 저장되어집니다."
+after = "결과가 저장됩니다."
+moved = "피동을 하나로 줄였다"
+
+[[entry]]
+rule = "draftHistory"
+before = "이 코드가 그대로 도는 것을 확인했습니다."
+after = "이 코드는 `ibis-framework[duckdb]` 만 설치해도 돕니다."
+moved = "글쓴이가 확인한 과정을 지우고 알아낸 사실만 남겼다"
+
+[[entry]]
+rule = "duplicateBlock"
+before = "```text\n한 줄\n두 줄\n세 줄\n네 줄\n다섯 줄\n```\n\n같은 것을 다시 싣습니다.\n\n```text\n한 줄\n두 줄\n세 줄\n네 줄\n다섯 줄\n```\n"
+after = "```text\n한 줄\n두 줄\n세 줄\n네 줄\n다섯 줄\n```\n\n두 번째 실행은 셋째 줄만 다르고 나머지는 위와 같습니다.\n"
+moved = "거의 같은 블록을 다시 싣지 않고 달라진 줄만 말했다"
+
+[[entry]]
+rule = "ellipsis"
+before = "속도는 조금 느려집니다..."
+after = "속도는 3.7초에서 4.1초로 느려집니다."
+moved = "말끝을 흐리지 않고 얼마나 느려지는지 끝까지 썼다"
+
+[[entry]]
+rule = "emojiBullet"
+before = "- ✅ 파일을 만듭니다\n"
+after = "- 파일을 만듭니다\n"
+moved = "이모지를 빼고 항목의 말로만 뜻을 냈다"
+
+[[entry]]
+rule = "endingRepeat"
+before = "파일을 엽니다. 값을 넣습니다. 표를 만듭니다. 화면을 봅니다."
+after = "파일을 엽니다. 값을 넣으면 표가 생깁니다. 그래서 화면에 다섯 열이 보입니다."
+moved = "네 문장을 이유로 이어 붙여 리듬을 바꿨다"
+
+[[entry]]
+rule = "enoughOnce"
+before = "## 첫 절\n\n여기까지면 만들어 쓰는 데 충분합니다.\n\n## 둘째 절\n\n여기까지면 혼자 쓰는 데 충분합니다.\n"
+after = "## 첫 절\n\n여기까지면 만들어 쓰는 데 충분합니다.\n\n## 둘째 절\n\n표가 한 대에 안 들어가면 다음이 필요합니다.\n"
+moved = "끊는 문장을 한 번만 두고 나머지는 다음 절이 필요한 이유로 바꿨다"
+
+[[entry]]
+rule = "euiChain"
+before = "회사의 팀의 결정의 근거를 봅니다."
+after = "그 팀이 왜 그렇게 정했는지 근거를 봅니다."
+moved = "관형격을 풀어 누가 무엇을 했는지 드러냈다"
+
+[[entry]]
+rule = "factListParagraph"
+before = "값이 있습니다. 칸은 빕니다. 순서가 깨집니다."
+after = "병합 셀은 첫 칸에만 값이 들어 있고 나머지는 비어 있습니다. 그대로 정렬하면 빈 칸이 값과 떨어져 순서가 깨집니다."
+moved = "나란히 놓인 사실 사이에 이유를 넣어 이었다"
+
+[[entry]]
+rule = "fieldEcho"
+before = "---\nreaderTakeaway: 표를 언제 어느 도구로 고르나\n---\n\n엑셀이 멈춥니다.\n\n## 절\n\n설치 방법입니다.\n"
+after = "---\nreaderTakeaway: 표를 언제 어느 도구로 고르나\n---\n\n엑셀이 멈춥니다.\n\n## 절\n\n표가 작으면 pandas 로 고르고 커지면 Polars 로 옮깁니다.\n"
+moved = "미리보기가 약속한 것을 본문이 그 말로 답하게 했다"
+
+[[entry]]
+rule = "fillerOpener"
+before = "다음으로 크기를 바꿉니다."
+after = "`link.png` 는 33픽셀입니다. 명함에 넣기에는 작아서 크기를 바꿉니다."
+moved = "순서 표지 대신 앞에서 만든 파일을 이름으로 부르고 이유를 붙였다"
+
+[[entry]]
+rule = "firstResultDistance"
+before = "첫 문단입니다.\n\n둘째 문단입니다.\n\n셋째 문단입니다.\n\n넷째 문단입니다.\n\n다섯째 문단입니다.\n\n```python\nprint(1)\n```\n"
+after = "첫 문단입니다.\n\n둘째 문단입니다.\n\n```python\nprint(1)\n```\n"
+moved = "첫 결과를 첫 화면 안으로 끌어올렸다"
+
+[[entry]]
+rule = "hardWord"
+before = "금일 중으로 소정의 양식을 제출합니다."
+after = "오늘 안에 정해진 양식을 냅니다."
+moved = "관청 말을 평소에 쓰는 말로 바꿨다"
+
+[[entry]]
+rule = "headingQuestion"
+before = "## 파일은 어디에 생길까요?\n\n첫 문단.\n\n## 왜 안 열릴까요?\n\n둘째 문단.\n\n## 크기는 어떻게 바꿀까요?\n\n셋째 문단.\n"
+after = "## 파일이 생기는 자리\n\n첫 문단.\n\n## 왜 안 열릴까요?\n\n둘째 문단.\n\n## 인쇄용 크기로 다시 저장\n\n셋째 문단.\n"
+moved = "질문 제목을 하나만 남기고 나머지는 행동과 결과로 바꿨다"
+
+[[entry]]
+rule = "headingSentence"
+before = "## 표가 제대로 들어왔는지 확인합니다\n\n열 다섯 개가 모두 보이면 된 것입니다.\n"
+after = "## 표가 제대로 들어왔는지 확인\n\n열 다섯 개가 모두 보이면 된 것입니다.\n"
+moved = "본문 문장 꼴이던 제목을 목차에서 대상이 보이는 짧은 이름으로 줄였다"
+
+[[entry]]
+rule = "headingSkip"
+before = "## 절\n\n첫 문단.\n\n#### 너무 깊은 제목\n\n둘째 문단.\n"
+after = "## 절\n\n첫 문단.\n\n### 한 단계 아래 제목\n\n둘째 문단.\n"
+moved = "건너뛴 제목 수준을 한 단계로 되돌렸다"
+
+[[entry]]
+rule = "headingUniform"
+before = "## 파일 열기\n\n하나.\n\n## 값 넣기\n\n둘.\n\n## 표 만들기\n\n셋.\n\n## 결과 보기\n\n넷.\n"
+after = "## 파일 열기\n\n하나.\n\n## 값은 어디에 넣나\n\n둘.\n\n## 표가 만들어지는 자리\n\n셋.\n\n## 결과 확인\n\n넷.\n"
+moved = "한 어미로 끝나던 목차에 형태를 섞어 과정으로 읽히게 했다"
+
+[[entry]]
+rule = "imperativePeriod"
+before = "파일을 열어 보세요{dot}"
+after = "파일을 열어 봅니다."
+moved = "권유형 뒤 마침표를 없애고 평서형으로 맞췄다"
+
+[[entry]]
+rule = "inputFileSource"
+before = "```python\n표 = open(\"sales.xlsx\")\n```\n"
+after = "앞 절의 make_sales.py 가 sales.xlsx 를 만듭니다.\n\n```python\n표 = open(\"sales.xlsx\")\n```\n"
+moved = "읽는 파일을 만드는 자리를 앞에 두었다"
+
+[[entry]]
+rule = "installImport"
+before = "```bash\npip install duckdb\n```\n\n```python\nimport polars\n```\n"
+after = "```bash\npip install duckdb polars\n```\n\n```python\nimport polars\n```\n"
+moved = "코드가 부르는 패키지를 설치 줄에 넣었다"
+
+[[entry]]
+rule = "introImage"
+before = "도입 문단입니다.\n\n![하나](a.webp)\n\n![둘](b.webp)\n\n## 절\n\n본문입니다.\n"
+after = "도입 문단입니다.\n\n![하나](a.webp)\n\n## 절\n\n본문입니다.\n\n![둘](b.webp)\n"
+moved = "도입의 그림을 한 장으로 줄이고 나머지를 설명하는 절로 내렸다"
+
+[[entry]]
+rule = "introLong"
+before = "하나.\n\n둘.\n\n셋.\n\n넷.\n\n다섯.\n\n## 절\n\n본문입니다.\n"
+after = "하나.\n\n둘.\n\n셋.\n\n## 절\n\n본문입니다.\n"
+moved = "미룬 배경 설명을 걷고 도입을 네 문단 안으로 줄였다"
+
+[[entry]]
+rule = "japaneseLoan"
+before = "구좌 잔고를 익일에 확인합니다."
+after = "계좌 잔액을 다음 날에 확인합니다."
+moved = "일본어투 낱말을 우리말로 바꿨다"
+
+[[entry]]
+rule = "keywordMissing"
+before = "---\ntitle: 표를 빠르게 다루기\nprimaryKeyword: 파이썬 데이터프레임 라이브러리\n---\n\n엑셀이 멈춥니다.\n"
+after = "---\ntitle: 파이썬 데이터프레임 라이브러리 여섯 가지\nprimaryKeyword: 파이썬 데이터프레임 라이브러리\n---\n\n엑셀이 멈춥니다.\n"
+moved = "독자가 검색창에 친 말을 제목에 그대로 넣었다"
+
+[[entry]]
+rule = "loneSubheading"
+before = "## 파일 저장 자리\n\n첫 문단.\n\n### 파일 저장\n\n둘째 문단.\n\n## 다음 절\n\n끝.\n"
+after = "## 파일 저장 자리\n\n첫 문단.\n\n둘째 문단.\n\n## 다음 절\n\n끝.\n"
+moved = "새 말이 없는 외동 소제목을 지우고 본문을 절 제목 아래로 올렸다"
+
+[[entry]]
+rule = "longSentence"
+before = "표를 열고 열 이름을 하나씩 확인한 뒤 필요한 두 열만 남기고 나머지 열을 전부 지운 다음 값을 기준으로 정렬해서 상위 열 줄만 뽑아 새 이름으로 다시 저장하면 원하던 결과가 그대로 나오는 것을 볼 수 있습니다."
+after = "표를 열어 열 이름을 확인합니다. 필요한 두 열만 남기고 정렬한 뒤 상위 열 줄을 저장합니다."
+moved = "한 문장에 몰아넣은 단계를 둘로 끊었다"
+
+[[entry]]
+rule = "moreLater"
+before = "## 절\n\n본문.\n\n## 더 해 볼 것\n\n- DuckDB 도 엑셀 파일을 읽습니다. 확장을 한 번 설치하고 나면 함수 하나로 부릅니다. 다만 옛 확장자는 안 되고 새 확장자만 됩니다. 그래서 파일 확장자를 먼저 봅니다. 확장자가 다르면 엑셀에서 열어 새 확장자로 바꿔 저장한 뒤에 다시 부릅니다. 이 순서를 지키지 않으면 확장을 깔고도 파일을 못 엽니다.\n"
+after = "## 절\n\n본문.\n\n## 더 해 볼 것\n\n- DuckDB 도 엑셀을 읽습니다. read_xlsx 한 줄이면 됩니다.\n"
+moved = "미룬 항목을 한 줄과 코드 한 줄로 줄였다"
+
+[[entry]]
+rule = "negationRedefine"
+before = "단순한 도구가 아닙니다. 글쓰기 습관을 바꾸는 장치입니다."
+after = "이 도구는 같은 지적을 두 번 받지 않게 만듭니다."
+moved = "부정하고 재정의하는 대구를 지우고 하는 일을 바로 썼다"
+
+[[entry]]
+rule = "noQuestion"
+before = "## 절\n\n파일을 엽니다.\n\n## 다음 절\n\n표가 생깁니다.\n"
+after = "## 절\n\n파일을 엽니다.\n\n## 다음 절\n\n그럼 표는 어디에 생겼을까요? 실행한 폴더에 있습니다.\n"
+moved = "독자가 품을 의문을 대신 묻고 다음 문장에서 답했다"
+
+[[entry]]
+rule = "nounPile"
+before = "가상환경 생성 후 패키지 설치 확인 절차를 따릅니다."
+after = "가상환경을 만든 뒤 패키지가 깔렸는지 확인합니다."
+moved = "쌓인 명사를 동사로 되돌려 무엇이 무엇의 목적어인지 드러냈다"
+
+[[entry]]
+rule = "numberOrphan"
+before = "메모리 최대치는 453MB에서 700MB로 올라갔습니다."
+after = "표를 통째로 올린 직후가 453MB였고 넘기고 나자 700MB가 됐습니다."
+moved = "기준값이 어디서 나온 값인지 그 자리에서 밝혔다"
+
+[[entry]]
+rule = "paraFragment"
+before = "표를 엽니다.\n\n값을 넣습니다.\n\n화면을 봅니다.\n"
+after = "표를 열어 값을 넣으면 화면에 다섯 열이 보입니다. 열 이름이 첫 줄에 그대로 있으면 제대로 읽은 것입니다.\n"
+moved = "줄바꿈을 화제가 바뀌는 자리에만 두고 조각을 한 문단으로 묶었다"
+
+[[entry]]
+rule = "platformApi"
+before = "```python\nprint(process.memory_info().peak_wset)\n```\n"
+after = "```python\nimport tracemalloc\ntracemalloc.start()\nprint(tracemalloc.get_traced_memory()[1])\n```\n"
+moved = "한 운영체제에서만 도는 API 를 표준 라이브러리의 어디서나 도는 것으로 바꿨다"
+
+[[entry]]
+rule = "promiseRecall"
+before = "자세한 것은 뒤에서 다루겠습니다.\n\n## 절\n\n다른 이야기로 끝납니다.\n"
+after = "자세한 것은 뒤에서 다루겠습니다.\n\n## 절\n\n앞에서 미룬 usecols 를 이제 봅니다.\n"
+moved = "미룬 것을 앞에서 쓴 이름으로 다시 불러 회수했다"
+
+[[entry]]
+rule = "readerAbsent"
+before = "## 절\n\n파일이 만들어집니다.\n\n## 다음 절\n\n표가 생깁니다.\n"
+after = "## 절\n\n파일이 만들어집니다.\n\n## 다음 절\n\n터미널에 dir 을 쳐서 파일 이름을 확인해 봅니다.\n"
+moved = "가능성만 말하던 문장을 독자가 지금 할 행동으로 바꿨다"
+
+[[entry]]
+rule = "redundantPair"
+before = "그때 당시에는 매 시간마다 확인했습니다."
+after = "그때는 한 시간마다 확인했습니다."
+moved = "같은 뜻이 두 번 든 겹말을 하나로 줄였다"
+
+[[entry]]
+rule = "sectionNoProse"
+before = "도입입니다.\n\n## 절\n\n```python\nprint(1)\n```\n\n## 다음 절\n\n끝.\n"
+after = "도입입니다.\n\n## 절\n\n이 코드는 줄 수를 셉니다.\n\n```python\nprint(1)\n```\n\n## 다음 절\n\n끝.\n"
+moved = "코드가 하는 일을 한 문장으로 먼저 말했다"
+
+[[entry]]
+rule = "sectionResult"
+before = "도입.\n\n## 말투 찾기\n\n첫 문단입니다. 이유가 붙습니다.\n\n둘째 문단입니다. 이유가 붙습니다.\n\n셋째 문단입니다. 이유가 붙습니다.\n\n넷째 문단입니다. 이유가 붙습니다.\n\n## 다음 절\n\n끝.\n"
+after = "도입.\n\n## 말투 찾기\n\n첫 문단입니다. 이유가 붙습니다.\n\n둘째 문단입니다. 이유가 붙습니다.\n\n셋째 문단입니다. 이유가 붙습니다.\n\npython make_qr.py 를 돌리면 폴더에 link.png 가 생깁니다.\n\n## 다음 절\n\n끝.\n"
+moved = "절 끝에 독자가 자기 화면에서 확인할 결과를 하나 남겼다"
+
+[[entry]]
+rule = "spacing"
+before = "할수 있다고 생각한지 두번째입니다."
+after = "할 수 있다고 생각한 지 두 번째입니다."
+moved = "의존명사와 단위 명사를 띄어 썼다"
+
+[[entry]]
+rule = "spelling"
+before = "몇일만에 됬습니다."
+after = "며칠 만에 됐습니다."
+moved = "자주 틀리는 표기를 표준 표기로 바꿨다"
+
+[[entry]]
+rule = "tableOddCell"
+before = "| 이름 | 시간 |\n|---|---|\n| pandas | 3.72초 |\n| Polars | 0.18초 |\n| DuckDB | 0.13초 |\n| PyArrow | 직접 부르지 않음 |\n| Dask | 2.12초 |\n"
+after = "| 이름 | 시간 |\n|---|---|\n| pandas | 3.72초 |\n| Polars | 0.18초 |\n| DuckDB | 0.13초 |\n| PyArrow | 0.02초 |\n| Dask | 2.12초 |\n"
+moved = "열의 잣대를 하나로 맞췄다"
+
+[[entry]]
+rule = "topicBreak"
+before = "## 절\n\n메모리는 절반으로 줄어듭니다. 자리를 덜 쓰면 그만큼 빨라집니다.\n\n이제 정렬을 봅니다. 순서를 바꾸면 결과가 달라집니다.\n"
+after = "## 절\n\n메모리는 절반으로 줄어듭니다. 자리를 덜 쓰면 그만큼 빨라집니다.\n\n메모리를 아낀 그 표를 이번에는 정렬해 봅니다. 순서를 바꾸면 결과가 달라집니다.\n"
+moved = "새 문단 첫 문장에서 앞 문단이 만든 것을 이름으로 다시 불렀다"
+
+[[entry]]
+rule = "translationese"
+before = "모든 분야에 있어서 기준이 필요합니다."
+after = "모든 분야에서 기준이 필요합니다."
+moved = "번역투를 우리말 어순으로 되돌렸다"

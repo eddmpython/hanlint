@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .exemplars import Exemplar, exemplarFor, exemplars
 from .load import loadLines, loadPatterns, loadToml
 
-__all__ = ["loadLines", "loadPatterns", "loadToml"]
+__all__ = ["Exemplar", "exemplarFor", "exemplars", "loadLines", "loadPatterns", "loadToml"]
