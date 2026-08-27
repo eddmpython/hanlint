@@ -12,9 +12,12 @@ from pathlib import Path
 
 import pytest
 
-from tests.gates.layerContract import LAYERS, PACKAGE, RULE_LAYER, RULE_SHARED
+from tests.gates.layerContract import JS_ROOT, LAYERS, PACKAGE, RULE_LAYER, RULE_SHARED
 
-SRC = Path(__file__).resolve().parents[2] / "src" / PACKAGE
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src" / PACKAGE
+NPM_SRC = ROOT / "npm" / "src"
+JS_IMPORT = re.compile(r"""^\s*import\s+(?:[^'"]*?\s+from\s+)?['"](\.[^'"]+)['"]""", re.MULTILINE)
 
 
 def layerOf(modulePath: str) -> str | None:
@@ -143,3 +146,98 @@ def testIgnoresStandardLibraryAndUnknown():
     files = {f"{PACKAGE}/cli/main.py": "import re\nimport json\nfrom pathlib import Path\n"}
     assert layerViolations(files) == []
     assert re.match(r"\w", "x")
+
+
+# npm 은 같은 층을 거울처럼 따른다. 경로는 저장소 상대 (npm/src/rules/sentence/deixis.js).
+
+
+def jsLayerOf(modulePath: str) -> str | None:
+    """루트 도우미 (text.js, regex.js) 는 util 층, index.js 는 공개 표면이라 층이 아니다."""
+    parts = modulePath.split("/")
+    if parts[:2] != ["npm", "src"] or len(parts) < 3:
+        return None
+    if len(parts) == 3:
+        return None if parts[2] == "index.js" else JS_ROOT
+    return parts[2] if parts[2] in LAYERS else None
+
+
+def normalizePath(path: str) -> str:
+    parts: list[str] = []
+    for part in path.split("/"):
+        if part == "..":
+            parts.pop()
+        elif part != ".":
+            parts.append(part)
+    return "/".join(parts)
+
+
+def jsImportedModules(source: str, modulePath: str) -> list[str]:
+    folder = modulePath.rsplit("/", 1)[0]
+    return [normalizePath(f"{folder}/{target}") for target in JS_IMPORT.findall(source)]
+
+
+def jsLayerViolations(files: dict[str, str]) -> list[str]:
+    violations: list[str] = []
+    for modulePath, source in files.items():
+        fromLayer = jsLayerOf(modulePath)
+        if fromLayer is None:
+            continue
+        isRuleFile = fromLayer == RULE_LAYER and len(modulePath.split("/")) > 4
+        for target in jsImportedModules(source, modulePath):
+            toLayer = jsLayerOf(target)
+            if toLayer is None:
+                continue
+            if LAYERS[toLayer] > LAYERS[fromLayer]:
+                violations.append(f"{modulePath} 가 위층 {toLayer} 를 import 한다")
+            elif LAYERS[toLayer] == LAYERS[fromLayer] and toLayer != fromLayer:
+                violations.append(f"{modulePath} 가 형제 층 {toLayer} 를 import 한다")
+            elif isRuleFile and toLayer == RULE_LAYER:
+                targetParts = target.split("/")
+                if len(targetParts) > 4 and targetParts[3] != RULE_SHARED:
+                    violations.append(f"{modulePath} 가 다른 규칙 {target} 를 import 한다. 공통은 rules/shared 에 둔다")
+    return violations
+
+
+def realJsTree() -> dict[str, str]:
+    if not NPM_SRC.exists():
+        return {}
+    return {
+        path.relative_to(ROOT).as_posix(): path.read_text(encoding="utf-8")
+        for path in NPM_SRC.rglob("*.js")
+        if "node_modules" not in path.parts
+    }
+
+
+def testRealJsTreeHasNoLayerViolations():
+    files = realJsTree()
+    if not files:
+        pytest.skip("npm/src 가 없다")
+    assert jsLayerViolations(files) == []
+
+
+def testJsSparesDownwardAndRegistry():
+    files = {
+        "npm/src/rules/sentence/deixis.js": (
+            'import { overlap } from "../../fingerprint/topics.js";\nimport { finding } from "../finding.js";\n'
+        ),
+        "npm/src/rules/registry.js": (
+            'import * as cliche from "./sentence/cliche.js";\nimport { enabled } from "../config/settings.js";\n'
+        ),
+        "npm/src/data/load.js": 'import { compile } from "../regex.js";\n',
+        "npm/src/index.js": 'import { runAll } from "./rules/registry.js";\n',
+        "npm/src/cli/main.js": 'import { readFileSync } from "node:fs";\nimport { lintText } from "../index.js";\n',
+    }
+    assert jsLayerViolations(files) == []
+
+
+def testJsCatchesUpwardSiblingRuleAndUtility():
+    assert jsLayerViolations({"npm/src/document/model.js": 'import { x } from "../rules/finding.js";\n'}) == [
+        "npm/src/document/model.js 가 위층 rules 를 import 한다"
+    ]
+    assert jsLayerViolations({"npm/src/audit/shape.js": 'import { runAll } from "../rules/registry.js";\n'}) == [
+        "npm/src/audit/shape.js 가 형제 층 rules 를 import 한다"
+    ]
+    assert "다른 규칙" in jsLayerViolations({"npm/src/rules/sentence/deixis.js": 'import { run } from "./cliche.js";\n'})[0]
+    assert jsLayerViolations({"npm/src/text.js": 'import { loadLines } from "./data/load.js";\n'}) == [
+        "npm/src/text.js 가 위층 data 를 import 한다"
+    ]

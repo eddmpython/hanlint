@@ -103,6 +103,14 @@ def doublePassive(prints, config):
 - `python` 은 항상 `-X utf8 -B`. `-B` 가 `__pycache__` 를 막고, pytest 와 ruff 의 캐시는 `pyproject.toml` 이
   저장소 밖 `../hanlint.out/` 으로 보낸다. 저장소 안에 임시 산출물을 두지 않는다.
 
+## JavaScript (npm)
+
+`npm/` 은 파이썬의 투영이고 같은 이름 규칙을 따른다. 파일과 폴더와 함수와 변수는 camelCase, 테스트 파일은
+`<이름>.test.js` (node 의 관례). 순수 ESM 이고 빌드가 없다. 타입은 JSDoc 과 파일 첫 줄의 `// @ts-check` 로
+편집기가 본다. 런타임 의존성 0 이라 `node_modules` 가 생기지 않는다. 파이썬 `re` 와 JS `RegExp`, 파이썬 `str`
+과 JS `String` 의 뜻 차이는 `npm/src/regex.js` 와 `npm/src/text.js` 가 흡수하고 규칙 파일은 그 위에서 파이썬과
+같은 문장으로 쓴다. 사전과 규칙 기술서는 손으로 옮기지 않고 `scripts/exportData.py` 가 `npm/data` 로 투영한다.
+
 ## 되돌리기
 
 이름 규칙을 어긴 파일은 `git mv` 로 이름을 바꾸고 참조처를 고친다. 게이트가 다시 본다.

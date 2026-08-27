@@ -22,7 +22,8 @@ status: curated
 
 | 층 | 무엇 | 아래에 무엇을 두나 |
 |---|---|---|
-| `data` | 사전과 표지 목록. 코드 없음 | 아무것도 |
+| `util` (npm 만) | 루트의 `text.js`, `regex.js`. 파이썬 `str` 과 `re` 의 뜻 | 아무것도 |
+| `data` | 사전과 표지 목록. 코드 없음 | 아무것도 (npm 은 util) |
 | `config` | 설정과 임계 기본값 | 아무것도 |
 | `document` | 마크다운 → 문서 모델. 순수 파싱 | config |
 | `analysis` | 분석기 인터페이스와 구현 (surface, kiwi). 문서 모델을 모른다 | config, data |
@@ -30,6 +31,10 @@ status: curated
 | `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint 와 그 아래 |
 | `report` | Finding 과 audit 결과와 지문 지도 → text, json, html | rules, audit, profile 과 그 아래 |
 | `cli` | 명령 | 전부 |
+
+npm 구현 (`npm/src/`) 은 같은 폴더와 같은 순위를 거울처럼 따르고 같은 게이트가 import 방향을 본다. npm 에만
+루트 도우미 층 `util` (`text.js`, `regex.js`) 이 있다. 파이썬 `str` 과 `re` 의 뜻을 JS 에서 같게 드는 자리라
+`data` 보다도 아래다. `index.js` 는 `__init__.py` 처럼 층이 아니라 공개 표면이다.
 
 `src/hanlint/__init__.py` 는 층이 아니라 공개 표면이다. report 와 rules 와 fingerprint 를 모아 `lintText`,
 `lintFile`, `auditText`, `auditFile`, `fingerprint`, `Finding`, `Config`, `ruleNames` 를 낸다. 패키지 밖에서

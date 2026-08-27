@@ -20,7 +20,8 @@ hanlint --version
 ```
 
 없으면 사용자에게 설치 명령을 보인다. `pip install hanlint`. 의존성은 없다. 형태소 정밀 모드가 필요하면
-`pip install hanlint[kiwi]`.
+`pip install hanlint[kiwi]`. 파이썬이 없고 Node 가 있으면 설치 없이 `npx hanlint 글.md` 로 같은 검사를 한다
+(지문 지도와 프로파일은 파이썬 쪽에만 있다).
 
 ## 순서
 

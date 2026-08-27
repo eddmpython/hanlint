@@ -8,7 +8,11 @@ from __future__ import annotations
 
 PACKAGE = "hanlint"
 
+JS_ROOT = "util"
+"""npm/src 루트의 도우미 (text.js, regex.js). 파이썬 str 과 re 의 뜻을 드는 층이라 data 보다도 아래다. npm 에만 있다."""
+
 LAYERS: dict[str, int] = {
+    JS_ROOT: -1,
     "data": 0,
     "config": 1,
     "document": 2,
