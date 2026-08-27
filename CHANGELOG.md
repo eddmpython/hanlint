@@ -6,6 +6,18 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-08-27
+
+### Fixed
+
+- 0.0.2 판의 `--version` 이 0.0.1 을 찍던 것. 버전을 손으로 적는 곳이 셋이라 하나를 빼먹을 수 있었다.
+  이제 파이썬 정본 (`__version__`) 과 npm 경계 (`package.json`) 둘만 남기고 `pyproject.toml` 은 hatch 가
+  정본을 읽으며, 게이트와 배포 워크플로가 일치를 강제한다. 0.0.2 는 표기만 틀렸고 검사 동작은 정상이다
+- headingUniform 이 이 CHANGELOG 처럼 버전과 날짜로 끝나는 절 제목을 어미 통일로 잡던 오탐. 숫자로
+  끝나는 제목은 판정에서 뺀다
+
+0.0.3 은 태그가 잘못된 커밋에 찍혀 폐기했다. 버전 대조 게이트가 게시를 막아 어느 레지스트리에도 없다.
+
 ## [0.0.2] - 2026-08-27
 
 ### Fixed
@@ -39,6 +51,7 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   저장 시 진단과 quick fix), AI 스킬 (`skills/use-hanlint/SKILL.md`)
 - 형태소 정밀 모드 (`pip install hanlint[kiwi]`) 는 선택이고 기본은 표층 근사다
 
-[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/eddmpython/hanlint/compare/v0.0.2...v0.0.4
 [0.0.2]: https://github.com/eddmpython/hanlint/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/eddmpython/hanlint/releases/tag/v0.0.1
