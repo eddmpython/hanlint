@@ -69,9 +69,10 @@ status: curated
 
 ## 릴리즈
 
-`0.0.x` 라인에서 명시 지시가 있을 때만 한다. 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. `pyproject.toml` 의
-version 과 태그는 항상 같은 값. 체인지로그 정본은 루트 `CHANGELOG.md` 이고 태그는 annotated 로
-`hanlint X.Y.Z 요약` 한 줄이다. 전체 배포 절차는 `operation.release` 가 정본이다.
+`0.0.x` 라인에서 명시 지시가 있을 때만 한다. 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전의 정본은
+`src/hanlint/__init__.py` 의 `__version__` 이고 태그와 항상 같은 값. 체인지로그 정본은 루트
+`CHANGELOG.md` 이고 태그는 annotated 로 `hanlint X.Y.Z 요약` 한 줄이다. 전체 배포 절차는
+`operation.release` 가 정본이다.
 
 ## 훅
 
@@ -81,7 +82,7 @@ version 과 태그는 항상 같은 값. 체인지로그 정본은 루트 `CHANG
 |---|---|
 | `commit-msg` | 메시지 형식, 검증 줄 부재, 도구 흔적, em 대시 |
 | `pre-commit` | staged 텍스트 파일의 em 대시와 en 대시와 제어 문자, `src` `tests` `hooks` `scripts` 아래 snake_case 파일 이름 |
-| `pre-push` | main 과 버전 태그 (v*) 가 아닌 ref, `pytest` 실패 |
+| `pre-push` | main 과 버전 태그 (v*) 가 아닌 ref, 태그 이름과 그 커밋 `__version__` 의 불일치, `pytest` 실패 |
 
 새 클론에서 한 번 켠다.
 

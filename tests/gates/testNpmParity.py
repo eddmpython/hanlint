@@ -49,6 +49,11 @@ def runBoth(args: list[str]) -> tuple[subprocess.CompletedProcess, subprocess.Co
     return python, node
 
 
+CHUNK = 40
+"""한 호출에 넘기는 파일 수. 윈도의 명령줄 한계 (32767자) 아래를 유지한다. v0.0.4 의 publish 게이트가
+CI 윈도에서 파일 전체 나열로 WinError 206 을 냈다. 두 구현을 같은 청크로 돌리므로 동등성 판정은 같다."""
+
+
 @pytest.mark.skipif(NODE is None, reason="node 가 없다. npm 동등성은 node 가 있는 기계에서 본다")
 def testBothClisGiveTheSameOutput(tmp_path):
     files = []
@@ -58,17 +63,13 @@ def testBothClisGiveTheSameOutput(tmp_path):
         files.append(str(path))
     files.extend(str(p) for p in [ROOT / "README.md", *sorted((ROOT / "skills").rglob("*.md"))])
 
-    python, node = runBoth([*files, "--format", "json"])
-    assert python.returncode == node.returncode, node.stderr
-    assert python.stdout == node.stdout
-
-    python, node = runBoth([*files, "--format", "text", "--no-color"])
-    assert python.returncode == node.returncode, node.stderr
-    assert python.stdout == node.stdout
-
-    python, node = runBoth([*files, "--format", "compact", "--errors-only"])
-    assert python.returncode == node.returncode, node.stderr
-    assert python.stdout == node.stdout
+    formats = (["--format", "json"], ["--format", "text", "--no-color"], ["--format", "compact", "--errors-only"])
+    for start in range(0, len(files), CHUNK):
+        chunk = files[start : start + CHUNK]
+        for extra in formats:
+            python, node = runBoth([*chunk, *extra])
+            assert python.returncode == node.returncode, node.stderr
+            assert python.stdout == node.stdout
 
     for layer in ("all", "paragraphs"):
         python, node = runBoth(["print", str(ROOT / "README.md"), "--layer", layer])

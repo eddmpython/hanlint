@@ -40,7 +40,7 @@ __all__ = [
     "ruleNames",
     "ruleSummary",
 ]
-__version__ = "0.0.4"
+__version__ = "0.0.6"
 
 # 분석기는 이름마다 한 번만 만든다. kiwi 는 올리는 데 몇 초가 든다.
 _analyzers: dict[str, Analyzer] = {}

@@ -2,10 +2,23 @@
 # main 과 버전 태그 (v*) 가 아닌 ref 의 push 를 막고, 올리기 전에 게이트를 다시 돈다.
 # 커밋 메시지의 검증 줄은 주장이고 이 훅이 확인이다. 규칙 정본은 skills/specs/operation/sourceControl.md.
 
+ZERO="0000000000000000000000000000000000000000"
+
 while read -r local_ref local_sha remote_ref remote_sha; do
   case "$remote_ref" in
     refs/heads/main) ;;
-    refs/tags/v*) ;;
+    refs/tags/v*)
+      # 태그 삭제 (zero sha) 는 통과. 새 태그는 가리키는 커밋의 __version__ 과 이름이 같아야 한다.
+      # v0.0.3 과 v0.0.5 가 커밋이 만들어지지 않은 채 옛 커밋에 찍혀 나간 실수를 기계로 막는다.
+      if [ "$local_sha" != "$ZERO" ]; then
+        want="${remote_ref#refs/tags/v}"
+        have="$(git show "$local_sha^{commit}:src/hanlint/__init__.py" 2>/dev/null | sed -n 's/^__version__ = "\(.*\)"$/\1/p')"
+        if [ "$want" != "$have" ]; then
+          echo "blocked: 태그 v$want 가 가리키는 커밋의 __version__ 은 '$have' 다. 커밋이 만들어졌는지 본다" >&2
+          exit 1
+        fi
+      fi
+      ;;
     "") ;;
     *)
       echo "blocked: main 과 버전 태그 (v*) 만 push 한다: $remote_ref" >&2
