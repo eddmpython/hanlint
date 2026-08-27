@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hanlint"
-version = "0.0.1"
+version = "0.0.2"
 description = "한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터"
 readme = "README.md"
 license = "MIT"

@@ -6,6 +6,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-08-27
+
+### Fixed
+
+- ellipsis 가 `v0.0.1...HEAD` 같은 compare URL 의 점 셋을 말줄임표로 잡던 오탐. 영숫자에 붙은 점 셋은
+  범위 표기라 제외한다. 이 CHANGELOG 의 링크 정의가 실측 사례다
+
 ## [0.0.1] - 2026-08-27
 
 첫 공개판이다. 한국어 마크다운에서 반복되는 결함을 결정적으로 잡는 린터이자 글쓴이의 글짓기 도구다.
@@ -32,5 +39,6 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   저장 시 진단과 quick fix), AI 스킬 (`skills/use-hanlint/SKILL.md`)
 - 형태소 정밀 모드 (`pip install hanlint[kiwi]`) 는 선택이고 기본은 표층 근사다
 
-[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/eddmpython/hanlint/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/eddmpython/hanlint/releases/tag/v0.0.1
