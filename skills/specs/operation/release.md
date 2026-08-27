@@ -38,15 +38,20 @@ status: curated
 
 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. `pyproject.toml` 의 version, `npm/package.json` 의 version, 태그는
 항상 같은 값이고 워크플로가 셋을 대조해 어긋나면 멈춘다. `npm/data/version.json` 은 투영이라
-`python scripts/exportData.py` 를 같은 커밋에서 돌린다. 릴리즈 노트는 GitHub Release 가 커밋 목록에서 만든다.
+`python scripts/exportData.py` 를 같은 커밋에서 돌린다.
+
+체인지로그의 정본은 루트 `CHANGELOG.md` (Keep a Changelog 형식) 다. 변경은 `[Unreleased]` 에 쌓고 릴리즈
+커밋에서 그 내용을 `[X.Y.Z] - 날짜` 절로 내린다. 태그는 annotated 로 만들고 메시지는 dartlab 관례대로
+`hanlint X.Y.Z 요약` 한 줄이다. GitHub Release 노트는 워크플로가 커밋 목록에서 만들고 상세는 CHANGELOG 가
+정본이다.
 
 ```powershell
-# pyproject.toml 과 npm/package.json 의 version 을 올린 뒤
+# pyproject.toml 과 npm/package.json 의 version 을 올리고 CHANGELOG 의 Unreleased 를 버전 절로 내린 뒤
 .venv/Scripts/python.exe -X utf8 -B scripts/exportData.py
 .venv/Scripts/python.exe -X utf8 -B -m pytest -q
-git add pyproject.toml npm/package.json npm/data/version.json
+git add pyproject.toml npm/package.json npm/data/version.json CHANGELOG.md
 git commit -F 메시지파일
-git tag v0.0.x
+git tag -a v0.0.x -m "hanlint 0.0.x 요약"
 git push origin main --tags
 ```
 
