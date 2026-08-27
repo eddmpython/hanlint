@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hanlint"
+version = "0.0.1"
+description = "한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["korean", "lint", "writing", "readability", "fingerprint"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Natural Language :: Korean",
+  "Topic :: Text Processing :: Linguistic",
+]
+# 런타임 의존성 0. 형태소 정밀 모드만 선택 extra 다.
+dependencies = []
+
+[project.optional-dependencies]
+kiwi = ["kiwipiepy>=0.20"]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/eddmpython/hanlint"
+Issues = "https://github.com/eddmpython/hanlint/issues"
+
+[project.scripts]
+hanlint = "hanlint.cli.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hanlint"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
