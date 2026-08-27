@@ -262,3 +262,35 @@ def testRulesGroupsByCategoryAndMarksOff(tmp_path, capsys):
     assert main(["rules", "--names"]) == 0
     names = capsys.readouterr().out.splitlines()
     assert names == sorted(names) and "moreLater" in names
+
+
+def testWatchRunsOnceAndSeesChanges(tmp_path, capsys):
+    """감시는 파일이 바뀔 때만 다시 검사한다. 시험은 `rounds` 로 도는 횟수를 묶는다."""
+    from hanlint.cli.commands import watch
+    from hanlint.cli.main import buildParser
+
+    draft = write(tmp_path, "초안.md", BAD)
+    args = buildParser().parse_args(["watch", str(draft), "--format", "compact", "--quiet"])
+    assert watch.run(args, rounds=1) == 0
+    first = capsys.readouterr().out
+    assert "[cliche]" in first and "다음: error" in first
+
+    stamps = watch.stampOf([str(draft)])
+    draft.write_text(CLEAN, encoding="utf-8")
+    assert watch.stampOf([str(draft)]) != stamps
+    args = buildParser().parse_args(["watch", str(draft), "--format", "compact", "--quiet"])
+    assert watch.run(args, rounds=1) == 0
+    assert "다음: 세어서 잡히는 결함이 없다" in capsys.readouterr().out
+
+
+def testWatchAcceptsFolders(tmp_path, capsys):
+    from hanlint.cli.commands import watch
+    from hanlint.cli.main import buildParser
+
+    (tmp_path / "글들").mkdir()
+    (tmp_path / "글들" / "하나.md").write_text(BAD, encoding="utf-8")
+    (tmp_path / "글들" / "둘.md").write_text(CLEAN, encoding="utf-8")
+    args = buildParser().parse_args(["watch", str(tmp_path / "글들"), "--format", "compact"])
+    assert watch.run(args, rounds=1) == 0
+    out = capsys.readouterr().out
+    assert "2개를 지켜본다" in out and "파일 2개" in out

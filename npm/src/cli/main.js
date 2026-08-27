@@ -12,7 +12,7 @@
  * hanlint doctor                설정, 분석기, 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --preset blog|report|docs
  * ```
- * audit, map, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.
+ * audit, map, watch, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
@@ -30,7 +30,7 @@ import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "doctor", "init"];
-const PYTHON_ONLY = ["audit", "map", "profile", "coverage", "diff"];
+const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 const ANALYZER_CHOICES = ["surface", "kiwi"];
@@ -70,7 +70,7 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
 
 파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다. 인자가 없으면 첫 화면이 나온다.
 한국어 글에서 반복되는 결함을 결정적으로 잡는다. 종료 코드는 0 (지적 없음), 1 (error 지적), 2 (파일이나 설정 문제).
-audit, map, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.`;
+audit, map, watch, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.`;
 
 /** @type {Record<string, "value" | "list" | "flag">} */
 const OPTION_KINDS = {
@@ -511,7 +511,7 @@ function dispatch(argv) {
     return 0;
   }
   if (PYTHON_ONLY.includes(command)) {
-    throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 lint, fix, print, rules, explain, init 을 제공한다`);
+    throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 lint, fix, print, rules, explain, doctor, init 을 제공한다`);
   }
   if (command === "lint") return runLint(rest);
   if (command === "fix") return runFix(rest);

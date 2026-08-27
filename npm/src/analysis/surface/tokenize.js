@@ -58,6 +58,13 @@ export function numerals() {
   return numeralCache;
 }
 
+/** @type {Set<string> | null} */
+let nonNounCache = null;
+export function nonNouns() {
+  if (!nonNounCache) nonNounCache = new Set(loadLines("nonNouns.txt"));
+  return nonNounCache;
+}
+
 /** @param {string} core */
 export function isNumeral(core) {
   return numerals().has(core) || DIGITS.test(core);
@@ -93,7 +100,11 @@ export function isBareNoun(core) {
   return tailOf(core, "josa.txt") === null && tailOf(core, "verbTails.txt") === null;
 }
 
-/** 명사 어절 연속의 최대 길이. @param {string} text */
+/**
+ * 명사 어절 연속의 최대 길이. 의존명사와 관형사와 부사 (`수`, `몇`, `직접`) 는 조사도 어미도 안 붙어
+ * 표층으로는 명사로 보이지만 명사 쌓기의 재료가 아니다. data/nonNouns.txt 가 그 목록이고 연속을 끊는다.
+ * @param {string} text
+ */
 export function longestNounRun(text) {
   let longest = 0;
   let run = 0;
@@ -106,7 +117,7 @@ export function longestNounRun(text) {
     }
     const transparent = isNumeral(word.core) || afterNumeral;
     afterNumeral = isNumeral(word.core);
-    if (word.particle || !isBareNoun(word.core)) {
+    if (word.particle || nonNouns().has(word.core) || !isBareNoun(word.core)) {
       run = 0;
       previousAscii = false;
     } else if (!transparent) {

@@ -58,6 +58,11 @@ def numerals() -> frozenset[str]:
     return frozenset(line.partition("\t")[0] for line in loadLines("koreanNumbers.txt"))
 
 
+@cache
+def nonNouns() -> frozenset[str]:
+    return frozenset(loadLines("nonNouns.txt"))
+
+
 def isNumeral(core: str) -> bool:
     return core in numerals() or bool(DIGITS.match(core))
 
@@ -93,7 +98,11 @@ def isBareNoun(core: str) -> bool:
 
 
 def longestNounRun(text: str) -> int:
-    """명사 어절 연속의 최대 길이. 수사와 바로 뒤의 단위 (여덟 개) 는 수량이라 세지도 끊지도 않는다."""
+    """명사 어절 연속의 최대 길이. 수사와 바로 뒤의 단위 (여덟 개) 는 수량이라 세지도 끊지도 않는다.
+
+    의존명사와 관형사와 부사 (`수`, `몇`, `직접`) 는 조사도 어미도 안 붙어 표층으로는 명사로 보이지만
+    명사 쌓기의 재료가 아니다. `data/nonNouns.txt` 가 그 목록이고 연속을 끊는다.
+    """
     longest = run = 0
     previousAscii = False
     afterNumeral = False
@@ -102,7 +111,7 @@ def longestNounRun(text: str) -> int:
             run, previousAscii = 0, False
         transparent = isNumeral(word.core) or afterNumeral
         afterNumeral = isNumeral(word.core)
-        if word.particle or not isBareNoun(word.core):
+        if word.particle or word.core in nonNouns() or not isBareNoun(word.core):
             run, previousAscii = 0, False
         elif not transparent:
             isAscii = not HANGUL.search(word.core)

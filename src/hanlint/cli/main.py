@@ -3,6 +3,7 @@
 ```
 hanlint                            인자가 없으면 첫 화면. 무엇을 칠 수 있는지 보인다
 hanlint 글.md [다른.md ...]        검사. 서브커맨드 없이 파일이나 폴더만 주면 lint 다. `-` 는 stdin
+hanlint watch 글.md                파일이 바뀔 때마다 다시 검사한다
 hanlint fix 글.md                  기계가 고칠 수 있는 지적을 원문에 적용
 hanlint audit 글.md                지문 지도와 분포
 hanlint map 글.md                  지도만
@@ -26,7 +27,21 @@ import argparse
 import sys
 
 from .. import __version__
-from .commands import audit, coverage, diff, doctor, explain, fix, init, lint, mapCommand, printFingerprint, profile, rules
+from .commands import (
+    audit,
+    coverage,
+    diff,
+    doctor,
+    explain,
+    fix,
+    init,
+    lint,
+    mapCommand,
+    printFingerprint,
+    profile,
+    rules,
+    watch,
+)
 from .welcome import welcome
 
 COMMANDS = {
@@ -38,6 +53,7 @@ COMMANDS = {
     "rules": rules,
     "explain": explain,
     "doctor": doctor,
+    "watch": watch,
     "init": init,
     "profile": profile,
     "coverage": coverage,

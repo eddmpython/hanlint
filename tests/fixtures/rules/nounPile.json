@@ -1,6 +1,8 @@
 {
   "rule": "nounPile",
-  "catch": ["가상환경 생성 후 패키지 설치 확인 절차를 따릅니다."],
+  "catch": [
+    "가상환경 생성 후 패키지 설치 확인 절차를 따릅니다."
+  ],
   "spare": [
     "파이썬 데이터프레임 라이브러리 여섯 가지를 소개합니다.",
     "순서는 pandas, Polars, DuckDB, PyArrow, Dask, Ibis 이고 뒤로 갈수록 앞 것이 못 하던 일을 합니다.",
@@ -8,6 +10,9 @@
     "report 와 rules 와 fingerprint 를 모아 lintText 를 만듭니다.",
     "저장하려 해도 ValueError: This sheet is too large 가 납니다.",
     "codeRun (코드 블록 실행 검증) 이 다음 후보입니다.",
-    "절 제목 여덟 개 중 일곱이 같은 어미로 끝났습니다."
+    "절 제목 여덟 개 중 일곱이 같은 어미로 끝났습니다.",
+    "이름은 뱀이 아니라 1970년대 BBC 코미디 `Monty Python 의 Flying Circus`에서 따왔습니다.",
+    "네 군데를 고치면 도는지 직접 눌러 볼 수 있습니다.",
+    "최근 몇 년 동안 파이썬 개발팀이 여기에 크게 손을 대는 중입니다."
   ]
 }
