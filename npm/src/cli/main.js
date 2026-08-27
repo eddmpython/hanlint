@@ -9,6 +9,7 @@
  * hanlint print 글.md           지문 계층 JSON
  * hanlint rules                 규칙 목록을 부류로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
+ * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
  * hanlint doctor                설정, 분석기, 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --preset blog|report|docs
  * ```
@@ -22,6 +23,7 @@ import { loadConfig } from "../config/loadConfig.js";
 import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
+import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { CATEGORY_TITLES, ruleCategory, runAll } from "../rules/registry.js";
 import { welcome } from "./welcome.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -30,7 +32,7 @@ import { renderGithub } from "../report/githubReport.js";
 import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "doctor", "init"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "doctor", "init"];
 const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
@@ -65,6 +67,7 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
         hanlint print 글.md [--layer all|sentences|paragraphs|sections|document]
         hanlint rules [--names]
         hanlint explain <규칙>
+        hanlint patterns [--rule 규칙]
         hanlint doctor
         hanlint init [--path hanlint.toml] [--preset blog|report|docs] [--force]
         hanlint --version
@@ -90,6 +93,7 @@ const OPTION_KINDS = {
   "--names": "flag",
   "--force": "flag",
   "--preset": "value",
+  "--rule": "value",
 };
 
 class UsageError extends Error {}
@@ -248,6 +252,7 @@ function nextStep(results) {
   if (errors.length) {
     const rule = [...new Set(errors.map((f) => f.rule))].sort()[0];
     if (fixable) return `다음: error ${errors.length}건 가운데 ${fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다`;
+    if (patternsAvoiding(rule).length) return `다음: error ${errors.length}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule ${rule}`;
     return `다음: error ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
   }
   if (notices) return `다음: error 0. 확인할 자리 ${notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다`;
@@ -425,6 +430,33 @@ function runExplain(args) {
 }
 
 /** @param {string[]} args */
+function runPatterns(args) {
+  const { options } = parseArgs(args);
+  const rule = /** @type {string | undefined} */ (options["--rule"]);
+  const chosen = rule ? patternsAvoiding(rule) : patterns();
+  if (!chosen.length) throw new Error(` 을 피하는 문형이 없다. hanlint patterns 로 전부 본다`);
+  const output = /** @type {string | undefined} */ (options["--output"]);
+  if (options["--format"] === "json") {
+    emit(JSON.stringify({ version: 1, patterns: chosen }, null, 2), output);
+    return 0;
+  }
+  const lines = [];
+  for (const pattern of chosen) {
+    lines.push(`${pattern.name}  (${pattern.avoids.join(", ")} 를 피한다)`);
+    lines.push(`  틀    ${pattern.form}`);
+    lines.push(`  언제  ${pattern.when}`);
+    lines.push(indent(pattern.example, "  예시  "));
+    lines.push(indent(pattern.instead, "  대신  "));
+    lines.push(`  출처  ${pattern.source}`);
+    lines.push("");
+  }
+  lines.push(`문형 ${chosen.length}개. 예시는 전부 hanlint 를 error 0 으로 통과한다 (게이트가 확인한다)`);
+  if (!rule) lines.push("지적을 받은 자리를 다시 쓰려면 hanlint patterns --rule <규칙>");
+  emit(lines.join("\n"), output);
+  return 0;
+}
+
+/** @param {string[]} args */
 function runDoctor(args) {
   const { options } = parseArgs(args);
   const config = configFrom(options, []);
@@ -532,6 +564,7 @@ function dispatch(argv) {
   if (command === "print") return runPrint(rest);
   if (command === "rules") return runRules(rest);
   if (command === "explain") return runExplain(rest);
+  if (command === "patterns") return runPatterns(rest);
   if (command === "doctor") return runDoctor(rest);
   return runInit(rest);
 }

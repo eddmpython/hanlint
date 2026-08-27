@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from ...config import Config, loadConfig
+from ...data import patternsAvoiding
 from ...rules import Finding
 
 FORMATS = ("text", "json", "github", "html", "compact")
@@ -86,6 +87,8 @@ def nextStep(results: dict[str, list[Finding]]) -> str:
         rule = sorted({f.rule for f in errors})[0]
         if fixable:
             return f"다음: error {len(errors)}건 가운데 {fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다"
+        if patternsAvoiding(rule):
+            return f"다음: error {len(errors)}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule {rule}"
         return f"다음: error {len(errors)}건을 고친다. 규칙이 왜 있는지는 hanlint explain {rule}"
     if notices:
         return f"다음: error 0. 확인할 자리 {notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다"

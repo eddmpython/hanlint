@@ -4,5 +4,16 @@ from __future__ import annotations
 
 from .exemplars import Exemplar, exemplarFor, exemplars
 from .load import loadLines, loadPatterns, loadToml
+from .patterns import Pattern, patterns, patternsAvoiding
 
-__all__ = ["Exemplar", "exemplarFor", "exemplars", "loadLines", "loadPatterns", "loadToml"]
+__all__ = [
+    "Exemplar",
+    "Pattern",
+    "exemplarFor",
+    "exemplars",
+    "loadLines",
+    "loadPatterns",
+    "loadToml",
+    "patterns",
+    "patternsAvoiding",
+]

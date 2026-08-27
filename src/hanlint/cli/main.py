@@ -10,6 +10,7 @@ hanlint map 글.md                  지도만
 hanlint print 글.md                지문 계층 JSON
 hanlint rules                      규칙 목록을 부류로 묶어서
 hanlint explain <규칙>             규칙의 기술서
+hanlint patterns --rule <규칙>     그 규칙을 피하는 문장 틀
 hanlint doctor                     설정, 분석기, 꺼진 규칙
 hanlint init                       주석 달린 hanlint.toml. --preset blog|report|docs
 hanlint profile build 글들/         승인된 글의 문체 분포. lint 의 --profile 로 견준다
@@ -37,6 +38,7 @@ from .commands import (
     init,
     lint,
     mapCommand,
+    patternsCommand,
     printFingerprint,
     profile,
     rules,
@@ -52,6 +54,7 @@ COMMANDS = {
     "print": printFingerprint,
     "rules": rules,
     "explain": explain,
+    "patterns": patternsCommand,
     "doctor": doctor,
     "watch": watch,
     "init": init,

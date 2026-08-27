@@ -41,7 +41,9 @@ hanlint doctor
 4. `error` 를 전부 고친다. **어떻게 고칠지는 본보기를 본다.** 사람이 읽는 꼴은 글 끝에 규칙마다 한 줄,
    `--format json` 은 지적마다 `exemplar` (`before`, `after`, `moved`) 를 든다. 규칙 이름과 이유만 보고
    고치면 엉뚱한 데를 손대기 쉬우므로 전과 후의 짝을 본떠 고친다. 규칙이 왜 있는지까지 알아야 하면
-   `hanlint explain <rule>` 을 읽는다. 네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 본보기가 있다.
+   `hanlint explain <rule>` 을 읽는다. 네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 본보기가 있다. 어떻게
+   다시 쓸지 막히면 `hanlint patterns --rule <rule>` 이 그 규칙을 피하는 문장 틀을 준다. 틀의 예시는
+   error 0 이 게이트로 보장된다.
 5. 마지막에 한 번 `--severity all` 로 `notice` 를 읽고 판단한다. **읽는 순서가 있다.** 실측에서 사람
    평가자와 실제로 같은 자리를 짚은 notice 는 `endingRepeat`, `topicBreak`, `factListParagraph` 셋이었다
    (글 셋, 평가자 지적 435건 기준). 그 셋을 먼저 보고 나머지는 그다음이다. 사실 나열과 흐름 끊김은 이유
@@ -75,6 +77,7 @@ hanlint doctor
 ## 참고
 
 - 규칙 목록: `hanlint rules`. 부류로 묶여 나오고 꺼진 것에 표시가 붙는다
+- 문장 틀: `hanlint patterns`. 빈칸이 있는 틀 열 개. `--rule` 로 그 규칙을 피하는 것만
 - 설정 만들기: `hanlint init --preset blog|report|docs`
 - 지금 상태: `hanlint doctor`. 설정 출처, 분석기, 꺼진 규칙
 - 지문 계층 JSON: `hanlint print 글.md`. 다른 도구가 지문 위에 무엇을 얹을 때

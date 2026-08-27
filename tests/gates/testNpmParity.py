@@ -125,6 +125,11 @@ def testEntryPointsAgree(tmp_path):
     python, node = runBoth(["rules"])
     assert python.stdout == node.stdout
 
+    for extra in ([], ["--rule", "nounPile"], ["--format", "json"]):
+        python, node = runBoth(["patterns", *extra])
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout, extra
+
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testInitPresetsAgree(tmp_path):
