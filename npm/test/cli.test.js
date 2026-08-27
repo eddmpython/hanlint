@@ -27,10 +27,53 @@ writeFileSync(clean, CLEAN, "utf-8");
 test("lint exit codes and text", () => {
   const result = run([bad, "--no-color"]);
   assert.equal(result.code, 1);
+  assert.ok(result.out.startsWith("설정: 기본값\n"));
   assert.ok(result.out.includes(`${bad}:3  [cliche]`));
-  const ok = run([clean]);
+  const ok = run([clean, "--quiet"]);
   assert.equal(ok.code, 0);
-  assert.ok(ok.out.includes("집은 자리 없음"));
+  assert.ok(ok.out.includes("집은 자리 없음") && !ok.out.includes("설정:"));
+});
+
+test("severity, compact, stdin, summary", () => {
+  const mixed = join(dir, "mixed.md");
+  writeFileSync(mixed, "## 절\n\n핵심은 속도입니다. 파일을 엽니다. 표가 보입니다. 열이 다섯입니다. 값을 고칩니다.\n", "utf-8");
+  const compact = run([mixed, "--format", "compact", "--errors-only", "--quiet"]);
+  assert.equal(compact.code, 1);
+  assert.deepEqual(compact.out.trimEnd().split("\n"), [
+    `${mixed}:3 [cliche] \`핵심은\` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)`,
+    "파일 1개, error 1, notice 0",
+  ]);
+  const notices = run([mixed, "--severity", "notice", "--format", "json"]);
+  const findings = JSON.parse(notices.out).files[0].findings;
+  assert.ok(findings.length && findings.every((f) => f.severity === "notice"));
+  const piped = spawnSync(process.execPath, [BIN, "-", "--path", "초안.md", "--format", "compact", "--quiet"], { encoding: "utf-8", input: BAD });
+  assert.equal(piped.status, 1);
+  assert.ok(piped.stdout.startsWith("초안.md:3 [cliche]"));
+  const many = run([bad, clean, "--quiet"]);
+  assert.ok(many.out.trimEnd().endsWith("파일 2개, error 1, notice 0"));
+});
+
+test("fix applies fragments and dry run keeps the file", () => {
+  const draft = join(dir, "draft.md");
+  writeFileSync(draft, "## 절\n\n모든 분야에 있어서 기준이 필요합니다.\r\n둘째 줄입니다.\r\n", "utf-8");
+  const before = readFileSync(draft, "utf-8");
+  const preview = run(["fix", draft, "--dry-run"]);
+  assert.equal(preview.code, 0);
+  assert.ok(preview.out.includes("에 있어서 → 에서") && preview.out.includes("미리보기"));
+  assert.equal(readFileSync(draft, "utf-8"), before);
+  assert.ok(run(["fix", draft]).out.includes("1곳 고침, 0곳 건너뜀"));
+  const after = readFileSync(draft, "utf-8");
+  assert.ok(after.includes("모든 분야에서 기준이") && after.includes("\r\n"));
+  assert.equal(run([draft, "--errors-only", "--format", "compact", "--quiet"]).code, 0);
+});
+
+test("print gives layers", () => {
+  const all = JSON.parse(run(["print", bad]).out);
+  assert.equal(all.layer, "all");
+  assert.equal(all.sentences[0].text, "핵심은 속도입니다.");
+  assert.deepEqual(all.paragraphs[0].sentences, [0]);
+  const only = JSON.parse(run(["print", bad, "--layer", "sections"]).out);
+  assert.deepEqual(Object.keys(only), ["version", "layer", "sections"]);
 });
 
 test("lint json and github", () => {
@@ -55,6 +98,7 @@ test("missing file, python-only commands, unknown option are 2", () => {
   const audit = run(["audit", bad]);
   assert.equal(audit.code, 2);
   assert.ok(audit.err.includes("파이썬 패키지"));
+  assert.equal(run([bad, "--severity", "bogus"]).code, 2);
   assert.equal(run([bad, "--bogus"]).code, 2);
 });
 

@@ -26,15 +26,19 @@ hanlint --version
 ## 순서
 
 1. 글을 쓰거나 고친다.
-2. `hanlint 글.md --format json` 을 돌린다. 지적마다 `rule`, `line`, `quote`, `why` 가 있고 기계가 고칠 수 있는
-   것은 `fix` 가 있다. `severity` 가 `error` 인 것은 규칙 위반이고 `notice` 는 확인이 필요한 것이다.
-3. `error` 를 전부 고친다. `fix` 가 있으면 그대로 쓴다. 규칙이 왜 있는지 모르면 `hanlint explain <rule>` 을
-   읽는다. 네 절 (왜, 어디서, 고치기, 안 잡는 것) 이 있다.
-4. `notice` 는 읽고 판단한다. 사실 나열 (factListParagraph) 과 흐름 끊김 (topicBreak) 은 이유 문장을 넣어
-   잇는 것이 대체로 답이다. 정당한 문장이면 둔다.
-5. 2 로 돌아가 `error` 가 0 이 될 때까지 반복한다. 보통 두 번이면 끝난다.
-6. 글의 모양을 보려면 `hanlint audit 글.md`. 지문 지도에서 색이 있는 자리가 구멍이다. 점수는 없다.
-7. 0 이 되면 사용자 저장소의 글쓰기 스킬이 정한 평가로 넘어간다.
+2. `hanlint fix 글.md` 를 먼저 돌린다. 기계가 확실히 고칠 수 있는 자리 (번역투, 명령형 뒤 마침표, 이중 부정) 를
+   원문에 적용하고 무엇을 바꿨는지 줄마다 보여 준다. 건너뛴 자리는 이유가 붙어 있으니 손으로 고친다.
+3. `hanlint 글.md --format compact --errors-only` 를 돌린다. 한 줄에 지적 하나다. `경로:줄 [규칙] 왜` 꼴이고
+   고친 문장이 있으면 뒤에 붙는다. 글이 파일이 아니라 손에 있으면 `hanlint - --path 이름.md` 로 stdin 에 넣는다.
+   첫 줄은 어느 설정을 읽었는지고 마지막 줄은 요약이다. 기계가 읽을 때는 `--format json` (지적마다 `rule`,
+   `line`, `quote`, `why`, 고칠 수 있으면 `fix` 와 `fragment`, `replacement`).
+4. `error` 를 전부 고친다. 규칙이 왜 있는지 모르면 `hanlint explain <rule>` 을 읽는다. 네 절 (왜, 어디서,
+   고치기, 안 잡는 것) 이 있다.
+5. 마지막에 한 번 `--severity all` 로 `notice` 를 읽고 판단한다. 사실 나열 (factListParagraph) 과 흐름 끊김
+   (topicBreak) 은 이유 문장을 넣어 잇는 것이 대체로 답이다. 정당한 문장이면 둔다.
+6. 3 으로 돌아가 `error` 가 0 이 될 때까지 반복한다. 보통 두 번이면 끝난다.
+7. 글의 모양을 보려면 `hanlint audit 글.md`. 지문 지도에서 색이 있는 자리가 구멍이다. 점수는 없다.
+8. 0 이 되면 사용자 저장소의 글쓰기 스킬이 정한 평가로 넘어간다.
 
 ## 지킬 것
 

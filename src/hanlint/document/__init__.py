@@ -4,6 +4,6 @@ from __future__ import annotations
 
 from .model import Block, Document, Section
 from .parseMarkdown import parseMarkdown
-from .plainText import plainText
+from .plainText import codeSpans, plainText
 
-__all__ = ["Block", "Document", "Section", "parseMarkdown", "plainText"]
+__all__ = ["Block", "Document", "Section", "codeSpans", "parseMarkdown", "plainText"]

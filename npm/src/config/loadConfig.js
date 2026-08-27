@@ -16,7 +16,9 @@ export function readConfigFile(path) {
     const tool = /** @type {Record<string, unknown>} */ (data.tool ?? {});
     data = /** @type {Record<string, unknown>} */ (tool.hanlint ?? {});
   }
-  return configFromMapping(data);
+  const config = configFromMapping(data);
+  config.source = path;
+  return config;
 }
 
 /** start 에서 위로 올라가며 hanlint.toml 이나 [tool.hanlint] 를 가진 pyproject.toml 을 찾는다. @param {string} start */

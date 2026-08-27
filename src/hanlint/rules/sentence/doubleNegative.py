@@ -44,4 +44,6 @@ def doubleNegative(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "error",
             SENTENCE,
             sentence.index,
+            match.group(1) if replacement else None,
+            replacement,
         )

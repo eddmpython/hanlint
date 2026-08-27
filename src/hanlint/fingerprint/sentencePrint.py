@@ -54,3 +54,5 @@ class SentencePrint:
     """(수, 단위, 원문). `여섯 가지` 처럼 글이 약속한 수."""
     readerCall: bool
     matches: tuple[DictionaryMatch, ...]
+    quoted: tuple[tuple[int, int], ...]
+    """인용 구간 (시작, 끝). 인라인 코드와 따옴표 쌍의 안. 사전 매치와 지시어는 이 안의 것을 이미 뺐다."""

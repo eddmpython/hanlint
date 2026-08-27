@@ -34,6 +34,8 @@ class Config:
     """프로파일 파일 경로. 있으면 편차 구간을 notice 로 낸다."""
     dictionary: dict[str, list] = field(default_factory=dict)
     """사전에 더할 항목. 키는 사전 이름 (cliches, translationese, redundantPair, japaneseLoan)."""
+    source: str | None = None
+    """설정을 읽은 파일. 기본값이면 None. 설정 파일의 키가 아니라 loadConfig 가 채운다."""
 
     fragmentRun: int = 3
     """한두 문장짜리 문단이 몇 개 이어지면 조각남으로 보는가."""
@@ -67,7 +69,7 @@ class Config:
                 config.analyzer = value
             elif key == "dictionary":
                 config.dictionary = dict(value)
-            elif hasattr(config, key):
+            elif key != "source" and hasattr(config, key):
                 setattr(config, key, value)
             else:
                 raise ValueError(f"모르는 설정 키: {key}. hanlint init 이 만드는 파일의 키만 쓴다")

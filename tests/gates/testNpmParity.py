@@ -66,6 +66,29 @@ def testBothClisGiveTheSameOutput(tmp_path):
     assert python.returncode == node.returncode, node.stderr
     assert python.stdout == node.stdout
 
+    python, node = runBoth([*files, "--format", "compact", "--errors-only"])
+    assert python.returncode == node.returncode, node.stderr
+    assert python.stdout == node.stdout
+
+    for layer in ("all", "paragraphs"):
+        python, node = runBoth(["print", str(ROOT / "README.md"), "--layer", layer])
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testFixPreviewAgrees(tmp_path):
+    draft = tmp_path / "draft.md"
+    draft.write_text(
+        "## 절\n\n모든 분야에 있어서 기준이 필요합니다. 파일을 확인하세" + "요. 노력하지 않으면 안 됩니다.\n\n"
+        "`에 있어서` 는 번역투입니다. 분야에 있어서 기준과 방식에 있어서 차이가 있습니다.\n",
+        encoding="utf-8",
+    )
+    python, node = runBoth(["fix", str(draft), "--dry-run"])
+    assert python.returncode == node.returncode == 0, node.stderr
+    assert python.stdout == node.stdout
+    assert "3곳 고침, 2곳 건너뜀" in python.stdout
+
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testRuleListsAgree():

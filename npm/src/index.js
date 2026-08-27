@@ -17,10 +17,12 @@ import { loadConfig } from "./config/loadConfig.js";
 import { configFromMapping, defaultConfig } from "./config/settings.js";
 import { loadVersion } from "./data/load.js";
 import { parseMarkdown } from "./document/parseMarkdown.js";
+import { applyFixes } from "./edit/applyFixes.js";
 import { buildFingerprint } from "./fingerprint/build.js";
+import { fingerprintDict } from "./report/fingerprintJson.js";
 import { ruleDoc, ruleNames, ruleSummary, runAll } from "./rules/registry.js";
 
-export { configFromMapping, defaultConfig, loadConfig, ruleDoc, ruleNames, ruleSummary };
+export { applyFixes, configFromMapping, defaultConfig, fingerprintDict, loadConfig, ruleDoc, ruleNames, ruleSummary };
 export const version = loadVersion();
 
 /** @type {Map<string, import("./analysis/index.js").Analyzer>} */

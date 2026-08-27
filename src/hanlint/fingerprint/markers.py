@@ -13,6 +13,15 @@ from ..data import loadLines, loadPatterns
 TRAILING = re.compile(r"[\s.?!\"'”’)\]]+$")
 NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
 COMMA = re.compile(r",")
+# 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만 (Python's 의 ' 는 아니다).
+QUOTE_PAIRS = (
+    re.compile(r'"([^"\n]{1,80})"'),
+    re.compile(r"“([^“”\n]{1,80})”"),
+    re.compile(r"‘([^‘’\n]{1,80})’"),
+    re.compile(r"「([^「」\n]{1,80})」"),
+    re.compile(r"『([^『』\n]{1,80})』"),
+    re.compile(r"(?:(?<=^)|(?<=[\s(]))'([^'\n]{1,80})'"),
+)
 
 
 @cache
@@ -83,6 +92,26 @@ def matchedTexts(text: str, patternFile: str) -> tuple[str, ...]:
     for pattern in loadPatterns(patternFile):
         found.extend(match.group(0) for match in pattern.finditer(text))
     return tuple(found)
+
+
+def matchedSpans(text: str, patternFile: str) -> tuple[tuple[int, int, str], ...]:
+    """(시작, 끝, 원문). 인용 구간 안의 것을 거를 때 쓴다."""
+    found: list[tuple[int, int, str]] = []
+    for pattern in loadPatterns(patternFile):
+        found.extend((match.start(), match.end(), match.group(0)) for match in pattern.finditer(text))
+    return tuple(found)
+
+
+def quoteSpans(text: str) -> tuple[tuple[int, int], ...]:
+    """따옴표 쌍 안의 (시작, 끝). 인용은 사용이 아니다."""
+    found: list[tuple[int, int]] = []
+    for pattern in QUOTE_PAIRS:
+        found.extend((match.start(1), match.end(1)) for match in pattern.finditer(text))
+    return tuple(sorted(found))
+
+
+def insideAny(start: int, end: int, spans: tuple[tuple[int, int], ...]) -> bool:
+    return any(spanStart <= start and end <= spanEnd for spanStart, spanEnd in spans)
 
 
 def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:

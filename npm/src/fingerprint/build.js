@@ -2,7 +2,7 @@
 /** 문서 모델을 한 번 훑어 글 지문을 만든다. 텍스트를 읽는 유일한 자리다. 파이썬 fingerprint/build.py 와 같다. */
 import { defaultConfig } from "../config/settings.js";
 import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/model.js";
-import { plainText } from "../document/plainText.js";
+import { codeSpans, plainText } from "../document/plainText.js";
 import { countIn, mean, pstdev, wordCount } from "../text.js";
 import { entriesFor, matchesIn } from "./dictionaries.js";
 import * as markers from "./markers.js";
@@ -34,6 +34,7 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {[number, string, string][]} countPromises
  * @property {boolean} readerCall
  * @property {import("./dictionaries.js").DictionaryMatch[]} matches
+ * @property {[number, number][]} quoted 인용 구간. 인라인 코드와 따옴표 쌍의 안
  */
 
 /**
@@ -88,6 +89,25 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  */
 
 /**
+ * 문장 안의 인용 구간. 블록의 인라인 코드 구간을 문장 좌표로 옮기고 따옴표 쌍을 더한다.
+ * @param {import("../analysis/surface/splitSentences.js").Sentence} sentence
+ * @param {[number, number][]} blockCodeSpans
+ * @returns {[number, number][]}
+ */
+function quotedIn(sentence, blockCodeSpans) {
+  /** @type {[number, number][]} */
+  const spans = [];
+  for (const [start, end] of blockCodeSpans) {
+    const lo = Math.max(start, sentence.start);
+    const hi = Math.min(end, sentence.end);
+    if (lo < hi) spans.push([lo - sentence.start, hi - sentence.start]);
+  }
+  spans.push(...markers.quoteSpans(sentence.text));
+  const unique = new Map(spans.map((span) => [`${span[0]},${span[1]}`, span]));
+  return [...unique.values()].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+}
+
+/**
  * @param {string} text
  * @param {number} index
  * @param {number} line
@@ -96,10 +116,16 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @param {number} sectionIndex
  * @param {import("../analysis/index.js").Analyzer} analyzer
  * @param {import("./dictionaries.js").Entry[]} entries
+ * @param {[number, number][]} quoted
  * @returns {SentencePrint}
  */
-function makeSentencePrint(text, index, line, block, paragraphIndex, sectionIndex, analyzer, entries) {
+function makeSentencePrint(text, index, line, block, paragraphIndex, sectionIndex, analyzer, entries, quoted) {
   const ending = markers.endingOf(text);
+  const deixis = markers
+    .matchedSpans(text, "deixis.txt")
+    .filter(([start, end]) => !markers.insideAny(start, end, quoted))
+    .map(([, , found]) => found);
+  const matches = matchesIn(text, entries).filter((m) => !markers.insideAny(m.start, m.end, quoted));
   return {
     index,
     line,
@@ -113,7 +139,7 @@ function makeSentencePrint(text, index, line, block, paragraphIndex, sectionInde
     commas: markers.countCommas(text),
     connectorStart: markers.connectorStartOf(text),
     causal: markers.countMatches(text, "causalMarkers.txt"),
-    deixis: markers.matchedTexts(text, "deixis.txt"),
+    deixis,
     euiCount: analyzer.euiCount(text),
     nounRun: analyzer.longestNounRun(text),
     passives: analyzer.doublePassives(text),
@@ -124,7 +150,8 @@ function makeSentencePrint(text, index, line, block, paragraphIndex, sectionInde
     recalls: markers.matchedTexts(text, "recallMarkers.txt"),
     countPromises: markers.countPromisesIn(text),
     readerCall: markers.matchedTexts(text, "readerCalls.txt").length > 0,
-    matches: matchesIn(text, entries),
+    matches,
+    quoted,
   };
 }
 
@@ -179,13 +206,15 @@ function buildSection(section, sectionIndex, analyzer, entries, sentences, parag
       continue;
     }
     const text = plainText(block.text);
+    const blockCodeSpans = codeSpans(block.text, text);
     /** @type {SentencePrint[]} */
     const blockSentences = [];
     for (const sentence of analyzer.sentences(text)) {
       const line = block.startLine + countIn(text, "\n", sentence.start);
       const index = sentences.length + blockSentences.length;
+      const quoted = quotedIn(sentence, blockCodeSpans);
       blockSentences.push(
-        makeSentencePrint(sentence.text, index, line, block, paragraphs.length, sectionIndex, analyzer, entries),
+        makeSentencePrint(sentence.text, index, line, block, paragraphs.length, sectionIndex, analyzer, entries, quoted),
       );
     }
     sentences.push(...blockSentences);

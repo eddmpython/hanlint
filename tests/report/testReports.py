@@ -1,7 +1,16 @@
 import json
 
 from hanlint import Config, auditText, fingerprint, lintText
-from hanlint.report import renderAudit, renderGithub, renderJson, renderMap, renderMapHtml, renderText
+from hanlint.report import (
+    renderAudit,
+    renderCompact,
+    renderFingerprintJson,
+    renderGithub,
+    renderJson,
+    renderMap,
+    renderMapHtml,
+    renderText,
+)
 from hanlint.report.holeKinds import kindOf
 
 SAMPLE = """## 첫 절
@@ -40,6 +49,33 @@ def testJsonReportIsParseableAndCarriesFields():
     first = data["files"][0]["findings"][0]
     assert set(first) >= {"rule", "line", "severity", "scope", "at", "quote", "why"}
     assert data["files"][0]["audit"]["sentenceCount"] > 0
+
+
+def testCompactReportIsOneLinePerFinding():
+    findings = lintText(SAMPLE, path="글.md")
+    lines = renderCompact("글.md", findings).splitlines()
+    assert len(lines) == len(findings)
+    assert lines[0].startswith("글.md:3 [cliche] `핵심은`")
+    assert any("고친 뒤: 모든 분야에서 기준이 필요합니다." in line for line in lines)
+    assert renderCompact("글.md", []) == ""
+
+
+def testJsonReportCarriesConfigAndFragments():
+    findings = lintText(SAMPLE, path="글.md")
+    data = json.loads(renderJson({"글.md": findings}, configLabel="hanlint.toml"))
+    assert data["config"] == "hanlint.toml"
+    translationese = next(f for f in data["files"][0]["findings"] if f["rule"] == "translationese")
+    assert translationese["fragment"] == "에 있어서" and translationese["replacement"] == "에서"
+
+
+def testFingerprintJsonLayers():
+    doc = fingerprint(SAMPLE, path="글.md")
+    data = json.loads(renderFingerprintJson(doc))
+    assert set(data) == {"version", "layer", "document", "sections", "paragraphs", "sentences"}
+    assert data["paragraphs"][0]["sentences"] == [0, 1]
+    assert isinstance(data["paragraphs"][0]["meanLength"], (int, float))
+    only = json.loads(renderFingerprintJson(doc, "sentences"))
+    assert set(only) == {"version", "layer", "sentences"} and only["layer"] == "sentences"
 
 
 def testGithubReportLines():

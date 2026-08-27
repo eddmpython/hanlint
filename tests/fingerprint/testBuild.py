@@ -76,6 +76,24 @@ def testDictionaryMatchesLandInSentence():
     assert match.dictionary == "translationese" and match.fix == "에서"
 
 
+def testQuotedSpansSkipDictionaryAndDeixis():
+    doc = build(
+        'AI 가 자주 쓰는 표현은 `핵심은`, "결국 중요한 것은" 처럼 지웁니다. 「이것」 은 지시어입니다. 핵심은 속도입니다.\n'
+    )
+    first = doc.sentences[0]
+    assert first.matches == () and len(first.quoted) == 2
+    assert doc.sentences[1].deixis == () and doc.sentences[1].quoted
+    assert doc.sentences[2].matches[0].text == "핵심은" and doc.sentences[2].quoted == ()
+
+
+def testCodeSpanFollowsEmphasisAndLinks():
+    doc = build("**굵게** [링크](https://x) `a b` 뒤 `핵심은` 끝.\n")
+    sentence = doc.sentences[0]
+    assert sentence.text == "굵게 링크 a b 뒤 핵심은 끝."
+    assert sentence.quoted == ((6, 9), (12, 15))
+    assert sentence.matches == ()
+
+
 def testConfigDictionaryExtends():
     config = Config(dictionary={"cliches": ["우리의 여정"]})
     doc = build("우리의 여정이 시작됩니다.\n", config)

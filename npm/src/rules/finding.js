@@ -19,6 +19,8 @@ export const DOCUMENT = "document";
  * @property {string} severity error 는 규칙 위반, notice 는 확인이 필요한 것
  * @property {string} scope sentence, paragraph, section, document
  * @property {number} at scope 가 가리키는 지문의 index
+ * @property {string | null} fragment 원문에서 바꿀 조각. hanlint fix 가 replacement 로 바꾼다
+ * @property {string | null} replacement
  */
 
 /**
@@ -30,10 +32,12 @@ export const DOCUMENT = "document";
  * @param {string} [severity]
  * @param {string} [scope]
  * @param {number} [at]
+ * @param {string | null} [fragment]
+ * @param {string | null} [replacement]
  * @returns {Finding}
  */
-export function finding(rule, line, quote, why, fix = null, severity = ERROR, scope = SENTENCE, at = -1) {
-  return { rule, line, quote, why, fix, severity, scope, at };
+export function finding(rule, line, quote, why, fix = null, severity = ERROR, scope = SENTENCE, at = -1, fragment = null, replacement = null) {
+  return { rule, line, quote, why, fix, severity, scope, at, fragment, replacement };
 }
 
 /** @param {Finding} f */
@@ -41,5 +45,9 @@ export function findingAsDict(f) {
   /** @type {Record<string, unknown>} */
   const data = { rule: f.rule, line: f.line, severity: f.severity, scope: f.scope, at: f.at, quote: f.quote, why: f.why };
   if (f.fix) data.fix = f.fix;
+  if (f.replacement !== null) {
+    data.fragment = f.fragment;
+    data.replacement = f.replacement;
+  }
   return data;
 }

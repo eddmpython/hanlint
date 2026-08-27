@@ -9,6 +9,15 @@ import { compile, escape } from "../regex.js";
 const TRAILING = /[\s.?!"'”’)\]]+$/;
 const NUMBER = /\d+(?:[.,]\d+)*/g;
 const COMMA = /,/g;
+// 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만.
+const QUOTE_PAIRS = [
+  /"([^"\n]{1,80})"/g,
+  /“([^“”\n]{1,80})”/g,
+  /‘([^‘’\n]{1,80})’/g,
+  /「([^「」\n]{1,80})」/g,
+  /『([^『』\n]{1,80})』/g,
+  /(?<=^|[\s(])'([^'\n]{1,80})'/g,
+];
 const CONNECTOR_LOOKAHEAD = /(?=[\s,])/.source;
 const NO_HANGUL_BEFORE = /(?<![가-힣])/.source;
 const DIGITS = /\d+/.source;
@@ -107,6 +116,38 @@ export function matchedTexts(text, patternFile) {
     for (const match of pattern.all(text)) found.push(match[0]);
   }
   return found;
+}
+
+/** (시작, 끝, 원문). 인용 구간 안의 것을 거를 때 쓴다. @param {string} text @param {string} patternFile @returns {[number, number, string][]} */
+export function matchedSpans(text, patternFile) {
+  /** @type {[number, number, string][]} */
+  const found = [];
+  for (const pattern of loadPatterns(patternFile)) {
+    for (const match of pattern.all(text)) {
+      const start = /** @type {number} */ (match.index);
+      found.push([start, start + match[0].length, match[0]]);
+    }
+  }
+  return found;
+}
+
+/** 따옴표 쌍 안의 [시작, 끝]. 인용은 사용이 아니다. @param {string} text @returns {[number, number][]} */
+export function quoteSpans(text) {
+  /** @type {[number, number][]} */
+  const found = [];
+  for (const pattern of QUOTE_PAIRS) {
+    pattern.lastIndex = 0;
+    for (const match of text.matchAll(pattern)) {
+      const start = /** @type {number} */ (match.index) + match[0].indexOf(match[1]);
+      found.push([start, start + match[1].length]);
+    }
+  }
+  return found.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+}
+
+/** @param {number} start @param {number} end @param {[number, number][]} spans */
+export function insideAny(start, end, spans) {
+  return spans.some(([spanStart, spanEnd]) => spanStart <= start && end <= spanEnd);
 }
 
 /** @param {string} text @returns {[number, string, string][]} (수, 단위, 원문) */

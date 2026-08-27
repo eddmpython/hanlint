@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from statistics import mean, pstdev
 
-from ..analysis import Analyzer
+from ..analysis import Analyzer, Sentence
 from ..config import Config
-from ..document import Block, Document, Section, plainText
+from ..document import Block, Document, Section, codeSpans, plainText
 from ..document.model import HEADING, PROSE
 from . import markers
 from .dictionaries import Entry, entriesFor, matchesIn
@@ -15,6 +15,17 @@ from .paragraphPrint import ParagraphPrint
 from .sectionPrint import SectionPrint
 from .sentencePrint import SentencePrint
 from .topics import overlap, topicsOf
+
+
+def quotedIn(sentence: Sentence, blockCodeSpans: tuple[tuple[int, int], ...]) -> tuple[tuple[int, int], ...]:
+    """문장 안의 인용 구간. 블록의 인라인 코드 구간을 문장 좌표로 옮기고 따옴표 쌍을 더한다."""
+    spans: list[tuple[int, int]] = []
+    for start, end in blockCodeSpans:
+        lo, hi = max(start, sentence.start), min(end, sentence.end)
+        if lo < hi:
+            spans.append((lo - sentence.start, hi - sentence.start))
+    spans.extend(markers.quoteSpans(sentence.text))
+    return tuple(sorted(set(spans)))
 
 
 def makeSentencePrint(
@@ -26,8 +37,13 @@ def makeSentencePrint(
     sectionIndex: int,
     analyzer: Analyzer,
     entries: tuple[Entry, ...],
+    quoted: tuple[tuple[int, int], ...],
 ) -> SentencePrint:
     ending = markers.endingOf(text)
+    deixis = tuple(
+        found for start, end, found in markers.matchedSpans(text, "deixis.txt") if not markers.insideAny(start, end, quoted)
+    )
+    matches = tuple(m for m in matchesIn(text, entries) if not markers.insideAny(m.start, m.end, quoted))
     return SentencePrint(
         index=index,
         line=line,
@@ -41,7 +57,7 @@ def makeSentencePrint(
         commas=markers.countCommas(text),
         connectorStart=markers.connectorStartOf(text),
         causal=markers.countMatches(text, "causalMarkers.txt"),
-        deixis=markers.matchedTexts(text, "deixis.txt"),
+        deixis=deixis,
         euiCount=analyzer.euiCount(text),
         nounRun=analyzer.longestNounRun(text),
         passives=tuple(analyzer.doublePassives(text)),
@@ -52,7 +68,8 @@ def makeSentencePrint(
         recalls=markers.matchedTexts(text, "recallMarkers.txt"),
         countPromises=markers.countPromisesIn(text),
         readerCall=bool(markers.matchedTexts(text, "readerCalls.txt")),
-        matches=matchesIn(text, entries),
+        matches=matches,
+        quoted=quoted,
     )
 
 
@@ -98,12 +115,14 @@ def buildSection(
             previousBlock = block
             continue
         text = plainText(block.text)
+        blockCodeSpans = codeSpans(block.text, text)
         blockSentences: list[SentencePrint] = []
         for sentence in analyzer.sentences(text):
             line = block.startLine + text.count("\n", 0, sentence.start)
             index = len(sentences) + len(blockSentences)
+            quoted = quotedIn(sentence, blockCodeSpans)
             blockSentences.append(
-                makeSentencePrint(sentence.text, index, line, block, len(paragraphs), sectionIndex, analyzer, entries)
+                makeSentencePrint(sentence.text, index, line, block, len(paragraphs), sectionIndex, analyzer, entries, quoted)
             )
         sentences.extend(blockSentences)
         previous = sectionParagraphs[-1] if sectionParagraphs else None

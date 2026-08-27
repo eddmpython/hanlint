@@ -3,10 +3,23 @@
 from __future__ import annotations
 
 from .auditReport import renderAudit
+from .compactReport import renderCompact
+from .fingerprintJson import LAYERS, fingerprintDict, renderFingerprintJson
 from .githubReport import renderGithub
 from .jsonReport import renderJson
 from .mapHtml import renderMapHtml
 from .mapText import renderMap
 from .textReport import renderText
 
-__all__ = ["renderAudit", "renderGithub", "renderJson", "renderMap", "renderMapHtml", "renderText"]
+__all__ = [
+    "LAYERS",
+    "fingerprintDict",
+    "renderAudit",
+    "renderCompact",
+    "renderFingerprintJson",
+    "renderGithub",
+    "renderJson",
+    "renderMap",
+    "renderMapHtml",
+    "renderText",
+]

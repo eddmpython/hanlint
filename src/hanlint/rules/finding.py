@@ -27,6 +27,9 @@ class Finding:
     """sentence, paragraph, section, document. 지도가 어디에 색을 칠할지 정한다."""
     at: int = -1
     """scope 가 가리키는 지문의 index."""
+    fragment: str | None = None
+    """원문에서 바꿀 조각. `hanlint fix` 가 이 조각을 찾아 replacement 로 바꾼다."""
+    replacement: str | None = None
 
     def asDict(self) -> dict:
         data = {
@@ -40,4 +43,7 @@ class Finding:
         }
         if self.fix:
             data["fix"] = self.fix
+        if self.replacement is not None:
+            data["fragment"] = self.fragment
+            data["replacement"] = self.replacement
         return data

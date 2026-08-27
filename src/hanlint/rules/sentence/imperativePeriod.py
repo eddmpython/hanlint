@@ -34,4 +34,6 @@ def imperativePeriod(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "error",
             SENTENCE,
             sentence.index,
+            match.group(0),
+            match.group(1),
         )

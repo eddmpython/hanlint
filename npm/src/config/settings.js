@@ -13,6 +13,7 @@ export const ANALYZERS = ["surface", "kiwi"];
  * @property {string | null} keywordField
  * @property {string | null} profile
  * @property {Record<string, unknown[]>} dictionary
+ * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
  * @property {number} fragmentRun
  * @property {number} introMaxParagraphs
  * @property {number} headingUniformRatio
@@ -31,6 +32,7 @@ export function defaultConfig() {
     keywordField: null,
     profile: null,
     dictionary: {},
+    source: null,
     fragmentRun: 3,
     introMaxParagraphs: 4,
     headingUniformRatio: 0.75,
@@ -60,7 +62,7 @@ export function configFromMapping(data) {
       config.analyzer = /** @type {string} */ (value);
     } else if (key === "dictionary") {
       config.dictionary = { .../** @type {Record<string, unknown[]>} */ (value) };
-    } else if (key in config) {
+    } else if (key !== "source" && key in config) {
       config[key] = value;
     } else {
       throw new Error(`모르는 설정 키: ${key}. hanlint init 이 만드는 파일의 키만 쓴다`);

@@ -28,26 +28,35 @@ hanlint 글.md
 ```
 
 지적마다 규칙 이름, 줄 번호, 인용 문장, 왜 문제인지가 붙는다. 기계가 고칠 수 있는 것은 고친
-문장이 같이 온다. 종료 코드는 지적이 없으면 0, error 가 있으면 1 이라 발행 게이트에 그대로 물린다.
+문장이 같이 온다. 첫 줄은 어느 설정을 읽었는지다. 종료 코드는 지적이 없으면 0, error 가 있으면 1 이라
+발행 게이트에 그대로 물린다.
 
 ```text
+설정: hanlint.toml
+
 글.md:12  [doublePassive]  결과가 저장되어집니다.
     되어지 는 이중 피동이다. 피동 하나로 줄인다
     고친 뒤: 결과가 저장됩니다.
 ```
 
-다른 명령은 표에 있다.
+기계가 확실히 고칠 수 있는 자리는 `hanlint fix 글.md` 가 원문에 적용하고 무엇을 바꿨는지 줄마다 보여 준다.
+`--dry-run` 은 보여 주기만 한다. 다른 명령은 표에 있다.
 
 | 명령 | 무엇 |
 |---|---|
+| `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. AI 와 스크립트가 쓴다 |
+| `hanlint - --path 초안.md` | stdin 으로 넣은 글을 그 이름으로 검사한다 |
 | `hanlint 글.md --format json` | 기계가 읽는 꼴. `github` 은 GitHub Actions 주석 |
+| `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 |
 | `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 |
 | `hanlint map 글.md --format html` | 지도를 단일 HTML 로 |
-| `hanlint print 글.md` | 문장, 문단, 절의 지문을 JSON 으로 |
+| `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 지문을 JSON 으로. 층 하나만 고를 수 있다 |
 | `hanlint rules` | 규칙 목록 |
 | `hanlint explain <규칙>` | 규칙의 기술서. 왜, 어디서, 고치기, 안 잡는 것 |
 | `hanlint init` | 주석 달린 `hanlint.toml` |
 | `hanlint profile build 글들/` | 승인된 글의 문체 분포. `--profile` 로 새 글을 견준다 |
+
+백틱과 따옴표 안은 인용이라 사전 규칙과 지시어 규칙이 건너뛴다. 상투어를 인용하며 설명하는 글이 잡히지 않는다.
 
 ## 규칙을 끄기
 

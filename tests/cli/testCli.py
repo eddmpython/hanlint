@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from hanlint.cli.main import main, normalizeArgv
 
 BAD = "## 절\n\n핵심은 속도입니다.\n"
 CLEAN = "## 절\n\n파일을 엽니다. 그러면 표가 생길까요? 작업 폴더에 생깁니다.\n"
+MIXED = "## 절\n\n핵심은 속도입니다. 파일을 엽니다. 표가 보입니다. 열이 다섯입니다. 값을 고칩니다.\n"
 
 
 def write(tmp_path: Path, name: str, text: str) -> Path:
@@ -22,6 +24,7 @@ def testNormalizeArgvDefaultsToLint():
     assert normalizeArgv(["글.md"]) == ["lint", "글.md"]
     assert normalizeArgv(["--format", "json", "글.md"]) == ["lint", "--format", "json", "글.md"]
     assert normalizeArgv(["rules"]) == ["rules"]
+    assert normalizeArgv(["-"]) == ["lint", "-"]
     assert normalizeArgv(["--version"]) == ["--version"]
 
 
@@ -29,19 +32,55 @@ def testLintExitCodesAndText(tmp_path, capsys):
     bad = write(tmp_path, "bad.md", BAD)
     assert main([str(bad), "--no-color"]) == 1
     out = capsys.readouterr().out
+    assert out.startswith("설정: 기본값\n")
     assert f"{bad}:3  [cliche]" in out
     clean = write(tmp_path, "clean.md", CLEAN)
-    assert main([str(clean)]) == 0
-    assert "집은 자리 없음" in capsys.readouterr().out
+    assert main([str(clean), "--quiet"]) == 0
+    out = capsys.readouterr().out
+    assert "집은 자리 없음" in out and "설정:" not in out
 
 
 def testLintJsonAndGithub(tmp_path, capsys):
     bad = write(tmp_path, "bad.md", BAD)
     assert main([str(bad), "--format", "json"]) == 1
     data = json.loads(capsys.readouterr().out)
+    assert data["config"] == "기본값"
     assert data["files"][0]["findings"][0]["rule"] == "cliche"
     assert main(["lint", str(bad), "--format", "github"]) == 1
     assert capsys.readouterr().out.startswith("::error file=")
+
+
+def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
+    mixed = write(tmp_path, "mixed.md", MIXED)
+    assert main([str(mixed), "--format", "compact", "--quiet"]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert any(line.startswith(f"{mixed}:3 [cliche] ") for line in lines)
+    assert any("[factListParagraph]" in line or "[endingRepeat]" in line for line in lines)
+    assert lines[-1].startswith("파일 1개, error 1, notice ")
+    assert main([str(mixed), "--format", "compact", "--errors-only", "--quiet"]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert lines == [
+        f"{mixed}:3 [cliche] `핵심은` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)",
+        "파일 1개, error 1, notice 0",
+    ]
+    assert main([str(mixed), "--severity", "notice", "--format", "json"]) == 1
+    data = json.loads(capsys.readouterr().out)
+    assert data["files"][0]["findings"] and all(f["severity"] == "notice" for f in data["files"][0]["findings"])
+
+
+def testStdinWithPathName(monkeypatch, capsys):
+    monkeypatch.setattr("sys.stdin", io.TextIOWrapper(io.BytesIO(BAD.encode("utf-8")), encoding="utf-8"))
+    assert main(["-", "--path", "초안.md", "--format", "compact", "--quiet"]) == 1
+    assert capsys.readouterr().out.startswith("초안.md:3 [cliche]")
+
+
+def testSummaryForManyFiles(tmp_path, capsys):
+    bad = write(tmp_path, "bad.md", BAD)
+    clean = write(tmp_path, "clean.md", CLEAN)
+    assert main([str(bad), str(clean), "--quiet"]) == 1
+    out = capsys.readouterr().out
+    assert out.rstrip().endswith("파일 2개, error 1, notice 0")
+    assert "집은 자리 없음" in out
 
 
 def testDisableAndOutputFile(tmp_path, capsys):
@@ -73,13 +112,33 @@ def testAuditMapAndPrint(tmp_path, capsys):
     bad = write(tmp_path, "bad.md", BAD)
     assert main(["audit", str(bad), "--no-color"]) == 0
     out = capsys.readouterr().out
-    assert "문장 길이" in out and "배지" in out or "문장 길이" in out
+    assert "문장 길이" in out
     html = tmp_path / "map.html"
     assert main(["map", str(bad), "--format", "html", "--output", str(html)]) == 0
     assert html.read_text(encoding="utf-8").startswith("<!doctype html>")
     assert main(["print", str(bad)]) == 0
     data = json.loads(capsys.readouterr().out)
-    assert data["fingerprint"]["sentences"][0]["text"] == "핵심은 속도입니다."
+    assert data["layer"] == "all" and data["sentences"][0]["text"] == "핵심은 속도입니다."
+    assert data["paragraphs"][0]["sentences"] == [0] and data["sections"][1]["paragraphs"] == [0]
+    assert data["document"]["sentenceCount"] == 1
+    assert main(["print", str(bad), "--layer", "paragraphs"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert set(data) == {"version", "layer", "paragraphs"}
+
+
+def testFixAppliesAndDryRunKeepsFile(tmp_path, capsys):
+    draft = write(tmp_path, "draft.md", "## 절\n\n모든 분야에 있어서 기준이 필요합니다.\r\n둘째 줄입니다.\r\n")
+    raw = draft.read_bytes()
+    assert main(["fix", str(draft), "--dry-run"]) == 0
+    out = capsys.readouterr().out
+    assert "에 있어서 → 에서" in out and "미리보기" in out
+    assert draft.read_bytes() == raw
+    assert main(["fix", str(draft)]) == 0
+    assert "1곳 고침, 0곳 건너뜀" in capsys.readouterr().out
+    fixed = draft.read_bytes()
+    assert b"\xeb\xaa\xa8\xeb\x93\xa0 \xeb\xb6\x84\xec\x95\xbc\xec\x97\x90\xec\x84\x9c" in fixed
+    assert b"\r\n" in fixed
+    assert main([str(draft), "--errors-only", "--format", "compact", "--quiet"]) == 0
 
 
 def testProfileBuildAndCompare(tmp_path, capsys):

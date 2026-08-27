@@ -16,7 +16,18 @@ export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR) 
       if (match.dictionary !== dictionary) continue;
       const fix = match.fix !== null ? sentence.text.slice(0, match.start) + match.fix + sentence.text.slice(match.end) : null;
       findings.push(
-        finding(ruleName, sentence.line, sentence.text, `\`${match.text}\` ${match.why} (${match.source})`, fix, severity, SENTENCE, sentence.index),
+        finding(
+          ruleName,
+          sentence.line,
+          sentence.text,
+          `\`${match.text}\` ${match.why} (${match.source})`,
+          fix,
+          severity,
+          SENTENCE,
+          sentence.index,
+          match.fix !== null ? match.text : null,
+          match.fix,
+        ),
       );
     }
   }

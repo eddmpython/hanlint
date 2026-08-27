@@ -1,7 +1,8 @@
 """명령줄 진입점.
 
 ```
-hanlint 글.md [다른.md ...]        검사. 서브커맨드 없이 파일만 주면 lint 다
+hanlint 글.md [다른.md ...]        검사. 서브커맨드 없이 파일만 주면 lint 다. `-` 는 stdin
+hanlint fix 글.md                  기계가 고칠 수 있는 지적을 원문에 적용
 hanlint audit 글.md                지문 지도와 분포
 hanlint map 글.md                  지도만
 hanlint print 글.md                지문 계층 JSON
@@ -21,10 +22,11 @@ import argparse
 import sys
 
 from .. import __version__
-from .commands import audit, explain, init, lint, mapCommand, printFingerprint, profile, rules
+from .commands import audit, explain, fix, init, lint, mapCommand, printFingerprint, profile, rules
 
 COMMANDS = {
     "lint": lint,
+    "fix": fix,
     "audit": audit,
     "map": mapCommand,
     "print": printFingerprint,

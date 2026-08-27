@@ -29,4 +29,6 @@ def dictionaryFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
                 severity,
                 SENTENCE,
                 sentence.index,
+                match.text if match.fix is not None else None,
+                match.fix,
             )

@@ -15,7 +15,9 @@ def readConfigFile(path: Path) -> Config:
     data = tomllib.loads(path.read_text(encoding="utf-8"))
     if path.name == PYPROJECT_NAME:
         data = data.get("tool", {}).get("hanlint", {})
-    return Config.fromMapping(data)
+    config = Config.fromMapping(data)
+    config.source = str(path)
+    return config
 
 
 def findConfigFile(start: Path) -> Path | None:
