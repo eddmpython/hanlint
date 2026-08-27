@@ -1,0 +1,34 @@
+#!/bin/sh
+# main 이 아닌 ref 의 push 를 막고, main 을 올리기 전에 게이트를 다시 돈다.
+# 커밋 메시지의 검증 줄은 주장이고 이 훅이 확인이다. 규칙 정본은 skills/specs/operation/sourceControl.md.
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main) ;;
+    "") ;;
+    *)
+      echo "blocked: main 만 push 한다: $remote_ref" >&2
+      exit 1
+      ;;
+  esac
+done
+
+repo_root="$(git rev-parse --show-toplevel)"
+if [ ! -d "$repo_root/tests" ]; then
+  exit 0
+fi
+
+python_bin="$repo_root/.venv/Scripts/python.exe"
+if [ ! -x "$python_bin" ]; then
+  python_bin="$(command -v python || command -v python3)"
+fi
+if [ -z "$python_bin" ]; then
+  echo "blocked: 게이트를 돌릴 python 이 없다" >&2
+  exit 1
+fi
+
+if ! "$python_bin" -X utf8 -m pytest -q "$repo_root/tests" >/dev/null 2>&1; then
+  echo "blocked: pytest 가 red 다. 고치고 다시 push 한다" >&2
+  "$python_bin" -X utf8 -m pytest -q "$repo_root/tests" 2>&1 | tail -20 >&2
+  exit 1
+fi

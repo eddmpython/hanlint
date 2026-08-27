@@ -23,7 +23,7 @@ dependencies = []
 
 [project.optional-dependencies]
 kiwi = ["kiwipiepy>=0.20"]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.5"]
 
 [project.urls]
 Homepage = "https://github.com/eddmpython/hanlint"
@@ -37,3 +37,16 @@ packages = ["src/hanlint"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# 테스트 파일과 함수는 test 접두 camelCase 다 (operation.codeStyle). 기본 test_*.py 패턴은 snake 다.
+python_files = ["test*.py"]
+python_functions = ["test*"]
+pythonpath = ["src", "."]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+src = ["src", "tests", "hooks", "scripts"]
+
+[tool.ruff.lint]
+# N (pep8-naming) 은 선택하지 않는다. camelCase 와 충돌한다. 이름은 tests/gates/testNaming.py 가 본다.
+select = ["E", "F", "W", "I", "B", "UP"]

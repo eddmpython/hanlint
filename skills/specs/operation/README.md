@@ -16,6 +16,8 @@ status: curated
 | id | 무엇 |
 |---|---|
 | [`operation.addingARule`](addingARule.md) | 규칙을 더하고 고치고 빼는 절차 |
+| [`operation.moduleLayers`](moduleLayers.md) | 층 구조와 import 방향 |
+| [`operation.codeStyle`](codeStyle.md) | 코드 스타일 세부 |
+| [`operation.sourceControl`](sourceControl.md) | 소스 관리와 훅 |
 
-`operation.moduleLayers` (층 순위), `operation.verify` (게이트), `operation.release` (배포) 는 코어가
-생기면서 같은 커밋에 만든다. 읽는 코드가 생기기 전에 문서를 만들지 않는다.
+`operation.verify` (게이트 전체 절차) 와 `operation.release` (배포) 는 코어가 생기면서 같은 커밋에 만든다.

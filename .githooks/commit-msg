@@ -1,0 +1,22 @@
+#!/bin/sh
+# 커밋 메시지 규칙 집행. 판정 정본은 scripts/commitMessage.py, 규칙 문장은 skills/specs/operation/sourceControl.md.
+# 이 훅은 얇게 유지한다. 판정을 sh 와 파이썬에 이중화하면 두 판정이 표류한다.
+message_file="$1"
+
+if [ -z "$message_file" ] || [ ! -f "$message_file" ]; then
+  echo "blocked: 커밋 메시지 파일이 없다" >&2
+  exit 1
+fi
+
+repo_root="$(git rev-parse --show-toplevel)"
+python_bin="$repo_root/.venv/Scripts/python.exe"
+if [ ! -x "$python_bin" ]; then
+  python_bin="$(command -v python || command -v python3)"
+fi
+# 실패는 닫는 방향으로 한다. 파이썬 없이 통과시키면 검사 없는 커밋이 조용히 들어온다.
+if [ -z "$python_bin" ]; then
+  echo "blocked: 커밋 메시지 규칙을 판정할 python 이 없다" >&2
+  exit 1
+fi
+
+exec "$python_bin" -X utf8 "$repo_root/scripts/commitMessage.py" "$message_file"

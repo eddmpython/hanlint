@@ -1,0 +1,47 @@
+#!/bin/sh
+# staged 파일에서 em 대시, en 대시, 제어 문자, snake_case 파일 이름을 막는다.
+# 규칙 정본은 skills/specs/operation/codeStyle.md 와 sourceControl.md. 검사 범위는 tests/gates/testDash.py 와 같다.
+# printf 로 실제 문자를 만든다. 정규식 안에 리터럴로 쓰면 이 파일이 자기 게이트에 걸린다.
+
+em_dash="$(printf '\342\200\224')"
+en_dash="$(printf '\342\200\223')"
+control="$(printf '[\001-\010\013\014\016-\037\177]')"
+blocked=0
+
+for file in $(git diff --cached --name-only --diff-filter=ACM); do
+  case "$file" in
+    *.py|*.md|*.toml|*.json|*.txt|*.sh|*.yml|*.yaml) ;;
+    .githooks/*) ;;
+    *) continue ;;
+  esac
+  if git show ":$file" | grep -q "$em_dash"; then
+    echo "blocked: em 대시 (U+2014) 가 있다: $file" >&2
+    blocked=1
+  fi
+  if git show ":$file" | grep -q "$en_dash"; then
+    echo "blocked: en 대시 (U+2013) 가 있다: $file" >&2
+    blocked=1
+  fi
+  if git show ":$file" | LC_ALL=C grep -q "$control"; then
+    echo "blocked: 제어 문자가 있다 (이스케이프를 날것으로 적었을 때 생긴다): $file" >&2
+    blocked=1
+  fi
+  # 코드 폴더의 파일 이름은 camelCase 다. __init__.py 와 conftest.py 만 파이썬이 정한 이름이라 예외.
+  case "$file" in
+    src/*.py|tests/*.py|hooks/*.py|scripts/*.py)
+      base="$(basename "$file")"
+      case "$base" in
+        __init__.py|conftest.py) ;;
+        *_*)
+          echo "blocked: snake_case 파일 이름이다. camelCase 로 바꾼다: $file" >&2
+          blocked=1
+          ;;
+      esac
+      ;;
+  esac
+done
+
+if [ "$blocked" -ne 0 ]; then
+  echo "blocked: 부연은 마침표로 끊고 범위는 물결표로 쓴다. 이름은 camelCase 다 (operation.codeStyle)" >&2
+  exit 1
+fi

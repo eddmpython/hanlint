@@ -45,9 +45,11 @@ status: curated
 | [`start.hanlintSkillOs`](specs/start/hanlintSkillOs.md) | 이 저장소가 소유하는 것과 어디로 가야 하는지 |
 | [`start.product`](specs/start/product.md) | 무엇을 잡고 무엇을 잡지 않는가. 평가 루프에서의 자리 |
 | [`operation.addingARule`](specs/operation/addingARule.md) | 규칙을 더하고 고치고 빼는 절차 |
+| [`operation.moduleLayers`](specs/operation/moduleLayers.md) | 층 구조와 import 방향. 순위 정본은 `tests/gates/layerContract.py` |
+| [`operation.codeStyle`](specs/operation/codeStyle.md) | 이름, 크기, 타입, docstring, 예외, 상수, 테스트, 도구 |
+| [`operation.sourceControl`](specs/operation/sourceControl.md) | 브랜치, 커밋 메시지, 커밋 단위, 릴리즈, 훅 |
 
-층 구조 (`operation.moduleLayers`) 와 검증 (`operation.verify`), 배포 (`operation.release`) 는 코어가
-생기면서 같은 커밋에 만든다. 읽는 코드가 생기기 전에 문서를 만들지 않는다.
+검증 절차 (`operation.verify`) 와 배포 (`operation.release`) 는 코어가 생기면서 같은 커밋에 만든다.
 
 ## 스킬 추가
 
