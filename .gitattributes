@@ -1,0 +1,4 @@
+# 줄 끝은 LF 하나다. 윈도우 체크아웃에서도 바꾸지 않는다.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
