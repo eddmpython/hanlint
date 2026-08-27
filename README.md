@@ -116,6 +116,13 @@ pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-com
 잡는 것과 잡지 않는 것은 [skills/specs/start/product.md](skills/specs/start/product.md) 에 있다.
 규칙 하나는 파일 하나이고 자기 기술서를 docstring 으로 든다.
 
+## 오탐 신고와 규칙 제안
+
+정당한 문장이 잡혔거나 잡아야 할 자리를 놓쳤으면 이슈로 알려 주면 된다. 양식 두 개 (오탐 신고,
+규칙 제안) 가 문장 원문과 근거를 묻는다. 오탐은 fixture 의 spare 로 박혀 다시는 잡히지 않게 되고,
+제안은 실측 사례가 있어야 규칙이 된다. 절차는
+[skills/specs/operation/feedback.md](skills/specs/operation/feedback.md) 에 있다.
+
 ## 라이선스
 
 MIT 다.

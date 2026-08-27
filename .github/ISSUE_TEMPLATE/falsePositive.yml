@@ -1,0 +1,35 @@
+# 오탐 신고 양식. 접수 계약의 정본은 skills/specs/operation/feedback.md 다.
+name: 오탐 신고
+description: 정당한 문장을 hanlint 가 잡았다
+title: "오탐: [규칙 이름] 잡힌 문장 앞부분"
+labels: ["falsePositive"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: hanlint --version
+      placeholder: hanlint 0.0.7
+    validations:
+      required: true
+  - type: input
+    id: rule
+    attributes:
+      label: 규칙 이름
+      description: 지적 줄의 대괄호 안 이름
+      placeholder: translationese
+    validations:
+      required: true
+  - type: textarea
+    id: sentence
+    attributes:
+      label: 잡힌 문장 원문
+      description: 지적이 인용한 문장을 그대로 붙인다. 앞뒤 문장이 판단에 필요하면 함께 붙인다
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 왜 정당한 문장인가
+      description: 뜻이 무엇이고 왜 이 지적이 틀렸는지
+    validations:
+      required: true

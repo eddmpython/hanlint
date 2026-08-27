@@ -1,0 +1,28 @@
+# 규칙 제안 양식. 접수 계약의 정본은 skills/specs/operation/feedback.md 다.
+# 실측 사례 없는 규칙은 만들지 않는다 (skills/specs/operation/addingARule.md).
+name: 규칙 제안
+description: 실제 글에서 반복되는 결함을 결정적으로 잡을 수 있다
+title: "제안: 잡을 결함 한 줄"
+labels: ["ruleProposal"]
+body:
+  - type: textarea
+    id: example
+    attributes:
+      label: 실제 글의 나쁜 문장
+      description: 어떤 실제 글의 어떤 문장이 어떤 이유로 나빴는가. 지어낸 예시가 아니라 실측이어야 한다
+    validations:
+      required: true
+  - type: textarea
+    id: basis
+    attributes:
+      label: 근거
+      description: 국립국어원 조항, 사전 표제어, 또는 반복 실측. 뜻을 이해해야 잡히는 것은 이 도구의 일이 아니다
+    validations:
+      required: true
+  - type: textarea
+    id: catchAndSpare
+    attributes:
+      label: 잡아야 할 예시와 잡지 말아야 할 예시
+      description: 각각 한 문장 이상. 이 둘이 fixture 의 catch 와 spare 가 된다
+    validations:
+      required: true
