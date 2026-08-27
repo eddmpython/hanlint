@@ -59,6 +59,8 @@ class Config:
     """코드나 출력 블록의 줄 겹침이 이 비율 이상이면 거의 같은 블록. 실측: 004 의 출력 서른 줄 중 다른 것 한 줄."""
     firstResultMaxParagraphs: int = 4
     """첫 코드나 표나 그림 전에 둘 수 있는 산문 문단 수. 글쓰기 스킬의 도입 문단 넷과 같다."""
+    sectionResultMinParagraphs: int = 3
+    """이보다 문단이 많은 본문 절만 결과 (코드, 표, 파일) 를 요구한다. 짧은 절 (설치, 계정) 은 뺀다."""
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable

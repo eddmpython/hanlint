@@ -55,7 +55,7 @@ def testCompactReportIsOneLinePerFinding():
     findings = lintText(SAMPLE, path="글.md")
     lines = renderCompact("글.md", findings).splitlines()
     assert len(lines) == len(findings)
-    assert lines[0].startswith("글.md:3 [cliche] `핵심은`")
+    assert any(line.startswith("글.md:3 [cliche] `핵심은`") for line in lines)
     assert any("고친 뒤: 모든 분야에서 기준이 필요합니다." in line for line in lines)
     assert renderCompact("글.md", []) == ""
 
@@ -81,7 +81,7 @@ def testFingerprintJsonLayers():
 def testGithubReportLines():
     findings = lintText(SAMPLE, path="글.md")
     lines = renderGithub("글.md", findings).splitlines()
-    assert lines[0].startswith("::error file=글.md,line=3::[cliche]")
+    assert any(line.startswith("::error file=글.md,line=3::[cliche]") for line in lines)
     assert any(line.startswith("::notice") for line in lines) or all(f.severity == "error" for f in findings)
 
 

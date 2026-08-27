@@ -25,6 +25,7 @@ export const ANALYZERS = ["surface", "kiwi"];
  * @property {number} longSentenceMax
  * @property {number} duplicateBlockRatio
  * @property {number} firstResultMaxParagraphs
+ * @property {number} sectionResultMinParagraphs
  */
 
 /** @returns {Config} */
@@ -47,6 +48,7 @@ export function defaultConfig() {
     longSentenceMax: 30,
     duplicateBlockRatio: 0.9,
     firstResultMaxParagraphs: 4,
+    sectionResultMinParagraphs: 3,
   };
 }
 

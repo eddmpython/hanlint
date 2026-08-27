@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .auditReport import renderAudit
 from .compactReport import renderCompact
+from .diffReport import renderDiff
 from .fingerprintJson import LAYERS, fingerprintDict, renderFingerprintJson
 from .githubReport import renderGithub
 from .jsonReport import renderJson
@@ -16,6 +17,7 @@ __all__ = [
     "fingerprintDict",
     "renderAudit",
     "renderCompact",
+    "renderDiff",
     "renderFingerprintJson",
     "renderGithub",
     "renderJson",

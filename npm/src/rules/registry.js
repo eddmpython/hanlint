@@ -47,6 +47,7 @@ import * as headingSkip from "./structure/headingSkip.js";
 import * as headingUniform from "./structure/headingUniform.js";
 import * as introLong from "./structure/introLong.js";
 import * as sectionNoProse from "./structure/sectionNoProse.js";
+import * as sectionResult from "./structure/sectionResult.js";
 
 /**
  * @typedef {object} Rule
@@ -84,6 +85,7 @@ export const RULES = [
   headingUniform,
   introLong,
   sectionNoProse,
+  sectionResult,
   countMismatch,
   keywordMissing,
   noQuestion,

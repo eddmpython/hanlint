@@ -11,6 +11,7 @@ hanlint explain <규칙>             규칙의 기술서
 hanlint init                       주석 달린 hanlint.toml
 hanlint profile build 글들/         승인된 글의 문체 분포. lint 의 --profile 로 견준다
 hanlint coverage review.json 글.md 평가자 지적 가운데 hanlint 가 같은 자리를 집은 비율
+hanlint diff 전.md 후.md           두 초안의 지문 차이
 ```
 
 종료 코드는 0 (지적 없음), 1 (error 지적 있음), 2 (파일이나 설정 문제) 다. notice 만 있으면 0 이다.
@@ -23,7 +24,7 @@ import argparse
 import sys
 
 from .. import __version__
-from .commands import audit, coverage, explain, fix, init, lint, mapCommand, printFingerprint, profile, rules
+from .commands import audit, coverage, diff, explain, fix, init, lint, mapCommand, printFingerprint, profile, rules
 
 COMMANDS = {
     "lint": lint,
@@ -36,6 +37,7 @@ COMMANDS = {
     "init": init,
     "profile": profile,
     "coverage": coverage,
+    "diff": diff,
 }
 
 

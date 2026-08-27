@@ -27,7 +27,7 @@ import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "init"];
-const PYTHON_ONLY = ["audit", "map", "profile", "coverage"];
+const PYTHON_ONLY = ["audit", "map", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 const ANALYZER_CHOICES = ["surface", "kiwi"];
@@ -45,6 +45,7 @@ const THRESHOLD_FIELDS = [
   "longSentenceMax",
   "duplicateBlockRatio",
   "firstResultMaxParagraphs",
+  "sectionResultMinParagraphs",
 ];
 const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength"]);
 

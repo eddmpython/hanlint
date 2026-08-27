@@ -21,6 +21,7 @@ THRESHOLD_FIELDS = (
     "longSentenceMax",
     "duplicateBlockRatio",
     "firstResultMaxParagraphs",
+    "sectionResultMinParagraphs",
 )
 
 
