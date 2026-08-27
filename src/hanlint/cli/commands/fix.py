@@ -42,7 +42,8 @@ def run(args: argparse.Namespace) -> int:
     for path in args.files:
         text = readRaw(Path(path))
         doc = buildFingerprint(parseMarkdown(text, path=path), analyzer, config)
-        result = applyFixes(text, runAll(doc, config))
+        # notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
+        result = applyFixes(text, [f for f in runAll(doc, config) if f.severity == "error"])
         for line, fragment, replacement in result.applied:
             lines.append(f"{path}:{line}  {fragment} → {replacement}")
         for line, fragment, reason in result.skipped:

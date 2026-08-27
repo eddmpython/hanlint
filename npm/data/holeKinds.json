@@ -94,6 +94,18 @@
       ]
     },
     {
+      "id": "orthography",
+      "name": "맞춤법",
+      "symbol": "H",
+      "ansi": 197,
+      "hex": "#C2185B",
+      "rules": [
+        "spelling",
+        "spacing",
+        "confusable"
+      ]
+    },
+    {
       "id": "wording",
       "name": "표현",
       "symbol": "W",
@@ -104,6 +116,7 @@
         "translationese",
         "redundantPair",
         "japaneseLoan",
+        "hardWord",
         "connectorRepeat",
         "fillerOpener",
         "doubleNegative",

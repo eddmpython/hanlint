@@ -66,9 +66,17 @@ hex = "#999999"
 rules = ["noQuestion", "readerAbsent"]
 
 [[kind]]
+id = "orthography"
+name = "맞춤법"
+symbol = "H"
+ansi = 197
+hex = "#C2185B"
+rules = ["spelling", "spacing", "confusable"]
+
+[[kind]]
 id = "wording"
 name = "표현"
 symbol = "W"
 ansi = 137
 hex = "#A0522D"
-rules = ["cliche", "translationese", "redundantPair", "japaneseLoan", "connectorRepeat", "fillerOpener", "doubleNegative", "negationRedefine", "dash", "imperativePeriod", "ellipsis"]
+rules = ["cliche", "translationese", "redundantPair", "japaneseLoan", "hardWord", "connectorRepeat", "fillerOpener", "doubleNegative", "negationRedefine", "dash", "imperativePeriod", "ellipsis"]

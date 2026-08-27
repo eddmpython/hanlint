@@ -12,7 +12,7 @@ import { RULES } from "../src/rules/registry.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(HERE, "..", "..", "tests", "fixtures", "rules");
-const RULE_DIRS = ["sentence", "paragraph", "structure", "document"].map((d) => join(HERE, "..", "src", "rules", d));
+const RULE_DIRS = ["sentence", "paragraph", "structure", "document", "orthography"].map((d) => join(HERE, "..", "src", "rules", d));
 const EM_DASH = String.fromCharCode(0x2014);
 const EN_DASH = String.fromCharCode(0x2013);
 

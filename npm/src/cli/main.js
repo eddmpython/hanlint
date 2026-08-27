@@ -236,7 +236,11 @@ function runFix(args) {
   const lines = [];
   for (const path of positionals) {
     const text = readFileSync(path, "utf-8");
-    const result = applyFixes(text, runAll(fingerprint(text, config, path), config));
+    // notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
+    const result = applyFixes(
+      text,
+      runAll(fingerprint(text, config, path), config).filter((f) => f.severity === "error"),
+    );
     for (const [line, fragment, replacement] of result.applied) lines.push(`${path}:${line}  ${fragment} → ${replacement}`);
     for (const [line, fragment, reason] of result.skipped) lines.push(`${path}:${line}  건너뜀 ${fragment}: ${reason}`);
     if (result.text !== text && !options["--dry-run"]) writeFileSync(path, result.text, "utf-8");

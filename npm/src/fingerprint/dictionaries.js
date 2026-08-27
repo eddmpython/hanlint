@@ -8,8 +8,30 @@ export const DICTIONARY_FILES = {
   translationese: "translationese.toml",
   redundantPair: "redundantPair.toml",
   japaneseLoan: "japaneseLoan.toml",
+  spelling: "spelling.toml",
+  spacing: "spacing.toml",
+  confusable: "confusable.toml",
+  easyWords: "easyWords.toml",
 };
 const GROUP_REF = /\$(\d)/g;
+const FINALS = { ㄴ: 4, ㄹ: 8 };
+// {조사} 자리표시자. 낱말 뒤에 조사가 붙었거나 낱말이 끝나는 자리. 파이썬 dictionaries.py 와 같은 글자다.
+const JOSA_TAIL = "(?=(?:에서는|으로는|에서|에게|까지|부터|보다|처럼|으로|이나|은|는|이|가|을|를|의|에|로|와|과|도|만)?(?![가-힣]))";
+const PLACEHOLDER = /\{(ㄴ|ㄹ|조사)\}/g;
+
+/** 받침으로 끝나는 음절 399개의 문자 부류. @param {"ㄴ" | "ㄹ"} final */
+function syllableClass(final) {
+  let chars = "";
+  for (let initial = 0; initial < 19; initial++) {
+    for (let vowel = 0; vowel < 21; vowel++) chars += String.fromCharCode(0xac00 + (initial * 21 + vowel) * 28 + FINALS[final]);
+  }
+  return `[${chars}]`;
+}
+
+/** @param {string} pattern */
+export function expandClasses(pattern) {
+  return pattern.replace(PLACEHOLDER, (_, name) => (name === "조사" ? JOSA_TAIL : syllableClass(name)));
+}
 
 /**
  * @typedef {object} Entry
@@ -36,7 +58,7 @@ export function entryFrom(dictionary, raw) {
   const data = typeof raw === "string" ? { pattern: raw } : raw;
   return {
     dictionary,
-    pattern: compile(/** @type {string} */ (data.pattern)),
+    pattern: compile(expandClasses(/** @type {string} */ (data.pattern))),
     why: /** @type {string} */ (data.why ?? "설정에서 더한 항목"),
     source: /** @type {string} */ (data.source ?? "설정"),
     fix: /** @type {string | null} */ (data.fix ?? null),

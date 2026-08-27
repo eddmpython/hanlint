@@ -11,10 +11,14 @@ import * as keywordMissing from "./document/keywordMissing.js";
 import * as noQuestion from "./document/noQuestion.js";
 import * as promiseRecall from "./document/promiseRecall.js";
 import * as readerAbsent from "./document/readerAbsent.js";
+import * as confusable from "./orthography/confusable.js";
+import * as spacing from "./orthography/spacing.js";
+import * as spelling from "./orthography/spelling.js";
 import * as factListParagraph from "./paragraph/factListParagraph.js";
 import * as paraFragment from "./paragraph/paraFragment.js";
 import * as topicBreak from "./paragraph/topicBreak.js";
 import * as cliche from "./sentence/cliche.js";
+import * as hardWord from "./sentence/hardWord.js";
 import * as connectorRepeat from "./sentence/connectorRepeat.js";
 import * as danglingDeixis from "./sentence/danglingDeixis.js";
 import * as dash from "./sentence/dash.js";
@@ -57,6 +61,7 @@ export const RULES = [
   endingRepeat,
   euiChain,
   fillerOpener,
+  hardWord,
   imperativePeriod,
   japaneseLoan,
   negationRedefine,
@@ -77,6 +82,9 @@ export const RULES = [
   noQuestion,
   promiseRecall,
   readerAbsent,
+  spelling,
+  spacing,
+  confusable,
 ];
 
 const BY_NAME = new Map(RULES.map((rule) => [rule.name, rule]));
