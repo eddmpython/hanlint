@@ -53,7 +53,15 @@ def normalizeArgv(argv: list[str]) -> list[str]:
     return ["lint", *argv]
 
 
+def useUtf8WhenPiped() -> None:
+    """파이프와 리다이렉트로 나가는 출력은 UTF-8 이다. 윈도우는 파이프에서 지역 코드 페이지를 쓰므로 고정한다."""
+    for stream in (sys.stdout, sys.stderr):
+        if not getattr(stream, "isatty", lambda: True)() and hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 def main(argv: list[str] | None = None) -> int:
+    useUtf8WhenPiped()
     parser = buildParser()
     args = parser.parse_args(normalizeArgv(list(sys.argv[1:] if argv is None else argv)))
     try:

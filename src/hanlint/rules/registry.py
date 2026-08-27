@@ -66,11 +66,16 @@ def ruleSummary(name: str) -> str:
     return ruleDoc(name).splitlines()[0]
 
 
+def isDisabledAt(finding: Finding, disabled: tuple[tuple[str, int, int], ...]) -> bool:
+    """인라인 제어가 그 줄에서 그 규칙을 껐는가. `*` 는 전부다."""
+    return any((name == "*" or name == finding.rule) and start <= finding.line <= end for name, start, end in disabled)
+
+
 def runAll(doc: DocumentPrint, config: Config) -> list[Finding]:
     loadAll()
     findings: list[Finding] = []
     for name in sorted(REGISTRY):
         if config.enabled(name):
-            findings.extend(REGISTRY[name](doc, config))
+            findings.extend(f for f in REGISTRY[name](doc, config) if not isDisabledAt(f, doc.disabled))
     findings.sort(key=lambda f: (f.line, f.rule))
     return findings

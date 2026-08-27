@@ -89,6 +89,9 @@ def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:
     found = []
     for match in countPromisePattern().finditer(text):
         raw, unit = match.group(1), match.group(2)
+        if raw.isdigit() and unit == "단계" and " " not in match.group(0):
+            # `3단계` 는 셋째 단계 (서수) 지 단계 셋의 약속이 아니다. 실측: 002 의 `여덟 단계` 와 `3단계` 가 충돌로 잡혔다.
+            continue
         number = koreanNumbers().get(raw) or int(raw)
         found.append((number, unit, match.group(0)))
     return tuple(found)

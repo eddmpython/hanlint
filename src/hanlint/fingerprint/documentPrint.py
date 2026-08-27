@@ -29,6 +29,8 @@ class DocumentPrint:
     promises: tuple[tuple[int, str], ...]
     """(줄, 표지 원문)."""
     recalls: tuple[tuple[int, str], ...]
+    disabled: tuple[tuple[str, int, int], ...] = ()
+    """인라인 제어가 끈 (규칙 또는 *, 시작 줄, 끝 줄). 등록부가 지적을 거른다."""
 
     @property
     def intro(self) -> SectionPrint:

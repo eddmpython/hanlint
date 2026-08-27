@@ -154,4 +154,5 @@ def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = 
         countPromises=tuple((n, unit, s.line, text) for s in sentences for n, unit, text in s.countPromises),
         promises=tuple((s.line, text) for s in sentences for text in s.promises),
         recalls=tuple((s.line, text) for s in sentences for text in s.recalls),
+        disabled=tuple(doc.disabled),
     )

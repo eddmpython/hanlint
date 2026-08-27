@@ -65,6 +65,8 @@ class Document:
     frontmatter: dict[str, str]
     blocks: list[Block]
     sections: list[Section]
+    disabled: list[tuple[str, int, int]] = field(default_factory=list)
+    """인라인 제어가 끈 (규칙 이름 또는 *, 시작 줄, 끝 줄). `<!-- hanlint-disable cliche -->` 가 만든다."""
 
     @property
     def intro(self) -> Section:

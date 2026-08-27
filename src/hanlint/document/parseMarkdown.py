@@ -19,6 +19,9 @@ TABLE_LINE = re.compile(r"^\s*\|")
 URL_LINE = re.compile(r"^\s*https?://\S+\s*$")
 HTML_LINE = re.compile(r"^\s*<")
 META_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
+# 인라인 제어. `<!-- hanlint-disable cliche -->` 부터 `<!-- hanlint-enable cliche -->` 까지, 또는 다음 블록 하나.
+CONTROL = re.compile(r"^\s*<!--\s*hanlint-(disable-next-line|disable-next|disable|enable)\b([^>]*?)-->\s*$")
+ALL_RULES = "*"
 
 
 def parseFrontmatter(text: str) -> tuple[dict[str, str], int]:
@@ -93,6 +96,11 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
         if not line.strip():
             flush()
             continue
+        if CONTROL.match(line):
+            # 제어 주석은 빈 줄 없이 문단에 붙어 있어도 제 블록이다. 안 그러면 문단째 html 이 되어 검사에서 빠진다.
+            flush()
+            blocks.append(Block(HTML, lineNo, lineNo, line, 0, len(blocks)))
+            continue
         if HEADING_LINE.match(line) and buffer:
             flush()
         if not buffer:
@@ -117,8 +125,39 @@ def groupSections(blocks: list[Block]) -> list[Section]:
     return sections
 
 
+def controlNames(raw: str) -> list[str]:
+    names = [name for name in re.split(r"[\s,]+", raw.strip()) if name]
+    return names or [ALL_RULES]
+
+
+def disabledRanges(blocks: list[Block]) -> list[tuple[str, int, int]]:
+    """제어 주석이 끈 (규칙, 시작 줄, 끝 줄). disable 은 enable 이나 글 끝까지, disable-next 는 다음 블록 하나."""
+    ranges: list[tuple[str, int, int]] = []
+    opened: dict[str, int] = {}
+    lastLine = blocks[-1].endLine if blocks else 1
+    for index, block in enumerate(blocks):
+        match = CONTROL.match(block.text) if block.kind == HTML else None
+        if not match:
+            continue
+        action, names = match.group(1), controlNames(match.group(2))
+        if action in ("disable-next", "disable-next-line"):
+            if index + 1 < len(blocks):
+                target = blocks[index + 1]
+                ranges.extend((name, target.startLine, target.endLine) for name in names)
+        elif action == "disable":
+            for name in names:
+                opened.setdefault(name, block.startLine)
+        else:
+            closing = list(opened) if names == [ALL_RULES] else names
+            for name in closing:
+                if name in opened:
+                    ranges.append((name, opened.pop(name), block.endLine))
+    ranges.extend((name, start, lastLine) for name, start in opened.items())
+    return ranges
+
+
 def parseMarkdown(text: str, path: str | None = None) -> Document:
     meta, firstLine = parseFrontmatter(text)
     body = text if firstLine == 1 else "\n".join(text.splitlines()[firstLine - 1 :])
     blocks = splitBlocks(body, firstLine)
-    return Document(path=path, frontmatter=meta, blocks=blocks, sections=groupSections(blocks))
+    return Document(path=path, frontmatter=meta, blocks=blocks, sections=groupSections(blocks), disabled=disabledRanges(blocks))

@@ -45,6 +45,21 @@ hanlint 글.md
 | `hanlint init` | 주석 달린 `hanlint.toml` |
 | `hanlint profile build 글들/` | 승인된 글의 문체 분포. `--profile` 로 새 글을 견준다 |
 
+## 규칙을 끄기
+
+글 전체에서 끄려면 `hanlint init` 이 만드는 `hanlint.toml` 의 `disable` 에 이름을 넣는다. 한 자리에서만
+끄려면 마크다운 주석을 쓴다. 상투어를 인용하는 문단처럼 규칙이 맞지만 그 자리만 예외일 때다.
+
+```markdown
+<!-- hanlint-disable cliche -->
+
+AI 가 자주 쓰는 표현은 `핵심은`, `결국 중요한 것은` 처럼 눈에 띄는 것부터 지웁니다.
+
+<!-- hanlint-enable cliche -->
+```
+
+`hanlint-disable-next` 는 다음 블록 하나만 끈다. 규칙 이름을 안 적으면 전부 끈다.
+
 ## 파이썬에서
 
 같은 일을 함수로 한다.
