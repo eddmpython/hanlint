@@ -3,6 +3,15 @@
 from __future__ import annotations
 
 from .finding import Finding
-from .registry import ruleDoc, ruleNames, ruleSummary, runAll
+from .registry import CATEGORY_TITLES, ruleCategories, ruleCategory, ruleDoc, ruleNames, ruleSummary, runAll
 
-__all__ = ["Finding", "ruleDoc", "ruleNames", "ruleSummary", "runAll"]
+__all__ = [
+    "CATEGORY_TITLES",
+    "Finding",
+    "ruleCategories",
+    "ruleCategory",
+    "ruleDoc",
+    "ruleNames",
+    "ruleSummary",
+    "runAll",
+]

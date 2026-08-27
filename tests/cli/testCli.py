@@ -20,7 +20,6 @@ def write(tmp_path: Path, name: str, text: str) -> Path:
 
 
 def testNormalizeArgvDefaultsToLint():
-    assert normalizeArgv([]) == ["lint"]
     assert normalizeArgv(["글.md"]) == ["lint", "글.md"]
     assert normalizeArgv(["--format", "json", "글.md"]) == ["lint", "--format", "json", "글.md"]
     assert normalizeArgv(["rules"]) == ["rules"]
@@ -174,3 +173,92 @@ def testInitWritesConfigAndRefusesToOverwrite(tmp_path, capsys):
     assert main(["init", "--path", str(target)]) == 2
     assert "이미 있다" in capsys.readouterr().err
     assert main(["init", "--path", str(target), "--force"]) == 0
+
+
+def testWelcomeScreenWhenNoArguments(monkeypatch, tmp_path, capsys):
+    """인자가 없으면 argparse 오류가 아니라 첫 화면이다. 이 폴더의 파일 이름으로 예시를 만든다."""
+    write(tmp_path, "초안.md", CLEAN)
+    monkeypatch.chdir(tmp_path)
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "hanlint 초안.md" in out
+    assert "hanlint fix 초안.md" in out
+    assert "이 폴더의 마크다운: 초안.md" in out
+    assert "hanlint doctor" in out
+
+
+def testWelcomeScreenWithoutMarkdownNearby(monkeypatch, tmp_path, capsys):
+    monkeypatch.chdir(tmp_path)
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "hanlint 글.md" in out
+    assert "이 폴더에는 마크다운이 없다" in out
+
+
+def testFolderArgumentFindsMarkdownBelow(tmp_path, capsys):
+    (tmp_path / "글들" / "안").mkdir(parents=True)
+    (tmp_path / "글들" / "하나.md").write_text(BAD, encoding="utf-8")
+    (tmp_path / "글들" / "안" / "둘.md").write_text(CLEAN, encoding="utf-8")
+    (tmp_path / "글들" / "그림.png").write_text("bytes", encoding="utf-8")
+    assert main([str(tmp_path / "글들"), "--format", "compact", "--quiet"]) == 1
+    out = capsys.readouterr().out
+    # 하위 폴더의 글까지 세고 (파일 2개) 마크다운이 아닌 것은 건드리지 않는다.
+    assert "하나.md" in out and "그림.png" not in out
+    assert "파일 2개" in out
+
+
+def testEmptyFolderSaysWhatToDo(tmp_path, capsys):
+    (tmp_path / "빈").mkdir()
+    assert main([str(tmp_path / "빈")]) == 2
+    assert "안에 마크다운 파일이 없다" in capsys.readouterr().err
+
+
+def testNextStepLineTellsWhatToDo(tmp_path, capsys):
+    clean = write(tmp_path, "clean.md", CLEAN)
+    assert main([str(clean)]) == 0
+    assert "다음: 세어서 잡히는 결함이 없다" in capsys.readouterr().out
+    bad = write(tmp_path, "bad.md", BAD)
+    assert main([str(bad), "--errors-only"]) == 1
+    assert "다음: error" in capsys.readouterr().out
+    assert main([str(bad), "--errors-only", "--quiet"]) == 1
+    assert "다음:" not in capsys.readouterr().out
+
+
+def testDoctorShowsConfigAnalyzerAndOffRules(tmp_path, capsys):
+    config = write(tmp_path, "hanlint.toml", 'preset = "docs"\ndisable = ["cliche"]\n')
+    assert main(["doctor", "--config", str(config)]) == 0
+    out = capsys.readouterr().out
+    assert "프리셋    docs" in out
+    assert "cliche" in out and "noQuestion" in out
+    assert "개 켜짐" in out
+
+
+def testPresetTurnsRulesOffAndInitWritesIt(tmp_path, capsys):
+    target = tmp_path / "hanlint.toml"
+    assert main(["init", "--path", str(target), "--preset", "docs"]) == 0
+    assert 'preset = "docs"' in target.read_text(encoding="utf-8")
+    assert "preset docs 이" in capsys.readouterr().out
+    reference = write(tmp_path, "참고.md", "## 절\n\n파일을 엽니다. 값을 넣습니다.\n")
+    assert main([str(reference), "--config", str(target), "--format", "compact", "--quiet"]) == 0
+    assert "noQuestion" not in capsys.readouterr().out
+
+
+def testExplainSuggestsNearNamesAndListsSiblings(capsys):
+    assert main(["explain", "doublePasive"]) == 2
+    assert "이것을 찾았나: doubleNegative, doublePassive" in capsys.readouterr().err
+    assert main(["explain"]) == 2
+    assert "부류로 묶어 보려면 hanlint rules" in capsys.readouterr().out
+    assert main(["explain", "moreLater"]) == 0
+    out = capsys.readouterr().out
+    assert "글의 짜임에서 세는 것" in out and "같은 부류:" in out
+
+
+def testRulesGroupsByCategoryAndMarksOff(tmp_path, capsys):
+    config = write(tmp_path, "hanlint.toml", 'preset = "report"\n')
+    assert main(["rules", "--config", str(config)]) == 0
+    out = capsys.readouterr().out
+    assert "문장 안에서 세는 것 (" in out and "표기와 띄어쓰기 (" in out
+    assert "(꺼짐)" in out and "preset report 이" in out
+    assert main(["rules", "--names"]) == 0
+    names = capsys.readouterr().out.splitlines()
+    assert names == sorted(names) and "moreLater" in names

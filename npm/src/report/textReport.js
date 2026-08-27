@@ -14,6 +14,5 @@ export function renderText(path, findings) {
     if (f.fix) lines.push(`  고친 뒤: ${f.fix}`);
     lines.push("");
   }
-  lines.push(`규칙이 왜 있는지 보려면: hanlint explain ${findings[0].rule}`);
-  return lines.join("\n");
+  return lines.join("\n").replace(/\n+$/, "");
 }

@@ -22,8 +22,9 @@ status: curated
 3. **표층으로 되는지, 형태소가 필요한지 정한다.** 표층 정규식으로 충분하면 분석기를 부르지 않는다.
    형태소가 필요하면 먼저 Kiwi 로 그 문장을 찍어 실제 태그열을 본다. 추측으로 태그를 적지 않는다
 4. **`rules/<부류>/<규칙이름>.py` 에 파일 하나로 쓴다.** `@rule("이름")` 으로 등록하고 docstring 에
-   네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 1번의 실측 사례를 적는다. 임계가 필요하면 `config/settings.py`
-   에 기본값을 두고 함수는 거기서 읽는다. 함수 안에 숫자를 박지 않는다
+   네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 1번의 실측 사례를 적는다. 파일이 사는 폴더가 부류의 정본이라
+   `hanlint rules` 의 묶음과 `hanlint explain` 의 `같은 부류` 가 거기서 나온다. 임계가 필요하면
+   `config/settings.py` 에 기본값을 두고 함수는 거기서 읽는다. 함수 안에 숫자를 박지 않는다
 5. **fixture 를 쓴다.** `tests/fixtures/rules/<규칙이름>.json` 에 `catch` (잡아야 할 문장) 와 `spare` (잡지
    말아야 할 문장) 를 둔다. 실측 사례가 `catch` 의 첫 항목이다. `spare` 에는 그 규칙이 오해하기 쉬운 정상
    문장을 둔다. 두 분석기 모두에 돌아간다
@@ -40,7 +41,11 @@ status: curated
 - **code 부류** (inputFileSource, installImport, platformApi): 읽기와 쓰기 함수, 모듈과 패키지 대응, 숨은
   의존성, 플랫폼 API 는 각각 규칙 파일의 정규식과 `data/pythonPackages.txt`, `data/hiddenDeps.txt`,
   `data/platformApis.txt` 가 정본이다.
-- 정본 data 를 고쳤으면 `python scripts/exportData.py` 로 npm 투영을 다시 만든다.
+- 정본 data 를 고쳤으면 `python scripts/exportData.py` 로 npm 투영을 다시 만든다. 규칙을 더하거나 옮기면
+  `ruleCategories.json` 도 같이 바뀐다.
+- **한 종류의 글에만 안 맞는 규칙은 빼지 말고 프리셋에 넣는다.** 참고 문서에 `noQuestion` 이 도는 것은
+  규칙이 틀린 것이 아니라 글의 종류가 다른 것이다. `config/settings.py` 의 `PRESETS` 에 그 규칙 이름을
+  더하고 npm 의 같은 표도 같은 작업에서 고친다. `testInitPresetsAgree` 가 두 판을 견준다.
 - 겹침 비율 (`hanlint coverage review.json 글.md`) 이 규칙을 더하는 근거다. 못 집은 유형 목록에서 후보를 고른다.
 
 ## 오탐 보고가 오면

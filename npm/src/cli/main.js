@@ -3,36 +3,41 @@
  * 명령줄 진입점. 파이썬 CLI 와 같은 인자, 같은 출력, 같은 종료 코드다 (0 지적 없음, 1 error 있음, 2 파일이나 설정 문제).
  *
  * ```
- * hanlint 글.md [다른.md ...]   검사. 서브커맨드 없이 파일만 주면 lint 다. `-` 는 stdin
+ * hanlint                       인자가 없으면 첫 화면. 무엇을 칠 수 있는지 보인다
+ * hanlint 글.md [다른.md ...]   검사. 서브커맨드 없이 파일이나 폴더만 주면 lint 다. `-` 는 stdin
  * hanlint fix 글.md             기계가 고칠 수 있는 지적을 원문에 적용
  * hanlint print 글.md           지문 계층 JSON
- * hanlint rules                 규칙 목록
+ * hanlint rules                 규칙 목록을 부류로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
- * hanlint init                  주석 달린 hanlint.toml
+ * hanlint doctor                설정, 분석기, 꺼진 규칙
+ * hanlint init                  주석 달린 hanlint.toml. --preset blog|report|docs
  * ```
  * audit, map, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 import { analyzerFor, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
 import { loadConfig } from "../config/loadConfig.js";
-import { defaultConfig } from "../config/settings.js";
+import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
-import { runAll } from "../rules/registry.js";
+import { CATEGORY_TITLES, ruleCategory, runAll } from "../rules/registry.js";
+import { welcome } from "./welcome.js";
 import { renderCompact } from "../report/compactReport.js";
 import { LAYERS, renderFingerprintJson } from "../report/fingerprintJson.js";
 import { renderGithub } from "../report/githubReport.js";
 import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "init"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "doctor", "init"];
 const PYTHON_ONLY = ["audit", "map", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 const ANALYZER_CHOICES = ["surface", "kiwi"];
 const STDIN = "-";
 const STDIN_NAME = "<stdin>";
+/** 폴더를 주면 이 확장자만 찾는다. 파이썬 cli/commands/shared.py 의 MARKDOWN 과 같다. */
+const MARKDOWN = [".md", ".markdown"];
 const THRESHOLD_FIELDS = [
   "fragmentRun",
   "introMaxParagraphs",
@@ -46,8 +51,12 @@ const THRESHOLD_FIELDS = [
   "duplicateBlockRatio",
   "firstResultMaxParagraphs",
   "sectionResultMinParagraphs",
+  "introMaxImages",
+  "headingQuestionRatio",
+  "moreLaterMaxChars",
+  "tableOddCellMinRows",
 ];
-const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength"]);
+const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength", "headingQuestionRatio"]);
 
 const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|json|github] [--severity all|error|notice] [--errors-only]
                 [--config 파일] [--disable 규칙] [--output 파일] [--quiet] [--path 이름 (stdin 의 이름)]
@@ -55,9 +64,11 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
         hanlint print 글.md [--layer all|sentences|paragraphs|sections|document]
         hanlint rules [--names]
         hanlint explain <규칙>
-        hanlint init [--path hanlint.toml] [--force]
+        hanlint doctor
+        hanlint init [--path hanlint.toml] [--preset blog|report|docs] [--force]
         hanlint --version
 
+파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다. 인자가 없으면 첫 화면이 나온다.
 한국어 글에서 반복되는 결함을 결정적으로 잡는다. 종료 코드는 0 (지적 없음), 1 (error 지적), 2 (파일이나 설정 문제).
 audit, map, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.`;
 
@@ -77,6 +88,7 @@ const OPTION_KINDS = {
   "--dry-run": "flag",
   "--names": "flag",
   "--force": "flag",
+  "--preset": "value",
 };
 
 class UsageError extends Error {}
@@ -121,9 +133,11 @@ function parseArgs(args) {
   return { options, positionals };
 }
 
-/** 서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. @param {string[]} argv */
+/**
+ * 서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. 빈 인자는 여기서 다루지 않는다. `main` 이 첫 화면으로 보낸다.
+ * @param {string[]} argv
+ */
 export function normalizeArgv(argv) {
-  if (!argv.length) return ["lint"];
   if (COMMANDS.includes(argv[0]) || PYTHON_ONLY.includes(argv[0]) || ["-h", "--help", "--version"].includes(argv[0])) return argv;
   return ["lint", ...argv];
 }
@@ -185,18 +199,73 @@ function readInput(path, stdinName) {
   return [path, readFileSync(path, "utf-8")];
 }
 
+/** 폴더 안의 마크다운 전부. 부른 쪽이 경로 문자열로 정렬한다 (파이썬 판과 같은 순서). @param {string} folder */
+function markdownUnder(folder) {
+  /** @type {string[]} */
+  const found = [];
+  for (const name of readdirSync(folder)) {
+    const path = join(folder, name);
+    if (statSync(path).isDirectory()) found.push(...markdownUnder(path));
+    else if (MARKDOWN.includes(name.slice(name.lastIndexOf(".")).toLowerCase())) found.push(path);
+  }
+  return found;
+}
+
+/** 폴더를 주면 그 아래 마크다운을 편다. 파일과 `-` 는 그대로 둔다. @param {string[]} paths */
+function collectFiles(paths) {
+  /** @type {string[]} */
+  const found = [];
+  for (const path of paths) {
+    if (path === STDIN) {
+      found.push(STDIN);
+      continue;
+    }
+    let isFolder = false;
+    try {
+      isFolder = statSync(path).isDirectory();
+    } catch {
+      isFolder = false;
+    }
+    if (!isFolder) {
+      found.push(path);
+      continue;
+    }
+    const inside = markdownUnder(path).sort();
+    if (!inside.length) throw new Error(`${path} 안에 마크다운 파일이 없다. 다른 폴더를 주거나 파일을 직접 준다`);
+    found.push(...inside);
+  }
+  return found;
+}
+
+/** 검사 끝에 붙는 다음 행동 한 줄. 합격을 판정하지 않고 지금 무엇을 하면 되는지만 말한다.
+ * @param {Map<string, import("../rules/finding.js").Finding[]>} results */
+function nextStep(results) {
+  const findings = [...results.values()].flat();
+  const errors = findings.filter((f) => f.severity === "error");
+  const notices = findings.length - errors.length;
+  const fixable = errors.filter((f) => f.replacement !== null).length;
+  if (errors.length) {
+    const rule = [...new Set(errors.map((f) => f.rule))].sort()[0];
+    if (fixable) return `다음: error ${errors.length}건 가운데 ${fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다`;
+    return `다음: error ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
+  }
+  if (notices) return `다음: error 0. 확인할 자리 ${notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다`;
+  return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다";
+}
+
 /** @param {string[]} args */
 function runLint(args) {
   const { options, positionals } = parseArgs(args);
   if (!positionals.length) throw new UsageError("검사할 마크다운 파일이 필요하다");
+  const files = collectFiles(positionals);
   const format = choose(/** @type {string} */ (options["--format"] ?? "text"), FORMATS, "--format");
   const severity = options["--errors-only"] ? "error" : choose(/** @type {string} */ (options["--severity"] ?? "all"), SEVERITIES, "--severity");
-  const config = configFrom(options, positionals);
+  const config = configFrom(options, files);
   analyzerFor(config);
   const stdinName = /** @type {string} */ (options["--path"] ?? STDIN_NAME);
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
   const results = new Map();
-  for (const path of positionals) {
+  for (const path of files) {
     const [name, text] = readInput(path, stdinName);
     results.set(name, lintText(text, config, name));
   }
@@ -220,10 +289,12 @@ function runLint(args) {
         .join("\n");
       if (body) parts.push(body);
       parts.push(summary(shown));
+      if (!options["--quiet"]) parts.push(nextStep(shown));
       emit(parts.join("\n"), output);
     } else {
       parts.push([...shown].map(([name, findings]) => renderText(name, findings)).join("\n\n"));
       if (shown.size > 1) parts.push(summary(shown));
+      if (!options["--quiet"]) parts.push(nextStep(shown));
       emit(parts.join("\n\n"), output);
     }
   }
@@ -234,11 +305,12 @@ function runLint(args) {
 function runFix(args) {
   const { options, positionals } = parseArgs(args);
   if (!positionals.length) throw new UsageError("고칠 마크다운 파일이 필요하다");
-  const config = configFrom(options, positionals);
+  const files = collectFiles(positionals);
+  const config = configFrom(options, files);
   const analyzer = analyzerFor(config);
   void analyzer;
   const lines = [];
-  for (const path of positionals) {
+  for (const path of files) {
     const text = readFileSync(path, "utf-8");
     // notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
     const result = applyFixes(
@@ -273,26 +345,108 @@ function runRules(args) {
     process.stdout.write(`${names.join("\n")}\n`);
     return 0;
   }
+  const config = configFrom(options, []);
+  const off = new Set(offRules(config));
   const width = Math.max(...names.map((name) => name.length));
-  const lines = names.map((name) => `${name.padEnd(width)}  ${ruleSummary(name)}`);
-  process.stdout.write(`${lines.join("\n")}\n\n규칙 ${names.length}개. 자세히 보려면 hanlint explain <규칙>\n`);
+  const lines = [];
+  for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
+    const inside = names.filter((name) => ruleCategory(name) === category);
+    if (!inside.length) continue;
+    lines.push(`${title} (${inside.length})`);
+    for (const name of inside) lines.push(`  ${name.padEnd(width)}  ${ruleSummary(name)}${off.has(name) ? " (꺼짐)" : ""}`);
+    lines.push("");
+  }
+  let tail = `규칙 ${names.length}개`;
+  if (off.size) {
+    const byPreset = PRESETS[config.preset].length;
+    tail += `, 그중 ${off.size}개가 꺼져 있다 (preset ${config.preset} 이 ${byPreset}개, disable 이 ${off.size - byPreset}개)`;
+  }
+  lines.push(`${tail}. 하나를 자세히 보려면 hanlint explain <규칙>`);
+  lines.push(`프리셋은 ${PRESET_NAMES.join(", ")} 이고 hanlint init --preset <이름> 이 설정에 적는다`);
+  process.stdout.write(`${lines.join("\n")}\n`);
   return 0;
+}
+
+/** 가까운 이름을 몇 개까지 보이는가. */
+const NEAR_LIMIT = 3;
+/** 앞 몇 글자가 같으면 가까운 이름으로 보는가. */
+const NEAR_PREFIX = 3;
+
+/** 오타에 가까운 이름. 파이썬 cli/commands/explain.py 의 nearNames 와 같다. @param {string} query @param {string[]} names */
+function nearNames(query, names) {
+  const lowered = query.toLowerCase();
+  /** @type {[number, string][]} */
+  const scored = [];
+  for (const name of names) {
+    const low = name.toLowerCase();
+    if (low.includes(lowered) || lowered.includes(low)) scored.push([0, name]);
+    else if (low.slice(0, NEAR_PREFIX) === lowered.slice(0, NEAR_PREFIX)) scored.push([1, name]);
+  }
+  scored.sort((a, b) => a[0] - b[0] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0));
+  return scored.slice(0, NEAR_LIMIT).map(([, name]) => name);
 }
 
 /** @param {string[]} args */
 function runExplain(args) {
   const { positionals } = parseArgs(args);
+  const names = ruleNames();
+  if (!positionals.length) {
+    process.stdout.write("규칙 이름 하나가 필요하다. 예: hanlint explain doublePassive\n");
+    process.stdout.write(`\n규칙 ${names.length}개를 부류로 묶어 보려면 hanlint rules, 이름만 보려면 hanlint rules --names\n`);
+    return 2;
+  }
   if (positionals.length !== 1) throw new UsageError("규칙 이름 하나가 필요하다. hanlint rules 로 목록을 본다");
-  const doc = ruleDoc(positionals[0]);
-  process.stdout.write(`${positionals[0]}\n\n${doc}\n`);
+  const wanted = positionals[0];
+  if (!names.includes(wanted)) {
+    const near = nearNames(wanted, names);
+    const hint = near.length ? ` 이것을 찾았나: ${near.join(", ")}` : " hanlint rules 로 목록을 본다";
+    throw new Error(`모르는 규칙: ${wanted}.${hint}`);
+  }
+  const category = ruleCategory(wanted);
+  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n\n${ruleDoc(wanted)}\n`);
+  const siblings = names.filter((name) => ruleCategory(name) === category && name !== wanted);
+  process.stdout.write(`\n같은 부류: ${siblings.join(", ")}\n`);
+  process.stdout.write(`끄려면 hanlint.toml 의 disable 에 ${wanted} 를 넣는다. 한 자리만 끄려면 <!-- hanlint-disable ${wanted} -->\n`);
   return 0;
 }
 
-/** 주석 달린 hanlint.toml. 파이썬 `hanlint init` 과 같은 글자다. */
-export function renderInit() {
+/** @param {string[]} args */
+function runDoctor(args) {
+  const { options } = parseArgs(args);
+  const config = configFrom(options, []);
+  const names = ruleNames();
+  const off = offRules(config);
+  const lines = [
+    `hanlint ${version}`,
+    "",
+    `node      ${process.version.replace(/^v/, "")}`,
+    `설정      ${configLabel(config)}`,
+    `프리셋    ${config.preset} (${PRESET_NAMES.join(", ")} 가운데)`,
+    `분석기    ${config.analyzer}. kiwi 정밀 모드는 파이썬 패키지에 있다 (pip install hanlint[kiwi])`,
+    `규칙      ${names.length - off.length}개 켜짐, ${off.length}개 꺼짐`,
+  ];
+  if (off.length) lines.push(`꺼진 규칙  ${off.join(", ")}`);
+  lines.push("", "다음: hanlint 글.md 로 검사한다. 설정이 기본값이면 hanlint init 으로 파일을 만든다");
+  process.stdout.write(`${lines.join("\n")}\n`);
+  return 0;
+}
+
+/** 주석 달린 hanlint.toml. 파이썬 `hanlint init` 과 같은 글자다. @param {string} [preset] */
+export function renderInit(preset = "blog") {
   const defaults = defaultConfig();
-  const lines = ["# hanlint 설정. 규칙을 끄려면 disable 에 이름을 넣는다. 규칙의 기술서는 hanlint explain <규칙>.", "", "# 규칙 목록과 한 줄 설명"];
-  for (const name of ruleNames()) lines.push(`#   ${name}: ${ruleSummary(name)}`);
+  const lines = [
+    "# hanlint 설정. 규칙을 끄려면 disable 에 이름을 넣는다. 규칙의 기술서는 hanlint explain <규칙>.",
+    "",
+    "# 글의 종류. 그 종류에 안 맞는 규칙을 처음부터 끈다. disable 은 그 위에 더한다.",
+  ];
+  for (const [name, off] of Object.entries(PRESETS)) lines.push(`#   ${name}: ${off.length ? off.join(", ") : "전부 켠다"}`);
+  lines.push(`preset = "${preset}"`, "", "# 규칙 목록과 한 줄 설명");
+  for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
+    const inside = ruleNames().filter((name) => ruleCategory(name) === category);
+    if (!inside.length) continue;
+    lines.push(`#  ${title}`);
+    for (const name of inside) lines.push(`#   ${name}: ${ruleSummary(name)}`);
+  }
   lines.push(
     "",
     "disable = []",
@@ -302,6 +456,10 @@ export function renderInit() {
     "",
     "# 대표 검색어를 읽을 frontmatter 필드. 없으면 keywordMissing 은 돌지 않는다",
     '# keywordField = "primaryKeyword"',
+    "",
+    "# 도입과 마지막 절이 담아야 하는 frontmatter 필드. 비어 있으면 fieldEcho 는 돌지 않는다",
+    '# introFields = ["readerQuestion"]',
+    '# endingFields = ["readerTakeaway"]',
     "",
     "# hanlint profile build 가 만든 파일. 있으면 참조 글과의 편차 구간을 notice 로 더한다",
     '# profile = "profile.json"',
@@ -328,14 +486,21 @@ export function renderInit() {
 function runInit(args) {
   const { options } = parseArgs(args);
   const path = /** @type {string} */ (options["--path"] ?? "hanlint.toml");
+  const preset = choose(/** @type {string} */ (options["--preset"] ?? "blog"), PRESET_NAMES, "--preset");
   if (existsSync(path) && !options["--force"]) throw new Error(`${path} 가 이미 있다. 덮어쓰려면 --force`);
-  writeFileSync(path, renderInit(), "utf-8");
-  process.stdout.write(`${path} 를 만들었다. 규칙을 끄려면 disable 에 이름을 넣는다\n`);
+  writeFileSync(path, renderInit(preset), "utf-8");
+  const off = PRESETS[preset];
+  const tail = off.length ? `preset ${preset} 이 ${off.length}개를 끈다` : `preset ${preset} 은 규칙을 전부 켠다`;
+  process.stdout.write(`${path} 를 만들었다. ${tail}. 더 끄려면 disable 에 이름을 넣는다\n`);
   return 0;
 }
 
 /** @param {string[]} argv */
 function dispatch(argv) {
+  if (!argv.length) {
+    process.stdout.write(`${welcome(version)}\n`);
+    return 0;
+  }
   const [command, ...rest] = normalizeArgv(argv);
   if (command === "-h" || command === "--help") {
     process.stdout.write(`${USAGE}\n`);
@@ -353,6 +518,7 @@ function dispatch(argv) {
   if (command === "print") return runPrint(rest);
   if (command === "rules") return runRules(rest);
   if (command === "explain") return runExplain(rest);
+  if (command === "doctor") return runDoctor(rest);
   return runInit(rest);
 }
 

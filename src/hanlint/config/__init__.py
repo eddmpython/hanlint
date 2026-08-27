@@ -3,6 +3,6 @@
 from __future__ import annotations
 
 from .loadConfig import loadConfig
-from .settings import Config
+from .settings import PRESET_NAMES, PRESETS, Config
 
-__all__ = ["Config", "loadConfig"]
+__all__ = ["PRESETS", "PRESET_NAMES", "Config", "loadConfig"]

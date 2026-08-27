@@ -35,7 +35,7 @@ def testTextReportHasFileLineAndFix():
     assert text.startswith("글.md  집은 자리")
     assert "글.md:3  [cliche]" in text
     assert "고친 뒤: 모든 분야에서 기준이 필요합니다." in text
-    assert "hanlint explain" in text
+    assert not text.endswith(chr(10))
 
 
 def testTextReportWhenClean():

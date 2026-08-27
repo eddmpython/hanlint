@@ -14,13 +14,13 @@ from ...document import parseMarkdown
 from ...edit import applyFixes
 from ...fingerprint import buildFingerprint
 from ...rules import runAll
-from .shared import addCommonOptions, configFrom, startFolder
+from .shared import addCommonOptions, collectFiles, configFrom, startFolder
 
 HELP = "기계가 고칠 수 있는 지적을 원문에 적용한다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("files", nargs="+", help="고칠 마크다운 파일")
+    parser.add_argument("files", nargs="+", help="고칠 마크다운 파일이나 폴더")
     parser.add_argument("--dry-run", dest="dryRun", action="store_true", help="파일을 바꾸지 않고 무엇을 바꿀지만 보여 준다")
     addCommonOptions(parser, ("text",))
 
@@ -36,10 +36,11 @@ def writeRaw(path: Path, text: str) -> None:
 
 
 def run(args: argparse.Namespace) -> int:
-    config = configFrom(args, start=startFolder(args.files))
+    files = collectFiles(args.files)
+    config = configFrom(args, start=startFolder(files))
     analyzer = analyzerFor(config)
     lines: list[str] = []
-    for path in args.files:
+    for path in files:
         text = readRaw(Path(path))
         doc = buildFingerprint(parseMarkdown(text, path=path), analyzer, config)
         # notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.

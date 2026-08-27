@@ -14,6 +14,8 @@ FORMATS = ("text", "json", "github", "html", "compact")
 SEVERITIES = ("all", "error", "notice")
 STDIN = "-"
 STDIN_NAME = "<stdin>"
+MARKDOWN = (".md", ".markdown")
+"""폴더를 주면 이 확장자만 찾는다. 글 폴더에 섞여 있는 이미지와 설정을 검사하지 않는다."""
 
 
 def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] = ("text", "json")) -> None:
@@ -74,8 +76,43 @@ def summary(results: dict[str, list[Finding]]) -> str:
     return f"파일 {len(results)}개, error {errors}, notice {notices}"
 
 
+def nextStep(results: dict[str, list[Finding]]) -> str:
+    """검사 끝에 붙는 다음 행동 한 줄. 합격을 판정하지 않고 지금 무엇을 하면 되는지만 말한다."""
+    findings = [f for found in results.values() for f in found]
+    errors = [f for f in findings if f.severity == "error"]
+    notices = len(findings) - len(errors)
+    fixable = sum(1 for f in errors if f.replacement is not None)
+    if errors:
+        rule = sorted({f.rule for f in errors})[0]
+        if fixable:
+            return f"다음: error {len(errors)}건 가운데 {fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다"
+        return f"다음: error {len(errors)}건을 고친다. 규칙이 왜 있는지는 hanlint explain {rule}"
+    if notices:
+        return f"다음: error 0. 확인할 자리 {notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다"
+    return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다"
+
+
 def isStdin(path: Path | str) -> bool:
     return str(path) == STDIN
+
+
+def collectFiles(paths: list) -> list[str]:
+    """폴더를 주면 그 아래 마크다운을 이름 순으로 편다. 파일과 `-` 는 그대로 둔다."""
+    found: list[str] = []
+    for path in paths:
+        if isStdin(path):
+            found.append(STDIN)
+            continue
+        candidate = Path(path)
+        if candidate.is_dir():
+            # 경로 문자열로 정렬한다. Path 끼리의 비교는 윈도에서 대소문자를 무시해 npm 판과 갈린다.
+            inside = sorted((p for p in candidate.rglob("*") if p.suffix.lower() in MARKDOWN and p.is_file()), key=str)
+            if not inside:
+                raise ValueError(f"{path} 안에 마크다운 파일이 없다. 다른 폴더를 주거나 파일을 직접 준다")
+            found.extend(str(p) for p in inside)
+            continue
+        found.append(str(path))
+    return found
 
 
 def readInput(path: Path | str, stdinName: str = STDIN_NAME) -> tuple[str, str]:

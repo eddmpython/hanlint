@@ -28,10 +28,12 @@ def render() -> dict[str, str]:
             files[path.stem + ".json"] = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     sys.path.insert(0, str(ROOT / "src"))
     from hanlint import __version__
-    from hanlint.rules import ruleDoc, ruleNames
+    from hanlint.rules import ruleCategories, ruleDoc, ruleNames
 
     docs = {name: ruleDoc(name) for name in ruleNames()}
     files["ruleDocs.json"] = json.dumps(docs, ensure_ascii=False, indent=2) + "\n"
+    # 부류의 정본은 규칙 파일이 사는 폴더다. npm 은 폴더를 걸어 찾지 않으므로 투영으로 받는다.
+    files["ruleCategories.json"] = json.dumps(ruleCategories(), ensure_ascii=False, indent=2) + "\n"
     files["version.json"] = json.dumps({"version": __version__}) + "\n"
     return files
 

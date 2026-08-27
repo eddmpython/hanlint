@@ -4,15 +4,23 @@
 헷갈리는 말, 조각난 문단, 코드 튜토리얼의 계약 위반까지 집는다. 의존성이 없고 Node 18 이상이면 된다.
 
 ```powershell
+npx hanlint
 npx hanlint 글.md
 npx hanlint fix 글.md
 npx hanlint 글.md --format compact --errors-only
 ```
 
-지적마다 규칙 이름, 줄 번호, 인용 문장, 왜 문제인지가 붙는다. 고친 표기가 확정된 자리는 `fix` 가 원문에
-적용한다. `--format json` 은 기계가 읽는 꼴이고 종료 코드는 지적이 없으면 0, error 가 있으면 1 이라 발행
-게이트에 그대로 물린다. stdin 은 `npx hanlint - --path 이름.md` 로 받는다. 규칙 목록은 `npx hanlint rules`,
-규칙의 기술서는 `npx hanlint explain <규칙>` 이다.
+인자 없이 치면 첫 화면이 나온다. 이 폴더의 마크다운 이름으로 만든 예시와 지금 칠 수 있는 명령이 거기 있다.
+파일 자리에 폴더를 주면 그 아래 마크다운을 전부 찾는다.
+
+지적마다 규칙 이름, 줄 번호, 인용 문장, 왜 문제인지가 붙고 마지막 줄이 다음에 무엇을 하면 되는지 말한다.
+고친 표기가 확정된 자리는 `fix` 가 원문에 적용한다. `--format json` 은 기계가 읽는 꼴이고 종료 코드는
+지적이 없으면 0, error 가 있으면 1 이라 발행 게이트에 그대로 물린다. stdin 은 `npx hanlint - --path 이름.md`
+로 받는다. 규칙 목록은 `npx hanlint rules`, 규칙의 기술서는 `npx hanlint explain <규칙>`, 지금 어느 설정으로
+도는지는 `npx hanlint doctor` 다.
+
+글의 종류가 블로그가 아니면 프리셋을 먼저 고른다. `npx hanlint init --preset docs` 가 참고 문서에 맞지 않는
+규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs` 셋이다.
 
 ```js
 import { lintFile } from "hanlint";

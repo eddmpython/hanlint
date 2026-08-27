@@ -2,7 +2,7 @@
 /** 명령줄 계약. 종료 코드 0 (지적 없음), 1 (error 지적), 2 (파일이나 설정 문제). */
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -123,4 +123,86 @@ test("init writes config and refuses to overwrite", () => {
   assert.equal(again.code, 2);
   assert.ok(again.err.includes("이미 있다"));
   assert.equal(run(["init", "--path", target, "--force"]).code, 0);
+});
+
+test("welcome screen when no arguments", () => {
+  const room = mkdtempSync(join(tmpdir(), "hanlintWelcome-"));
+  writeFileSync(join(room, "초안.md"), CLEAN, "utf-8");
+  const result = spawnSync(process.execPath, [BIN], { encoding: "utf-8", cwd: room });
+  assert.equal(result.status, 0);
+  assert.ok(result.stdout.includes("hanlint 초안.md"));
+  assert.ok(result.stdout.includes("이 폴더의 마크다운: 초안.md"));
+  assert.ok(result.stdout.includes("hanlint doctor"));
+
+  const empty = mkdtempSync(join(tmpdir(), "hanlintEmpty-"));
+  const bare = spawnSync(process.execPath, [BIN], { encoding: "utf-8", cwd: empty });
+  assert.equal(bare.status, 0);
+  assert.ok(bare.stdout.includes("이 폴더에는 마크다운이 없다"));
+});
+
+test("folder argument finds markdown below", () => {
+  const room = mkdtempSync(join(tmpdir(), "hanlintFolder-"));
+  mkdirSync(join(room, "안"), { recursive: true });
+  writeFileSync(join(room, "하나.md"), BAD, "utf-8");
+  writeFileSync(join(room, "안", "둘.md"), CLEAN, "utf-8");
+  writeFileSync(join(room, "그림.png"), "bytes", "utf-8");
+  const result = run([room, "--format", "compact", "--quiet"]);
+  assert.equal(result.code, 1);
+  assert.ok(result.out.includes("하나.md") && !result.out.includes("그림.png"));
+  assert.ok(result.out.includes("파일 2개"));
+
+  const empty = mkdtempSync(join(tmpdir(), "hanlintNoMd-"));
+  const nothing = run([empty]);
+  assert.equal(nothing.code, 2);
+  assert.ok(nothing.err.includes("안에 마크다운 파일이 없다"));
+});
+
+test("next step line tells what to do", () => {
+  assert.ok(run([clean]).out.includes("다음: 세어서 잡히는 결함이 없다"));
+  assert.ok(run([bad, "--errors-only"]).out.includes("다음: error"));
+  assert.ok(!run([bad, "--errors-only", "--quiet"]).out.includes("다음:"));
+});
+
+test("doctor and presets", () => {
+  const room = mkdtempSync(join(tmpdir(), "hanlintDoctor-"));
+  const config = join(room, "hanlint.toml");
+  const made = run(["init", "--path", config, "--preset", "docs"]);
+  assert.equal(made.code, 0);
+  assert.ok(made.out.includes("preset docs 이"));
+  assert.ok(readFileSync(config, "utf-8").includes('preset = "docs"'));
+
+  const doctor = run(["doctor", "--config", config]);
+  assert.equal(doctor.code, 0);
+  assert.ok(doctor.out.includes("프리셋    docs") && doctor.out.includes("개 켜짐"));
+
+  const reference = join(room, "참고.md");
+  writeFileSync(reference, "## 절\n\n파일을 엽니다. 값을 넣습니다.\n", "utf-8");
+  const linted = run([reference, "--config", config, "--format", "compact", "--quiet"]);
+  assert.equal(linted.code, 0);
+  assert.ok(!linted.out.includes("noQuestion"));
+});
+
+test("explain suggests near names and lists siblings", () => {
+  const typo = run(["explain", "doublePasive"]);
+  assert.equal(typo.code, 2);
+  assert.ok(typo.err.includes("이것을 찾았나: doubleNegative, doublePassive"));
+  const bare = run(["explain"]);
+  assert.equal(bare.code, 2);
+  assert.ok(bare.out.includes("부류로 묶어 보려면 hanlint rules"));
+  const found = run(["explain", "moreLater"]);
+  assert.equal(found.code, 0);
+  assert.ok(found.out.includes("글의 짜임에서 세는 것") && found.out.includes("같은 부류:"));
+});
+
+test("rules groups by category and marks off", () => {
+  const room = mkdtempSync(join(tmpdir(), "hanlintRules-"));
+  const config = join(room, "hanlint.toml");
+  writeFileSync(config, 'preset = "report"\n', "utf-8");
+  const grouped = run(["rules", "--config", config]);
+  assert.equal(grouped.code, 0);
+  assert.ok(grouped.out.includes("문장 안에서 세는 것 (") && grouped.out.includes("표기와 띄어쓰기 ("));
+  assert.ok(grouped.out.includes("(꺼짐)") && grouped.out.includes("preset report 이"));
+  const names = run(["rules", "--names"]).out.trim().split("\n");
+  assert.deepEqual(names, [...names].sort());
+  assert.ok(names.includes("moreLater"));
 });

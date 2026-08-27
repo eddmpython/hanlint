@@ -5,7 +5,7 @@
  * 기술서 (왜, 어디서, 고치기, 안 잡는 것) 는 파이썬 docstring 의 투영 data/ruleDocs.json 에서 읽는다.
  */
 import { enabled } from "../config/settings.js";
-import { loadRuleDocs } from "../data/load.js";
+import { loadRuleCategories, loadRuleDocs } from "../data/load.js";
 import * as countMismatch from "./document/countMismatch.js";
 import * as enoughOnce from "./document/enoughOnce.js";
 import * as fieldEcho from "./document/fieldEcho.js";
@@ -138,6 +138,26 @@ export function ruleDoc(name) {
 /** @param {string} name */
 export function ruleSummary(name) {
   return ruleDoc(name).split("\n")[0];
+}
+
+/**
+ * 부류의 사람 이름. 파이썬 rules/registry.py 의 CATEGORY_TITLES 와 같은 값과 같은 순서다.
+ * @type {Record<string, string>}
+ */
+export const CATEGORY_TITLES = {
+  sentence: "문장 안에서 세는 것",
+  paragraph: "문단 사이에서 세는 것",
+  structure: "글의 짜임에서 세는 것",
+  document: "두 자리를 대조해 세는 것",
+  orthography: "표기와 띄어쓰기",
+  code: "코드 블록 사이를 대조하는 것",
+};
+
+/** 규칙이 사는 부류. 정본은 파이썬 쪽 폴더이고 여기는 그 투영을 읽는다. @param {string} name */
+export function ruleCategory(name) {
+  const categories = loadRuleCategories();
+  if (!(name in categories)) throw new Error(`모르는 규칙: ${name}. hanlint rules 로 목록을 본다`);
+  return categories[name];
 }
 
 /**

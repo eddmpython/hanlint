@@ -1,14 +1,16 @@
 """명령줄 진입점.
 
 ```
-hanlint 글.md [다른.md ...]        검사. 서브커맨드 없이 파일만 주면 lint 다. `-` 는 stdin
+hanlint                            인자가 없으면 첫 화면. 무엇을 칠 수 있는지 보인다
+hanlint 글.md [다른.md ...]        검사. 서브커맨드 없이 파일이나 폴더만 주면 lint 다. `-` 는 stdin
 hanlint fix 글.md                  기계가 고칠 수 있는 지적을 원문에 적용
 hanlint audit 글.md                지문 지도와 분포
 hanlint map 글.md                  지도만
 hanlint print 글.md                지문 계층 JSON
-hanlint rules                      규칙 목록
+hanlint rules                      규칙 목록을 부류로 묶어서
 hanlint explain <규칙>             규칙의 기술서
-hanlint init                       주석 달린 hanlint.toml
+hanlint doctor                     설정, 분석기, 꺼진 규칙
+hanlint init                       주석 달린 hanlint.toml. --preset blog|report|docs
 hanlint profile build 글들/         승인된 글의 문체 분포. lint 의 --profile 로 견준다
 hanlint coverage review.json 글.md 평가자 지적 가운데 hanlint 가 같은 자리를 집은 비율
 hanlint diff 전.md 후.md           두 초안의 지문 차이
@@ -24,7 +26,8 @@ import argparse
 import sys
 
 from .. import __version__
-from .commands import audit, coverage, diff, explain, fix, init, lint, mapCommand, printFingerprint, profile, rules
+from .commands import audit, coverage, diff, doctor, explain, fix, init, lint, mapCommand, printFingerprint, profile, rules
+from .welcome import welcome
 
 COMMANDS = {
     "lint": lint,
@@ -34,6 +37,7 @@ COMMANDS = {
     "print": printFingerprint,
     "rules": rules,
     "explain": explain,
+    "doctor": doctor,
     "init": init,
     "profile": profile,
     "coverage": coverage,
@@ -51,9 +55,10 @@ def buildParser() -> argparse.ArgumentParser:
 
 
 def normalizeArgv(argv: list[str]) -> list[str]:
-    """서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. `hanlint 글.md` 가 첫 진입점이다."""
-    if not argv:
-        return ["lint"]
+    """서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. `hanlint 글.md` 가 첫 진입점이다.
+
+    빈 인자는 여기서 다루지 않는다. `main` 이 첫 화면으로 보낸다.
+    """
     if argv[0] in COMMANDS or argv[0] in ("-h", "--help", "--version"):
         return argv
     return ["lint", *argv]
@@ -68,8 +73,12 @@ def useUtf8WhenPiped() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     useUtf8WhenPiped()
+    given = list(sys.argv[1:] if argv is None else argv)
+    if not given:
+        print(welcome(__version__))
+        return 0
     parser = buildParser()
-    args = parser.parse_args(normalizeArgv(list(sys.argv[1:] if argv is None else argv)))
+    args = parser.parse_args(normalizeArgv(given))
     try:
         return COMMANDS[args.command].run(args)
     except FileNotFoundError as error:

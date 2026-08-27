@@ -20,5 +20,4 @@ def renderText(path: str, findings: list[Finding]) -> str:
         if finding.fix:
             lines.append(f"  고친 뒤: {finding.fix}")
         lines.append("")
-    lines.append(f"규칙이 왜 있는지 보려면: hanlint explain {findings[0].rule}")
-    return "\n".join(lines)
+    return "\n".join(lines).rstrip("\n")

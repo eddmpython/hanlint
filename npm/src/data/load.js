@@ -57,6 +57,11 @@ export function loadRuleDocs() {
   return cached("ruleDocs", () => JSON.parse(readText("ruleDocs.json")));
 }
 
+/** @returns {Record<string, string>} 규칙 이름 → 부류 (규칙 파일이 사는 폴더의 투영) */
+export function loadRuleCategories() {
+  return cached("ruleCategories", () => JSON.parse(readText("ruleCategories.json")));
+}
+
 /** @returns {string} */
 export function loadVersion() {
   return cached("version", () => JSON.parse(readText("version.json")).version);

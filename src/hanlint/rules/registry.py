@@ -23,6 +23,15 @@ Check = Callable[[DocumentPrint, Config], Iterable[Finding]]
 REGISTRY: dict[str, Check] = {}
 REQUIRED_SECTIONS = ("왜:", "어디서:", "고치기:", "안 잡는 것:")
 CATEGORIES = ("sentence", "paragraph", "structure", "document", "orthography", "code")
+CATEGORY_TITLES = {
+    "sentence": "문장 안에서 세는 것",
+    "paragraph": "문단 사이에서 세는 것",
+    "structure": "글의 짜임에서 세는 것",
+    "document": "두 자리를 대조해 세는 것",
+    "orthography": "표기와 띄어쓰기",
+    "code": "코드 블록 사이를 대조하는 것",
+}
+"""부류의 사람 이름. `hanlint rules` 가 이 순서로 묶어 보인다. 뜻의 정본은 start.product 의 잡는 것이다."""
 
 
 def rule(name: str) -> Callable[[Check], Check]:
@@ -53,6 +62,19 @@ def loadAll() -> None:
 def ruleNames() -> list[str]:
     loadAll()
     return sorted(REGISTRY)
+
+
+def ruleCategory(name: str) -> str:
+    """규칙이 사는 부류 폴더 이름. 파일 위치가 정본이라 따로 적지 않는다."""
+    loadAll()
+    if name not in REGISTRY:
+        raise KeyError(f"모르는 규칙: {name}. hanlint rules 로 목록을 본다")
+    return REGISTRY[name].__module__.split(".")[-2]
+
+
+def ruleCategories() -> dict[str, str]:
+    """규칙 이름 → 부류. npm 투영 (`scripts/exportData.py`) 이 이것을 그대로 쓴다."""
+    return {name: ruleCategory(name) for name in ruleNames()}
 
 
 def ruleDoc(name: str) -> str:

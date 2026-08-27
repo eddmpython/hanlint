@@ -4,6 +4,7 @@
 
 ```toml
 [tool.hanlint]
+preset = "blog"
 disable = ["nounPile"]
 analyzer = "surface"
 keywordField = "primaryKeyword"
@@ -21,9 +22,36 @@ from dataclasses import dataclass, field
 
 ANALYZERS = ("surface", "kiwi")
 
+PRESETS: dict[str, tuple[str, ...]] = {
+    "blog": (),
+    "report": ("noQuestion", "readerAbsent", "sectionResult", "firstResultDistance", "introImage", "moreLater"),
+    "docs": (
+        "noQuestion",
+        "readerAbsent",
+        "sectionResult",
+        "firstResultDistance",
+        "introImage",
+        "moreLater",
+        "draftHistory",
+        "blockUnread",
+    ),
+}
+"""글의 종류마다 처음부터 끄고 시작할 규칙. `preset` 키가 고르고 `disable` 이 그 위에 더한다.
+
+blog 는 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다.
+report 는 보고서다. 독자에게 말을 걸지 않고 절이 결과를 남기지 않으며 도입이 짧을 필요가 없다.
+docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기는 것 (draftHistory) 과 그림을 text 펜스로
+그리는 것 (blockUnread) 이 제 일이다. 실측: 이 저장소의 hanlint.toml 이 noQuestion 과 readerAbsent 를
+손으로 끄고 있었다. 프리셋은 그 손질을 이름 하나로 바꾼 것이다.
+"""
+
+PRESET_NAMES = tuple(PRESETS)
+
 
 @dataclass
 class Config:
+    preset: str = "blog"
+    """글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다. disable 은 그 위에 더한다."""
     disable: set[str] = field(default_factory=set)
     """끌 규칙 이름."""
     analyzer: str = "surface"
@@ -76,7 +104,11 @@ class Config:
     """한 칸만 딴 것을 물으려면 그 열에 몇 줄이 있어야 하는가. 셋 이하는 모양을 정할 수 없다."""
 
     def enabled(self, ruleName: str) -> bool:
-        return ruleName not in self.disable
+        return ruleName not in self.disable and ruleName not in PRESETS[self.preset]
+
+    def offRules(self) -> tuple[str, ...]:
+        """지금 꺼져 있는 규칙 이름. 프리셋이 끈 것과 disable 이 끈 것을 합친다."""
+        return tuple(sorted(set(PRESETS[self.preset]) | self.disable))
 
     @classmethod
     def fromMapping(cls, data: dict) -> Config:
@@ -88,6 +120,10 @@ class Config:
                 if value not in ANALYZERS:
                     raise ValueError(f"analyzer 는 {' 또는 '.join(ANALYZERS)} 다: {value}")
                 config.analyzer = value
+            elif key == "preset":
+                if value not in PRESETS:
+                    raise ValueError(f"preset 은 {', '.join(PRESET_NAMES)} 가운데 하나다: {value}")
+                config.preset = value
             elif key == "dictionary":
                 config.dictionary = dict(value)
             elif key != "source" and hasattr(config, key):

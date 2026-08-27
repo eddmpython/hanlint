@@ -20,11 +20,13 @@ from .shared import (
     STDIN_NAME,
     addCommonOptions,
     addSeverityOptions,
+    collectFiles,
     configFrom,
     configLabel,
     emit,
     header,
     keep,
+    nextStep,
     readInput,
     severityOf,
     startFolder,
@@ -60,12 +62,13 @@ def profileFindings(doc: DocumentPrint, profile: Profile) -> list[Finding]:
 
 
 def run(args: argparse.Namespace) -> int:
-    config = configFrom(args, start=startFolder(args.files))
+    files = collectFiles(args.files)
+    config = configFrom(args, start=startFolder(files))
     analyzer = analyzerFor(config)
     profilePath = args.profile or (Path(config.profile) if config.profile else None)
     profile = loadProfile(profilePath) if profilePath else None
     results: dict[str, list[Finding]] = {}
-    for path in args.files:
+    for path in files:
         name, text = readInput(path, args.stdinPath)
         doc = buildFingerprint(parseMarkdown(text, path=name), analyzer, config)
         findings = runAll(doc, config)
@@ -94,5 +97,7 @@ def run(args: argparse.Namespace) -> int:
             parts.append("\n\n".join(renderText(name, findings) for name, findings in shown.items()))
             if len(shown) > 1:
                 parts.append(summary(shown))
+        if not args.quiet:
+            parts.append(nextStep(shown))
         emit("\n\n".join(parts) if args.format == "text" else "\n".join(parts), args.output)
     return 1 if hasError else 0

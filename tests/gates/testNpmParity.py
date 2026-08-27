@@ -95,5 +95,58 @@ def testFixPreviewAgrees(tmp_path):
 def testRuleListsAgree():
     python, node = runBoth(["rules", "--names"])
     assert python.stdout == node.stdout
-    python, node = runBoth(["explain", "doublePassive"])
+    for rule in ("doublePassive", "moreLater", "numberOrphan"):
+        python, node = runBoth(["explain", rule])
+        assert python.stdout == node.stdout, rule
+    python, node = runBoth(["explain"])
+    assert python.returncode == node.returncode == 2
     assert python.stdout == node.stdout
+    python, node = runBoth(["explain", "doublePasive"])
+    assert python.returncode == node.returncode == 2
+    assert "doubleNegative, doublePassive" in node.stderr
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testEntryPointsAgree(tmp_path):
+    """진입점 셋. 인자 없는 첫 화면, 폴더 인자, 부류로 묶은 규칙 목록."""
+    python, node = runBoth([])
+    assert python.returncode == node.returncode == 0, node.stderr
+    assert python.stdout == node.stdout
+
+    folder = tmp_path / "글들"
+    (folder / "안").mkdir(parents=True)
+    (folder / "하나.md").write_text("## 절\n\n핵심은 속도입니다.\n", encoding="utf-8")
+    (folder / "안" / "둘.md").write_text("## 절\n\n파일을 엽니다.\n", encoding="utf-8")
+    for extra in (["--format", "compact"], ["--format", "text", "--no-color"]):
+        python, node = runBoth([str(folder), *extra])
+        assert python.returncode == node.returncode, node.stderr
+        assert python.stdout == node.stdout
+
+    python, node = runBoth(["rules"])
+    assert python.stdout == node.stdout
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testInitPresetsAgree(tmp_path):
+    # 같은 경로에 두 판을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
+    for preset in ("blog", "report", "docs"):
+        pythonPath = tmp_path / f"{preset}Python.toml"
+        nodePath = tmp_path / f"{preset}Node.toml"
+        python = subprocess.run(
+            [sys.executable, "-X", "utf8", "-B", "-m", "hanlint", "init", "--path", str(pythonPath), "--preset", preset],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=ROOT,
+        )
+        node = subprocess.run(
+            [str(NODE), str(NODE_CLI), "init", "--path", str(nodePath), "--preset", preset],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=ROOT,
+        )
+        assert python.returncode == 0, python.stderr
+        assert node.returncode == 0, node.stderr
+        assert pythonPath.read_text(encoding="utf-8") == nodePath.read_text(encoding="utf-8"), preset
+        assert python.stdout.replace(str(pythonPath), "") == node.stdout.replace(str(nodePath), ""), preset

@@ -16,12 +16,17 @@ hanlint 는 그중 기계가 잡을 수 있는 것을 집행한다.
 ## 먼저 확인
 
 ```powershell
-hanlint --version
+hanlint doctor
 ```
 
+판 번호, 어느 설정을 읽는지, 어느 분석기로 도는지, 어느 규칙이 꺼져 있는지가 한 화면에 나온다. 명령이
 없으면 사용자에게 설치 명령을 보인다. `pip install hanlint`. 의존성은 없다. 형태소 정밀 모드가 필요하면
 `pip install hanlint[kiwi]`. 파이썬이 없고 Node 가 있으면 설치 없이 `npx hanlint 글.md` 로 같은 검사를 한다
 (지문 지도와 프로파일은 파이썬 쪽에만 있다).
+
+설정 파일이 없고 글이 블로그가 아니면 프리셋을 먼저 정한다. `hanlint init --preset report` 나
+`--preset docs` 가 그 종류에 안 맞는 규칙을 처음부터 끈 설정을 만든다. 참고 문서에 `noQuestion` 이
+도는 것 같은 지적은 규칙이 틀린 것이 아니라 종류가 안 맞는 것이다.
 
 ## 순서
 
@@ -30,8 +35,9 @@ hanlint --version
    원문에 적용하고 무엇을 바꿨는지 줄마다 보여 준다. 건너뛴 자리는 이유가 붙어 있으니 손으로 고친다.
 3. `hanlint 글.md --format compact --errors-only` 를 돌린다. 한 줄에 지적 하나다. `경로:줄 [규칙] 왜` 꼴이고
    고친 문장이 있으면 뒤에 붙는다. 글이 파일이 아니라 손에 있으면 `hanlint - --path 이름.md` 로 stdin 에 넣는다.
-   첫 줄은 어느 설정을 읽었는지고 마지막 줄은 요약이다. 기계가 읽을 때는 `--format json` (지적마다 `rule`,
-   `line`, `quote`, `why`, 고칠 수 있으면 `fix` 와 `fragment`, `replacement`).
+   글이 여럿이면 폴더를 그대로 준다 (`hanlint 글들/`). 첫 줄은 어느 설정을 읽었는지, 마지막 두 줄은 요약과
+   다음에 할 일이다. 기계가 읽을 때는 `--format json` (지적마다 `rule`, `line`, `quote`, `why`, 고칠 수 있으면
+   `fix` 와 `fragment`, `replacement`).
 4. `error` 를 전부 고친다. 규칙이 왜 있는지 모르면 `hanlint explain <rule>` 을 읽는다. 네 절 (왜, 어디서,
    고치기, 안 잡는 것) 이 있다.
 5. 마지막에 한 번 `--severity all` 로 `notice` 를 읽고 판단한다. 사실 나열 (factListParagraph) 과 흐름 끊김
@@ -44,20 +50,22 @@ hanlint --version
 
 - 지적을 없애려고 문장을 지우지 않는다. 사실과 실행 단계는 자르지 않는다.
 - 규칙을 끄는 것은 사용자의 결정이다. 오탐이라고 판단되면 그 문장과 이유를 사용자에게 보이고, 끌지는 `hanlint.toml`
-  의 `disable` 로 사용자가 정한다. 규칙이 맞지만 그 자리만 예외일 때 (상투어를 인용하는 문단) 는 그 문단 앞뒤에
+  의 `disable` 로 사용자가 정한다. 규칙 여럿이 한꺼번에 안 맞으면 규칙이 아니라 글의 종류가 안 맞는 것이므로
+  `preset` 을 먼저 본다. 규칙이 맞지만 그 자리만 예외일 때 (상투어를 인용하는 문단) 는 그 문단 앞뒤에
   `<!-- hanlint-disable cliche -->` 와 `<!-- hanlint-enable cliche -->` 를 두고, 왜 예외인지 사용자에게 말한다.
 - `hanlint` 가 통과했다고 좋은 글이라고 말하지 않는다. 세어서 잡히는 결함이 없다는 뜻뿐이다.
 
 ## 실패할 때
 
-- `찾지 못했다`: 경로를 확인한다. 마크다운 파일 하나가 인자다.
+- `찾지 못했다`: 경로를 확인한다. 마크다운 파일이나 폴더가 인자다.
 - `kiwipiepy 가 없다`: `--analyzer surface` 로 돌리거나 `pip install hanlint[kiwi]`.
 - `모르는 설정 키`: `hanlint init` 이 만드는 파일의 키만 쓴다.
 
 ## 참고
 
-- 규칙 목록: `hanlint rules`
-- 설정 만들기: `hanlint init`
+- 규칙 목록: `hanlint rules`. 부류로 묶여 나오고 꺼진 것에 표시가 붙는다
+- 설정 만들기: `hanlint init --preset blog|report|docs`
+- 지금 상태: `hanlint doctor`. 설정 출처, 분석기, 꺼진 규칙
 - 지문 계층 JSON: `hanlint print 글.md`. 다른 도구가 지문 위에 무엇을 얹을 때
 - 문체 프로파일: `hanlint profile build 승인된글들/` 뒤 `hanlint 글.md --profile profile.json`
 - 초안 비교: `hanlint diff 전.md 후.md`. 고친 뒤 짜임과 지적 수가 어떻게 변했는지 숫자로 본다

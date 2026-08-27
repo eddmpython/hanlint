@@ -7,7 +7,29 @@
 export const ANALYZERS = ["surface", "kiwi"];
 
 /**
+ * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py 의 PRESETS 다.
+ * @type {Record<string, string[]>}
+ */
+export const PRESETS = {
+  blog: [],
+  report: ["noQuestion", "readerAbsent", "sectionResult", "firstResultDistance", "introImage", "moreLater"],
+  docs: [
+    "noQuestion",
+    "readerAbsent",
+    "sectionResult",
+    "firstResultDistance",
+    "introImage",
+    "moreLater",
+    "draftHistory",
+    "blockUnread",
+  ],
+};
+
+export const PRESET_NAMES = Object.keys(PRESETS);
+
+/**
  * @typedef {object} Config
+ * @property {string} preset 글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다
  * @property {Set<string>} disable 끌 규칙 이름
  * @property {string} analyzer
  * @property {string | null} keywordField
@@ -37,6 +59,7 @@ export const ANALYZERS = ["surface", "kiwi"];
 /** @returns {Config} */
 export function defaultConfig() {
   return {
+    preset: "blog",
     disable: new Set(),
     analyzer: "surface",
     keywordField: null,
@@ -66,7 +89,12 @@ export function defaultConfig() {
 
 /** @param {Config} config @param {string} ruleName */
 export function enabled(config, ruleName) {
-  return !config.disable.has(ruleName);
+  return !config.disable.has(ruleName) && !PRESETS[config.preset].includes(ruleName);
+}
+
+/** 지금 꺼져 있는 규칙 이름. 프리셋이 끈 것과 disable 이 끈 것을 합친다. @param {Config} config */
+export function offRules(config) {
+  return [...new Set([...PRESETS[config.preset], ...config.disable])].sort();
 }
 
 /** @param {Record<string, unknown>} data @returns {Config} */
@@ -80,6 +108,11 @@ export function configFromMapping(data) {
         throw new Error(`analyzer 는 ${ANALYZERS.join(" 또는 ")} 다: ${value}`);
       }
       config.analyzer = /** @type {string} */ (value);
+    } else if (key === "preset") {
+      if (!(/** @type {string} */ (value) in PRESETS)) {
+        throw new Error(`preset 은 ${PRESET_NAMES.join(", ")} 가운데 하나다: ${value}`);
+      }
+      config.preset = /** @type {string} */ (value);
     } else if (key === "dictionary") {
       config.dictionary = { .../** @type {Record<string, unknown[]>} */ (value) };
     } else if (key !== "source" && key in config) {

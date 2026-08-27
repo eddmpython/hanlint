@@ -9,8 +9,13 @@ from ...fingerprint.topics import topicsOf
 from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
 
+ENDING_SECTIONS = 2
+"""글의 끝으로 보는 절의 수. 결말 뒤에 `더 해 볼 것` 목록이 붙는 것이 흔한 모양이다."""
 
-def check(doc: DocumentPrint, section: SectionPrint, fields: list[str], where: str) -> Iterator[Finding]:
+
+def check(doc: DocumentPrint, sections: tuple[SectionPrint, ...], fields: list[str], where: str) -> Iterator[Finding]:
+    spoken = frozenset().union(*(s.topics for s in sections)) if sections else frozenset()
+    section = sections[0]
     for name in fields:
         value = doc.frontmatter.get(name)
         if not value:
@@ -18,7 +23,7 @@ def check(doc: DocumentPrint, section: SectionPrint, fields: list[str], where: s
         promised = topicsOf(value)
         if not promised:
             continue
-        if promised & section.topics:
+        if promised & spoken:
             continue
         yield Finding(
             "fieldEcho",
@@ -44,11 +49,13 @@ def fieldEcho(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         볼 필드는 config.introFields 와 config.endingFields 가 정한다. 둘 다 비어 있으면 이 규칙은 돌지 않는다.
     고치기: 도입 첫 문단에서 그 질문의 말을 그대로 쓰고, 마지막 절에서 얻을 것을 그 이름으로 다시 부른다.
         본문이 맞고 frontmatter 가 낡았으면 frontmatter 를 고친다.
-    안 잡는 것: 설정에 필드를 적지 않은 글. frontmatter 에 그 필드가 없거나 빈 글. 화제어가 없는 값. 화제어
-        중첩은 근사라 notice 로만 낸다.
+    안 잡는 것: 설정에 필드를 적지 않은 글. frontmatter 에 그 필드가 없거나 빈 글. 화제어가 없는 값. 글의
+        끝은 마지막 절 하나가 아니라 결말과 그 뒤 목록을 아우른다. 마지막 두 절을 함께 본다. 실측: 004 와
+        005 의 마지막 절이 `더 해 볼 것` 이라 결말이 한 칸 앞에 있었고 그것이 오탐이었다. 화제어 중첩은
+        근사라 notice 로만 낸다.
     """
     if not config.introFields and not config.endingFields:
         return
-    yield from check(doc, doc.intro, config.introFields, "도입")
+    yield from check(doc, (doc.intro,), config.introFields, "도입")
     if len(doc.sections) > 1:
-        yield from check(doc, doc.sections[-1], config.endingFields, "마지막 절")
+        yield from check(doc, doc.sections[-ENDING_SECTIONS:], config.endingFields, "글의 끝")
