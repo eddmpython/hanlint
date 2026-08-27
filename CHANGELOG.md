@@ -6,6 +6,27 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- 글쓰기 스킬이 세라고 한 자리를 집는 규칙 열. `numberOrphan` (앞에 나온 적 없는 기준값),
+  `tableOddCell` (한 칸만 잣대가 다른 표), `moreLater` (본문만큼 긴 마지막 절 목록), `draftHistory`
+  (글쓴이의 수정 이력과 자기 검증 기록), `enoughOnce` (`여기까지면 충분합니다` 의 두 번째),
+  `blockUnread` (읽어 주지 않은 출력), `loneSubheading` (새 말이 없는 외동 소제목), `introImage`
+  (도입 그림 상한), `headingQuestion` (물음표로 도배된 목차), `fieldEcho` (frontmatter 의 약속과 본문의 어긋남)
+- `hanlint` 를 인자 없이 치면 나오는 첫 화면. 이 폴더의 마크다운 이름으로 만든 예시와 다음 걸음을 준다
+- 파일 자리에 폴더를 받는다. 그 아래 마크다운을 이름 순으로 전부 검사한다
+- 검사 끝의 다음 행동 한 줄. `--quiet` 는 뺀다
+- `preset` 설정과 `hanlint init --preset blog|report|docs`. 글의 종류에 안 맞는 규칙을 이름 하나로 끈다
+- `hanlint doctor`. 설정 출처, 분석기, 꺼진 규칙을 한 화면에
+- `hanlint rules` 가 부류로 묶고 꺼진 규칙에 표시를 붙인다. `hanlint explain` 이 오타에 가까운 이름을
+  주고 같은 부류와 끄는 법을 붙인다
+
+### Changed
+
+- `endingRepeat` 은 구간에 인과도 질문도 독자 호출도 없을 때만 낸다. 합니다체 글에서 어미 연속은 문체
+  자체를 세는 것이었다 (발행본 다섯 편 실측 56건에서 17건)
+- `headingUniform` 의 파이썬 판이 숫자로 끝나는 제목을 뺀 뒤의 수를 세도록 바뀌어 npm 판과 같은 문장을 낸다
+
 ## [0.0.7] - 2026-08-27
 
 ### Fixed

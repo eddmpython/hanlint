@@ -1,4 +1,5 @@
 # 이 저장소의 문서를 hanlint 자신이 검사할 때의 설정 (tests/gates/testSelfLint.py).
-# README 와 specs 는 참고 문서라 독자에게 질문을 던지는 글이 아니다. 그 두 규칙만 끈다.
-disable = ["noQuestion", "readerAbsent"]
+# README 와 specs 는 참고 문서다. 독자를 부르지 않고, 절이 결과를 남기지 않고, 검증 사실을 남기고,
+# 폴더 나무를 text 펜스로 그린다. 그 종류에 맞는 규칙 묶음이 docs 프리셋이다.
+preset = "docs"
 analyzer = "surface"
