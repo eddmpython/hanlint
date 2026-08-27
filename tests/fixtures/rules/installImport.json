@@ -1,0 +1,14 @@
+{
+  "rule": "installImport",
+  "catch": [
+    "```powershell\npython -m pip install pandas\n```\n\n```python\nimport polars as pl\n```\n",
+    "설치는 `pip install ibis-framework[duckdb]` 입니다.\n\n```python\nimport ibis\ncon = ibis.sqlite.connect(\"x.db\")\n```\n",
+    "```powershell\npip install pandas\n```\n\n```python\nimport pandas as pd\n표 = pd.read_excel(\"x.xlsx\")\n```\n"
+  ],
+  "spare": [
+    "```powershell\npython -m pip install pandas polars\n```\n\n```python\nimport pandas as pd\nimport polars as pl\nimport os, sys\nfrom make_sales import run\n```\n\n아래를 make_sales.py 로 저장합니다.\n",
+    "```python\nimport pandas as pd\n```\n",
+    "설치: `pip install \"ibis-framework[duckdb,sqlite]\"`\n\n```python\nimport ibis\nibis.sqlite.connect(\"x.db\")\n```\n",
+    "```powershell\npip install scikit-learn openpyxl pandas\n```\n\n```python\nimport sklearn\nimport pandas as pd\n표 = pd.read_excel(\"x.xlsx\")\n```\n"
+  ]
+}

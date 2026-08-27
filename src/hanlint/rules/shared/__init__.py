@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
+from .codeBlocks import CodeBlock, codeBlocksOf
 from .dictionaryRule import dictionaryFindings
 from .runs import runsOf
 
-__all__ = ["dictionaryFindings", "runsOf"]
+__all__ = ["CodeBlock", "codeBlocksOf", "dictionaryFindings", "runsOf"]

@@ -95,6 +95,20 @@
       ]
     },
     {
+      "id": "code",
+      "name": "코드",
+      "symbol": "C",
+      "ansi": 39,
+      "hex": "#00ACC1",
+      "rules": [
+        "inputFileSource",
+        "installImport",
+        "duplicateBlock",
+        "firstResultDistance",
+        "platformApi"
+      ]
+    },
+    {
       "id": "orthography",
       "name": "맞춤법",
       "symbol": "H",

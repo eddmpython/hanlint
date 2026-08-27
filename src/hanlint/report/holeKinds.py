@@ -23,7 +23,7 @@ UNKNOWN = HoleKind("unknown", "기타", "?", 250, "#BBBBBB")
 @cache
 def kindsByRule() -> dict[str, HoleKind]:
     mapping: dict[str, HoleKind] = {}
-    for raw in loadToml("holeKinds.toml"):
+    for raw in loadToml("holeKinds.toml", "kind"):
         kind = HoleKind(raw["id"], raw["name"], raw["symbol"], int(raw["ansi"]), raw["hex"])
         for ruleName in raw["rules"]:
             mapping[ruleName] = kind

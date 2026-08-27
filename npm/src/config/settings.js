@@ -23,6 +23,8 @@ export const ANALYZERS = ["surface", "kiwi"];
  * @property {number} factListMaxMeanLength
  * @property {number} topicBreakMinSentences
  * @property {number} longSentenceMax
+ * @property {number} duplicateBlockRatio
+ * @property {number} firstResultMaxParagraphs
  */
 
 /** @returns {Config} */
@@ -43,6 +45,8 @@ export function defaultConfig() {
     factListMaxMeanLength: 8.0,
     topicBreakMinSentences: 2,
     longSentenceMax: 30,
+    duplicateBlockRatio: 0.9,
+    firstResultMaxParagraphs: 4,
   };
 }
 

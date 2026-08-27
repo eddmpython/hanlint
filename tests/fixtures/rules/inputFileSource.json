@@ -1,0 +1,16 @@
+{
+  "rule": "inputFileSource",
+  "catch": [
+    "설명입니다.\n\n```python\nimport pandas as pd\n표 = pd.read_excel(\"sales_small.xlsx\")\n```\n",
+    "```python\nwith open(\"notes.txt\") as f:\n    print(f.read())\n```\n",
+    "```python\ndf.to_parquet(\"data/sales.parquet\")\n```\n"
+  ],
+  "spare": [
+    "```python\nwith open(\"sales.csv\", \"w\") as f:\n    f.write(\"a,b\")\n```\n\n```python\nimport pandas as pd\n표 = pd.read_csv(\"sales.csv\")\n```\n",
+    "아래를 make_sales.py 로 저장하면 sales.csv 가 만들어집니다.\n\n```python\n표 = pd.read_csv(\"sales.csv\")\n```\n",
+    "```python\nimport os\nos.makedirs(\"data\", exist_ok=True)\ndf.to_parquet(\"data/x.parquet\")\n```\n",
+    "```python\nduckdb.sql(\"SELECT * FROM 'data/*.parquet'\")\n```\n",
+    "```python\n표 = pd.read_csv(\"https://example.com/x.csv\")\n```\n",
+    "```python\n표.to_csv(\"out.csv\")\n표2 = pd.read_csv(\"out.csv\")\n```\n"
+  ]
+}

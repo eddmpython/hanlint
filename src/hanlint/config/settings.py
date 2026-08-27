@@ -55,6 +55,10 @@ class Config:
     """화제 중첩 0 을 흐름 끊김으로 볼 때 앞뒤 문단의 최소 문장 수. 한 문장 문단은 중첩이 원래 작다."""
     longSentenceMax: int = 30
     """이보다 어절이 많으면 긴 문장. 실측: 다섯 편의 최장 문장 23, 33, 23, 26, 45 가운데 30 을 넘는 둘이 목록을 문장에 넣은 것."""
+    duplicateBlockRatio: float = 0.9
+    """코드나 출력 블록의 줄 겹침이 이 비율 이상이면 거의 같은 블록. 실측: 004 의 출력 서른 줄 중 다른 것 한 줄."""
+    firstResultMaxParagraphs: int = 4
+    """첫 코드나 표나 그림 전에 둘 수 있는 산문 문단 수. 글쓰기 스킬의 도입 문단 넷과 같다."""
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable

@@ -1,0 +1,11 @@
+# 코드 한 줄이 조용히 요구하는 패키지. `정규식<TAB>패키지[extra]<TAB>왜`. 설치 줄에 없으면 installImport 가 notice 로 짚는다.
+# 실측: 004 가 ibis-framework[duckdb] 만 설치하고 ibis.sqlite.connect 를 썼고 사람 평가자가 집었다.
+ibis\.sqlite\.connect	ibis-framework[sqlite]	ibis 의 sqlite 백엔드는 extra 로 따로 받는다
+ibis\.duckdb\.connect	ibis-framework[duckdb]	ibis 의 duckdb 백엔드는 extra 로 따로 받는다
+ibis\.postgres\.connect	ibis-framework[postgres]	ibis 의 postgres 백엔드는 extra 로 따로 받는다
+dask\.dataframe	dask[dataframe]	dask 의 dataframe 은 extra 로 따로 받는다
+pd\.read_excel\(|\.to_excel\(	openpyxl	pandas 의 엑셀 읽기와 쓰기는 openpyxl 이 있어야 돈다
+pd\.read_parquet\(|\.to_parquet\(	pyarrow	pandas 의 parquet 은 pyarrow 가 있어야 돈다
+pl\.read_excel\(	fastexcel	polars 의 엑셀 읽기는 fastexcel 이 기본 엔진이다
+plt\.|import matplotlib	matplotlib	그림을 그리려면 matplotlib 이 있어야 한다
+requests\.get\(|requests\.post\(	requests	requests 는 표준 라이브러리가 아니다

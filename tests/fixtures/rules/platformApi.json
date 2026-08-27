@@ -1,0 +1,13 @@
+{
+  "rule": "platformApi",
+  "catch": [
+    "```python\nimport psutil\nprint(psutil.Process().memory_info().peak_wset)\n```\n",
+    "```python\nimport os\nos.startfile(\"report.xlsx\")\n```\n",
+    "```python\npath = \"C:\\\\Users\\\\name\\\\data.csv\"\n```\n"
+  ],
+  "spare": [
+    "```python\nimport psutil\nprint(psutil.Process().memory_info().rss)\n```\n",
+    "```text\npeak_wset 123\n```\n",
+    "peak_wset 은 윈도우 전용이라 산문에서만 말합니다.\n"
+  ]
+}

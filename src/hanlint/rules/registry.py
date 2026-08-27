@@ -22,7 +22,7 @@ from .finding import Finding
 Check = Callable[[DocumentPrint, Config], Iterable[Finding]]
 REGISTRY: dict[str, Check] = {}
 REQUIRED_SECTIONS = ("왜:", "어디서:", "고치기:", "안 잡는 것:")
-CATEGORIES = ("sentence", "paragraph", "structure", "document", "orthography")
+CATEGORIES = ("sentence", "paragraph", "structure", "document", "orthography", "code")
 
 
 def rule(name: str) -> Callable[[Check], Check]:

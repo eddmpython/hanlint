@@ -19,6 +19,8 @@ THRESHOLD_FIELDS = (
     "factListMaxMeanLength",
     "topicBreakMinSentences",
     "longSentenceMax",
+    "duplicateBlockRatio",
+    "firstResultMaxParagraphs",
 )
 
 

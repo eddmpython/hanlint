@@ -11,6 +11,11 @@ import * as keywordMissing from "./document/keywordMissing.js";
 import * as noQuestion from "./document/noQuestion.js";
 import * as promiseRecall from "./document/promiseRecall.js";
 import * as readerAbsent from "./document/readerAbsent.js";
+import * as duplicateBlock from "./code/duplicateBlock.js";
+import * as firstResultDistance from "./code/firstResultDistance.js";
+import * as inputFileSource from "./code/inputFileSource.js";
+import * as installImport from "./code/installImport.js";
+import * as platformApi from "./code/platformApi.js";
 import * as confusable from "./orthography/confusable.js";
 import * as spacing from "./orthography/spacing.js";
 import * as spelling from "./orthography/spelling.js";
@@ -87,6 +92,11 @@ export const RULES = [
   spelling,
   spacing,
   confusable,
+  inputFileSource,
+  installImport,
+  duplicateBlock,
+  firstResultDistance,
+  platformApi,
 ];
 
 const BY_NAME = new Map(RULES.map((rule) => [rule.name, rule]));

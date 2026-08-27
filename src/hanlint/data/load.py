@@ -33,6 +33,7 @@ def loadPatterns(name: str) -> tuple[re.Pattern[str], ...]:
 
 
 @cache
-def loadToml(name: str) -> tuple[dict, ...]:
+def loadToml(name: str, key: str = "entry") -> tuple[dict, ...]:
+    """`[[key]]` 목록을 준다. 사전은 entry, 구멍 종류는 kind 다."""
     data = tomllib.loads(readText(name))
-    return tuple(data.get("entry", []))
+    return tuple(data.get(key, []))

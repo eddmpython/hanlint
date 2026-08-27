@@ -1,0 +1,11 @@
+{
+  "rule": "duplicateBlock",
+  "catch": [
+    "```text\na 1\nb 2\nc 3\nd 4\ne 5\nf 6\ng 7\nh 8\ni 9\nj 10\n```\n\n다른 엔진입니다.\n\n```text\na 1\nb 2\nc 3\nd 4\ne 5\nf 6\ng 7\nh 8\ni 9\nj 11\n```\n"
+  ],
+  "spare": [
+    "```text\na 1\nb 2\nc 3\n```\n\n```text\na 1\nb 2\nc 3\n```\n",
+    "```text\na 1\nb 2\nc 3\nd 4\ne 5\nf 6\n```\n\n```text\na 1\nb 2\nc 3\nx\ny\nz\n```\n",
+    "```python\na = 1\nb = 2\nc = 3\nd = 4\ne = 5\n```\n\n```text\na = 1\nb = 2\nc = 3\nd = 4\ne = 5\n```\n"
+  ]
+}

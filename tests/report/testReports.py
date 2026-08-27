@@ -96,11 +96,21 @@ def testMapShowsSymbolsAndUnderlines():
     assert chr(27) in colored
 
 
+def testHoleKindsAreLoaded():
+    from hanlint.report.holeKinds import allKinds, kindOf
+
+    kinds = allKinds()
+    assert len(kinds) >= 9
+    assert kindOf("cliche").id == "wording" and kindOf("spelling").id == "orthography"
+    assert kindOf("inputFileSource").id == "code"
+
+
 def testMapHtmlIsSelfContained():
     doc = fingerprint(SAMPLE, path="글.md")
     findings = lintText(SAMPLE, path="글.md")
     html = renderMapHtml(doc, findings)
     assert html.startswith("<!doctype html>")
+    assert html.count("<span><i") >= 9
     assert "<style>" in html and "http" not in html.split("<body")[0].replace("http-equiv", "")
     assert 'href="#s0"' in html and 'id="s0"' in html
     assert kindOf("cliche").hex in html
