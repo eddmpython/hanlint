@@ -31,6 +31,18 @@ status: curated
    안 되면 규칙을 빼고 사례를 `start.product` 의 `잡지 않는 것` 에 남긴다
 7. 테스트와 구조 게이트 통과 후 커밋한다
 
+## 사전 항목과 부류별 주의
+
+- **사전 규칙** (cliche, translationese, spelling, spacing, confusable, easyWords): 코드가 아니라 `data/*.toml`
+  에 항목을 더한다. 항목마다 pattern, fix, why, source 를 적고 source 에는 국립국어원 조항이나 사전 표제어를
+  적는다. `{ㄹ}` `{ㄴ}` 은 그 받침으로 끝나는 음절 부류, `{조사}` 는 낱말 경계다. 뜻에 따라 둘 다 맞는 자리는
+  넣지 않는다 (`start.product` 의 잡지 않는 것).
+- **code 부류** (inputFileSource, installImport, platformApi): 읽기와 쓰기 함수, 모듈과 패키지 대응, 숨은
+  의존성, 플랫폼 API 는 각각 규칙 파일의 정규식과 `data/pythonPackages.txt`, `data/hiddenDeps.txt`,
+  `data/platformApis.txt` 가 정본이다.
+- 정본 data 를 고쳤으면 `python scripts/exportData.py` 로 npm 투영을 다시 만든다.
+- 겹침 비율 (`hanlint coverage review.json 글.md`) 이 규칙을 더하는 근거다. 못 집은 유형 목록에서 후보를 고른다.
+
 ## 오탐 보고가 오면
 
 그 문장을 fixture 의 `spare` 에 먼저 넣는다. 테스트가 실패하는 것을 보고 규칙을 고친다. fixture 없이

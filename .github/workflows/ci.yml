@@ -44,3 +44,17 @@ jobs:
       - run: python -X utf8 -B -m pytest -q
       - run: node --test "npm/test/*.test.js"
       - run: python -X utf8 -B hooks/tests/checkWriteGate.py
+
+  # 루트 action.yml 을 자기 문서에 실제로 써서 액션 표면이 살아 있는지 본다.
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+      - uses: ./
+        with:
+          files: README.md npm/README.md
+          errors-only: "true"
+          command: node npm/bin/hanlint.js

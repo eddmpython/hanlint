@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-CODE_DIRS = ("src", "tests", "hooks", "scripts", "npm")
+CODE_DIRS = ("src", "tests", "hooks", "scripts", "npm", "vscode")
 PATH_EXCEPTIONS = {"__init__.py", "__main__.py", "conftest.py"}
 """파이썬이 정한 이름. 던더 파일과 pytest 의 conftest 는 바꿀 수 없다."""
 CODE_SUFFIXES = (".py", ".js")

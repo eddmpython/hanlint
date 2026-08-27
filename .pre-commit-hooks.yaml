@@ -1,0 +1,13 @@
+# pre-commit 표면. 소비 저장소의 .pre-commit-config.yaml 에서 이 저장소를 repo 로 가리키면 커밋마다 마크다운을 검사한다.
+#
+#   - repo: https://github.com/eddmpython/hanlint
+#     rev: v0.0.1
+#     hooks:
+#       - id: hanlint
+- id: hanlint
+  name: hanlint
+  description: 한국어 마크다운에서 반복되는 결함을 결정적으로 잡는다
+  entry: hanlint
+  language: python
+  types: [markdown]
+  args: [--errors-only, --quiet]

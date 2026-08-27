@@ -1,8 +1,13 @@
 # hanlint
 
-한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터다. 의존성이 없다.
+한국어 글에서 반복되는 결함을 결정적으로 잡는 린터이자 글쓴이의 글짓기 도구다. 의존성이 없다.
 
-글의 좋고 나쁨을 판정하지 않는다. 세어서 확정할 수 있는 결함만 집어서 자리와 이유를 돌려준다.
+번역투와 상투어, 자주 틀리는 맞춤법과 띄어쓰기 (`됬`, `않 해`, `할수 있다`), 로서/로써 같은 헷갈리는 말,
+지시어와 명사 쌓기, 조각난 문단, 도입과 결말의 개수 불일치, 그리고 코드 튜토리얼이라면 만들지 않은
+파일을 읽는 자리와 설치 줄에 없는 import 까지 집는다. 항목마다 국립국어원 조항이나 실측 근거가 붙어
+있고 고친 표기가 확정된 자리는 `hanlint fix` 가 바로 바꾼다.
+
+글의 좋고 나쁨은 판정하지 않는다. 세어서 확정할 수 있는 결함만 집어서 자리와 이유를 돌려준다.
 좋은 글인지는 사람과 LLM 평가자가 그 위에서 판단한다. hanlint 는 그 판단이 셈에 시간을 쓰지
 않게 바닥을 깔아 주는 도구다.
 
@@ -55,6 +60,8 @@ hanlint 글.md
 | `hanlint explain <규칙>` | 규칙의 기술서. 왜, 어디서, 고치기, 안 잡는 것 |
 | `hanlint init` | 주석 달린 `hanlint.toml` |
 | `hanlint profile build 글들/` | 승인된 글의 문체 분포. `--profile` 로 새 글을 견준다 |
+| `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 |
+| `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 |
 
 백틱과 따옴표 안은 인용이라 사전 규칙과 지시어 규칙이 건너뛴다. 상투어를 인용하며 설명하는 글이 잡히지 않는다.
 
@@ -85,6 +92,19 @@ for finding in lintText(text):
 ```
 
 `lintFile`, `auditText`, `fingerprint` 도 같은 자리에 있다.
+
+## 커밋과 PR 에서
+
+pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-commit-config.yaml` 에서 이 저장소를
+가리키면 되고, 액션은 지적을 PR 의 줄 주석으로 단다. VS Code 확장 (`vscode/`) 은 저장할 때 검사해
+밑줄로 보여 주고 확정된 자리는 quick fix 로 고친다.
+
+```yaml
+- uses: eddmpython/hanlint@main
+  with:
+    files: docs/글.md
+    errors-only: "true"
+```
 
 ## AI 에게 시키기
 
