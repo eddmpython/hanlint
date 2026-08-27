@@ -52,6 +52,22 @@ git push origin main --tags
 토큰은 운영자가 가진다. 저장소와 로그에 남기지 않는다. 올린 뒤 `pip install hanlint==0.0.x` 로 새 venv 에서
 받아 `hanlint --version` 을 확인한다.
 
+## npm
+
+파이썬과 같은 버전을 같은 날 올린다. `npm/package.json` 의 version 과 `pyproject.toml` 의 version 은 항상 같다.
+`npm/data/version.json` 은 투영이라 `python scripts/exportData.py` 가 맞춘다.
+
+```powershell
+cd npm
+node --test test/*.test.js
+npm pack --pack-destination ../../hanlint.out
+npm publish
+```
+
+pack 산출물을 풀어 `bin`, `src`, `data`, `README.md` 만 들어 있고 `node_modules` 가 없는지 본다. 올린 뒤
+빈 폴더에서 `npx hanlint@0.0.x 글.md` 로 받아 파이썬과 같은 출력인지 확인한다. 토큰은 운영자가 가진다.
+
 ## 되돌리기
 
-PyPI 는 같은 버전을 다시 올릴 수 없다. 잘못 올렸으면 그 버전을 yank 하고 다음 버전으로 고친다.
+PyPI 는 같은 버전을 다시 올릴 수 없다. 잘못 올렸으면 그 버전을 yank 하고 다음 버전으로 고친다. npm 은
+72시간 안이면 `npm unpublish hanlint@0.0.x` 가 되고 그 뒤에는 `npm deprecate` 로 표시한다.

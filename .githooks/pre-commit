@@ -10,7 +10,7 @@ blocked=0
 
 for file in $(git diff --cached --name-only --diff-filter=ACM); do
   case "$file" in
-    *.py|*.md|*.toml|*.json|*.txt|*.sh|*.yml|*.yaml) ;;
+    *.py|*.js|*.md|*.toml|*.json|*.txt|*.sh|*.yml|*.yaml) ;;
     .githooks/*) ;;
     *) continue ;;
   esac
@@ -26,9 +26,9 @@ for file in $(git diff --cached --name-only --diff-filter=ACM); do
     echo "blocked: 제어 문자가 있다 (이스케이프를 날것으로 적었을 때 생긴다): $file" >&2
     blocked=1
   fi
-  # 코드 폴더의 파일 이름은 camelCase 다. __init__.py 와 conftest.py 만 파이썬이 정한 이름이라 예외.
+  # 코드 폴더의 파일 이름은 camelCase 다. 던더 파일과 conftest.py 만 파이썬이 정한 이름이라 예외. npm 의 js 도 같다.
   case "$file" in
-    src/*.py|tests/*.py|hooks/*.py|scripts/*.py)
+    src/*.py|tests/*.py|hooks/*.py|scripts/*.py|npm/*.js)
       base="$(basename "$file")"
       case "$base" in
         __init__.py|__main__.py|conftest.py) ;;

@@ -14,9 +14,12 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-CODE_DIRS = ("src", "tests", "hooks", "scripts")
+CODE_DIRS = ("src", "tests", "hooks", "scripts", "npm")
 PATH_EXCEPTIONS = {"__init__.py", "__main__.py", "conftest.py"}
 """파이썬이 정한 이름. 던더 파일과 pytest 의 conftest 는 바꿀 수 없다."""
+CODE_SUFFIXES = (".py", ".js")
+TEST_SUFFIX = ".test.js"
+"""node --test 의 관례. `rules.test.js` 의 앞부분만 camelCase 를 본다."""
 
 CAMEL = re.compile(r"^_?[a-z][a-zA-Z0-9]*$")
 PASCAL = re.compile(r"^_?[A-Z][a-zA-Z0-9]*$")
@@ -35,9 +38,10 @@ def pathViolation(relativePath: str) -> str | None:
         if not CAMEL.match(folder):
             return f"폴더 이름이 camelCase 가 아니다: {relativePath}"
     base = parts[-1]
-    if not base.endswith(".py") or base in PATH_EXCEPTIONS:
+    if not base.endswith(CODE_SUFFIXES) or base in PATH_EXCEPTIONS:
         return None
-    if not CAMEL.match(base[:-3]):
+    stem = base[: -len(TEST_SUFFIX)] if base.endswith(TEST_SUFFIX) else base.rsplit(".", 1)[0]
+    if not CAMEL.match(stem):
         return f"파일 이름이 camelCase 가 아니다: {relativePath}"
     return None
 
@@ -100,22 +104,22 @@ def boundNames(node: ast.Assign | ast.AnnAssign) -> list[str]:
     return names
 
 
-def codeFiles() -> list[Path]:
+def codeFiles(suffix: str = "*.py") -> list[Path]:
     files: list[Path] = []
     for folder in CODE_DIRS:
         base = ROOT / folder
         if base.exists():
-            files.extend(p for p in base.rglob("*.py") if ".venv" not in p.parts)
+            files.extend(p for p in base.rglob(suffix) if ".venv" not in p.parts and "node_modules" not in p.parts)
     return files
 
 
 def testRealTreePathsAreCamelCase():
-    problems = [pathViolation(p.relative_to(ROOT).as_posix()) for p in codeFiles()]
+    problems = [pathViolation(p.relative_to(ROOT).as_posix()) for p in codeFiles("*.py") + codeFiles("*.js")]
     assert [p for p in problems if p] == []
 
 
 def testRealTreeIdentifiersFollowRules():
-    files = codeFiles()
+    files = codeFiles("*.py")
     if not files:
         pytest.skip("검사할 파이썬 파일이 없다")
     problems: list[str] = []
@@ -179,3 +183,7 @@ def testPathRules():
         == "폴더 이름이 camelCase 가 아니다: src/hanlint/rules/sentence_rules/x.py"
     )
     assert pathViolation("tests/rules/test_deixis.py") is not None
+    assert pathViolation("npm/src/rules/sentence/cliche.js") is None
+    assert pathViolation("npm/test/rules.test.js") is None
+    assert pathViolation("npm/src/document/parse_markdown.js") is not None
+    assert pathViolation("npm/package.json") is None

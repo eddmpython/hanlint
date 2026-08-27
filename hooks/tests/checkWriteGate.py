@@ -38,11 +38,15 @@ check("em 대시 내용", blocked({"file_path": f"{ROOT}/README.md", "content": 
 check("en 대시 edit", blocked({"file_path": f"{ROOT}/README.md", "new_string": "2020\u20132024"}), True)
 check("임시 산출물 dist", blocked({"file_path": f"{ROOT}/dist/out.txt", "content": "x"}), True)
 check("임시 산출물 로그", blocked({"file_path": f"{ROOT}/run.log", "content": "x"}), True)
+check("snake 파일 npm js", blocked({"file_path": f"{ROOT}/npm/src/document/parse_markdown.js", "content": ""}), True)
+check("npm node_modules", blocked({"file_path": f"{ROOT}/npm/node_modules/x/index.js", "content": ""}), True)
 
 # 막지 말아야 할 것
 check("camel 파일", blocked({"file_path": f"{ROOT}/src/hanlint/parseMarkdown.py", "content": ""}), False)
 check("__init__", blocked({"file_path": f"{ROOT}/src/hanlint/__init__.py", "content": ""}), False)
 check("conftest", blocked({"file_path": f"{ROOT}/tests/conftest.py", "content": ""}), False)
+check("camel js", blocked({"file_path": f"{ROOT}/npm/src/document/parseMarkdown.js", "content": ""}), False)
+check("node test 파일", blocked({"file_path": f"{ROOT}/npm/test/rules.test.js", "content": ""}), False)
 check("코드 폴더 밖 snake", blocked({"file_path": f"{ROOT}/docs/some_note.md", "content": ""}), False)
 check(
     "저장소 밖 snake",

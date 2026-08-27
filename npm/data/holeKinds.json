@@ -1,0 +1,117 @@
+{
+  "kind": [
+    {
+      "id": "rhythm",
+      "name": "리듬",
+      "symbol": "R",
+      "ansi": 75,
+      "hex": "#56B4E9",
+      "rules": [
+        "endingRepeat",
+        "profile"
+      ]
+    },
+    {
+      "id": "flow",
+      "name": "흐름",
+      "symbol": "F",
+      "ansi": 214,
+      "hex": "#E69F00",
+      "rules": [
+        "topicBreak"
+      ]
+    },
+    {
+      "id": "deixis",
+      "name": "지시",
+      "symbol": "D",
+      "ansi": 166,
+      "hex": "#D55E00",
+      "rules": [
+        "deixis",
+        "danglingDeixis"
+      ]
+    },
+    {
+      "id": "list",
+      "name": "나열",
+      "symbol": "L",
+      "ansi": 170,
+      "hex": "#CC79A7",
+      "rules": [
+        "factListParagraph"
+      ]
+    },
+    {
+      "id": "density",
+      "name": "밀도",
+      "symbol": "N",
+      "ansi": 227,
+      "hex": "#F0E442",
+      "rules": [
+        "nounPile",
+        "euiChain",
+        "doublePassive"
+      ]
+    },
+    {
+      "id": "structure",
+      "name": "구조",
+      "symbol": "S",
+      "ansi": 36,
+      "hex": "#009E73",
+      "rules": [
+        "paraFragment",
+        "sectionNoProse",
+        "headingSkip",
+        "headingUniform",
+        "headingSentence",
+        "introLong",
+        "emojiBullet"
+      ]
+    },
+    {
+      "id": "promise",
+      "name": "약속",
+      "symbol": "P",
+      "ansi": 26,
+      "hex": "#0072B2",
+      "rules": [
+        "countMismatch",
+        "promiseRecall",
+        "keywordMissing"
+      ]
+    },
+    {
+      "id": "reader",
+      "name": "독자",
+      "symbol": "A",
+      "ansi": 245,
+      "hex": "#999999",
+      "rules": [
+        "noQuestion",
+        "readerAbsent"
+      ]
+    },
+    {
+      "id": "wording",
+      "name": "표현",
+      "symbol": "W",
+      "ansi": 137,
+      "hex": "#A0522D",
+      "rules": [
+        "cliche",
+        "translationese",
+        "redundantPair",
+        "japaneseLoan",
+        "connectorRepeat",
+        "fillerOpener",
+        "doubleNegative",
+        "negationRedefine",
+        "dash",
+        "imperativePeriod",
+        "ellipsis"
+      ]
+    }
+  ]
+}

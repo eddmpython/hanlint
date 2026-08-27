@@ -13,18 +13,24 @@ verify:
   - .venv/Scripts/python.exe -X utf8 -B -m ruff check src tests hooks scripts
   - .venv/Scripts/python.exe -X utf8 -B -m ruff format --check src tests hooks scripts
   - python -X utf8 -B hooks/tests/checkWriteGate.py
+  - node --test npm/test/*.test.js
 status: observed
 ---
 
 # 검증
 
-커밋 전에 셋이 green 이어야 한다. `pre-push` 가 pytest 를 다시 돈다.
+커밋 전에 넷이 green 이어야 한다. `pre-push` 가 pytest 를 다시 돈다. pytest 안에 npm 동등성 게이트가 있어
+node 가 있는 기계에서는 두 구현의 출력을 글자 단위로 견준다.
 
 ```powershell
 .venv/Scripts/python.exe -X utf8 -B -m pytest -q
 .venv/Scripts/python.exe -X utf8 -B -m ruff check src tests hooks scripts
 .venv/Scripts/python.exe -X utf8 -B -m ruff format --check src tests hooks scripts
+node --test npm/test/*.test.js
 ```
+
+`src/hanlint/data` 나 규칙 docstring 을 고쳤으면 `python scripts/exportData.py` 로 `npm/data` 를 다시 만든다.
+안 하면 `testNpmData` 가 빨갛다.
 
 ## 게이트
 
@@ -37,6 +43,9 @@ status: observed
 | `tests/gates/testDash.py` | 추적 파일의 em 대시, en 대시 | fixture 로 양방향 |
 | `tests/gates/testCommitMessage.py` | 커밋 메시지 형식, 검증 줄 부재, 도구 흔적 | fixture 로 양방향 |
 | `tests/gates/testSelfLint.py` | README 와 specs 가 hanlint 의 error 지적을 받는 것 | 상투어가 든 문서로 잡히는지 본다 |
+| `tests/gates/testNpmData.py` | `npm/data` 가 파이썬 정본의 투영과 다른 것 | 정본을 고치고 투영을 안 돌리면 red |
+| `tests/gates/testNpmParity.py` | npm 구현이 파이썬과 다른 출력을 내는 것 | 규칙 하나를 한쪽만 고치면 red. node 없으면 건너뛴다 |
+| `npm/test/rules.test.js` | npm 규칙이 같은 fixture 를 어기는 것. 규칙, fixture, 기술서, 파일의 넷이 짝인지 | fixture 로 양방향 |
 | `hooks/tests/checkWriteGate.py` | 쓰기 훅의 판정 | 양방향 |
 
 신설 게이트는 음성 시험으로 이빨을 증명하고서야 게이트다. 통과만 확인한 게이트는 없는 게이트보다 나쁘다.

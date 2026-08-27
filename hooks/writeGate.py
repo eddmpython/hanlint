@@ -19,7 +19,7 @@ import json
 import re
 import sys
 
-CODE_DIRS = ("src/", "tests/", "hooks/", "scripts/")
+CODE_DIRS = ("src/", "tests/", "hooks/", "scripts/", "npm/")
 PYTHON_EXCEPTIONS = {"__init__.py", "__main__.py", "conftest.py"}
 DISPOSABLE = re.compile(
     r"(^|/)(dist|build|__pycache__|\.pytest_cache|\.ruff_cache|\.mypy_cache|node_modules)(/|$)|\.(log|pyc|tmp)$"
@@ -50,7 +50,7 @@ def problemsIn(toolInput: dict, projectDir: str) -> list[str]:
     if relative is not None:
         if DISPOSABLE.search(relative):
             problems.append(f"저장소 안 임시 산출물 경로다. 공통 실행 공간으로 보낸다: {relative}")
-        if relative.endswith(".py") and relative.startswith(CODE_DIRS):
+        if relative.endswith((".py", ".js")) and relative.startswith(CODE_DIRS):
             base = relative.rsplit("/", 1)[-1]
             if base not in PYTHON_EXCEPTIONS and "_" in base:
                 problems.append(f"snake_case 파일 이름이다. camelCase 로 쓴다: {relative}")

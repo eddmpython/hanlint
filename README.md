@@ -8,12 +8,16 @@
 
 ## 설치
 
-pip 하나면 된다. 형태소 분석기로 더 정밀하게 보려면 `hanlint[kiwi]` 를 따로 받는다.
+pip 하나면 된다. 형태소 분석기로 더 정밀하게 보려면 `hanlint[kiwi]` 를 따로 받는다. Node 쪽은 npm 에
+같은 이름으로 있고 설치 없이 `npx hanlint 글.md` 로 바로 돈다.
 
 ```powershell
 pip install hanlint
 pip install hanlint[kiwi]
+npx hanlint 글.md
 ```
+
+두 구현은 같은 규칙, 같은 fixture, 같은 출력이다. 지문 지도와 프로파일과 kiwi 정밀 모드는 파이썬 쪽에만 있다.
 
 ## 사용
 
