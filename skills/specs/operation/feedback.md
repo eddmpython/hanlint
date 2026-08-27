@@ -24,18 +24,22 @@ hanlint 를 쓰다가 만난 오탐 (정당한 문장을 잡음), 미탐 (잡아
 - **규칙 제안**: 실제 글에서 가져온 나쁜 문장, 왜 나쁜지의 근거 (국립국어원 조항, 실측), 잡아야 할
   예시와 잡지 말아야 할 예시 한 개 이상씩
 
-## 이 기계의 에이전트: mainPlan 대기열
+## 이 기계의 에이전트: Discussions 의 Ideas
 
 전역 규칙이 한국어 산문에 hanlint 를 강제하므로, 다른 저장소에서 글을 쓰다 발견한 것도 여기로 온다.
-소비 저장소에 영구 우회 (disable, 인라인 제어) 로 숨기지 않는다. 이 저장소의
-`mainPlan/<번호>-<camelCase이름>/README.md` 에 새 항목을 만들고 다음을 적는다.
+소비 저장소에 영구 우회 (disable) 로 숨기지 않는다. 확정 오탐과 미탐 (문장 원문이 있는 것) 은 위의
+Issues 양식으로, **이상한 점, 아이디어, 개선 제안은 GitHub Discussions 의 Ideas 카테고리**로 올린다.
+올리기 전에 기존 토론을 검색해 같은 내용이 있으면 거기에 댓글로 사례를 더한다.
 
-- 무엇을 하다가 (저장소, 글, 명령), 정확한 버전
-- 잡힌 (또는 놓친) 문장 원문과 규칙 이름
-- 기대와 실제, 왜 오탐 (미탐) 이라고 판단했는지
-- 제안 (패턴을 좁히는 방향, spare 후보 문장)
+```powershell
+# 기존 토론 훑기
+gh api graphql -f query='query { repository(owner: "eddmpython", name: "hanlint") { discussions(first: 30) { nodes { title url } } } }'
+# 새 제안 올리기 (Ideas). repositoryId 와 categoryId 는 discussionCategories 조회로 얻는다
+gh api graphql -f query='mutation($body: String!) { createDiscussion(input: {repositoryId: "R_kgDOUFhQxw", categoryId: "DIC_kwDOUFhQx84DET0K", title: "제안 한 줄", body: $body}) { discussion { url } } }' -f body="본문"
+```
 
-같은 내용이 이미 있으면 새 항목 대신 그 항목에 사례를 더한다. 번호는 기존 대기열의 다음 수다.
+본문에는 무엇을 하다가 (저장소, 글, 명령), 정확한 버전, 관찰한 것과 기대, 제안을 적는다. 비공개
+저장소의 문장은 비식별화하거나 같은 꼴의 합성 예문으로 바꿔 올린다.
 
 ## 처리
 
