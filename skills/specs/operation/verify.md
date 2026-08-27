@@ -12,6 +12,7 @@ verify:
   - .venv/Scripts/python.exe -X utf8 -B -m pytest -q
   - .venv/Scripts/python.exe -X utf8 -B -m ruff check src tests hooks scripts
   - .venv/Scripts/python.exe -X utf8 -B -m ruff format --check src tests hooks scripts
+  - .venv/Scripts/python.exe -X utf8 -B scripts/exportData.py --check
   - python -X utf8 -B hooks/tests/checkWriteGate.py
   - node --test npm/test/*.test.js
 status: observed
@@ -54,6 +55,22 @@ node --test npm/test/*.test.js
 
 이 저장소의 문서는 hanlint 자신이 검사한다. 설정은 루트 `hanlint.toml` 이고 참고 문서라 `noQuestion` 과
 `readerAbsent` 만 끈다. 문서를 고쳤으면 `hanlint README.md` 로 먼저 본다.
+
+## 표면 검증
+
+명령줄 밖 표면은 빌드 통과가 아니라 실물 실행으로 검증한다.
+
+- **GitHub Action.** ci 의 `action` 잡이 루트 `action.yml` 을 `uses: ./` 로 자기 README 두 편에 실제로
+  돌린다. push 뒤 `gh run watch` 로 success 를 본다.
+- **pre-commit.** 공통 실행 공간의 venv 에서 `pre-commit try-repo <저장소> hanlint --files 글.md` 로 돌린다.
+  try-repo 는 추적 파일만 복제하므로 `.pre-commit-hooks.yaml` 을 stage 한 뒤라야 보인다. 틀린 표기 글이
+  exit 1, 깨끗한 글이 exit 0 이어야 한다.
+- **VS Code 확장.** `node --check vscode/extension.js` 뒤 `npx @vscode/vsce package` 로 저장소 밖
+  (`../hanlint.out/vscodeShot/`) 에 vsix 를 만든다. `code --user-data-dir --extensions-dir` 격리 인스턴스에
+  설치하고 틀린 표기가 든 마크다운을 열어 진단 밑줄과 quick fix 를 스크린샷으로 눈검수한다.
+- **지도 HTML.** `hanlint map --format html` 산출물은 공통 실행 공간의 pyproc 하네스로 데스크톱 1440 과
+  모바일 390 스크린샷을 만들어 눈으로 본다. DOM 확인으로 끝내지 않는다. 범례 색이 0 개로 나온 지도 버그는
+  이 눈검수가 찾았다.
 
 ## 실측
 

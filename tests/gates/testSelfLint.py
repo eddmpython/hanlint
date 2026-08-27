@@ -18,6 +18,7 @@ def documents() -> list[Path]:
     return [
         ROOT / "README.md",
         ROOT / "npm" / "README.md",
+        ROOT / "vscode" / "README.md",
         *sorted((ROOT / "skills").rglob("*.md")),
         *sorted((ROOT / "tests" / "fixtures").glob("*.md")),
     ]

@@ -60,3 +60,4 @@ hanlint --version
 - 설정 만들기: `hanlint init`
 - 지문 계층 JSON: `hanlint print 글.md`. 다른 도구가 지문 위에 무엇을 얹을 때
 - 문체 프로파일: `hanlint profile build 승인된글들/` 뒤 `hanlint 글.md --profile profile.json`
+- 초안 비교: `hanlint diff 전.md 후.md`. 고친 뒤 짜임과 지적 수가 어떻게 변했는지 숫자로 본다
