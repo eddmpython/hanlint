@@ -19,8 +19,9 @@ status: curated
 
 ## 브랜치
 
-`main` 전용이다. 로컬 브랜치와 worktree 를 만들지 않는다. 원격 반영은 `main -> origin/main` 만.
-`.githooks/pre-push` 가 다른 ref 를 막는다. history 재작성과 force push 는 명시 지시를 받고 한다.
+`main` 전용이다. 로컬 브랜치와 worktree 를 만들지 않는다. 원격 반영은 `main -> origin/main` 과 릴리즈의
+버전 태그 `v*` 만. `.githooks/pre-push` 가 다른 ref 를 막는다. history 재작성과 force push 는 명시 지시를
+받고 한다.
 
 ## 커밋 메시지 = 기록
 
@@ -69,8 +70,8 @@ status: curated
 ## 릴리즈
 
 `0.0.x` 라인에서 명시 지시가 있을 때만 한다. 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. `pyproject.toml` 의
-version 과 태그는 항상 같은 값. 릴리즈 노트는 릴리즈 커밋 메시지다. PyPI 배포 절차는 M3 에서
-`operation.release` 로 만든다.
+version 과 태그는 항상 같은 값. 체인지로그 정본은 루트 `CHANGELOG.md` 이고 태그는 annotated 로
+`hanlint X.Y.Z 요약` 한 줄이다. 전체 배포 절차는 `operation.release` 가 정본이다.
 
 ## 훅
 
@@ -80,7 +81,7 @@ version 과 태그는 항상 같은 값. 릴리즈 노트는 릴리즈 커밋 �
 |---|---|
 | `commit-msg` | 메시지 형식, 검증 줄 부재, 도구 흔적, em 대시 |
 | `pre-commit` | staged 텍스트 파일의 em 대시와 en 대시와 제어 문자, `src` `tests` `hooks` `scripts` 아래 snake_case 파일 이름 |
-| `pre-push` | main 이 아닌 ref, `pytest` 실패 |
+| `pre-push` | main 과 버전 태그 (v*) 가 아닌 ref, `pytest` 실패 |
 
 새 클론에서 한 번 켠다.
 

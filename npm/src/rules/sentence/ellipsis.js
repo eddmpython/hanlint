@@ -3,7 +3,8 @@ import { SENTENCE, finding } from "../finding.js";
 
 export const name = "ellipsis";
 // 괄호 안의 점 셋 (`OVER (...)`) 은 인라인 코드의 생략 표기라 뺀다.
-const ELLIPSIS = /(?<![(\[])(…|\.{3,})(?![)\]])/;
+// 영숫자에 붙은 점 셋 (`v0.0.1...HEAD`, compare URL) 은 범위 표기라 말줄임표가 아니다.
+const ELLIPSIS = /(?<![(\[A-Za-z0-9])(…|\.{3,})(?![)\]A-Za-z0-9])/;
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

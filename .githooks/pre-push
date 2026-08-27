@@ -1,13 +1,14 @@
 #!/bin/sh
-# main 이 아닌 ref 의 push 를 막고, main 을 올리기 전에 게이트를 다시 돈다.
+# main 과 버전 태그 (v*) 가 아닌 ref 의 push 를 막고, 올리기 전에 게이트를 다시 돈다.
 # 커밋 메시지의 검증 줄은 주장이고 이 훅이 확인이다. 규칙 정본은 skills/specs/operation/sourceControl.md.
 
 while read -r local_ref local_sha remote_ref remote_sha; do
   case "$remote_ref" in
     refs/heads/main) ;;
+    refs/tags/v*) ;;
     "") ;;
     *)
-      echo "blocked: main 만 push 한다: $remote_ref" >&2
+      echo "blocked: main 과 버전 태그 (v*) 만 push 한다: $remote_ref" >&2
       exit 1
       ;;
   esac
