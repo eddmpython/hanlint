@@ -95,7 +95,10 @@ jobs:
         with:
           name: dist
           path: dist
+      # 재실행 (workflow_dispatch) 때 이미 올라간 버전이면 실패하지 않고 지나간다.
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
 
   publish-npm:
     needs: build
@@ -117,8 +120,18 @@ jobs:
       # npm/data 는 파이썬 정본의 투영이다. 낡은 투영을 올리지 않는다.
       - run: python -X utf8 -B scripts/exportData.py --check
       - run: node --test "npm/test/*.test.js"
-      - run: npm publish
+      # 첫 판 (0.0.1) 은 운영자 기계에서 올라간다 (Trusted Publisher 등록에 패키지가 먼저 있어야 한다).
+      # 그 뒤 같은 태그를 밀어도 이미 있는 버전은 건너뛴다. PyPI 의 skip-existing 과 같은 뜻이다.
+      - name: npm 게시 (이미 있는 버전은 건너뛴다)
         working-directory: npm
+        run: |
+          set -eu
+          version="$(node -p "require('./package.json').version")"
+          if npm view "hanlint@$version" version >/dev/null 2>&1; then
+            echo "hanlint@$version 은 이미 npm 에 있다. 건너뛴다"
+          else
+            npm publish
+          fi
 
   release:
     needs: [publish-pypi, publish-npm]
