@@ -1,0 +1,4 @@
+# 이 저장소의 문서를 hanlint 자신이 검사할 때의 설정 (tests/gates/testSelfLint.py).
+# README 와 specs 는 참고 문서라 독자에게 질문을 던지는 글이 아니다. 그 두 규칙만 끈다.
+disable = ["noQuestion", "readerAbsent"]
+analyzer = "surface"

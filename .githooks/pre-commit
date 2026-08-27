@@ -31,7 +31,7 @@ for file in $(git diff --cached --name-only --diff-filter=ACM); do
     src/*.py|tests/*.py|hooks/*.py|scripts/*.py)
       base="$(basename "$file")"
       case "$base" in
-        __init__.py|conftest.py) ;;
+        __init__.py|__main__.py|conftest.py) ;;
         *_*)
           echo "blocked: snake_case 파일 이름이다. camelCase 로 바꾼다: $file" >&2
           blocked=1

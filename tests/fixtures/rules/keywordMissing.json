@@ -1,0 +1,10 @@
+{
+  "rule": "keywordMissing",
+  "config": { "keywordField": "primaryKeyword" },
+  "catch": ["---\ntitle: 엑셀이 못 여는 표\nprimaryKeyword: 파이썬 데이터프레임 라이브러리\n---\n\n표가 큽니다.\n"],
+  "spare": [
+    "---\ntitle: 파이썬 데이터프레임 라이브러리 여섯 가지\nprimaryKeyword: 파이썬 데이터프레임 라이브러리\n---\n\n표가 큽니다.\n",
+    "---\ntitle: 엑셀이 못 여는 표\nprimaryKeyword: 파이썬 데이터프레임 라이브러리\n---\n\n파이썬 데이터프레임 라이브러리는 여럿입니다.\n",
+    "---\ntitle: 엑셀이 못 여는 표\n---\n\n표가 큽니다.\n"
+  ]
+}

@@ -34,12 +34,17 @@ status: curated
 
 ## 어디로 가나
 
+묻는 것에 따라 여는 문서가 다르다.
+
 | 알고 싶은 것 | 어디 |
 |---|---|
 | 위반하면 사고가 나는 규칙 | 루트 `CLAUDE.md` (추적하지 않음) |
 | 무엇을 잡고 무엇을 안 잡나 | [`start.product`](product.md) |
 | 규칙을 더하는 법 | `operation.addingARule` |
-| 규칙 목록 | `hanlint --list-rules` |
+| 커밋 전에 돌릴 것 | `operation.verify` |
+| 배포 절차 | `operation.release` |
+| 규칙 목록 | `hanlint rules` |
+| AI 에게 검사를 시키는 법 | `skills/use-hanlint/SKILL.md` |
 | 바깥을 향한 소개 | 루트 `README.md` |
 | 지금 진행 중인 기획 | `mainPlan/` |
 

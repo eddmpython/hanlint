@@ -54,9 +54,7 @@ def testRejectsSubjectProblems():
     assert "subjectForm" in codes(GOOD.replace("규칙: 이중 피동을 잡는다", "이중 피동을 잡는다"))
     assert "subjectPunctuation" in codes(GOOD.replace("잡는다\n", "잡는다.\n", 1))
     assert "subjectTooLong" in codes(GOOD.replace("이중 피동을 잡는다", "이중 피동을 잡는다 " * 8))
-    assert "subjectNotKorean" in codes(
-        GOOD.replace("규칙: 이중 피동을 잡는다", "rules: catch double passive")
-    )
+    assert "subjectNotKorean" in codes(GOOD.replace("규칙: 이중 피동을 잡는다", "rules: catch double passive"))
     assert "summaryTooThin" in codes(GOOD.replace("이중 피동을 잡는다", "수리"))
     assert "categoryTooLong" in codes(GOOD.replace("규칙:", "아주아주아주아주아주긴분류이름입니다:"))
 
@@ -72,12 +70,8 @@ def testRejectsBodyProblems():
         "검증: pytest green 이고 여든 자를 넘기려고 아주 길게 쓴 한 줄짜리 본문이라 두 줄 규칙에 걸린다\n"
     )
     assert "bodyTooThin" in codes("규칙: 이중 피동을 잡는다\n\n짧다.\n검증: green\n")
-    assert "verificationMissing" in codes(
-        GOOD.replace("검증: pytest green. fixture 의 catch 3건 spare 3건.", "그리고 끝.")
-    )
-    assert "bodyLineTooLong" in codes(
-        GOOD.replace("검증: pytest green.", "검증: pytest green. " + "가" * 100)
-    )
+    assert "verificationMissing" in codes(GOOD.replace("검증: pytest green. fixture 의 catch 3건 spare 3건.", "그리고 끝."))
+    assert "bodyLineTooLong" in codes(GOOD.replace("검증: pytest green.", "검증: pytest green. " + "가" * 100))
     assert "bodyNotKorean" in codes(
         "규칙: 이중 피동을 잡는다\n\n"
         + "english only body line number one is here\n"

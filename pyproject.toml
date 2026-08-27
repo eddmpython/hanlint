@@ -45,7 +45,8 @@ pythonpath = ["src", "."]
 cache_dir = "../hanlint.out/pytestCache"
 
 [tool.ruff]
-line-length = 110
+# ruff 는 표시 폭으로 센다. 한글은 2칸이라 110 이면 한국어 docstring 이 55자에서 걸린다. 130 은 한글 65자다.
+line-length = 130
 target-version = "py311"
 src = ["src", "tests", "hooks", "scripts"]
 cache-dir = "../hanlint.out/ruffCache"

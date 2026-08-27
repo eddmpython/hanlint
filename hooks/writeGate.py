@@ -20,7 +20,7 @@ import re
 import sys
 
 CODE_DIRS = ("src/", "tests/", "hooks/", "scripts/")
-PYTHON_EXCEPTIONS = {"__init__.py", "conftest.py"}
+PYTHON_EXCEPTIONS = {"__init__.py", "__main__.py", "conftest.py"}
 DISPOSABLE = re.compile(
     r"(^|/)(dist|build|__pycache__|\.pytest_cache|\.ruff_cache|\.mypy_cache|node_modules)(/|$)|\.(log|pyc|tmp)$"
 )

@@ -15,12 +15,15 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 CODE_DIRS = ("src", "tests", "hooks", "scripts")
-PATH_EXCEPTIONS = {"__init__.py", "conftest.py"}
+PATH_EXCEPTIONS = {"__init__.py", "__main__.py", "conftest.py"}
+"""파이썬이 정한 이름. 던더 파일과 pytest 의 conftest 는 바꿀 수 없다."""
 
 CAMEL = re.compile(r"^_?[a-z][a-zA-Z0-9]*$")
 PASCAL = re.compile(r"^_?[A-Z][a-zA-Z0-9]*$")
 UPPER_SNAKE = re.compile(r"^_?[A-Z][A-Z0-9_]*$")
 DUNDER = re.compile(r"^__\w+__$")
+EXTERNAL_ARGS = frozenset({"tmp_path", "tmp_path_factory", "request"})
+"""외부 계약인 인자 이름. pytest 가 fixture 를 이름으로 주입하므로 바꿀 수 없다."""
 
 
 def pathViolation(relativePath: str) -> str | None:
@@ -45,7 +48,10 @@ def identifierViolations(name: str, kind: str) -> str | None:
     if kind == "class":
         return None if PASCAL.match(name) else f"클래스 {name} 은 PascalCase 다"
     if kind == "constant":
-        return None if UPPER_SNAKE.match(name) or CAMEL.match(name) else f"모듈 상수 {name} 은 UPPER_SNAKE 다"
+        # 모듈 수준 대입은 상수 (UPPER_SNAKE), 변수 (camelCase), 타입 별칭 (PascalCase) 가운데 하나다.
+        if UPPER_SNAKE.match(name) or CAMEL.match(name) or PASCAL.match(name):
+            return None
+        return f"모듈 상수 {name} 은 UPPER_SNAKE 다"
     return None if CAMEL.match(name) else f"{kind} {name} 은 camelCase 다"
 
 
@@ -63,27 +69,35 @@ def namingViolations(source: str, path: str = "<source>") -> list[str]:
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             report(identifierViolations(node.name, "함수"), node.lineno)
             for arg in node.args.args + node.args.kwonlyargs + node.args.posonlyargs:
-                report(identifierViolations(arg.arg, "인자"), arg.lineno)
+                if arg.arg not in EXTERNAL_ARGS:
+                    report(identifierViolations(arg.arg, "인자"), arg.lineno)
             if node.args.vararg:
                 report(identifierViolations(node.args.vararg.arg, "인자"), node.lineno)
             if node.args.kwarg:
                 report(identifierViolations(node.args.kwarg.arg, "인자"), node.lineno)
-    # 모듈 수준 대입은 상수 후보, 함수 안 대입은 변수.
+    # 모듈 수준 대입은 상수 후보, 함수 안 대입은 변수. 새 이름을 만드는 자리만 본다.
+    # REGISTRY[name] = x 처럼 첨자나 속성에 넣는 것은 이름을 만드는 것이 아니다.
     for node in tree.body:
         if isinstance(node, (ast.Assign, ast.AnnAssign)):
-            for target in [node.target] if isinstance(node, ast.AnnAssign) else node.targets:
-                for name in ast.walk(target):
-                    if isinstance(name, ast.Name):
-                        report(identifierViolations(name.id, "constant"), node.lineno)
+            for name in boundNames(node):
+                report(identifierViolations(name, "constant"), node.lineno)
     for func in [n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]:
         for node in ast.walk(func):
             if isinstance(node, (ast.Assign, ast.AnnAssign)):
-                targets = [node.target] if isinstance(node, ast.AnnAssign) else node.targets
-                for target in targets:
-                    for name in ast.walk(target):
-                        if isinstance(name, ast.Name):
-                            report(identifierViolations(name.id, "변수"), node.lineno)
+                for name in boundNames(node):
+                    report(identifierViolations(name, "변수"), node.lineno)
     return violations
+
+
+def boundNames(node: ast.Assign | ast.AnnAssign) -> list[str]:
+    targets = [node.target] if isinstance(node, ast.AnnAssign) else node.targets
+    names: list[str] = []
+    for target in targets:
+        if isinstance(target, ast.Name):
+            names.append(target.id)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            names.extend(element.id for element in target.elts if isinstance(element, ast.Name))
+    return names
 
 
 def codeFiles() -> list[Path]:
@@ -133,10 +147,9 @@ def testCatchesSnakeFunctionArgAndVariable():
 
 
 def testCatchesLowerClassAndSnakeConstant():
-    assert namingViolations("class sentence_print:\n    pass\n") == [
-        "<source>:1 클래스 sentence_print 은 PascalCase 다"
-    ]
+    assert namingViolations("class sentence_print:\n    pass\n") == ["<source>:1 클래스 sentence_print 은 PascalCase 다"]
     assert namingViolations("noun_tags = 1\n") == ["<source>:1 모듈 상수 noun_tags 은 UPPER_SNAKE 다"]
+    assert namingViolations("Check = int\n") == []
 
 
 def testSparesCallSiteKeywords():
@@ -144,15 +157,23 @@ def testSparesCallSiteKeywords():
     assert namingViolations(source) == []
 
 
+def testSparesSubscriptAndAttributeTargets():
+    source = "REGISTRY = {}\ndef register(name):\n    REGISTRY[name] = 1\n    self_like.some_attr = 2\n"
+    assert namingViolations(source) == []
+    assert namingViolations("def f():\n    a_b, c = 1, 2\n") == ["<source>:2 변수 a_b 은 camelCase 다"]
+
+
+def testSparesExternalFixtureArgs():
+    assert namingViolations("def testX(tmp_path):\n    return tmp_path\n") == []
+    assert namingViolations("def testX(tmp_dir):\n    return tmp_dir\n") != []
+
+
 def testPathRules():
     assert pathViolation("src/hanlint/parseMarkdown.py") is None
     assert pathViolation("src/hanlint/__init__.py") is None
     assert pathViolation("tests/conftest.py") is None
     assert pathViolation("docs/some_note.md") is None
-    assert (
-        pathViolation("src/hanlint/parse_markdown.py")
-        == "파일 이름이 camelCase 가 아니다: src/hanlint/parse_markdown.py"
-    )
+    assert pathViolation("src/hanlint/parse_markdown.py") == "파일 이름이 camelCase 가 아니다: src/hanlint/parse_markdown.py"
     assert (
         pathViolation("src/hanlint/rules/sentence_rules/x.py")
         == "폴더 이름이 camelCase 가 아니다: src/hanlint/rules/sentence_rules/x.py"

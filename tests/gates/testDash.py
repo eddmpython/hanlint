@@ -15,15 +15,11 @@ DASHES = ("\u2014", "\u2013")
 
 def dashLines(text: str) -> list[int]:
     """대시가 있는 줄 번호 (1 부터)."""
-    return [
-        number for number, line in enumerate(text.splitlines(), start=1) if any(d in line for d in DASHES)
-    ]
+    return [number for number, line in enumerate(text.splitlines(), start=1) if any(d in line for d in DASHES)]
 
 
 def trackedTextFiles() -> list[Path]:
-    output = subprocess.run(
-        ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8"
-    ).stdout
+    output = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8").stdout
     files = []
     for line in output.splitlines():
         path = ROOT / line.strip()

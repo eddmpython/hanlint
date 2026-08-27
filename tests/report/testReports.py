@@ -1,0 +1,78 @@
+import json
+
+from hanlint import Config, auditText, fingerprint, lintText
+from hanlint.report import renderAudit, renderGithub, renderJson, renderMap, renderMapHtml, renderText
+from hanlint.report.holeKinds import kindOf
+
+SAMPLE = """## 첫 절
+
+핵심은 속도입니다. 모든 분야에 있어서 기준이 필요합니다.
+
+첫 문장입니다.
+
+둘째 문장입니다.
+
+셋째 문장입니다.
+
+## 둘째 절
+
+값을 저장합니다. 저장한 값은 어디에 남을까요? 작업 폴더입니다.
+"""
+
+
+def testTextReportHasFileLineAndFix():
+    findings = lintText(SAMPLE, path="글.md")
+    text = renderText("글.md", findings)
+    assert text.startswith("글.md  집은 자리")
+    assert "글.md:3  [cliche]" in text
+    assert "고친 뒤: 모든 분야에서 기준이 필요합니다." in text
+    assert "hanlint explain" in text
+
+
+def testTextReportWhenClean():
+    assert renderText("글.md", []) == "글.md  집은 자리 없음"
+
+
+def testJsonReportIsParseableAndCarriesFields():
+    findings = lintText(SAMPLE, path="글.md")
+    data = json.loads(renderJson({"글.md": findings}, {"글.md": auditText(SAMPLE)}))
+    assert data["version"] == 1
+    first = data["files"][0]["findings"][0]
+    assert set(first) >= {"rule", "line", "severity", "scope", "at", "quote", "why"}
+    assert data["files"][0]["audit"]["sentenceCount"] > 0
+
+
+def testGithubReportLines():
+    findings = lintText(SAMPLE, path="글.md")
+    lines = renderGithub("글.md", findings).splitlines()
+    assert lines[0].startswith("::error file=글.md,line=3::[cliche]")
+    assert any(line.startswith("::notice") for line in lines) or all(f.severity == "error" for f in findings)
+
+
+def testMapShowsSymbolsAndUnderlines():
+    doc = fingerprint(SAMPLE, path="글.md")
+    findings = lintText(SAMPLE, path="글.md")
+    text = renderMap(doc, findings)
+    assert "글.md  문장" in text
+    assert kindOf("cliche").symbol in text
+    assert "paraFragment" in text and "‾" in text
+    colored = renderMap(doc, findings, color=True)
+    assert chr(27) in colored
+
+
+def testMapHtmlIsSelfContained():
+    doc = fingerprint(SAMPLE, path="글.md")
+    findings = lintText(SAMPLE, path="글.md")
+    html = renderMapHtml(doc, findings)
+    assert html.startswith("<!doctype html>")
+    assert "<style>" in html and "http" not in html.split("<body")[0].replace("http-equiv", "")
+    assert 'href="#s0"' in html and 'id="s0"' in html
+    assert kindOf("cliche").hex in html
+
+
+def testAuditReportHasNumbersAndNoScore():
+    doc = fingerprint(SAMPLE, path="글.md")
+    findings = lintText(SAMPLE, path="글.md", config=Config())
+    text = renderAudit(doc, findings, auditText(SAMPLE), color=False)
+    assert "문장 길이" in text and "종결어미" in text and "천 어절당" in text
+    assert "점수" not in text and "등급" not in text

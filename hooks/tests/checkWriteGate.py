@@ -76,23 +76,17 @@ check(
     run({"cwd": ROOT, "tool_input": {"file_path": f"{ROOT}/src/a_b.py", "content": ""}}),
     2,
 )
-check(
-    "실행: camel 통과", run({"cwd": ROOT, "tool_input": {"file_path": f"{ROOT}/src/aB.py", "content": ""}}), 0
-)
+check("실행: camel 통과", run({"cwd": ROOT, "tool_input": {"file_path": f"{ROOT}/src/aB.py", "content": ""}}), 0)
 check(
     "실행: 깨진 페이로드는 통과",
-    subprocess.run(
-        [sys.executable, "-X", "utf8", str(gate), "pre"], input="not json", capture_output=True, text=True
-    ).returncode,
+    subprocess.run([sys.executable, "-X", "utf8", str(gate), "pre"], input="not json", capture_output=True, text=True).returncode,
     0,
 )
 check(
     "실행: 다른 모드는 통과",
     run({"cwd": ROOT, "tool_input": {"file_path": f"{ROOT}/src/a_b.py"}})
     if False
-    else subprocess.run(
-        [sys.executable, "-X", "utf8", str(gate), "post"], input="{}", capture_output=True, text=True
-    ).returncode,
+    else subprocess.run([sys.executable, "-X", "utf8", str(gate), "post"], input="{}", capture_output=True, text=True).returncode,
     0,
 )
 

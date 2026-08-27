@@ -16,7 +16,7 @@ skills/specs/{category}/README.md   ->   id: {category}.README
 
 ## 2. frontmatter
 
-필수 다섯 개다. 검사기가 이것만 본다.
+필수 다섯 개다. 검사기는 그 다섯만 본다.
 
 | 필드 | 타입 | 설명 |
 |---|---|---|

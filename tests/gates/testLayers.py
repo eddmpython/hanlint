@@ -34,8 +34,11 @@ def importedModules(source: str, modulePath: str) -> list[str]:
         if isinstance(node, ast.ImportFrom):
             if node.level:
                 base = parts[: len(parts) - node.level]
-                target = base + (node.module.split(".") if node.module else [])
-                imported.append("/".join(target))
+                if node.module:
+                    imported.append("/".join(base + node.module.split(".")))
+                else:
+                    # `from . import cliche` 는 형제 모듈을 이름으로 가져온다. 각 이름이 대상이다.
+                    imported.extend("/".join(base + [alias.name]) for alias in node.names)
             elif node.module and node.module.split(".")[0] == PACKAGE:
                 imported.append(node.module.replace(".", "/"))
         elif isinstance(node, ast.Import):
@@ -61,25 +64,18 @@ def layerViolations(files: dict[str, str]) -> list[str]:
             elif LAYERS[toLayer] == LAYERS[fromLayer] and toLayer != fromLayer:
                 violations.append(f"{modulePath} 가 형제 층 {toLayer} 를 import 한다")
             elif fromLayer == RULE_LAYER and toLayer == RULE_LAYER:
+                # 규칙 파일은 깊이 4 (hanlint/rules/<부류>/<규칙>) 다. rules 최상위 모듈 (registry,
+                # finding) 과 rules/shared 는 되고, 다른 부류 폴더 안의 파일은 안 된다.
                 targetParts = target.split("/")
-                if (
-                    len(targetParts) > 2
-                    and targetParts[2] != RULE_SHARED
-                    and not targetParts[2].endswith("registry")
-                ):
-                    violations.append(
-                        f"{modulePath} 가 다른 규칙 {target} 를 import 한다. 공통은 rules/shared 에 둔다"
-                    )
+                if len(targetParts) > 3 and targetParts[2] != RULE_SHARED:
+                    violations.append(f"{modulePath} 가 다른 규칙 {target} 를 import 한다. 공통은 rules/shared 에 둔다")
     return violations
 
 
 def realTree() -> dict[str, str]:
     if not SRC.exists():
         return {}
-    return {
-        f"{PACKAGE}/{path.relative_to(SRC).as_posix()}": path.read_text(encoding="utf-8")
-        for path in SRC.rglob("*.py")
-    }
+    return {f"{PACKAGE}/{path.relative_to(SRC).as_posix()}": path.read_text(encoding="utf-8") for path in SRC.rglob("*.py")}
 
 
 def testRealTreeHasNoLayerViolations():
@@ -96,9 +92,7 @@ def testSparesDownwardImports():
             "from ..registry import rule\n"
             "from ..shared.lineOf import lineOf\n"
         ),
-        f"{PACKAGE}/report/textReport.py": (
-            "from ..rules.finding import Finding\nfrom ..audit.shape import Shape\n"
-        ),
+        f"{PACKAGE}/report/textReport.py": ("from ..rules.finding import Finding\nfrom ..audit.shape import Shape\n"),
         f"{PACKAGE}/cli/main.py": "from hanlint.report.textReport import render\n",
         f"{PACKAGE}/document/parseMarkdown.py": "import re\nfrom ..config.settings import Config\n",
     }
@@ -119,6 +113,16 @@ def testCatchesRuleImportingRule():
     files = {f"{PACKAGE}/rules/sentence/deixis.py": "from .cliche import cliche\n"}
     assert len(layerViolations(files)) == 1
     assert "다른 규칙" in layerViolations(files)[0]
+
+
+def testCatchesRuleImportingSiblingByName():
+    files = {f"{PACKAGE}/rules/sentence/deixis.py": "from . import cliche\n"}
+    assert len(layerViolations(files)) == 1
+
+
+def testSparesRuleImportingFindingAndRegistry():
+    files = {f"{PACKAGE}/rules/structure/introLong.py": ("from ..finding import Finding\nfrom ..registry import rule\n")}
+    assert layerViolations(files) == []
 
 
 def testSparesRuleImportingSharedAndRegistry():

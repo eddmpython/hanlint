@@ -1,0 +1,5 @@
+{
+  "rule": "sectionNoProse",
+  "catch": ["## 절\n\n```python\nprint(1)\n```\n", "## 절\n\n| 열 | 값 |\n|---|---|\n| a | 1 |\n"],
+  "spare": ["## 더 해 볼 것\n\n- 하나\n- 둘\n", "## 절\n\n설명.\n\n```python\nprint(1)\n```\n"]
+}
