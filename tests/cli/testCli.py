@@ -294,3 +294,68 @@ def testWatchAcceptsFolders(tmp_path, capsys):
     assert watch.run(args, rounds=1) == 0
     out = capsys.readouterr().out
     assert "2개를 지켜본다" in out and "파일 2개" in out
+
+
+def testBaselineLocksThenLintPasses(tmp_path, capsys):
+    """도입의 벽. 이미 쓴 글이 error 를 내도 잠근 뒤에는 새로 생긴 것만 막는다."""
+    draft = write(tmp_path, "초안.md", BAD)
+    lock = tmp_path / ".hanlint-baseline.json"
+    assert main([str(draft), "--no-color"]) == 1
+    capsys.readouterr()
+
+    assert main(["baseline", str(draft), "--output", str(lock)]) == 0
+    out = capsys.readouterr().out
+    assert "1건을 적었다" in out and "1개 글의 지적을 잠갔다" in out
+    assert json.loads(lock.read_text(encoding="utf-8"))["files"]["초안.md"][0]["rule"] == "cliche"
+
+    assert main([str(draft), "--baseline", str(lock), "--format", "compact"]) == 0
+    out = capsys.readouterr().out
+    assert "error 0" in out and "잠근 자리 1건은 넘겼다" in out
+
+
+def testBaselineDoesNotHideNewProblems(tmp_path, capsys):
+    draft = write(tmp_path, "초안.md", BAD)
+    lock = tmp_path / ".hanlint-baseline.json"
+    main(["baseline", str(draft), "--output", str(lock)])
+    capsys.readouterr()
+
+    draft.write_text(BAD + "\n어쨌든 핵심은 결국 속도입니다.\n", encoding="utf-8")
+    assert main([str(draft), "--baseline", str(lock), "--format", "compact"]) == 1
+    assert "[cliche]" in capsys.readouterr().out
+
+
+def testBaselinePruneDropsDeadLocks(tmp_path, capsys):
+    draft = write(tmp_path, "초안.md", BAD)
+    lock = tmp_path / ".hanlint-baseline.json"
+    main(["baseline", str(draft), "--output", str(lock)])
+    draft.write_text(CLEAN, encoding="utf-8")
+    capsys.readouterr()
+
+    assert main(["baseline", str(draft), "--prune", "--output", str(lock)]) == 0
+    assert "0건을 적었다" in capsys.readouterr().out
+    assert json.loads(lock.read_text(encoding="utf-8"))["files"] == {}
+
+
+def testDoctorShowsLockedDebt(tmp_path, capsys, monkeypatch):
+    """잠금이 빚을 감추는 자리가 되지 않게 doctor 가 늘 몇 건인지 말한다."""
+    draft = write(tmp_path, "초안.md", BAD)
+    lock = tmp_path / ".hanlint-baseline.json"
+    main(["baseline", str(draft), "--output", str(lock)])
+    write(tmp_path, "hanlint.toml", 'baseline = ".hanlint-baseline.json"\n')
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+
+    assert main(["doctor"]) == 0
+    out = capsys.readouterr().out
+    assert "잠금      1건이" in out
+
+    (tmp_path / ".hanlint-baseline.json").unlink()
+    assert main(["doctor"]) == 0
+    assert "못 읽었다" in capsys.readouterr().out
+
+
+def testMissingBaselineFileIsAnErrorNotSilence(tmp_path, capsys):
+    """없는 잠금 파일을 조용히 빈 잠금으로 보면 CI 가 오타를 못 본다."""
+    draft = write(tmp_path, "초안.md", BAD)
+    assert main([str(draft), "--baseline", str(tmp_path / "없다.json")]) == 2
+    assert "찾지 못했다" in capsys.readouterr().err

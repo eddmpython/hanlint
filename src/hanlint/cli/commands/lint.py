@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 from ... import analyzerFor
+from ...baseline import DEFAULT_NAME, Baseline, load
 from ...document import parseMarkdown
 from ...fingerprint import DocumentPrint, buildFingerprint
 from ...profile import Profile, compareToProfile, loadProfile
@@ -41,6 +42,13 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("files", nargs="+", help="검사할 마크다운 파일. `-` 는 stdin")
     parser.add_argument("--path", dest="stdinPath", default=STDIN_NAME, help="stdin 으로 넣은 글의 이름")
     parser.add_argument("--profile", type=Path, help="hanlint profile build 가 만든 파일. 편차 구간을 notice 로 더한다")
+    parser.add_argument(
+        "--baseline",
+        nargs="?",
+        const=DEFAULT_NAME,
+        type=Path,
+        help=f"잠근 지적을 적은 파일. 그 안의 것은 넘긴다. 값을 안 주면 {DEFAULT_NAME}",
+    )
     addCommonOptions(parser, ("text", "compact", "json", "github"))
     addSeverityOptions(parser)
 
@@ -67,6 +75,8 @@ def run(args: argparse.Namespace) -> int:
     analyzer = analyzerFor(config)
     profilePath = args.profile or (Path(config.profile) if config.profile else None)
     profile = loadProfile(profilePath) if profilePath else None
+    baselinePath = args.baseline or (Path(config.baseline) if config.baseline else None)
+    baseline = load(baselinePath) if baselinePath else Baseline()
     results: dict[str, list[Finding]] = {}
     for path in files:
         name, text = readInput(path, args.stdinPath)
@@ -74,7 +84,7 @@ def run(args: argparse.Namespace) -> int:
         findings = runAll(doc, config)
         if profile:
             findings = sorted(findings + profileFindings(doc, profile), key=lambda f: (f.line, f.rule))
-        results[name] = findings
+        results[name] = baseline.keep(name, findings)
 
     hasError = any(f.severity == "error" for findings in results.values() for f in findings)
     severity = severityOf(args)
@@ -98,6 +108,8 @@ def run(args: argparse.Namespace) -> int:
             if len(shown) > 1:
                 parts.append(summary(shown))
         if not args.quiet:
+            if baseline.count:
+                parts.append(f"잠근 자리 {baseline.count}건은 넘겼다 ({baseline.source}). 그 문장을 고치면 다시 나온다")
             parts.append(nextStep(shown))
         emit("\n\n".join(parts) if args.format == "text" else "\n".join(parts), args.output)
     return 1 if hasError else 0

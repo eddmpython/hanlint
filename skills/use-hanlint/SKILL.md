@@ -28,6 +28,11 @@ hanlint doctor
 `--preset docs` 가 그 종류에 안 맞는 규칙을 처음부터 끈 설정을 만든다. 참고 문서에 `noQuestion` 이
 도는 것 같은 지적은 규칙이 틀린 것이 아니라 종류가 안 맞는 것이다.
 
+**이미 쓴 글이 여러 편인 저장소에서 처음 돌리는 것이면 잠금을 먼저 묻는다.** 첫날 지적이 수십 건 나오는
+것은 규칙이 틀려서가 아니라 그 글들이 그렇게 쓰여 있어서다. 그때 지금 것을 전부 고치는 것과
+`hanlint baseline 글들/` 로 잠그고 새로 쓰는 것만 막는 것 가운데 무엇을 할지는 사용자가 정한다.
+잠근 뒤에는 검사에 `--baseline` 을 붙인다. 잠긴 문장을 고치면 그 자리는 다시 지적으로 나온다.
+
 ## 순서
 
 1. 글을 쓰거나 고친다.
@@ -73,6 +78,7 @@ hanlint doctor
 - `찾지 못했다`: 경로를 확인한다. 마크다운 파일이나 폴더가 인자다.
 - `kiwipiepy 가 없다`: `--analyzer surface` 로 돌리거나 `pip install hanlint[kiwi]`.
 - `모르는 설정 키`: `hanlint init` 이 만드는 파일의 키만 쓴다.
+- 지적이 수십 건이고 전부 이미 있던 글의 것이다: 규칙이 틀린 것이 아니다. 위의 잠금을 사용자에게 묻는다.
 
 ## 참고
 
@@ -83,3 +89,4 @@ hanlint doctor
 - 지문 계층 JSON: `hanlint print 글.md`. 다른 도구가 지문 위에 무엇을 얹을 때
 - 문체 프로파일: `hanlint profile build 승인된글들/` 뒤 `hanlint 글.md --profile profile.json`
 - 초안 비교: `hanlint diff 전.md 후.md`. 고친 뒤 짜임과 지적 수가 어떻게 변했는지 숫자로 본다
+- 이미 있는 지적 잠그기: `hanlint baseline 글들/` 뒤 `hanlint 글들/ --baseline`. 죽은 잠금은 `--prune`

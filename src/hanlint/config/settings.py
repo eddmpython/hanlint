@@ -64,6 +64,8 @@ class Config:
     """마지막 절이 담아야 하는 frontmatter 필드 이름들. 비어 있으면 fieldEcho 는 돌지 않는다."""
     profile: str | None = None
     """프로파일 파일 경로. 있으면 편차 구간을 notice 로 낸다."""
+    baseline: str | None = None
+    """잠근 지적을 적은 파일 경로. 있으면 그 안의 지적은 조용히 넘긴다."""
     dictionary: dict[str, list] = field(default_factory=dict)
     """사전에 더할 항목. 키는 사전 이름 (cliches, translationese, redundantPair, japaneseLoan)."""
     source: str | None = None

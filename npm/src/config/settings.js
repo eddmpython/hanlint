@@ -36,6 +36,7 @@ export const PRESET_NAMES = Object.keys(PRESETS);
  * @property {string[]} introFields
  * @property {string[]} endingFields
  * @property {string | null} profile
+ * @property {string | null} baseline
  * @property {Record<string, unknown[]>} dictionary
  * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
  * @property {number} fragmentRun
@@ -66,6 +67,7 @@ export function defaultConfig() {
     introFields: [],
     endingFields: [],
     profile: null,
+    baseline: null,
     dictionary: {},
     source: null,
     fragmentRun: 3,

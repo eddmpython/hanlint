@@ -11,6 +11,7 @@ import argparse
 import sys
 
 from ... import __version__
+from ...baseline import Baseline, load
 from ...config import PRESETS
 from ...rules import ruleNames
 from .shared import addCommonOptions, configFrom, configLabel
@@ -30,6 +31,17 @@ def kiwiState() -> str:
     return "kiwi 를 쓸 수 있다 (--analyzer kiwi 또는 설정의 analyzer)"
 
 
+def baselineState(config) -> str:
+    """잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다."""
+    if not config.baseline:
+        return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)"
+    try:
+        found: Baseline = load(config.baseline)
+    except (OSError, ValueError) as error:
+        return f"{config.baseline} 를 못 읽었다: {error}"
+    return f"{found.count}건이 {config.baseline} 에 잠겨 있다. 그 문장을 고치면 다시 나온다"
+
+
 def run(args: argparse.Namespace) -> int:
     config = configFrom(args)
     names = ruleNames()
@@ -42,6 +54,7 @@ def run(args: argparse.Namespace) -> int:
         f"프리셋    {config.preset} ({', '.join(PRESETS)} 가운데)",
         f"분석기    {config.analyzer}. {kiwiState()}",
         f"규칙      {len(names) - len(off)}개 켜짐, {len(off)}개 꺼짐",
+        f"잠금      {baselineState(config)}",
     ]
     if off:
         lines.append(f"꺼진 규칙  {', '.join(off)}")

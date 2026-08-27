@@ -78,6 +78,9 @@ def render(preset: str = "blog") -> str:
             "# hanlint profile build 가 만든 파일. 있으면 참조 글과의 편차 구간을 notice 로 더한다",
             '# profile = "profile.json"',
             "",
+            "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",
+            '# baseline = ".hanlint-baseline.json"',
+            "",
             "# 임계. 기본값의 정본은 hanlint 의 config/settings.py 다",
         ]
     )

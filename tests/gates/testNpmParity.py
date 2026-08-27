@@ -161,3 +161,42 @@ def testInitPresetsAgree(tmp_path):
         assert node.returncode == 0, node.stderr
         assert pythonPath.read_text(encoding="utf-8") == nodePath.read_text(encoding="utf-8"), preset
         assert python.stdout.replace(str(pythonPath), "") == node.stdout.replace(str(nodePath), ""), preset
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testBaselineAgrees(tmp_path):
+    """잠금 파일은 팀이 커밋해 두 판이 함께 읽는 파일이라 글자까지 같아야 한다."""
+    folder = tmp_path / "글들"
+    folder.mkdir()
+    (folder / "하나.md").write_text("## 절\n\n핵심은 속도입니다. 파일을 엽니다.\n", encoding="utf-8")
+    (folder / "둘.md").write_text("## 절\n\n결국 중요한 것은 노력입니다. 표가 보입니다.\n", encoding="utf-8")
+
+    pythonLock = tmp_path / "python.json"
+    nodeLock = tmp_path / "node.json"
+
+    def lockBoth(extra):
+        python, _ = runBoth(["baseline", str(folder), *extra, "--output", str(pythonLock)])
+        node = subprocess.run(
+            [str(NODE), str(NODE_CLI), "baseline", str(folder), *extra, "--output", str(nodeLock)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=ROOT,
+        )
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert pythonLock.read_bytes() == nodeLock.read_bytes()
+        assert python.stdout.replace(str(pythonLock), "") == node.stdout.replace(str(nodeLock), "")
+
+    lockBoth([])
+    for extra in (["--format", "compact"], ["--format", "text", "--no-color"], ["--format", "json"]):
+        python, node = runBoth([str(folder), "--baseline", str(pythonLock), *extra])
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout, extra
+
+    # 잠긴 문장을 고치면 두 판 모두 새 지적으로 낸다. 잠금이 새 결함을 감추지 않는다는 계약이다.
+    (folder / "하나.md").write_text("## 절\n\n핵심은 그저 속도입니다. 파일을 엽니다.\n", encoding="utf-8")
+    python, node = runBoth([str(folder), "--baseline", str(pythonLock), "--format", "compact"])
+    assert python.returncode == node.returncode == 1, node.stderr
+    assert python.stdout == node.stdout
+
+    lockBoth(["--prune"])

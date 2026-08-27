@@ -10,7 +10,9 @@
  * hanlint rules                 규칙 목록을 부류로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
- * hanlint doctor                설정, 분석기, 꺼진 규칙
+ * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
+ * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
+hanlint doctor                설정, 분석기, 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
  * ```
  * audit, map, watch, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.
@@ -19,6 +21,7 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 import { analyzerFor, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
+import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
 import { loadConfig } from "../config/loadConfig.js";
 import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
@@ -32,7 +35,7 @@ import { renderGithub } from "../report/githubReport.js";
 import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "doctor", "init"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init"];
 const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
@@ -94,6 +97,8 @@ const OPTION_KINDS = {
   "--force": "flag",
   "--preset": "value",
   "--rule": "value",
+  "--baseline": "optional",
+  "--prune": "flag",
 };
 
 class UsageError extends Error {}
@@ -122,6 +127,11 @@ function parseArgs(args) {
     const kind = OPTION_KINDS[arg];
     if (!kind) throw new UsageError(`모르는 옵션: ${arg}`);
     if (kind === "flag") {
+      options[arg] = true;
+      continue;
+    }
+    // 값을 줘도 되고 안 줘도 되는 옵션. 다음 인자가 다른 옵션이거나 없으면 true 로 둔다 (파이썬의 nargs="?").
+    if (kind === "optional" && inlineValue === null && (args[i + 1] === undefined || args[i + 1].startsWith("--"))) {
       options[arg] = true;
       continue;
     }
@@ -259,6 +269,42 @@ function nextStep(results) {
   return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다";
 }
 
+/** @param {Baseline} baseline */
+function lockedNote(baseline) {
+  return `잠근 자리 ${baseline.count}건은 넘겼다 (${baseline.source}). 그 문장을 고치면 다시 나온다`;
+}
+
+/** 옵션과 설정에서 잠금 파일을 연다. 둘 다 없으면 빈 잠금이다. @param {Record<string, string | string[] | boolean>} options @param {import("../config/settings.js").Config} config */
+function openBaseline(options, config) {
+  const given = options["--baseline"];
+  const path = given === true ? DEFAULT_BASELINE : /** @type {string | undefined} */ (given) ?? config.baseline;
+  return path ? loadBaseline(path) : new Baseline();
+}
+
+/** @param {string[]} args */
+function runBaseline(args) {
+  const { options, positionals } = parseArgs(args);
+  if (!positionals.length) throw new UsageError("잠글 마크다운 파일이 필요하다");
+  const files = collectFiles(positionals);
+  const config = configFrom(options, files);
+  analyzerFor(config);
+  const target = /** @type {string} */ (options["--output"] ?? config.baseline ?? DEFAULT_BASELINE);
+  /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
+  const results = new Map();
+  for (const path of files) {
+    const [name, text] = readInput(path, STDIN_NAME);
+    results.set(name, lintText(text, config, name));
+  }
+  const baseline = options["--prune"] ? pruneBaseline(loadBaseline(target), results) : buildBaseline(results, target);
+  writeFileSync(target, `${renderBaseline(baseline)}\n`, "utf-8");
+  const what = options["--prune"] ? "잠금을 줄였다" : "지적을 잠갔다";
+  process.stdout.write(
+    `${baseline.source} 에 ${baseline.count}건을 적었다. ${files.length}개 글의 ${what}.\n` +
+      "다음: 검사할 때 --baseline 을 붙이거나 설정에 baseline 을 적는다. 잠긴 자리를 고치면 새 지적으로 다시 나온다\n",
+  );
+  return 0;
+}
+
 /** @param {string[]} args */
 function runLint(args) {
   const { options, positionals } = parseArgs(args);
@@ -268,12 +314,13 @@ function runLint(args) {
   const severity = options["--errors-only"] ? "error" : choose(/** @type {string} */ (options["--severity"] ?? "all"), SEVERITIES, "--severity");
   const config = configFrom(options, files);
   analyzerFor(config);
+  const baseline = openBaseline(options, config);
   const stdinName = /** @type {string} */ (options["--path"] ?? STDIN_NAME);
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
   const results = new Map();
   for (const path of files) {
     const [name, text] = readInput(path, stdinName);
-    results.set(name, lintText(text, config, name));
+    results.set(name, baseline.keep(name, lintText(text, config, name)));
   }
   const hasError = [...results.values()].some((findings) => findings.some((f) => f.severity === "error"));
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
@@ -295,12 +342,18 @@ function runLint(args) {
         .join("\n");
       if (body) parts.push(body);
       parts.push(summary(shown));
-      if (!options["--quiet"]) parts.push(nextStep(shown));
+      if (!options["--quiet"]) {
+        if (baseline.count) parts.push(lockedNote(baseline));
+        parts.push(nextStep(shown));
+      }
       emit(parts.join("\n"), output);
     } else {
       parts.push([...shown].map(([name, findings]) => renderText(name, findings)).join("\n\n"));
       if (shown.size > 1) parts.push(summary(shown));
-      if (!options["--quiet"]) parts.push(nextStep(shown));
+      if (!options["--quiet"]) {
+        if (baseline.count) parts.push(lockedNote(baseline));
+        parts.push(nextStep(shown));
+      }
       emit(parts.join("\n\n"), output);
     }
   }
@@ -478,6 +531,16 @@ function runPatterns(args) {
   return 0;
 }
 
+/** 잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다. @param {import("../config/settings.js").Config} config */
+function baselineState(config) {
+  if (!config.baseline) return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)";
+  try {
+    return `${loadBaseline(config.baseline).count}건이 ${config.baseline} 에 잠겨 있다. 그 문장을 고치면 다시 나온다`;
+  } catch (error) {
+    return `${config.baseline} 를 못 읽었다: ${/** @type {Error} */ (error).message}`;
+  }
+}
+
 /** @param {string[]} args */
 function runDoctor(args) {
   const { options } = parseArgs(args);
@@ -492,6 +555,7 @@ function runDoctor(args) {
     `프리셋    ${config.preset} (${PRESET_NAMES.join(", ")} 가운데)`,
     `분석기    ${config.analyzer}. kiwi 정밀 모드는 파이썬 패키지에 있다 (pip install hanlint[kiwi])`,
     `규칙      ${names.length - off.length}개 켜짐, ${off.length}개 꺼짐`,
+    `잠금      ${baselineState(config)}`,
   ];
   if (off.length) lines.push(`꺼진 규칙  ${off.join(", ")}`);
   lines.push("", "다음: hanlint 글.md 로 검사한다. 설정이 기본값이면 hanlint init 으로 파일을 만든다");
@@ -531,6 +595,9 @@ export function renderInit(preset = "blog") {
     "",
     "# hanlint profile build 가 만든 파일. 있으면 참조 글과의 편차 구간을 notice 로 더한다",
     '# profile = "profile.json"',
+    "",
+    "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",
+    '# baseline = ".hanlint-baseline.json"',
     "",
     "# 임계. 기본값의 정본은 hanlint 의 config/settings.py 다",
   );
@@ -587,6 +654,7 @@ function dispatch(argv) {
   if (command === "rules") return runRules(rest);
   if (command === "explain") return runExplain(rest);
   if (command === "patterns") return runPatterns(rest);
+  if (command === "baseline") return runBaseline(rest);
   if (command === "doctor") return runDoctor(rest);
   return runInit(rest);
 }
