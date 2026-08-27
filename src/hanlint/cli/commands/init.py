@@ -18,6 +18,7 @@ THRESHOLD_FIELDS = (
     "factListMinSentences",
     "factListMaxMeanLength",
     "topicBreakMinSentences",
+    "longSentenceMax",
 )
 
 

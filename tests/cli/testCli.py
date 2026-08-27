@@ -149,10 +149,18 @@ def testProfileBuildAndCompare(tmp_path, capsys):
     profile = tmp_path / "profile.json"
     assert main(["profile", "build", str(reference), "--output", str(profile)]) == 0
     assert "2편" in capsys.readouterr().out
-    questions = write(tmp_path, "q.md", "## 절\n\n왜 열까요? 무엇이 보일까요? 몇 열일까요? 고칠까요? 저장할까요?\n")
-    assert main([str(questions), "--profile", str(profile), "--format", "json"]) == 0
+    longOne = write(
+        tmp_path,
+        "long.md",
+        "## 절\n\n파일을 열고 표를 확인한 다음 열 다섯 개의 이름을 하나씩 읽어 두고 값을 고친 뒤 저장합니다. "
+        "폴더를 만들고 파일을 옮기고 이름을 바꾸고 목록을 다시 보고 끝낸 다음 다시 처음부터 엽니다. "
+        "표가 보이면 열의 순서를 적어 두고 값을 고친 뒤 저장하고 닫고 다시 열어 확인합니다. "
+        "이름을 바꾼 파일을 목록에서 찾아 열고 표를 확인하고 값을 고치고 저장합니다. "
+        "그다음 폴더를 정리하고 파일을 옮기고 목록을 다시 보고 끝냅니다.\n",
+    )
+    assert main([str(longOne), "--profile", str(profile), "--format", "json"]) == 0
     findings = json.loads(capsys.readouterr().out)["files"][0]["findings"]
-    assert any(f["rule"] == "profile" and f["severity"] == "notice" and "질문 비율" in f["why"] for f in findings)
+    assert any(f["rule"] == "profile" and f["severity"] == "notice" and "문장 길이" in f["why"] for f in findings)
     empty = tmp_path / "empty"
     empty.mkdir()
     assert main(["profile", "build", str(empty)]) == 2

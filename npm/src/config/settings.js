@@ -22,6 +22,7 @@ export const ANALYZERS = ["surface", "kiwi"];
  * @property {number} factListMinSentences
  * @property {number} factListMaxMeanLength
  * @property {number} topicBreakMinSentences
+ * @property {number} longSentenceMax
  */
 
 /** @returns {Config} */
@@ -41,6 +42,7 @@ export function defaultConfig() {
     factListMinSentences: 3,
     factListMaxMeanLength: 8.0,
     topicBreakMinSentences: 2,
+    longSentenceMax: 30,
   };
 }
 

@@ -53,6 +53,8 @@ class Config:
     """사실 나열로 볼 문단의 평균 어절 수 상한. 긴 문장은 안에서 이미 이어져 있다. 실측: 004 의 오탐 문단은 평균 9~15 어절."""
     topicBreakMinSentences: int = 2
     """화제 중첩 0 을 흐름 끊김으로 볼 때 앞뒤 문단의 최소 문장 수. 한 문장 문단은 중첩이 원래 작다."""
+    longSentenceMax: int = 30
+    """이보다 어절이 많으면 긴 문장. 실측: 다섯 편의 최장 문장 23, 33, 23, 26, 45 가운데 30 을 넘는 둘이 목록을 문장에 넣은 것."""
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable

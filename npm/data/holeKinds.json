@@ -8,6 +8,7 @@
       "hex": "#56B4E9",
       "rules": [
         "endingRepeat",
+        "longSentence",
         "profile"
       ]
     },

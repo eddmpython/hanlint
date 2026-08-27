@@ -31,6 +31,7 @@ import * as euiChain from "./sentence/euiChain.js";
 import * as fillerOpener from "./sentence/fillerOpener.js";
 import * as imperativePeriod from "./sentence/imperativePeriod.js";
 import * as japaneseLoan from "./sentence/japaneseLoan.js";
+import * as longSentence from "./sentence/longSentence.js";
 import * as negationRedefine from "./sentence/negationRedefine.js";
 import * as nounPile from "./sentence/nounPile.js";
 import * as redundantPair from "./sentence/redundantPair.js";
@@ -64,6 +65,7 @@ export const RULES = [
   hardWord,
   imperativePeriod,
   japaneseLoan,
+  longSentence,
   negationRedefine,
   nounPile,
   redundantPair,

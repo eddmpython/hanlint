@@ -7,7 +7,7 @@ name = "리듬"
 symbol = "R"
 ansi = 75
 hex = "#56B4E9"
-rules = ["endingRepeat", "profile"]
+rules = ["endingRepeat", "longSentence", "profile"]
 
 [[kind]]
 id = "flow"

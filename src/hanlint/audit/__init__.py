@@ -6,11 +6,12 @@ from ..config import Config
 from ..fingerprint import DocumentPrint
 from .density import densityOf
 from .flow import overlapsOf, valleysOf
+from .lexicon import connectorMixOf, lexiconOf
 from .rhythm import commaRatioOf, endingMixOf, paragraphHistogramOf, rhythmOf
 from .sectionShape import sectionShapesOf
-from .shape import AuditResult, Density, Rhythm, SectionShape, Valley
+from .shape import AuditResult, Density, Lexicon, Rhythm, SectionShape, Valley
 
-__all__ = ["AuditResult", "Density", "Rhythm", "SectionShape", "Valley", "auditDocument"]
+__all__ = ["AuditResult", "Density", "Lexicon", "Rhythm", "SectionShape", "Valley", "auditDocument"]
 
 
 def auditDocument(doc: DocumentPrint, config: Config | None = None) -> AuditResult:
@@ -23,6 +24,8 @@ def auditDocument(doc: DocumentPrint, config: Config | None = None) -> AuditResu
         paragraphCount=len(paragraphs),
         sectionCount=len(doc.bodySections),
         wordCount=doc.wordCount,
+        lexicon=lexiconOf(sentences),
+        connectorMix=connectorMixOf(sentences),
         rhythm=rhythmOf(sentences),
         commaRatio=commaRatioOf(sentences),
         endingMix=endingMixOf(sentences),

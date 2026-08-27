@@ -109,6 +109,9 @@ def testMapHtmlIsSelfContained():
 def testAuditReportHasNumbersAndNoScore():
     doc = fingerprint(SAMPLE, path="글.md")
     findings = lintText(SAMPLE, path="글.md", config=Config())
-    text = renderAudit(doc, findings, auditText(SAMPLE), color=False)
+    audit = auditText(SAMPLE)
+    text = renderAudit(doc, findings, audit, color=False)
     assert "문장 길이" in text and "종결어미" in text and "천 어절당" in text
+    assert "어휘        어절" in text and "자주 쓴 말" in text
+    assert audit.lexicon.tokens > audit.lexicon.types > 0 and 0 < audit.lexicon.typeTokenRatio <= 1
     assert "점수" not in text and "등급" not in text

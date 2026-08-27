@@ -51,12 +51,28 @@ class SectionShape:
 
 
 @dataclass(frozen=True)
+class Lexicon:
+    tokens: int
+    """어절 수."""
+    types: int
+    """조사를 뗀 낱말 종류 수."""
+    typeTokenRatio: float
+    foreignRatio: float
+    """영문과 숫자만으로 된 어절의 비율. 외래어와 식별자의 근사다."""
+    topWords: tuple[tuple[str, int], ...]
+    """자주 쓴 화제어 (낱말, 횟수). 많은 순."""
+
+
+@dataclass(frozen=True)
 class AuditResult:
     path: str | None
     sentenceCount: int
     paragraphCount: int
     sectionCount: int
     wordCount: int
+    lexicon: Lexicon
+    connectorMix: tuple[tuple[str, int], ...]
+    """문두 접속부사별 횟수. 많은 순."""
     rhythm: Rhythm
     commaRatio: float
     """쉼표가 있는 문장의 비율."""

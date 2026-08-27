@@ -42,6 +42,7 @@ const THRESHOLD_FIELDS = [
   "factListMinSentences",
   "factListMaxMeanLength",
   "topicBreakMinSentences",
+  "longSentenceMax",
 ];
 const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength"]);
 

@@ -27,6 +27,15 @@ def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult,
     lines.append(f"쉼표        쉼표가 있는 문장 {audit.commaRatio:.0%}")
     mix = ", ".join(f"{ending} {ratio:.0%}" for ending, ratio in audit.endingMix[:5])
     lines.append(f"종결어미    {mix}")
+    lexicon = audit.lexicon
+    lines.append(
+        f"어휘        어절 {lexicon.tokens}, 낱말 종류 {lexicon.types}, 종류/어절 {lexicon.typeTokenRatio:.2f}, "
+        f"영문 어절 {lexicon.foreignRatio:.0%}"
+    )
+    if lexicon.topWords:
+        lines.append("자주 쓴 말  " + ", ".join(f"{word} {count}" for word, count in lexicon.topWords))
+    if audit.connectorMix:
+        lines.append("문두 접속사 " + ", ".join(f"{word} {count}" for word, count in audit.connectorMix))
     d = audit.density
     lines.append(
         f"천 어절당   접속사 {d.connectors:.1f}, 지시어 {d.deixis:.1f}, 강조 낱말 {d.emphasis:.1f}, "
