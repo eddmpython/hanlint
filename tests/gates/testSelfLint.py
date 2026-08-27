@@ -15,7 +15,12 @@ CONFIG = loadConfig(ROOT / "hanlint.toml")
 
 
 def documents() -> list[Path]:
-    return [ROOT / "README.md", *sorted((ROOT / "skills").rglob("*.md")), *sorted((ROOT / "tests" / "fixtures").glob("*.md"))]
+    return [
+        ROOT / "README.md",
+        ROOT / "npm" / "README.md",
+        *sorted((ROOT / "skills").rglob("*.md")),
+        *sorted((ROOT / "tests" / "fixtures").glob("*.md")),
+    ]
 
 
 def errorsIn(path: Path) -> list[str]:
