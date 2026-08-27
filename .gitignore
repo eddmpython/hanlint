@@ -1,0 +1,40 @@
+# 로컬 하네스. 공개 저장소에 올리지 않는다. 경로를 루트에 고정한다.
+/CLAUDE.md
+/AGENTS.md
+# .claude/settings.json 만 예외다. 훅 등록은 로컬 상태가 아니라 이 저장소의 강행 계약이라 클론에도 따라간다.
+.claude/*
+!.claude/settings.json
+.codex/
+.cursor/
+.idea/
+.vscode/
+*.local.json
+
+# 끝나지 않은 이니셔티브. 폴더 하나가 기획 하나다. 로컬 전용
+mainPlan/
+
+# 세션 간 메모리. 로컬 전용
+/memory/
+
+# 비밀
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 파이썬
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+
+# 운영체제
+.DS_Store
+Thumbs.db
+Desktop.ini
