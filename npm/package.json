@@ -1,7 +1,7 @@
 {
   "name": "hanlint",
   "version": "0.0.7",
-  "description": "한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터. 의존성 0",
+  "description": "한국어 글 검사기. Korean prose linter for Markdown: translationese, noun piles, double passives, weak structure. Zero dependencies",
   "type": "module",
   "bin": {
     "hanlint": "bin/hanlint.js"
@@ -24,10 +24,17 @@
   },
   "keywords": [
     "korean",
-    "lint",
+    "korean-language",
+    "hangul",
+    "linter",
+    "prose",
+    "prose-linter",
     "writing",
     "readability",
-    "markdown"
+    "markdown",
+    "style-checker",
+    "proofreading",
+    "text-linter"
   ],
   "license": "MIT",
   "repository": {

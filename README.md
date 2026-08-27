@@ -1,9 +1,20 @@
 # hanlint
 
-한국어 글이 읽히게 만드는 검사기다. 의존성이 없다.
+[![PyPI](https://img.shields.io/pypi/v/hanlint?label=pypi)](https://pypi.org/project/hanlint/)
+[![npm](https://img.shields.io/npm/v/hanlint?label=npm)](https://www.npmjs.com/package/hanlint)
+[![CI](https://github.com/eddmpython/hanlint/actions/workflows/ci.yml/badge.svg)](https://github.com/eddmpython/hanlint/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/pypi/pyversions/hanlint)](https://pypi.org/project/hanlint/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+**한국어 글쓰기 검사 도구 (Korean prose linter).** 마크다운 원고에서 번역투, 명사 나열, 이중 피동,
+가리킬 것 없는 지시어, 조각난 문단처럼 **세면 확정되는 결함**을 찾아 자리와 이유와 다시 쓴 본보기를 준다.
+맞춤법 검사기가 아니다. 맞춤법이 맞는데도 안 읽히는 글을 잡는 문장과 문단의 린터다.
+
+파이썬과 npm 두 판이고 런타임 의존성이 없다. 블로그 원고, 기술 문서, 보고서, AI 가 쓴 초안을 발행 전에
+게이트로 막는 자리에 쓴다.
 
 ```powershell
-pip install hanlint
+pip install hanlint      # 파이썬이 없으면 npx hanlint 글.md
 hanlint 글.md
 ```
 
@@ -30,9 +41,10 @@ hanlint 글.md
 지시어가 가리킬 것이 앞 문장에 있는지, 문단에 인과 표지가 하나라도 있는지는 읽지 않고도 셀 수 있다.
 
 hanlint 는 그 셀 수 있는 것만 맡는다. 재미있는지, 설득력이 있는지, 검색해 들어온 독자가 원하던 답을
-받았는지는 판정하지 않는다. 그것은 사람과 LLM 평가자가 더 잘한다.
+받았는지는 판정하지 않는다. 그것은 사람과 LLM 평가자가 더 잘한다. 그래서 맞춤법 검사기와도 겹치지
+않는다. 맞춤법 검사기는 낱말이 틀렸는지 보고 hanlint 는 문장과 문단이 독자에게 일을 떠넘기는지 본다.
 
-## hanlint 가 하는 일
+## hanlint 가 한국어 글에서 잡는 것
 
 지적마다 **자리, 이유, 그리고 이렇게 쓴다는 본보기**를 준다. 세 번째가 이 도구의 핵심이다.
 
@@ -66,7 +78,7 @@ hanlint 는 그 셀 수 있는 것만 맡는다. 재미있는지, 설득력이 �
 본보기는 장식이 아니라 **검증된 데이터**다. `before` 는 그 규칙에 실제로 잡히는 글이고 `after` 는 같은 뜻인데
 안 잡히는 글이며, 게이트가 매번 둘 다 돌려 확인한다. 안내가 틀리면 나쁜 글이 퍼지기 때문이다.
 
-## 30초 안에 첫 결과
+## 설치와 첫 검사, 30초
 
 ```powershell
 pip install hanlint
@@ -95,7 +107,7 @@ hanlint 0.0.7  한국어 글에서 세면 확정되는 결함을 집는다. 좋�
 
 `npx hanlint 글.md` 는 설치 없이 같은 검사를 한다. 폴더를 주면 그 아래 마크다운을 전부 찾는다.
 
-## 글의 종류를 먼저 고른다
+## 글의 종류를 고른다: 블로그, 보고서, 문서
 
 기본은 블로그다. 독자를 부르고 절마다 눈에 보이는 결과를 남기는 글이 기준이라, 보고서나 참고 문서에
 그대로 대면 맞지 않는 지적이 나온다. 그때는 규칙을 하나씩 끄지 말고 종류를 고른다.
@@ -111,6 +123,34 @@ hanlint init --preset docs
 | `docs` | 참고 문서, 명세, README | 위에 더해 검증 기록과 그림용 펜스 둘 |
 
 지금 무엇이 켜져 있는지는 `hanlint doctor` 가 한 화면으로 답한다.
+
+## 이미 쓴 글이 많은 저장소에 들일 때
+
+새 도구를 이미 쌓인 문서에 대면 첫날 지적이 쏟아진다. 실측이다. 남의 저장소 문서 여섯 편에 그냥 돌리면
+error 가 21건 나왔다. 규칙이 틀려서가 아니라 그 글들이 실제로 문단이 조각나 있고 제목이 문장이기
+때문이다. 그런데 첫날 21건을 보는 팀은 도구를 끈다.
+
+그래서 **지금 있는 것을 잠그고 새로 생긴 것만 막는다.**
+
+```powershell
+hanlint baseline 글들/          # .hanlint-baseline.json 을 만들어 커밋한다
+hanlint 글들/ --baseline        # 그다음부터 새로 생긴 지적만 나온다
+```
+
+잠금은 줄 번호가 아니라 **인용문**으로 건다. 코드 린터는 파일과 줄로 잠그지만 글은 문단 하나만 고쳐도
+아래 줄 번호가 전부 밀려 잠근 것이 풀린다. hanlint 는 지적이 인용문을 들고 있어서 글자로 잠글 수 있고,
+그래서 성질 하나가 따라온다.
+
+| 글에 한 일 | 잠금이 하는 일 |
+|---|---|
+| 문단을 옮겨 줄 번호가 밀렸다 | 그대로 잠겨 있다. 헛경보가 안 난다 |
+| 잠긴 문장을 고쳤다 | 새 지적이 된다. 손댔으면 책임진다 |
+| 문장을 지웠다 | `hanlint baseline 글들/ --prune` 이 죽은 잠금을 치운다 |
+| 새 문장을 썼다 | 잠금과 무관하게 잡힌다 |
+
+**손댄 자리만 막는다.** 기한도 비율도 정하지 않아도 글을 고칠 때마다 잠금이 줄어든다. 잠금 파일은 사람이
+읽는 JSON 이라 PR 에서 무엇이 잠겼는지 보이고, `hanlint doctor` 가 몇 건이 잠겨 있는지 늘 말한다. 빚을
+감추는 자리가 되지 않게 하려는 것이다.
 
 ## 잘 읽히는 글을 쓰는 법
 
@@ -211,7 +251,7 @@ hanlint patterns --rule nounPile
 는 교정자의 눈이다. 금지로는 못 담고 틀로는 담긴다. 재는 방법과 숫자는
 [tests/_attempts/koreanStyleBooks/](tests/_attempts/koreanStyleBooks/) 에 있다.
 
-## AI 에게 글을 맡길 때
+## AI 가 쓴 한국어 글을 검사한다
 
 AI 가 쓴 한국어는 대체로 문법이 맞고 대체로 밋밋하다. 위 다섯 가지를 정확히 어긴다. 명사를 쌓고, 지시어를
 쓰고, 사실을 나란히 놓고, 도입에서 약속한 개수를 결말에서 잊고, 독자를 한 번도 부르지 않는다.
@@ -247,7 +287,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 16건의 절반이 세면 잡히는 것이었다. 평가자는 라운드마다 다른 것을 발견하므로 셀 수 있는 것에 화력을 쓰면
 루프가 수렴하지 않는다. 0층이 바닥을 깔아야 위층이 자기 일을 한다.
 
-## 명령
+## 명령 한눈에
 
 | 명령 | 무엇 |
 |---|---|
@@ -258,6 +298,8 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 |
+| `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 |
+| `hanlint 글들/ --baseline` | 잠근 것은 넘기고 새로 생긴 것만 막는다 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` |
 | `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. 스크립트가 쓴다 |
@@ -303,7 +345,7 @@ for finding in lintText(text):
 
 `lintFile`, `auditText`, `fingerprint` 도 같은 자리에 있다.
 
-## 커밋과 PR 에서
+## CI 게이트로 물린다: pre-commit, GitHub Actions, VS Code
 
 pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-commit-config.yaml` 에서 이 저장소를
 가리키면 되고, 액션은 지적을 PR 의 줄 주석으로 단다. VS Code 확장 (`vscode/`) 은 저장할 때 검사해
@@ -316,7 +358,10 @@ pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-com
     errors-only: "true"
 ```
 
-## 무엇을 잡고 무엇을 안 잡나
+이미 문서가 쌓인 저장소면 `hanlint baseline docs/` 로 한 번 잠그고 `.hanlint-baseline.json` 을 커밋한다.
+그러면 첫날부터 초록이고, 그 뒤로 누가 문장을 고치거나 새로 쓸 때만 막힌다.
+
+## 무엇을 잡고 무엇은 안 잡나
 
 경계는 [skills/specs/start/product.md](skills/specs/start/product.md) 에 있다. 안 잡는 것도 근거와 함께
 적혀 있다. 뜻을 이해해야 잡히는 것, 취향, 그리고 만들었다가 실측에서 오탐이 이겨 뺀 규칙들이다.
@@ -329,6 +374,16 @@ pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-com
 정당한 문장이 잡혔거나 잡아야 할 자리를 놓쳤으면 이슈로 알려 주면 된다. 양식 두 개가 문장 원문과 근거를
 묻는다. 오탐은 fixture 의 spare 로 박혀 다시는 잡히지 않게 되고, 제안은 실측 사례가 있어야 규칙이 된다.
 절차는 [skills/specs/operation/feedback.md](skills/specs/operation/feedback.md) 에 있다.
+
+## English
+
+hanlint is a linter for Korean prose in Markdown. It reports only what can be decided by counting:
+translationese, noun pile-ups, double passives, dangling demonstratives, fragmented paragraphs and
+document-level structure. It does not judge whether writing is good, and it is not a spell checker.
+
+Two implementations, zero runtime dependencies, identical output: `pip install hanlint` and
+`npx hanlint`. Exit code is 1 when an error-level finding exists, so it drops into CI as a gate.
+`hanlint baseline docs/` locks what already exists so an established repository starts green.
 
 ## 라이선스
 
