@@ -1,0 +1,138 @@
+# 배포: 버전 태그 (v0.0.x) 푸시가 트리거. PyPI 와 npm 에 같은 버전을 같은 날 올린다.
+# 정본 절차는 skills/specs/operation/release.md (여기는 집행만).
+#
+# 인증은 둘 다 Trusted Publishing (OIDC) 이다. 장수 토큰 시크릿을 두지 않는다. 러너가 GitHub OIDC 로
+# 자기 신원을 증명하고 레지스트리가 단기 자격을 발급한다. 사전 1회 설정:
+#   PyPI: pypi.org > Account > Publishing > Add pending publisher
+#         (project hanlint, owner eddmpython, repository hanlint, workflow publish.yml, environment pypi)
+#   GitHub: Settings > Environments > pypi
+#   npm: 첫 게시 (0.0.1) 는 운영자 기계에서 npm publish 로 한다. 패키지가 생긴 뒤
+#        npmjs.com > hanlint > Settings > Trusted Publisher > GitHub Actions
+#        (repository eddmpython/hanlint, workflow publish.yml) 을 등록하면 다음 태그부터 여기서 올라간다.
+name: publish
+
+on:
+  push:
+    tags: ["v*"]
+  # 수동 실행. 태그가 워크플로보다 먼저 나갔거나 게시가 실패해 재시도할 때. 버전은 체크아웃한 ref 의 것이다.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # 게시는 되돌릴 수 없다 (버전 번호 재사용 불가). ci 의 게이트 전부를 통과해야 한다.
+  gates:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+
+      # 릴리즈 정책: pyproject.toml, npm/package.json, 태그는 항상 같은 값이다. 어긋나면 여기서 멈춘다.
+      - name: 세 버전 일치 검증
+        run: |
+          set -eu
+          pyVersion="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          npmVersion="$(node -p "require('./npm/package.json').version")"
+          echo "pyproject=$pyVersion package.json=$npmVersion"
+          test "$pyVersion" = "$npmVersion"
+          case "$GITHUB_REF" in
+            refs/tags/*)
+              echo "tag=${GITHUB_REF_NAME#v}"
+              test "${GITHUB_REF_NAME#v}" = "$pyVersion"
+              ;;
+            *)
+              echo "dispatch: HEAD 태그 목록:"
+              git tag --points-at HEAD
+              git tag --points-at HEAD | grep -Fxq "v$pyVersion"
+              ;;
+          esac
+
+      - run: python -X utf8 -B -m pip install --quiet build
+      - run: python -X utf8 -B -m build
+
+      # PyPI 에 올라갈 바로 그 wheel 을 격리 venv 에 설치해 본다. 의존성 0, 데이터 동봉, 자기 문서 통과.
+      - name: wheel 격리 설치 검증
+        run: |
+          set -eu
+          python -m venv "$RUNNER_TEMP/smoke"
+          "$RUNNER_TEMP/smoke/bin/pip" install --quiet dist/*.whl
+          "$RUNNER_TEMP/smoke/bin/pip" show hanlint | grep -E '^Requires: ?$'
+          "$RUNNER_TEMP/smoke/bin/hanlint" --version
+          "$RUNNER_TEMP/smoke/bin/hanlint" README.md
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write # PyPI Trusted Publishing OIDC 는 게시 job 에만 연다.
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing OIDC 는 게시 job 에만 연다.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.19.0
+          registry-url: https://registry.npmjs.org
+      # trusted publishing 은 npm >= 11.5.1 에서만 동작한다 (node 22 번들은 10.x).
+      - run: npm install -g npm@11.19.0
+      # npm/data 는 파이썬 정본의 투영이다. 낡은 투영을 올리지 않는다.
+      - run: python -X utf8 -B scripts/exportData.py --check
+      - run: node --test "npm/test/*.test.js"
+      - run: npm publish
+        working-directory: npm
+
+  release:
+    needs: [publish-pypi, publish-npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
