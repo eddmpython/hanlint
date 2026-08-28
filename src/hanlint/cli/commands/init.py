@@ -16,6 +16,8 @@ THRESHOLD_FIELDS = (
     "fragmentRun",
     "introMaxParagraphs",
     "headingUniformRatio",
+    "headingSentenceMaxLevel",
+    "bridgeRepeatMin",
     "nounPileMin",
     "endingRun",
     "factListMinSentences",
@@ -80,6 +82,9 @@ def render(preset: str = "blog") -> str:
             "",
             "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",
             '# baseline = ".hanlint-baseline.json"',
+            "",
+            "# 코드도 산문도 아닌 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록으로 세지 않고 지문에서 뺀다",
+            '# ignoreFences = ["course-scene", "mermaid"]',
             "",
             "# 임계. 기본값의 정본은 hanlint 의 config/settings.py 다",
         ]

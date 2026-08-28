@@ -47,8 +47,8 @@ def _replacementForDeixis(topic: str, deixis: str) -> str:
         base = stripJosa(last)
         suffix = last[len(base) :]
         return topic + fitJosa(topic, suffix)
-    if deixis == "이러한":
-        return topic + "의"
+    if deixis.startswith("이러한 "):
+        return topic + "의 " + deixis[len("이러한 ") :]
     if deixis == "이처럼":
         return topic + "처럼"
     return topic

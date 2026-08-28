@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from ...analysis.grammar import fitJosa
 from ...config import Config
 from ...fingerprint import DocumentPrint
 from ...fingerprint.topics import overlap
@@ -33,7 +34,8 @@ def danglingDeixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "danglingDeixis",
             sentence.line,
             sentence.text,
-            f"`{sentence.deixis[0]}` 이 가리킬 것이 앞 문장에 없다. 가리키는 파일, 값, 코드의 이름을 쓴다",
+            f"`{sentence.deixis[0]}` {fitJosa(sentence.deixis[0], '이')} 가리킬 것이 앞 문장에 없다. "
+            "가리키는 파일, 값, 코드의 이름을 쓴다",
             None,
             "error",
             SENTENCE,

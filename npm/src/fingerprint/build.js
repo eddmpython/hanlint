@@ -3,6 +3,7 @@
 import { defaultConfig } from "../config/settings.js";
 import { NONE as NO_REGISTER, documentRegister, lastWord, registerOfWord } from "../analysis/grammar/register.js";
 import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/model.js";
+import { dropFences } from "../document/parseMarkdown.js";
 import { codeSpans, plainText } from "../document/plainText.js";
 import { countIn, mean, pstdev, wordCount } from "../text.js";
 import { entriesFor, matchesIn } from "./dictionaries.js";
@@ -86,6 +87,7 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {[number, string][]} promises
  * @property {[number, string][]} recalls
  * @property {[string, number, number][]} disabled
+ * @property {import("../document/model.js").Block[]} ignored 설정이 지문에서 뺀 펜스
  * @property {string} register
  * @property {number} registerShare
  * @property {SectionPrint} intro
@@ -258,6 +260,8 @@ function buildSection(build, section, sectionIndex) {
  * @returns {DocumentPrint}
  */
 export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
+  // 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
+  doc = dropFences(doc, config.ignoreFences);
   const build = { analyzer, entries: entriesFor(config), sentences: /** @type {SentencePrint[]} */ ([]), paragraphs: /** @type {ParagraphPrint[]} */ ([]) };
   const { sentences, paragraphs } = build;
   const sections = doc.sections.map((section, index) =>
@@ -288,6 +292,7 @@ export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
     register,
     registerShare,
     disabled: doc.disabled,
+    ignored: doc.ignored,
     intro: sections[0],
     bodySections: sections.filter((s) => !s.isIntro),
   };

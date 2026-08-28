@@ -1,5 +1,7 @@
 {
   "rule": "headingSentence",
   "catch": ["## 파일을 엽니다\n\n가.\n", "## 파일을 열어 보세요\n\n가.\n"],
-  "spare": ["## 파일 열기\n\n가.\n", "## 왜 파일이 열리지 않을까\n\n가.\n"]
+  "spare": ["## 파일 열기\n\n가.\n", "## 왜 파일이 열리지 않을까\n\n가.\n", "## 파일 열기\n\n### 파일을 열고 첫 줄을 읽습니다\n\n가.\n"],
+  "config": { "headingSentenceMaxLevel": 2 },
+  "analyzerNote": "부제를 문장으로 두는 형식은 headingSentenceMaxLevel 을 2 로 둔다. 기본값 6 이면 마지막 spare 의 H3 도 잡힌다"
 }

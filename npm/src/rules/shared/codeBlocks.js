@@ -4,8 +4,8 @@
  * 펜스 첫 줄의 언어 표기 (```python) 를 읽고 본문 줄에 원문 줄 번호를 붙인다. text 펜스는 출력이다.
  */
 import { CODE } from "../../document/model.js";
+import { fenceLanguage } from "../../document/parseMarkdown.js";
 
-const FENCE_LANGUAGE = /^\s*(?:```|~~~)\s*([A-Za-z0-9_+-]*)/;
 const CLOSING_FENCE = /^\s*(?:```|~~~)\s*$/;
 
 /**
@@ -25,8 +25,7 @@ export function codeBlocksOf(doc) {
   for (const block of doc.blocks) {
     if (block.kind !== CODE) continue;
     const raw = block.text.split("\n");
-    const match = FENCE_LANGUAGE.exec(raw[0]);
-    const language = (match ? match[1] : "").toLowerCase();
+    const language = fenceLanguage(block.text);
     let body = raw.slice(1);
     if (body.length && CLOSING_FENCE.test(body[body.length - 1])) body = body.slice(0, -1);
     /** @type {[number, string][]} */

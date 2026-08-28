@@ -48,6 +48,7 @@ import * as nounPile from "./sentence/nounPile.js";
 import * as redundantPair from "./sentence/redundantPair.js";
 import * as translationese from "./sentence/translationese.js";
 import * as blockUnread from "./structure/blockUnread.js";
+import * as bridgeRepeat from "./structure/bridgeRepeat.js";
 import * as emojiBullet from "./structure/emojiBullet.js";
 import * as headingQuestion from "./structure/headingQuestion.js";
 import * as introImage from "./structure/introImage.js";
@@ -93,6 +94,7 @@ export const RULES = [
   paraFragment,
   topicBreak,
   blockUnread,
+  bridgeRepeat,
   emojiBullet,
   headingQuestion,
   introImage,

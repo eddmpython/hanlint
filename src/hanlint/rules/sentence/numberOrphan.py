@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
+from ...analysis.grammar import fitJosa
 from ...config import Config
 from ...fingerprint import DocumentPrint
 from ...fingerprint.markers import matchedTexts
@@ -64,7 +65,8 @@ def numberOrphan(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                 "numberOrphan",
                 sentence.line,
                 sentence.text,
-                f"`{base}` 가 여기서 처음 나오는 값이다. 무엇에서 올라간 것인지 알 수 없다. 그 값이 어디서 나왔는지 밝힌다",
+                f"`{base}` {fitJosa(base, '가')} 여기서 처음 나오는 값이다. 무엇에서 올라간 것인지 알 수 없다. "
+                "그 값이 어디서 나왔는지 밝힌다",
                 None,
                 NOTICE,
                 SENTENCE,

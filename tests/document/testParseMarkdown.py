@@ -1,4 +1,4 @@
-from hanlint.document import parseMarkdown, plainText
+from hanlint.document import dropFences, fenceLanguage, parseMarkdown, plainText
 
 SAMPLE = """---
 title: 제목입니다
@@ -117,6 +117,45 @@ def testIndentedListParagraphIsProseButDeeperCodeIsCode():
     doc = parseMarkdown(text)
     assert [block.kind for block in doc.blocks] == ["list", "prose", "code", "prose"]
     assert [block.text for block in doc.prose()] == ["    목록 안 설명입니다.", "목록 밖입니다."]
+
+
+def testDropFencesRemovesOnlyNamedLanguagesAndRenumbers():
+    scene = "```course-scene\nrole: open\n```"
+    text = f"## 절\n\n{scene}\n\n설명.\n\n```python\nprint(1)\n```\n\n```Course-Scene extra\nrole: close\n```\n"
+    doc = parseMarkdown(text)
+    assert [block.kind for block in doc.blocks] == ["heading", "code", "prose", "code", "code"]
+    assert [fenceLanguage(block.text) for block in doc.blocks if block.kind == "code"] == [
+        "course-scene",
+        "python",
+        "course-scene",
+    ]
+    dropped = dropFences(doc, ["course-scene"])
+    assert [block.kind for block in dropped.blocks] == ["heading", "prose", "code"]
+    assert [block.index for block in dropped.blocks] == [0, 1, 2]
+    assert [block.startLine for block in dropped.blocks] == [1, 7, 9]
+    assert [block.kind for block in dropped.sections[-1].blocks] == ["prose", "code"]
+    assert [block.startLine for block in dropped.ignored] == [3, 13]
+    assert dropFences(doc, []) is doc
+    assert dropFences(doc, ["mermaid"]) is doc
+
+
+def testDropFencesKeepsInlineControlsOnTheirOriginalLines():
+    text = "<!-- hanlint-disable-next imperativePeriod -->\n\n```course-scene\nrole: open\n```\n\n파일을 열어 보세요.\n"
+    doc = parseMarkdown(text)
+    assert doc.disabled == [("imperativePeriod", 3, 5)]
+    dropped = dropFences(doc, ["course-scene"])
+    assert dropped.disabled == doc.disabled
+    assert [block.kind for block in dropped.blocks] == ["html", "prose"]
+
+
+def testLinkOnlyParagraphIsEmbed():
+    text = (
+        '설명.\n\n[영상](https://www.youtube.com/watch?v=x "캡션")\n\n[문서](https://x)를 읽습니다.\n\n[문서](https://x) 참고.\n'
+    )
+    doc = parseMarkdown(text)
+    assert [block.kind for block in doc.blocks] == ["prose", "embed", "prose", "prose"]
+    wrapped = parseMarkdown("[감사 설정](https://x)\n의 구성은 다르다.\n")
+    assert [block.kind for block in wrapped.blocks] == ["prose"]
 
 
 def testPlainTextStripsMarkup():

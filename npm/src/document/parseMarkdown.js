@@ -16,6 +16,8 @@ const IMAGE_LINE = /^!\[/;
 const LIST_LINE = /^(\s*)(?:[-*+]|\d+[.)])\s+/;
 const TABLE_LINE = /^\s*\|/;
 const URL_LINE = /^\s*https?:\/\/\S+\s*$/;
+// 링크 하나만 있는 줄은 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크) 이라 주소만 있는 줄과 같은 embed 다. 파이썬과 같다.
+const LINK_ONLY_LINE = /^\s*\[[^\]\n]+\]\(\S+?(?:\s+"[^"\n]*")?\)\s*$/;
 const HTML_LINE = /^\s*</;
 const META_KEY = /^[A-Za-z][A-Za-z0-9_]*$/;
 const CONTROL = /^\s*<!--\s*hanlint-(disable-next-line|disable-next|disable|enable)\b([^>]*?)-->\s*$/;
@@ -37,14 +39,14 @@ export function parseFrontmatter(text) {
 }
 
 /** @param {string} firstLine */
-export function classify(firstLine) {
+export function classify(firstLine, lineCount = 1) {
   if (INDENTED_CODE_LINE.test(firstLine)) return CODE;
   if (HEADING_LINE.test(firstLine)) return HEADING;
   if (QUOTE_LINE.test(firstLine)) return QUOTE;
   if (IMAGE_LINE.test(firstLine)) return IMAGE;
   if (TABLE_LINE.test(firstLine)) return TABLE;
   if (LIST_LINE.test(firstLine)) return LIST;
-  if (URL_LINE.test(firstLine)) return EMBED;
+  if (URL_LINE.test(firstLine) || (lineCount === 1 && LINK_ONLY_LINE.test(firstLine))) return EMBED;
   if (HTML_LINE.test(firstLine)) return HTML;
   return PROSE;
 }
@@ -99,7 +101,7 @@ export function splitBlocks(text, firstLine) {
     if (bufferListContinuation !== null && indentWidth(firstLine) >= bufferListContinuation) {
       firstLine = afterIndent(firstLine, bufferListContinuation);
     }
-    const kind = classify(firstLine);
+    const kind = classify(firstLine, buffer.length);
     let joined = buffer.join("\n");
     let level = 0;
     if (kind === HEADING) {
@@ -217,6 +219,30 @@ export function disabledRanges(blocks) {
   return ranges;
 }
 
+/** 코드 블록 첫 줄의 언어 표기 (```python 의 python). 없으면 빈 문자열. 소문자로 준다. @param {string} blockText */
+export function fenceLanguage(blockText) {
+  const opening = FENCE_OPEN.exec(blockText.split("\n", 1)[0]);
+  if (!opening) return "";
+  const info = (opening[2] || opening[4] || "").trim();
+  return info ? info.split(/\s+/)[0].toLowerCase() : "";
+}
+
+/**
+ * 언어 표기가 languages 에 든 펜스를 없앤 문서. 블록 순서 번호를 다시 매기고 절을 다시 묶는다. 인라인 제어는 원문 줄
+ * 기준이라 그대로 두고, 뺀 펜스는 ignored 에 남긴다. 파이썬 dropFences 와 같다.
+ * @param {import("./model.js").Document} doc
+ * @param {string[]} languages
+ * @returns {import("./model.js").Document}
+ */
+export function dropFences(doc, languages) {
+  const wanted = new Set(languages.map((name) => name.trim().toLowerCase()).filter(Boolean));
+  if (!wanted.size) return doc;
+  const dropped = doc.blocks.filter((block) => block.kind === CODE && wanted.has(fenceLanguage(block.text)));
+  if (!dropped.length) return doc;
+  const blocks = doc.blocks.filter((block) => !dropped.includes(block)).map((block, index) => ({ ...block, index }));
+  return { path: doc.path, frontmatter: doc.frontmatter, blocks, sections: groupSections(blocks), disabled: doc.disabled, ignored: [...doc.ignored, ...dropped] };
+}
+
 /**
  * @param {string} text
  * @param {string | null} [path]
@@ -226,5 +252,5 @@ export function parseMarkdown(text, path = null) {
   const { meta, firstLine } = parseFrontmatter(text);
   const body = firstLine === 1 ? text : splitLines(text).slice(firstLine - 1).join("\n");
   const blocks = splitBlocks(body, firstLine);
-  return { path, frontmatter: meta, blocks, sections: groupSections(blocks), disabled: disabledRanges(blocks) };
+  return { path, frontmatter: meta, blocks, sections: groupSections(blocks), disabled: disabledRanges(blocks), ignored: [] };
 }

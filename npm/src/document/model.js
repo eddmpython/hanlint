@@ -37,6 +37,7 @@ export const HTML = "html";
  * @property {Block[]} blocks
  * @property {Section[]} sections
  * @property {[string, number, number][]} disabled 인라인 제어가 끈 (규칙 또는 *, 시작 줄, 끝 줄)
+ * @property {Block[]} ignored 설정이 지문에서 뺀 펜스. 파일 전체를 보는 규칙만 읽는다
  */
 
 /** @param {Section} section */

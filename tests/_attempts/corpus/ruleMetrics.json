@@ -14,7 +14,7 @@
       "essay": 6253,
       "guide": 3845,
       "report": 1354,
-      "technicalDocs": 4828
+      "technicalDocs": 4827
     },
     "registers": {
       "blog": {
@@ -97,6 +97,16 @@
       "precision": 0.9
     },
     {
+      "rule": "bridgeRepeat",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
       "rule": "cliche",
       "occurrences": 11,
       "documents": 11,
@@ -138,13 +148,13 @@
     },
     {
       "rule": "danglingDeixis",
-      "occurrences": 319,
+      "occurrences": 300,
       "documents": 144,
       "sampled": 20,
       "reviewed": 20,
-      "correct": 12,
-      "falsePositive": 8,
-      "precision": 0.6
+      "correct": 17,
+      "falsePositive": 3,
+      "precision": 0.85
     },
     {
       "rule": "dash",
@@ -158,13 +168,13 @@
     },
     {
       "rule": "deixis",
-      "occurrences": 452,
-      "documents": 155,
+      "occurrences": 436,
+      "documents": 154,
       "sampled": 20,
       "reviewed": 20,
-      "correct": 17,
-      "falsePositive": 3,
-      "precision": 0.85
+      "correct": 16,
+      "falsePositive": 4,
+      "precision": 0.8
     },
     {
       "rule": "doubleNegative",
@@ -228,8 +238,8 @@
     },
     {
       "rule": "endingRepeat",
-      "occurrences": 340,
-      "documents": 188,
+      "occurrences": 339,
+      "documents": 187,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -498,8 +508,8 @@
     },
     {
       "rule": "paraFragment",
-      "occurrences": 508,
-      "documents": 223,
+      "occurrences": 507,
+      "documents": 222,
       "sampled": 20,
       "reviewed": 20,
       "correct": 11,

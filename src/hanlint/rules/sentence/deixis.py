@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from ...analysis.grammar import fitJosa
 from ...config import Config
 from ...fingerprint import DocumentPrint
 from ...fingerprint.topics import overlap
@@ -33,7 +34,8 @@ def deixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "deixis",
             sentence.line,
             sentence.text,
-            f"`{sentence.deixis[0]}` 은 독자가 스크롤을 되돌려야 하는 지시어다. 가리키는 파일, 값, 코드의 이름을 쓴다",
+            f"`{sentence.deixis[0]}` {fitJosa(sentence.deixis[0], '은')} 독자가 스크롤을 되돌려야 하는 지시어다. "
+            "가리키는 파일, 값, 코드의 이름을 쓴다",
             None,
             "error",
             SENTENCE,

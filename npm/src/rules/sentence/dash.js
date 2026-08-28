@@ -8,7 +8,7 @@ const DASHES = new RegExp(`[${String.fromCharCode(0x2013)}${String.fromCharCode(
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {
   const findings = [];
-  for (const block of doc.blocks) {
+  for (const block of [...doc.blocks, ...doc.ignored]) {
     block.text.split("\n").forEach((lineText, offset) => {
       if (DASHES.test(lineText)) {
         findings.push(

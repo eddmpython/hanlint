@@ -68,6 +68,8 @@ class Document:
     sections: list[Section]
     disabled: list[tuple[str, int, int]] = field(default_factory=list)
     """인라인 제어가 끈 (규칙 이름 또는 *, 시작 줄, 끝 줄). `<!-- hanlint-disable cliche -->` 가 만든다."""
+    ignored: list[Block] = field(default_factory=list)
+    """설정 (ignoreFences) 이 지문에서 뺀 펜스. dash 처럼 파일 전체를 보는 규칙만 읽는다."""
 
     @property
     def intro(self) -> Section:

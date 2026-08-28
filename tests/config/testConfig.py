@@ -13,10 +13,14 @@ def testDefaultsAreTheTruth():
 
 
 def testFromMappingSetsKnownKeys():
-    config = Config.fromMapping({"disable": ["nounPile"], "fragmentRun": 2, "keywordField": "primaryKeyword"})
+    config = Config.fromMapping(
+        {"disable": ["nounPile"], "fragmentRun": 2, "keywordField": "primaryKeyword", "ignoreFences": [" Course-Scene "]}
+    )
     assert not config.enabled("nounPile")
     assert config.fragmentRun == 2
     assert config.keywordField == "primaryKeyword"
+    assert config.ignoreFences == ["course-scene"]
+    assert config.headingSentenceMaxLevel == 6 and config.bridgeRepeatMin == 3
 
 
 def testFromMappingRejectsUnknownKeyAndBadAnalyzer():
@@ -24,6 +28,11 @@ def testFromMappingRejectsUnknownKeyAndBadAnalyzer():
         Config.fromMapping({"nounPileMinimum": 3})
     with pytest.raises(ValueError):
         Config.fromMapping({"analyzer": "mecab"})
+    # 배열 자리에 문자열을 주면 글자 단위로 쪼개져 조용히 무시된다. 실측: 검증에서 잡혔다
+    with pytest.raises(ValueError):
+        Config.fromMapping({"ignoreFences": "course-scene"})
+    with pytest.raises(ValueError):
+        Config.fromMapping({"introFields": "readerQuestion"})
 
 
 def testLoadFindsHanlintTomlUpwards(tmp_path: Path):

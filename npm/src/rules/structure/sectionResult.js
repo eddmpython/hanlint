@@ -1,9 +1,9 @@
 // @ts-check
-import { CODE, IMAGE, TABLE } from "../../document/model.js";
+import { CODE, EMBED, IMAGE, TABLE } from "../../document/model.js";
 import { NOTICE, SECTION, finding } from "../finding.js";
 
 export const name = "sectionResult";
-const RESULT_KINDS = [CODE, IMAGE, TABLE];
+const RESULT_KINDS = [CODE, EMBED, IMAGE, TABLE];
 const FILE_NAME = /[\w가-힣-]+\.(?:csv|xlsx|xls|parquet|json|png|jpg|svg|db|sqlite|txt|py|pdf|html|md)\b/;
 const OUTPUT_WORDS = ["출력", "화면에", "찍힙니다", "나옵니다", "뜹니다", "보입니다", "만들어집니다", "생깁니다", "저장됩니다"];
 

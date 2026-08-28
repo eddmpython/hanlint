@@ -62,8 +62,13 @@ def shareDistribution(values: list[float]) -> dict[str, float]:
     return {"min": at(0), "p05": at(0.05), "median": at(0.5), "p95": at(0.95), "max": at(1)}
 
 
-def findingId(docId: str, rule: str, line: int, quote: str, why: str) -> str:
-    value = f"{docId}\0{rule}\0{line}\0{quote}\0{why}"
+def findingId(docId: str, rule: str, line: int, quote: str) -> str:
+    """지적의 자리로 만든 id. 지적문 (why) 은 넣지 않는다.
+
+    조사 하나를 고쳐도 그 규칙의 판정 id 가 전부 바뀌던 실측 (2026-08-28) 이 근거다. 같은 자리의 지적은 문구가
+    바뀌어도 같은 판정을 가리켜야 한다.
+    """
+    value = f"{docId}\0{rule}\0{line}\0{quote}"
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:20]
 
 
@@ -90,7 +95,7 @@ def observe() -> tuple[list[dict], dict]:
         for finding in runAll(doc, config):
             observations.append(
                 {
-                    "id": findingId(entry["id"], finding.rule, finding.line, finding.quote, finding.why),
+                    "id": findingId(entry["id"], finding.rule, finding.line, finding.quote),
                     "document": entry["id"],
                     "type": entry["type"],
                     "preset": entry["preset"],

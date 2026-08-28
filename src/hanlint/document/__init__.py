@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .model import Block, Document, Section
-from .parseMarkdown import parseMarkdown
+from .parseMarkdown import dropFences, fenceLanguage, parseMarkdown
 from .plainText import codeSpans, plainText
 
-__all__ = ["Block", "Document", "Section", "codeSpans", "parseMarkdown", "plainText"]
+__all__ = ["Block", "Document", "Section", "codeSpans", "dropFences", "fenceLanguage", "parseMarkdown", "plainText"]

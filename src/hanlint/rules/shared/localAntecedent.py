@@ -13,6 +13,6 @@ def hasLocalAntecedent(sentence: SentencePrint) -> bool:
     before = topicsOf(sentence.text[:start]) if start > 0 else frozenset()
     if marker.startswith("이것"):
         return bool(before)
-    if marker.startswith("해당 "):
+    if marker.startswith(("해당 ", "이러한 ")):
         return overlap(before, topicsOf(marker)) > 0.0
     return False

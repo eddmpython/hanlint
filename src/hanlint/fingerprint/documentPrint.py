@@ -35,6 +35,8 @@ class DocumentPrint:
     """그 문체가 평서문에서 차지하는 비율."""
     disabled: tuple[tuple[str, int, int], ...] = ()
     """인라인 제어가 끈 (규칙 또는 *, 시작 줄, 끝 줄). 등록부가 지적을 거른다."""
+    ignored: tuple[Block, ...] = ()
+    """설정이 지문에서 뺀 펜스. 파일 전체를 보는 규칙 (dash) 만 읽는다."""
 
     @property
     def intro(self) -> SectionPrint:

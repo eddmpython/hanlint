@@ -70,6 +70,10 @@ class Config:
     """잠근 지적을 적은 파일 경로. 있으면 그 안의 지적은 조용히 넘긴다."""
     dictionary: dict[str, list] = field(default_factory=dict)
     """사전에 더할 항목. 키는 사전 이름 (cliches, translationese, redundantPair, japaneseLoan)."""
+    ignoreFences: list[str] = field(default_factory=list)
+    """지문에서 뺄 펜스의 언어 표기. 코드도 산문도 아닌 펜스 (강의 장면 계약, 도표 원문) 가 코드 블록으로 세어지면
+    거의 같은 블록, 읽어 주지 않은 출력, 절의 결과로 잘못 잡힌다. 실측: eddmpython-course 의 `course-scene` 펜스가
+    여섯 편에서 duplicateBlock 21건과 blockUnread 1건을 냈다. 렌더러가 읽기 본문에서 지우는 펜스는 지문에서도 뺀다."""
     source: str | None = None
     """설정을 읽은 파일. 기본값이면 None. 설정 파일의 키가 아니라 loadConfig 가 채운다."""
 
@@ -79,6 +83,13 @@ class Config:
     """도입 산문 문단 상한. 스킬: 도입은 문단 넷을 넘지 않는다."""
     headingUniformRatio: float = 0.75
     """H2 끝 글자가 이 비율 넘게 같으면 통일로 본다. 실측: 004 는 8 중 7 이라 0.875 였다."""
+    headingSentenceMaxLevel: int = 6
+    """문장형 제목을 잡을 제목 깊이의 상한. 기본은 전부 (H1~H6). 절 제목 아래에 문장형 부제를 두는 형식 (강의 교안의
+    H3 부제) 은 2 로 두어 H2 까지만 본다. 실측: eddmpython-course 는 H3 부제가 계약상 문장이라 여섯 편에서 62건이 났다."""
+    bridgeRepeatMin: int = 3
+    """절을 닫는 문장이 같은 이음 표지 (이번에는, 이제, 다음으로) 로 시작하는 절이 몇 개면 틀로 보는가. 실측:
+    eddmpython-course 03 은 14절 가운데 12절이 `이번에는` 으로 닫혔고 기준 말뭉치 390편에서 문장 첫머리
+    `이번에는` 은 1건이었다. 둘은 우연이고 셋부터 틀이다."""
     nounPileMin: int = 5
     """명사가 몇 개 이어지면 나열로 보는가. 넷은 `파이썬 데이터프레임 라이브러리` 같은 정상 표현이라 다섯부터."""
     endingRun: int = 4
@@ -134,6 +145,11 @@ class Config:
                 config.preset = value
             elif key == "dictionary":
                 config.dictionary = dict(value)
+            elif key in ("ignoreFences", "introFields", "endingFields"):
+                if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+                    raise ValueError(f"{key} 는 문자열 배열이다: {value!r}")
+                names = [item.strip() for item in value]
+                setattr(config, key, [name.lower() for name in names] if key == "ignoreFences" else names)
             elif key != "source" and hasattr(config, key):
                 setattr(config, key, value)
             else:

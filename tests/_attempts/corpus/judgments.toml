@@ -4,7 +4,7 @@ version = 1
 name = "blockUnread"
 sampled = 20
 default = "correct"
-falsePositive = ["7a0fab30f4f2978d21d5", "a722da55183b8184d017"]
+falsePositive = ["1e1cd347c813f98c38b1", "338c9570ab1a11381922"]
 note = "출력 블록은 설명이 없으면 정탐이다. HTML 줄과 목록 속 설명문 두 건은 코드로 읽힌 경계 오탐이다."
 
 [[rule]]
@@ -36,16 +36,11 @@ name = "danglingDeixis"
 sampled = 20
 default = "correct"
 falsePositive = [
-  "d774521b5d4edfc8e6fa",
-  "52bc0a9970e5574cd613",
-  "097be60e0bebc231a2a9",
-  "c9cb9298234014f4fa09",
-  "a11ebc2b59808aef0b9a",
-  "b64ecde9a576f11bdbed",
-  "086e18b34272ab1773d9",
-  "85970f1c8e2a4bf1cef9",
+  "0c47e4bb26bf6d8c4091",
+  "42dd6d045897e79b7be0",
+  "3a706471012f14d3e782",
 ]
-note = "기술 문서에서 이름 없는 지시어는 정탐이다. 수필의 몸짓, 대화, 앞 단락을 받는 서술과 기사 문맥 한 건은 자연스러웠다."
+note = "앞 문장과 낱말이 안 겹치는 지시어는 기술 문서에서 전부 이름으로 바꿀 수 있었다 (이 병합 방식은, 이 튜토리얼의 설정은, Suspended 컨디션은). 이러한 을 뒤의 명사까지 잡게 한 뒤 (2026-08-28) 표본이 거의 다 바뀌어 20건을 다시 읽었다. 오탐 셋은 수필의 서사와 대화다. 바로 앞 감탄문이 가리키는 `이러한 무서운 생각`, 바로 앞 물음이 가리키는 `이것이 지금 내가 논구해 보려는 것`, 긴 논증 끝의 `이것이 정말 화장술이 아니오`. 앞 문장이 물음이나 감탄이면 낱말이 안 겹쳐도 그것이 선행어다."
 
 [[rule]]
 name = "dash"
@@ -57,8 +52,13 @@ note = "부연, 날짜와 주소 범위, 잘못 옮긴 목록 기호까지 모�
 name = "deixis"
 sampled = 20
 default = "correct"
-falsePositive = ["37f3a7f2a058c92dec3d", "ae2ffb659e58bae76afc", "6533bd26846b9cbbdb20"]
-note = "기술 문서의 지시어는 이름으로 바꿀 수 있었다. 수필 대화와 서사 세 건은 현장 대상을 자연스럽게 가리켰다."
+falsePositive = [
+  "32e0b8fef323985ee61a",
+  "800368d6f81a2655d5cd",
+  "f9920145a6e769adff41",
+  "14171f6cea38fd4d1840",
+]
+note = "기술 문서의 지시어는 이름으로 바꿀 수 있었다. 영문 어절 뒤의 위의, 아래의 를 공간 표현으로 보고 이러한 을 뒤의 명사까지 잡게 한 뒤 (2026-08-28) 표본이 거의 다 바뀌어 20건을 다시 읽었다. 오탐 넷은 관용구 (`이러한 차에`), 같은 문장 안의 인용문이 가리키는 것 (`... 하는 박양의 ... 이러한 무용전`), 같은 문장 앞쪽에 있는 requests.cpu 를 가리키는 `해당 리소스`, 각각을 뜻하는 `해당 언어` 다. 한 문장 안 선행어 판정은 화제어가 겹칠 때만 되므로 낱말이 다르면 놓친다."
 
 [[rule]]
 name = "doubleNegative"
@@ -101,15 +101,15 @@ name = "factListParagraph"
 sampled = 20
 default = "falsePositive"
 correct = [
-  "981d15e7fad025b65547",
-  "46832453a7729cbbebef",
-  "3ec68ad46938ec3a0969",
-  "f975823ef8d8ded51d2c",
-  "1caf629988db4ca45da8",
-  "65bd2550e2df587c3512",
-  "a6176645083fa0c07e4f",
-  "4f6bf2b8472d132f395c",
-  "aebed7a04be3ba9ab4fc",
+  "f6dcdf8944e563b89ef7",
+  "51fae08221220e9934a4",
+  "be50251eff45dd56bd32",
+  "6c2b7ea605bd7b465dfe",
+  "93398f39d0284d275265",
+  "612cb19dfef5d88bf4bc",
+  "00e4ea4f31a5f33fd007",
+  "fb1a7e2facc8c8a88f9f",
+  "fde530b4150e32c947ca",
 ]
 note = "기술 설명에서 인과 없이 이어진 사실은 정탐이다. 수필의 대화, 장면과 사건 진행은 나열이 아니었다."
 
@@ -160,12 +160,12 @@ name = "introLong"
 sampled = 20
 default = "falsePositive"
 correct = [
-  "9659a37359463eaa7cf7",
-  "f39b06c78d650c2ecffb",
-  "915bc5da66cd49f45086",
-  "97c8c8b23b2b1a2455a7",
-  "202daa7fc5507bcfcbe5",
-  "f8ab99f69b3fa52b7b9a",
+  "5ea69378641a8f3954b0",
+  "21ab42ad1f2696c3c0f9",
+  "390e12237fce5b874c1d",
+  "29ae691a368b06bc29cb",
+  "e28cc1a9480aa3df7516",
+  "da75c758de565c757ae4",
 ]
 note = "블로그와 기술 안내에서 긴 도입은 정탐이다. 제목 구조가 없는 수필과 단신 전체를 도입으로 센 것은 오탐이다."
 
@@ -197,7 +197,7 @@ note = "문서 전체에 물음표가 없었고 독자가 품을 질문을 한 �
 name = "nounPile"
 sampled = 20
 default = "correct"
-falsePositive = ["1b9b8d96704680c4787d", "f45dfc5170c646b46e3b", "606a5ed8480608b57c01"]
+falsePositive = ["84148646c06f943b20d8", "309e38e2ad68259496bb", "6c6b24a5f65d7d70f77b"]
 note = "기술 용어와 고유 명사가 다섯 개 이상 이어진 자리는 정탐이다. 옛말의 동사와 부사가 명사로 읽힌 세 건은 오탐이다."
 
 [[rule]]
@@ -205,19 +205,19 @@ name = "paraFragment"
 sampled = 20
 default = "falsePositive"
 correct = [
-  "f94b034ca7280064ac0b",
-  "09b8d4455706a54822b0",
-  "702b916f03ecaed8c17b",
-  "8812376f798e391ec586",
-  "440f9f9deba6a753b817",
-  "bd36efdd6e3708bd3d0a",
-  "089cc5c306346fedcaae",
-  "be4f2b731ce113a919b7",
-  "3873ad14d3bedb5970a7",
-  "3a8a702e85afed311949",
-  "6b07aab45aae4f9711fa",
+  "01a66b4cca0f8811c67c",
+  "02b730143719070cc35c",
+  "137e19a19d7c8ab70ed8",
+  "2b7017eeaf4a63e04b0d",
+  "95e07a00badedcc2703e",
+  "ddc0d199f61c0c4368ba",
+  "0aafcbe92f8836ea2511",
+  "6264690e2cdbb69d8cd7",
+  "8229c34a9770c037a692",
+  "c062daa480ac009cf4c2",
+  "5019321a9f94c8134d21",
 ]
-note = "같은 기술 화제를 짧게 끊은 문단은 정탐이다. 편집자 정보, 대화, 장면 전환, 기사 단락은 분리할 이유가 있었다."
+note = "같은 기술 화제를 짧게 끊은 문단은 정탐이다. 편집자 정보, 대화, 장면 전환, 기사 단락은 분리할 이유가 있었다. 링크 하나뿐인 문단을 embed 로 읽게 한 뒤 표본이 다섯 건 바뀌어 다시 읽었다. 기술 문서의 한두 문장 문단 셋은 정탐이고, 한 문장이 한 문단인 옛 수필과 글자가 빈 목록 항목은 오탐이다."
 
 [[rule]]
 name = "platformApi"
@@ -277,5 +277,5 @@ note = "서사 장면 전환과 기술 문서의 새 단락이었고 제목과 �
 name = "translationese"
 sampled = 20
 default = "correct"
-falsePositive = ["7be9f59eee471becd3ef"]
+falsePositive = ["4a00eec4561f6218b6d4"]
 note = "조사와 피동을 걷어 능동문으로 바꿀 수 있는 번역투였다. 데이터 안전을 위해 한 건은 자연스러운 목적 표현이었다."

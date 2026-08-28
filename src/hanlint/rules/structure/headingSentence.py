@@ -18,9 +18,13 @@ def headingSentence(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         같은 문장이 두 번 읽힌다.
     어디서: 운영자 규칙 (섹션 타이틀은 간단명료하게). 글쓰기 스킬의 절 제목 규칙.
     고치기: 대상이나 질문을 짧게 쓴다. 파일을 엽니다 는 파일 열기, 왜 파일이 열리지 않을까.
-    안 잡는 것: 물음표로 끝나는 질문 제목. 명사로 끝나는 제목.
+    안 잡는 것: 물음표로 끝나는 질문 제목. 명사로 끝나는 제목. config.headingSentenceMaxLevel 보다 깊은 제목.
+        절 제목 아래에 문장형 부제를 두는 형식 (강의 교안의 H3 부제는 계약상 행동과 결과를 말하는 문장이다) 은
+        그 값을 2 로 두어 H2 까지만 본다. 실측: eddmpython-course 여섯 편에서 부제 62개가 전부 걸렸다.
     """
-    for _, text, line in doc.headings:
+    for level, text, line in doc.headings:
+        if level > config.headingSentenceMaxLevel:
+            continue
         if text.rstrip().endswith(SENTENCE_ENDINGS):
             yield Finding(
                 "headingSentence",

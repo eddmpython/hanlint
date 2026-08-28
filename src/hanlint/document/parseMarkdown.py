@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 
 from .model import CODE, EMBED, HEADING, HTML, IMAGE, LIST, PROSE, QUOTE, TABLE, Block, Document, Section
 
@@ -20,6 +21,9 @@ IMAGE_LINE = re.compile(r"^!\[")
 LIST_LINE = re.compile(r"^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+")
 TABLE_LINE = re.compile(r"^\s*\|")
 URL_LINE = re.compile(r"^\s*https?://\S+\s*$")
+# 링크 하나만 있는 줄. 본문이 아니라 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크) 이라 주소만 있는 줄과 같은 embed 다.
+# 실측: eddmpython-course 01 의 영상 링크 22개가 산문 문장으로 세어져 영상이 셋인 절이 결과 없는 절로 잡혔다.
+LINK_ONLY_LINE = re.compile(r"^\s*\[[^\]\n]+\]\(\S+?(?:\s+\"[^\"\n]*\")?\)\s*$")
 HTML_LINE = re.compile(r"^\s*<")
 META_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 # 인라인 제어. `<!-- hanlint-disable cliche -->` 부터 `<!-- hanlint-enable cliche -->` 까지, 또는 다음 블록 하나.
@@ -40,7 +44,12 @@ def parseFrontmatter(text: str) -> tuple[dict[str, str], int]:
     return meta, match.group(0).count("\n") + 1
 
 
-def classify(firstLine: str) -> str:
+def classify(firstLine: str, lineCount: int = 1) -> str:
+    """블록의 종류. 링크 하나뿐인 줄은 그 줄이 블록의 전부일 때만 embed 다. 줄바꿈으로 이어지는 문단의 첫 줄이면 산문이다.
+
+    실측: 기준 말뭉치의 감사(auditing) 문서는 링크로 시작해 다음 줄로 이어지는 문단을 두었고 그것이 embed 가 되자
+    도입 문단 수가 달라졌다.
+    """
     if INDENTED_CODE_LINE.match(firstLine):
         return CODE
     if HEADING_LINE.match(firstLine):
@@ -53,7 +62,7 @@ def classify(firstLine: str) -> str:
         return TABLE
     if LIST_LINE.match(firstLine):
         return LIST
-    if URL_LINE.match(firstLine):
+    if URL_LINE.match(firstLine) or (lineCount == 1 and LINK_ONLY_LINE.match(firstLine)):
         return EMBED
     if HTML_LINE.match(firstLine):
         return HTML
@@ -101,7 +110,7 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
         firstLine = buffer[0]
         if bufferListContinuation is not None and indentWidth(firstLine) >= bufferListContinuation:
             firstLine = afterIndent(firstLine, bufferListContinuation)
-        kind = classify(firstLine)
+        kind = classify(firstLine, len(buffer))
         joined = "\n".join(buffer)
         level = 0
         if kind == HEADING:
@@ -199,6 +208,42 @@ def disabledRanges(blocks: list[Block]) -> list[tuple[str, int, int]]:
                     ranges.append((name, opened.pop(name), block.endLine))
     ranges.extend((name, start, lastLine) for name, start in opened.items())
     return ranges
+
+
+def fenceLanguage(blockText: str) -> str:
+    """코드 블록 첫 줄의 언어 표기 (```python 의 python). 없으면 빈 문자열. 소문자로 준다."""
+    opening = FENCE_OPEN.match(blockText.split("\n", 1)[0])
+    if not opening:
+        return ""
+    info = (opening.group("tickInfo") or opening.group("tildeInfo") or "").strip()
+    return info.split()[0].lower() if info else ""
+
+
+def dropFences(doc: Document, languages: list[str] | tuple[str, ...]) -> Document:
+    """언어 표기가 `languages` 에 든 펜스를 없앤 문서. 블록 순서 번호를 다시 매기고 절을 다시 묶는다.
+
+    인라인 제어는 원문 줄 기준이라 그대로 둔다. 다시 계산하면 펜스 앞의 `disable-next` 가 그 다음 문단으로 옮겨 붙는다
+    (실측: 검증에서 잡혔다). 뺀 펜스는 `ignored` 에 남겨 파일 전체를 보는 규칙 (dash) 이 읽는다.
+
+    렌더러가 읽기 본문에서 지우는 펜스 (강의 장면 계약) 나 도표 원문은 코드도 산문도 아니다. 그대로 두면 거의
+    같은 블록, 읽어 주지 않은 출력, 절의 결과로 세어진다. 줄 번호는 원문 그대로라 지적이 가리키는 자리는 안 변한다.
+    """
+    wanted = {name.strip().lower() for name in languages if name.strip()}
+    if not wanted:
+        return doc
+    dropped = [block for block in doc.blocks if block.kind == CODE and fenceLanguage(block.text) in wanted]
+    if not dropped:
+        return doc
+    kept = [block for block in doc.blocks if block not in dropped]
+    blocks = [replace(block, index=index) for index, block in enumerate(kept)]
+    return Document(
+        path=doc.path,
+        frontmatter=doc.frontmatter,
+        blocks=blocks,
+        sections=groupSections(blocks),
+        disabled=doc.disabled,
+        ignored=[*doc.ignored, *dropped],
+    )
 
 
 def parseMarkdown(text: str, path: str | None = None) -> Document:

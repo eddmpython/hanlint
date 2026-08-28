@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { PROSE } from "../../document/model.js";
 import { matchedTexts } from "../../fingerprint/markers.js";
 import { NOTICE, SENTENCE, finding } from "../finding.js";
@@ -51,7 +52,7 @@ export function run(doc, config) {
       if (seen.has(base) || numeralsIn(sentence.text.slice(0, start)).has(base)) continue;
       if (isAnchored(sentence.text, start)) continue;
       findings.push(
-        finding(name, sentence.line, sentence.text, `\`${base}\` 가 여기서 처음 나오는 값이다. 무엇에서 올라간 것인지 알 수 없다. 그 값이 어디서 나왔는지 밝힌다`, null, NOTICE, SENTENCE, sentence.index),
+        finding(name, sentence.line, sentence.text, `\`${base}\` ${fitJosa(base, "가")} 여기서 처음 나오는 값이다. 무엇에서 올라간 것인지 알 수 없다. 그 값이 어디서 나왔는지 밝힌다`, null, NOTICE, SENTENCE, sentence.index),
       );
     }
     for (const numeral of numeralsIn(sentence.text)) seen.add(numeral);

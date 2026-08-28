@@ -39,7 +39,7 @@ function replacementForDeixis(topic, deixis) {
     const base = stripJosa(last);
     return topic + fitJosa(topic, last.slice(base.length));
   }
-  if (deixis === "이러한") return topic + "의";
+  if (deixis.startsWith("이러한 ")) return topic + "의 " + deixis.slice("이러한 ".length);
   if (deixis === "이처럼") return topic + "처럼";
   return topic;
 }

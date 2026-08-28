@@ -9,7 +9,7 @@ from ..analysis import Analyzer, Sentence
 from ..analysis.grammar import NONE as NO_REGISTER
 from ..analysis.grammar import documentRegister, lastWord, registerOfWord
 from ..config import Config
-from ..document import Block, Document, Section, codeSpans, plainText
+from ..document import Block, Document, Section, codeSpans, dropFences, plainText
 from ..document.model import HEADING, PROSE
 from . import markers
 from .dictionaries import Entry, entriesFor, matchesIn
@@ -159,6 +159,8 @@ def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPr
 
 def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = None) -> DocumentPrint:
     config = config or Config()
+    # 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
+    doc = dropFences(doc, config.ignoreFences)
     build = Build(analyzer, entriesFor(config))
     sections = [buildSection(build, section, index) for index, section in enumerate(doc.sections)]
     sentences, paragraphs = build.sentences, build.paragraphs
@@ -182,4 +184,5 @@ def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = 
         register=register,
         registerShare=registerShare,
         disabled=tuple(doc.disabled),
+        ignored=tuple(doc.ignored),
     )

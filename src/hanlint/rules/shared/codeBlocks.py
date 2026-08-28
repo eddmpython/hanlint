@@ -8,10 +8,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from ...document import fenceLanguage
 from ...document.model import CODE
 from ...fingerprint import DocumentPrint
 
-FENCE_LANGUAGE = re.compile(r"^\s*(?:```|~~~)\s*([A-Za-z0-9_+-]*)")
 CLOSING_FENCE = re.compile(r"^\s*(?:```|~~~)\s*$")
 
 
@@ -38,8 +38,7 @@ def codeBlocksOf(doc: DocumentPrint) -> list[CodeBlock]:
         if block.kind != CODE:
             continue
         raw = block.text.split("\n")
-        match = FENCE_LANGUAGE.match(raw[0])
-        language = (match.group(1) if match else "").lower()
+        language = fenceLanguage(block.text)
         body = raw[1:]
         if body and CLOSING_FENCE.match(body[-1]):
             body = body[:-1]

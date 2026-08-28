@@ -20,10 +20,10 @@ def dash(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         GPT-4.1 이 인간 대비 3.28배 쓴다는 조사가 있다.
     어디서: 글쓰기 스킬의 사실과 목소리. Wikipedia Signs of AI writing 4.6. Freeburg 조사.
     고치기: 부연은 마침표로 끊거나 괄호로, 범위는 물결표로 쓴다. 2020~2024.
-    안 잡는 것: 하이픈 (-) 과 물결표. 코드 안의 대시도 잡는다. 코드가 대시를 정말 필요로 하면 그 파일에서
-        이 규칙을 끈다.
+    안 잡는 것: 하이픈 (-) 과 물결표. 코드 안의 대시도 잡고, 설정 (ignoreFences) 이 지문에서 뺀 펜스 안도 잡는다.
+        렌더러가 지우는 펜스라도 파일에 있는 글자다. 코드가 대시를 정말 필요로 하면 그 파일에서 이 규칙을 끈다.
     """
-    for block in doc.blocks:
+    for block in (*doc.blocks, *doc.ignored):
         for offset, lineText in enumerate(block.text.split("\n")):
             if DASHES.search(lineText):
                 yield Finding(
