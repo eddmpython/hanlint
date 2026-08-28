@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cache
+from unicodedata import east_asian_width
 
 from .load import loadToml
 
@@ -20,8 +21,12 @@ EM_DASH = chr(0x2014)
 EN_DASH = chr(0x2013)
 ARROW = " -> "
 """전과 후를 잇는 표지. 긴 줄표를 쓸 수 없으므로 화살표다."""
-ONE_LINE_LIMIT = 46
-"""한 줄 본보기의 한쪽 글자 상한. 터미널 폭에서 전과 후가 한 줄에 들어가는 길이다."""
+ONE_LINE_LIMIT = 96
+"""한 줄 본보기의 표시 폭 상한. 글자 수가 아니라 폭이다.
+
+한글은 칸을 둘 먹는다. 처음에 글자 46으로 두고 `한 줄에 들어가는 길이` 라고 적었는데 한글 46자는
+92칸이고 전과 후를 한 줄에 이으면 176칸이라 어느 터미널에도 안 들어갔다. 단위가 틀렸던 것이다.
+그래서 전과 후를 각자 제 줄에 두고 한 줄은 96칸으로 잰다."""
 
 
 @dataclass(frozen=True)
@@ -35,9 +40,14 @@ class Exemplar:
     """무엇이 달라졌는지 한 마디."""
 
     @property
-    def oneLine(self) -> str:
-        """한 줄로 줄인 짝. 여러 줄짜리 본보기는 눕혀서 앞부분만 보인다."""
-        return shorten(self.before) + ARROW + shorten(self.after)
+    def twoLines(self) -> tuple[str, str]:
+        """전과 후를 제 줄씩. 한글은 칸을 둘 먹어 한 줄에 둘 다 담으면 답인 `후` 가 먼저 잘린다."""
+        return shorten(self.before), shorten(self.after)
+
+    @property
+    def shortened(self) -> bool:
+        """어느 한쪽이라도 잘렸나. 잘렸으면 전문이 어디 있는지 알려야 한다."""
+        return isShortened(self.before) or isShortened(self.after)
 
     def asDict(self) -> dict:
         return {"before": self.before, "after": self.after, "moved": self.moved}
@@ -47,10 +57,29 @@ def expand(text: str) -> str:
     return text.replace("{em}", EM_DASH).replace("{en}", EN_DASH).replace("{dot}", ".")
 
 
+def displayWidth(text: str) -> int:
+    """터미널이 먹는 칸 수. 한중일 글자는 둘, 나머지는 하나다."""
+    return sum(2 if east_asian_width(ch) in "WF" else 1 for ch in text)
+
+
 def shorten(text: str, limit: int = ONE_LINE_LIMIT) -> str:
-    """한 줄로 보일 때의 꼴. 줄바꿈은 공백으로 눕히고 길면 자른다."""
+    """한 줄로 보일 때의 꼴. 줄바꿈은 공백으로 눕히고 폭이 넘치면 자른다."""
     flat = " ".join(text.split())
-    return flat if len(flat) <= limit else flat[: limit - 1] + chr(0x2026)
+    if displayWidth(flat) <= limit:
+        return flat
+    kept: list[str] = []
+    used = 0
+    for ch in flat:
+        step = 2 if east_asian_width(ch) in "WF" else 1
+        if used + step > limit - 1:
+            break
+        kept.append(ch)
+        used += step
+    return "".join(kept) + chr(0x2026)
+
+
+def isShortened(text: str) -> bool:
+    return displayWidth(" ".join(text.split())) > ONE_LINE_LIMIT
 
 
 @cache

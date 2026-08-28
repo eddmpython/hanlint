@@ -1,18 +1,24 @@
 // @ts-check
 /**
  * 사람이 읽는 지적 목록. `파일:줄` 로 시작해 편집기가 바로 연다. 파이썬 report/textReport.py 와 같은 글자다.
- * 끝에 본보기를 붙인다. 지적은 무엇이 틀렸는지 말하고 본보기는 무엇이 맞는지 보인다.
+ * 끝에 본보기를 붙인다. 전과 후를 제 줄에 둔다. 왜 한 줄이 아닌지는 파이썬 report/textReport.py 가 소유한다.
  */
-import { exemplarFor, oneLine } from "../data/exemplars.js";
+import { exemplarFor, shortened, twoLines } from "../data/exemplars.js";
 
-/** 그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 한 줄이다. @param {import("../rules/finding.js").Finding[]} findings */
+/** 그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다. @param {import("../rules/finding.js").Finding[]} findings */
 function exemplarLines(findings) {
   const lines = [];
+  let cut = false;
   for (const name of [...new Set(findings.map((f) => f.rule))].sort()) {
     const exemplar = exemplarFor(name);
-    if (exemplar) lines.push(`  [${name}] ${oneLine(exemplar)}`);
+    if (!exemplar) continue;
+    const [before, after] = twoLines(exemplar);
+    cut = cut || shortened(exemplar);
+    lines.push(`  [${name}]`, `    전  ${before}`, `    후  ${after}`);
   }
-  return lines.length ? ["본보기 (고치기 전 -> 고친 뒤)", ...lines] : [];
+  if (!lines.length) return [];
+  const head = "본보기 (고치기 전, 고친 뒤)";
+  return [cut ? `${head}. 잘린 것은 hanlint explain <규칙>` : head, ...lines];
 }
 
 /** @param {string} path @param {import("../rules/finding.js").Finding[]} findings */

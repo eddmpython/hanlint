@@ -54,3 +54,35 @@ def testMovedSaysWhatChanged():
         assert exemplar.moved.strip(), f"{name} 의 moved 가 비었다"
         assert name not in exemplar.moved, f"{name} 의 moved 가 규칙 이름을 되풀이한다. 손이 한 일을 적는다"
         assert exemplar.before != exemplar.after, f"{name} 의 before 와 after 가 같다"
+
+
+def testShortenCountsTerminalColumnsNotCharacters():
+    """한글은 칸을 둘 먹는다. 글자 수로 자르면 상한이 두 배로 새서 어느 터미널에도 안 들어간다."""
+    from hanlint.data.exemplars import ONE_LINE_LIMIT, displayWidth, isShortened, shorten
+
+    assert displayWidth("한글") == 4
+    assert displayWidth("ab") == 2
+    assert displayWidth("한a") == 3
+
+    long = "가" * 200
+    cut = shorten(long)
+    assert displayWidth(cut) <= ONE_LINE_LIMIT
+    assert cut.endswith(chr(0x2026))
+    assert isShortened(long)
+
+    short = "가나다"
+    assert shorten(short) == short
+    assert not isShortened(short)
+    assert shorten("한 줄로\n눕는다") == "한 줄로 눕는다"
+
+
+def testEveryExemplarFitsOrSaysItIsCut():
+    """답인 `후` 가 소리 없이 잘리면 안 된다. 잘렸으면 shortened 가 참이라 머리줄이 알린다."""
+    from hanlint.data.exemplars import ONE_LINE_LIMIT, displayWidth
+
+    for name, exemplar in exemplars().items():
+        before, after = exemplar.twoLines
+        assert displayWidth(before) <= ONE_LINE_LIMIT, name
+        assert displayWidth(after) <= ONE_LINE_LIMIT, name
+        wasCut = before.endswith(chr(0x2026)) or after.endswith(chr(0x2026))
+        assert wasCut == exemplar.shortened, name

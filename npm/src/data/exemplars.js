@@ -10,10 +10,10 @@ import { loadEntries } from "./load.js";
 const EM_DASH = String.fromCharCode(0x2014);
 const EN_DASH = String.fromCharCode(0x2013);
 const ELLIPSIS_CHAR = String.fromCharCode(0x2026);
-/** 전과 후를 잇는 표지. 긴 줄표를 쓸 수 없으므로 화살표다. */
-const ARROW = " -> ";
-/** 한 줄 본보기의 한쪽 글자 상한. */
-const ONE_LINE_LIMIT = 46;
+/** 한 줄 본보기의 표시 폭 상한. 글자 수가 아니라 폭이다. 뜻은 파이썬 data/exemplars.py 가 소유한다. */
+const ONE_LINE_LIMIT = 96;
+/** 칸을 둘 먹는 글자. 한중일 W 와 F 다. 파이썬 unicodedata.east_asian_width 와 같은 범위를 든다. */
+const WIDE = /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA000-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE6F\uFF00-\uFF60\uFFE0-\uFFE6]/;
 
 /**
  * @typedef {object} Exemplar
@@ -28,10 +28,31 @@ export function expand(text) {
   return text.split("{em}").join(EM_DASH).split("{en}").join(EN_DASH).split("{dot}").join(".");
 }
 
-/** 한 줄로 보일 때의 꼴. 줄바꿈은 공백으로 눕히고 길면 자른다. @param {string} text @param {number} [limit] */
+/** 터미널이 먹는 칸 수. 한중일 글자는 둘, 나머지는 하나다. @param {string} text */
+export function displayWidth(text) {
+  let width = 0;
+  for (const ch of text) width += WIDE.test(ch) ? 2 : 1;
+  return width;
+}
+
+/** 한 줄로 보일 때의 꼴. 줄바꿈은 공백으로 눕히고 폭이 넘치면 자른다. @param {string} text @param {number} [limit] */
 export function shorten(text, limit = ONE_LINE_LIMIT) {
   const flat = text.split(/\s+/).filter(Boolean).join(" ");
-  return flat.length <= limit ? flat : flat.slice(0, limit - 1) + ELLIPSIS_CHAR;
+  if (displayWidth(flat) <= limit) return flat;
+  let kept = "";
+  let used = 0;
+  for (const ch of flat) {
+    const step = WIDE.test(ch) ? 2 : 1;
+    if (used + step > limit - 1) break;
+    kept += ch;
+    used += step;
+  }
+  return kept + ELLIPSIS_CHAR;
+}
+
+/** @param {string} text */
+export function isShortened(text) {
+  return displayWidth(text.split(/\s+/).filter(Boolean).join(" ")) > ONE_LINE_LIMIT;
 }
 
 /** @type {Map<string, Exemplar> | null} */
@@ -60,7 +81,12 @@ export function exemplarFor(rule) {
   return exemplars().get(rule);
 }
 
-/** 한 줄로 줄인 짝. @param {Exemplar} exemplar */
-export function oneLine(exemplar) {
-  return shorten(exemplar.before) + ARROW + shorten(exemplar.after);
+/** 전과 후를 제 줄씩. @param {Exemplar} exemplar @returns {[string, string]} */
+export function twoLines(exemplar) {
+  return [shorten(exemplar.before), shorten(exemplar.after)];
+}
+
+/** 어느 한쪽이라도 잘렸나. @param {Exemplar} exemplar */
+export function shortened(exemplar) {
+  return isShortened(exemplar.before) || isShortened(exemplar.after);
 }
