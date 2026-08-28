@@ -30,6 +30,13 @@ const PAIRS = [
   ["아", "야"],
 ];
 
+/** 숫자 하나를 한자어로 읽었을 때의 종성. 영 일 이 삼 사 오 육 칠 팔 구 차례다. */
+const DIGIT_FINALS = [21, 8, 0, 16, 0, 0, 1, 8, 8, 0];
+/** 뒤에 붙은 0 의 개수가 정하는 자리값의 종성. 십 ㅂ, 백 ㄱ, 천 ㄴ. */
+const PLACE_FINALS = { 1: 17, 2: 1, 3: 4 };
+/** 네 자리 묶음의 이름. 만 ㄴ, 억 ㄱ, 조 (받침 없음), 경 ㅇ. */
+const GROUP_FINALS = [4, 1, 0, 21];
+
 const HANGUL_BASE = 0xac00;
 const HANGUL_LAST = 0xd7a3;
 const JONGSEONG_COUNT = 28;
@@ -37,9 +44,21 @@ const JONGSEONG_COUNT = 28;
 const RIEUL = 8;
 const ALNUM = /[\p{L}\p{N}]/u;
 
-/** 마지막 글자의 종성 번호. 한글이 아니면 null 이라 손대지 않는다. @param {string} word */
+/** 숫자를 한자어로 읽었을 때 마지막 소리의 종성. 뜻은 파이썬 analysis/josa.py 가 소유한다. @param {string} digits */
+export function digitFinal(digits) {
+  const body = digits.replace(/0+$/, "");
+  if (!body) return DIGIT_FINALS[0];
+  const zeros = digits.length - body.length;
+  if (zeros === 0) return DIGIT_FINALS[Number(digits[digits.length - 1])];
+  if (zeros >= 4) return GROUP_FINALS[Math.min(Math.floor(zeros / 4), GROUP_FINALS.length) - 1];
+  return PLACE_FINALS[zeros];
+}
+
+/** 마지막 소리의 종성 번호. 셀 수 없으면 (로마자, 기호) null. @param {string} word */
 export function finalOf(word) {
   if (!word) return null;
+  const last = word[word.length - 1];
+  if (last >= "0" && last <= "9") return digitFinal(word.match(/[0-9]+$/)[0]);
   const code = word.charCodeAt(word.length - 1);
   if (code < HANGUL_BASE || code > HANGUL_LAST) return null;
   return (code - HANGUL_BASE) % JONGSEONG_COUNT;

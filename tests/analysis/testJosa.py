@@ -9,10 +9,15 @@ from __future__ import annotations
 
 import pytest
 
-from hanlint.analysis.josa import finalOf, fitJosa, josaSwap
+from hanlint.analysis.josa import digitFinal, finalOf, fitJosa, josaSwap
 
 CHANGED = [
     ("쟁점", "로 알려 준다", "으로 알려 준다"),
+    # 숫자는 한자어로 읽어 센다. 10 은 십이라 ㅂ 받침이고 2026 은 이천이십육이라 ㄱ 받침이다
+    ("10", "로 간다", "으로 간다"),
+    ("3", "로 간다", "으로 간다"),
+    ("2026", "로 간다", "으로 간다"),
+    ("100", "가 크다", "이 크다"),
     ("잔액", "가 부족하다", "이 부족하다"),
     ("흠집", "를 본다", "을 본다"),
     ("해변", "가 넓다", "이 넓다"),
@@ -36,10 +41,13 @@ KEPT = [
     ("쟁점", "이유가 있다"),
     ("해변", "가로 갑니다"),
     ("쟁점", "로그를 본다"),
-    # 한글로 안 끝나면 읽는 법이 갈려 손대지 않는다
+    # 로마자는 발음에 따라 갈린다 (SQL 은 에스큐엘로도 시퀄로도 읽는다). 세어서 확정되지 않아 안 만든 자리다
     ("API", "를 쓴다"),
     ("HTTP", "가 있다"),
+    # 숫자는 읽는 법이 정해져 있다. 이천이십사라 받침이 없다
     ("2024", "로 바뀐다"),
+    ("2", "로 바뀐다"),
+    ("7", "로 간다"),
     # 뒤에 조사가 없다
     ("쟁점", ""),
     ("쟁점", " 하나를 고른다"),
@@ -70,3 +78,39 @@ def testFinalOfReadsTheLastSyllable():
     assert finalOf("이슈") == 0
     assert finalOf("API") is None
     assert finalOf("") is None
+
+
+# (숫자, 어떻게 읽나, 받침이 있나). 끝자리만 보면 20 을 이십이 아니라 영으로 읽어 틀린다.
+NUMBERS = [
+    ("0", "영", True),
+    ("1", "일", True),
+    ("2", "이", False),
+    ("3", "삼", True),
+    ("6", "육", True),
+    ("9", "구", False),
+    ("10", "십", True),
+    ("20", "이십", True),
+    ("16", "십육", True),
+    ("100", "백", True),
+    ("1000", "천", True),
+    ("10000", "만", True),
+    ("100000", "십만", True),
+    ("100000000", "억", True),
+    ("2024", "이천이십사", False),
+    ("2026", "이천이십육", True),
+]
+
+
+@pytest.mark.parametrize(("number", "reading", "hasFinal"), NUMBERS)
+def testNumbersAreReadTheKoreanWay(number: str, reading: str, hasFinal: bool):
+    """`으로` 를 고르려면 숫자를 읽어야 한다. 끝자리만 보면 20 이 십으로 안 끝나는 줄 안다."""
+    assert bool(digitFinal(number)) is hasFinal, reading
+    assert finalOf(number) == finalOf(reading), reading
+    assert fitJosa(number, "로 간다") == fitJosa(reading, "로 간다"), reading
+
+
+def testLatinIsNotDecidedByCounting():
+    """로마자는 발음에 달렸고 발음은 세어서 확정되지 않는다. 안 만든 자리이지 미룬 자리가 아니다."""
+    assert finalOf("SQL") is None
+    assert fitJosa("SQL", "를 쓴다") == "를 쓴다"
+    assert fitJosa("SQL", "을 쓴다") == "을 쓴다"

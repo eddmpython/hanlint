@@ -35,6 +35,18 @@ PAIRS: tuple[tuple[str, str], ...] = (
 )
 """(받침 뒤 꼴, 받침 없는 뒤 꼴). 긴 것부터 대조해야 `으로` 가 `은` 보다 먼저 걸린다."""
 
+DIGIT_FINALS = (21, 8, 0, 16, 0, 0, 1, 8, 8, 0)
+"""숫자 하나를 한자어로 읽었을 때의 종성. 영 일 이 삼 사 오 육 칠 팔 구 차례다.
+
+영 ㅇ, 일 ㄹ, 삼 ㅁ, 육 ㄱ, 칠 ㄹ, 팔 ㄹ 이고 나머지는 받침이 없다. 값은 한글 종성 표의 자리 번호다
+(ㄱ 1, ㄴ 4, ㄹ 8, ㅁ 16, ㅂ 17, ㅇ 21)."""
+
+PLACE_FINALS = {1: 17, 2: 1, 3: 4}
+"""뒤에 붙은 0 의 개수가 정하는 자리값의 종성. 십 ㅂ, 백 ㄱ, 천 ㄴ 이다."""
+
+GROUP_FINALS = (4, 1, 0, 21)
+"""네 자리 묶음의 이름. 만 ㄴ, 억 ㄱ, 조 (받침 없음), 경 ㅇ 차례다."""
+
 HANGUL_BASE = 0xAC00
 HANGUL_LAST = 0xD7A3
 JONGSEONG_COUNT = 28
@@ -43,10 +55,35 @@ RIEUL = 8
 """종성 표에서 `ㄹ` 의 자리. `으로` 만 이 받침을 없는 것처럼 다룬다 (`서울로`, `실행로`가 아니라 `실행으로`)."""
 
 
+def digitFinal(digits: str) -> int:
+    """숫자를 한자어로 읽었을 때 마지막 소리의 종성. `20` 은 이십이라 ㅂ 이고 `24` 는 사라 없다.
+
+    끝자리만 보면 틀린다. `20` 의 끝자리는 0 인데 읽을 때는 십으로 끝난다. 그래서 뒤에 붙은 0 의
+    개수로 어느 자리값이 마지막에 읽히는지를 정한다.
+    """
+    body = digits.rstrip("0")
+    if not body:
+        return DIGIT_FINALS[0]  # 0 은 자리값이 없다. 그냥 영이다
+    zeros = len(digits) - len(body)
+    if zeros == 0:
+        return DIGIT_FINALS[int(digits[-1])]
+    if zeros >= 4:
+        return GROUP_FINALS[min(zeros // 4, len(GROUP_FINALS)) - 1]
+    return PLACE_FINALS[zeros]
+
+
 def finalOf(word: str) -> int | None:
-    """마지막 글자의 종성 번호. 한글이 아니면 None 이라 손대지 않는다."""
+    """마지막 소리의 종성 번호. 셀 수 없으면 None.
+
+    한글은 글자에서 바로 읽고, 숫자는 한자어 읽기로 센다. 로마자와 기호만 None 이다. 그것은
+    발음에 따라 갈리고 (`SQL` 은 에스큐엘로도 시퀄로도 읽는다) 발음은 세어서 확정되지 않는다.
+    이 도구가 뜻을 다루지 않기로 한 자리라 규칙을 안 만든 것이지 미룬 것이 아니다.
+    """
     if not word:
         return None
+    if word[-1].isdigit():
+        digits = word[len(word.rstrip("0123456789")) :]
+        return digitFinal(digits)
     code = ord(word[-1])
     if not HANGUL_BASE <= code <= HANGUL_LAST:
         return None
@@ -56,8 +93,8 @@ def finalOf(word: str) -> int | None:
 def josaSwap(word: str, following: str) -> tuple[str, str] | None:
     """`word` 뒤 첫 조사가 바뀌어야 하면 (지금 꼴, 바꿀 꼴). 안 바뀌거나 조사가 아니면 None.
 
-    한글로 끝나지 않는 낱말 (영문, 숫자, 기호) 은 읽는 법이 갈려 손대지 않는다. 고쳐야 할 자리를
-    놓치는 쪽이 멀쩡한 문장을 망가뜨리는 쪽보다 낫다.
+    `finalOf` 가 셀 수 없다고 한 낱말 (로마자, 기호) 은 그대로 둔다. 고쳐야 할 자리를 놓치는 쪽이
+    멀쩡한 문장을 망가뜨리는 쪽보다 낫다.
     """
     final = finalOf(word)
     if final is None or not following:
