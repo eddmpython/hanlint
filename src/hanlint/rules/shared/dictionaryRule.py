@@ -2,6 +2,10 @@
 
 사전 매치는 지문이 이미 해 뒀다. 여기서는 그것을 Finding 으로 옮기고, fix 가 있으면 문장 전체에서
 그 자리를 바꾼 문장을 낸다.
+
+**줄 번호는 걸린 낱말이 있는 줄이다.** 사전 규칙만 문장 안의 정확한 자리를 안다. 실측: 원문에서
+두 줄에 걸친 문장의 뒷줄에 `되어지` 가 있는데 지적은 문장이 시작한 앞줄을 가리켰고, `--format github`
+주석과 편집기 점프가 멀쩡한 줄로 갔다. 자리를 아는 규칙이 그 자리를 말한다.
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ def dictionaryFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
                 fix = sentence.text[: match.start] + match.fix + fitJosa(match.fix, sentence.text[match.end :])
             yield Finding(
                 ruleName,
-                sentence.line,
+                sentence.line + sentence.text.count("\n", 0, match.start),
                 sentence.text,
                 f"`{match.text}` {match.why} ({match.source})",
                 fix,

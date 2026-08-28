@@ -13,6 +13,9 @@ from ...data import exemplarFor, patternsAvoiding
 from ...rules import CATEGORY_TITLES, ruleCategory, ruleDoc, ruleNames
 from .shared import addOutputOption, emit
 
+ISSUES = "github.com/eddmpython/hanlint/issues"
+"""오탐과 미탐을 받는 자리. 끄는 것은 그 저장소에서만 조용해지고 규칙은 그대로 틀린 채 남는다."""
+
 HELP = "규칙 하나의 기술서를 보여 준다. 왜 나쁜지, 어디서 왔는지, 어떻게 고치는지"
 NEAR_LIMIT = 3
 """가까운 이름을 몇 개까지 보이는가. 넷을 넘으면 목록을 보는 것이 낫다."""
@@ -87,4 +90,5 @@ def run(args: argparse.Namespace) -> int:
         print(f"  달라진 것: {exemplar.moved}")
     print(f"\n같은 부류: {', '.join(n for n in names if ruleCategory(n) == category and n != args.rule)}")
     print(f"끄려면 hanlint.toml 의 disable 에 {args.rule} 를 넣는다. 한 자리만 끄려면 <!-- hanlint-disable {args.rule} -->")
+    print(f"정당한 문장인데 잡혔으면 끄고 끝내지 말고 알려 준다: {ISSUES}")
     return 0

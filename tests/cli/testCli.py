@@ -475,3 +475,53 @@ def testFixPromiseMatchesWhatFixDoes(tmp_path, capsys):
     main(["fix", str(draft), "--dry-run"])
     did = capsys.readouterr().out
     assert ("hanlint fix 가 바로 고친다" in said) == ("0곳 고침" not in did)
+
+
+def testCompactKeepsOneLinePerFinding(tmp_path, capsys):
+    """실측: 두 줄에 걸친 문장의 고침 제안이 줄바꿈을 들고 나와 grep 이 반토막을 냈다."""
+    wrapped = "# 제목\n\n첫 문단입니다.\n\n## 절\n\n그리고 이것을 통해\n우리는 문제를 해결할수 있습니다. 다음입니다.\n"
+    draft = write(tmp_path, "접힌.md", wrapped)
+    assert main([str(draft), "--format", "compact", "--quiet"]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert all(line.startswith(str(draft)) for line in lines[:-1]), lines
+    assert lines[-1].startswith("파일 1개, ")
+
+
+def testLineNumberPointsAtTheWordNotTheSentenceStart(tmp_path, capsys):
+    """실측: 8행의 `할수 있` 을 7행이라 적어 github 주석과 편집기 점프가 멀쩡한 줄로 갔다."""
+    wrapped = "# 제목\n\n첫 문단입니다.\n\n## 절\n\n그리고 이것을 통해\n우리는 문제를 해결할수 있습니다. 다음입니다.\n"
+    draft = write(tmp_path, "접힌.md", wrapped)
+    assert main([str(draft), "--format", "compact", "--quiet"]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert any(line.startswith(f"{draft}:8 [spacing]") for line in lines), lines
+    # 고침이 그 자리를 여전히 잡는다
+    assert main(["fix", str(draft), "--dry-run"]) == 0
+    assert f"{draft}:8  할수 있 → 할 수 있" in capsys.readouterr().out
+
+
+def testFixSaysWhatIsLeftByHand(tmp_path, capsys):
+    """실측: `0곳 고침, 0곳 건너뜀` 만 보면 손볼 것이 없다는 뜻으로 읽힌다."""
+    draft = write(tmp_path, "초안.md", "# 시험\n\n설계에 대한 이해가 부족했다. 그래서 봅니다. 따라서 씁니다.\n")
+    assert main(["fix", str(draft), "--dry-run"]) == 0
+    out = capsys.readouterr().out
+    assert "0곳 고침, 0곳 건너뜀" in out and "손으로 고칠 error 1건이 남았다" in out
+
+    clean = write(tmp_path, "깨끗.md", CLEAN)
+    assert main(["fix", str(clean), "--dry-run"]) == 0
+    assert "남았다" not in capsys.readouterr().out
+
+
+def testExplainTellsWhereToReportAFalsePositive(capsys):
+    """오탐이라고 판단한 사람에게 끄는 법만 알려 주면 규칙은 틀린 채로 남는다."""
+    assert main(["explain", "danglingDeixis"]) == 0
+    assert "알려 준다: github.com/eddmpython/hanlint/issues" in capsys.readouterr().out
+
+
+def testMapKeepsTheSectionTitleWhole(tmp_path, capsys):
+    """실측: 절 배지가 제목의 첫 글자를 덮어써서 `단계별` 이 `S계별` 이 됐다."""
+    text = "# 제목\n\n도입입니다. 그래서 씁니다.\n\n## 단계별 시간을 잰 표\n\n| a | b |\n|---|---|\n| 1 | 2 |\n"
+    draft = write(tmp_path, "지도.md", text)
+    assert main(["map", str(draft), "--no-color"]) == 0
+    out = capsys.readouterr().out
+    assert "단계별" in out and "S계별" not in out
+    assert "기호: S 구조" in out

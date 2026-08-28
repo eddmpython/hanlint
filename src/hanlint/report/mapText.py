@@ -62,16 +62,21 @@ def renderMap(doc: DocumentPrint, findings: list[Finding], color: bool = False) 
     header = f"{name}  문장 {len(doc.sentences)}  문단 {len(doc.paragraphs)}  절 {len(doc.bodySections)}"
     lines.append(header + (f"        배지: {badgeText}" if badgeText else ""))
     lines.append("")
+    legendAt = len(lines)
+    shown: set = set()
 
     for section in doc.sections:
         if section.isIntro and not section.paragraphs:
             continue
         title = "도입" if section.isIntro else section.title
         sectionFinding = worst(grouped.get(("section", section.index), []))
-        prefix = f"{section.index:>2} {fitTitle(title)} "
+        # 기호는 제 칸을 갖는다. 전에는 제목의 첫 글자를 덮어써서 `단계별` 이 `S계별` 이 됐다
+        mark = " "
         if sectionFinding:
             kind = kindOf(sectionFinding.rule)
-            prefix = f"{section.index:>2} {paint(kind.symbol, kind, color)}{fitTitle(title)[1:]} "
+            mark = paint(kind.symbol, kind, color)
+            shown.add(kind)
+        prefix = f"{section.index:>2} {mark} {fitTitle(title)} "
         cells: list[str] = []
         columns: list[tuple[int, int]] = []
         cursor = displayWidth(prefix)
@@ -97,4 +102,9 @@ def renderMap(doc: DocumentPrint, findings: list[Finding], color: bool = False) 
             marker = paint(UNDERLINE * (end - start), kind, color)
             label = f" {paint(kind.symbol, kind, color)} {kind.name} {finding.rule} ({finding.line}행)"
             lines.append(" " * start + marker + label)
+    # 기호만 나온 자리 (문장 칸과 절 배지) 를 위한 범례. 이름 없는 글자를 지도에 두지 않는다
+    if shown:
+        legend = "  ".join(f"{paint(kind.symbol, kind, color)} {kind.name}" for kind in sorted(shown, key=lambda k: k.symbol))
+        lines.insert(legendAt, f"기호: {legend}")
+        lines.insert(legendAt + 1, "")
     return "\n".join(lines)

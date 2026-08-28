@@ -10,6 +10,13 @@ import { ERROR, SENTENCE, finding } from "../finding.js";
  * @param {string} [severity]
  * @returns {import("../finding.js").Finding[]}
  */
+/** 문장 시작부터 걸린 자리까지의 줄바꿈 수. 뜻은 파이썬 rules/shared/dictionaryRule.py 가 소유한다. @param {string} text */
+function countNewlines(text) {
+  let count = 0;
+  for (const ch of text) if (ch === "\n") count += 1;
+  return count;
+}
+
 export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR) {
   const findings = [];
   for (const sentence of doc.sentences) {
@@ -21,7 +28,7 @@ export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR) 
       findings.push(
         finding(
           ruleName,
-          sentence.line,
+          sentence.line + countNewlines(sentence.text.slice(0, match.start)),
           sentence.text,
           `\`${match.text}\` ${match.why} (${match.source})`,
           fix,

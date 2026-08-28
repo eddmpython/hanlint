@@ -41,6 +41,8 @@ const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 const ANALYZER_CHOICES = ["surface", "kiwi"];
+/** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py 가 소유한다. */
+const ISSUES = "github.com/eddmpython/hanlint/issues";
 const STDIN = "-";
 const STDIN_NAME = "<stdin>";
 /** 폴더를 주면 이 확장자만 찾는다. 파이썬 cli/commands/shared.py 의 MARKDOWN 과 같다. */
@@ -434,14 +436,19 @@ function runFix(args) {
   for (const path of files) {
     const text = readFileSync(path, "utf-8");
     // notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
-    const result = applyFixes(
-      text,
-      runAll(fingerprint(text, config, path), config).filter((f) => f.severity === "error"),
-    );
+    const errors = runAll(fingerprint(text, config, path), config).filter((f) => f.severity === "error");
+    const result = applyFixes(text, errors);
     for (const [line, fragment, replacement] of result.applied) lines.push(`${path}:${line}  ${fragment} → ${replacement}`);
     for (const [line, fragment, reason] of result.skipped) lines.push(`${path}:${line}  건너뜀 ${fragment}: ${reason}`);
     if (result.text !== text && !options["--dry-run"]) writeFileSync(path, result.text, "utf-8");
-    lines.push(`${path}  ${result.applied.length}곳 고침, ${result.skipped.length}곳 건너뜀` + (options["--dry-run"] ? " (미리보기, 파일은 그대로)" : ""));
+    // 남은 수를 함께 말한다. `0곳 고침, 0곳 건너뜀` 만 보면 손볼 것이 없다는 뜻으로 읽힌다
+    const left = errors.length - result.applied.length;
+    const rest = left ? `. 손으로 고칠 error ${left}건이 남았다 (hanlint ${path})` : "";
+    lines.push(
+      `${path}  ${result.applied.length}곳 고침, ${result.skipped.length}곳 건너뜀` +
+        (options["--dry-run"] ? " (미리보기, 파일은 그대로)" : "") +
+        rest,
+    );
   }
   process.stdout.write(`${lines.join("\n")}\n`);
   return 0;
@@ -563,6 +570,7 @@ function runExplain(args) {
   const siblings = names.filter((name) => ruleCategory(name) === category && name !== wanted);
   process.stdout.write(`\n같은 부류: ${siblings.join(", ")}\n`);
   process.stdout.write(`끄려면 hanlint.toml 의 disable 에 ${wanted} 를 넣는다. 한 자리만 끄려면 <!-- hanlint-disable ${wanted} -->\n`);
+  process.stdout.write(`정당한 문장인데 잡혔으면 끄고 끝내지 말고 알려 준다: ${ISSUES}\n`);
   return 0;
 }
 
