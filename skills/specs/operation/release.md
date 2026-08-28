@@ -70,12 +70,6 @@ git push origin main v0.0.x
 3. `publish-pypi` (environment `pypi`, OIDC) 와 `publish-npm` (OIDC, npm 11 이상) 이 나란히 올린다.
 4. GitHub Release 에 wheel 과 sdist 를 붙인다.
 
-## VS Code 확장
-
-`vscode/` 는 별도 버전이고 태그 릴리즈에 물리지 않는다. `cd vscode && npx @vscode/vsce package --out
-../../hanlint.out/vscodeShot/` 이 vsix 를 만든다. 마켓플레이스 게시는 운영자 계정 (publisher `eddmpython`)
-이 필요하니 운영자가 결정한다. 그 전에는 vsix 파일을 직접 설치해 쓴다.
-
 ## 올린 뒤
 
 빈 폴더에서 두 표면을 받아 같은 출력인지 본다.

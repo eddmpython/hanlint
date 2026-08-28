@@ -353,11 +353,11 @@ for finding in lintText(text):
 
 `lintFile`, `auditText`, `fingerprint` 도 같은 자리에 있다.
 
-## CI 게이트로 물린다: pre-commit, GitHub Actions, VS Code
+## CI 게이트로 물린다: pre-commit, GitHub Actions
 
 pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-commit-config.yaml` 에서 이 저장소를
-가리키면 되고, 액션은 지적을 PR 의 줄 주석으로 단다. VS Code 확장 (`vscode/`) 은 저장할 때 검사해
-밑줄로 보여 주고 확정된 자리는 quick fix 로 고친다.
+가리키면 되고, 액션은 지적을 PR 의 줄 주석으로 단다. 쓰는 동안 계속 보려면 `hanlint watch 글.md` 가
+저장할 때마다 다시 검사한다.
 
 ```yaml
 - uses: eddmpython/hanlint@main

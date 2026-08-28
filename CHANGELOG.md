@@ -43,6 +43,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 - `hanlint rules` 가 부류로 묶고 꺼진 규칙에 표시를 붙인다. `hanlint explain` 이 오타에 가까운 이름을
   주고 같은 부류와 끄는 법을 붙인다
 
+### Removed
+
+- **VS Code 확장 (`vscode/`).** 제품의 진입점은 셋이다 (`hanlint 글.md`, `lintText`,
+  `skills/use-hanlint/SKILL.md`). 확장은 넷째였고 별도 발행 채널과 별도 버전과 LICENSE 사본을 들고
+  있으면서 CI 가 돌지 않았다. 테스트가 0개였고 검증은 `vsce package` 를 손으로 한 번 돌린 것이
+  전부였다. 마켓플레이스에 올라간 적은 없다. 편집기에서 계속 보려면 `hanlint watch 글.md` 를 쓴다
+
 ### Changed
 
 - 검사 끝의 다음 걸음이 **가장 많이 난 규칙**을 가리킨다. 알파벳 첫 이름을 고르고 있어서, 글 다섯 편에
