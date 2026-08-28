@@ -37,12 +37,12 @@ test("lint exit codes and text", () => {
 test("severity, compact, stdin, summary", () => {
   const mixed = join(dir, "mixed.md");
   writeFileSync(mixed, "## 절\n\n핵심은 속도입니다. 파일을 엽니다. 표가 보입니다. 열이 다섯입니다. 값을 고칩니다.\n", "utf-8");
+  // 요약은 거른 뒤가 아니라 글에 있는 것을 센다. 보여 줄 것을 고르는 옵션이 수를 바꾸면 거짓말이다
   const compact = run([mixed, "--format", "compact", "--errors-only", "--quiet"]);
   assert.equal(compact.code, 1);
-  assert.deepEqual(compact.out.trimEnd().split("\n"), [
-    `${mixed}:3 [cliche] \`핵심은\` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)`,
-    "파일 1개, error 1, notice 0",
-  ]);
+  const compactLines = compact.out.trimEnd().split("\n");
+  assert.equal(compactLines[0], `${mixed}:3 [cliche] \`핵심은\` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)`);
+  assert.match(compactLines[compactLines.length - 1], /^파일 1개, error 1, notice [1-9]/);
   const notices = run([mixed, "--severity", "notice", "--format", "json"]);
   const findings = JSON.parse(notices.out).files[0].findings;
   assert.ok(findings.length && findings.every((f) => f.severity === "notice"));
@@ -137,7 +137,7 @@ test("welcome screen when no arguments", () => {
   const empty = mkdtempSync(join(tmpdir(), "hanlintEmpty-"));
   const bare = spawnSync(process.execPath, [BIN], { encoding: "utf-8", cwd: empty });
   assert.equal(bare.status, 0);
-  assert.ok(bare.stdout.includes("이 폴더에는 마크다운이 없다"));
+  assert.ok(bare.stdout.includes("이 폴더에는 검사할 마크다운이 없다"));
 });
 
 test("folder argument finds markdown below", () => {
