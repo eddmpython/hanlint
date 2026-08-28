@@ -23,7 +23,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { analyzerFor, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
 import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
 import { loadConfig } from "../config/loadConfig.js";
-import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
+import { DEFAULT_PRESET, defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
@@ -182,6 +182,7 @@ function startFolder(paths) {
 /** @param {Record<string, string | string[] | boolean>} options @param {string[]} paths */
 function configFrom(options, paths) {
   const config = loadConfig(/** @type {string | undefined} */ (options["--config"]) ?? null, startFolder(paths));
+  if (options["--preset"]) config.preset = choose(/** @type {string} */ (options["--preset"]), PRESET_NAMES, "--preset");
   for (const rule of /** @type {string[]} */ (options["--disable"] ?? [])) config.disable.add(rule);
   if (options["--analyzer"]) config.analyzer = choose(/** @type {string} */ (options["--analyzer"]), ANALYZER_CHOICES, "--analyzer");
   return config;
@@ -193,6 +194,13 @@ function configLabel(config) {
   const rel = relative(process.cwd(), config.source);
   if (!rel || rel.startsWith("..") || isAbsolute(rel)) return config.source;
   return rel;
+}
+
+/** 설정 출처와 지금 도는 프리셋. 기본 프리셋이면 이름을 빼서 줄이 길어지지 않게 한다.
+ * @param {import("../config/settings.js").Config} config */
+function header(config) {
+  const where = configLabel(config);
+  return config.preset === DEFAULT_PRESET ? `설정: ${where}` : `설정: ${where}, 프리셋 ${config.preset}`;
 }
 
 /** @param {Map<string, import("../rules/finding.js").Finding[]>} results */
@@ -252,6 +260,15 @@ function collectFiles(paths) {
   return found;
 }
 
+/** 가장 많이 난 규칙. 같은 수면 이름 순으로 갈라 같은 입력에 같은 답이 나온다.
+ * @param {import("../rules/finding.js").Finding[]} findings */
+function commonest(findings) {
+  /** @type {Map<string, number>} */
+  const counted = new Map();
+  for (const finding of findings) counted.set(finding.rule, (counted.get(finding.rule) ?? 0) + 1);
+  return [...counted.keys()].sort((a, b) => (counted.get(b) ?? 0) - (counted.get(a) ?? 0) || a.localeCompare(b))[0];
+}
+
 /** 검사 끝에 붙는 다음 행동 한 줄. 합격을 판정하지 않고 지금 무엇을 하면 되는지만 말한다.
  * @param {Map<string, import("../rules/finding.js").Finding[]>} results */
 function nextStep(results) {
@@ -260,7 +277,7 @@ function nextStep(results) {
   const notices = findings.length - errors.length;
   const fixable = errors.filter((f) => f.replacement !== null).length;
   if (errors.length) {
-    const rule = [...new Set(errors.map((f) => f.rule))].sort()[0];
+    const rule = commonest(errors);
     if (fixable) return `다음: error ${errors.length}건 가운데 ${fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다`;
     if (patternsAvoiding(rule).length) return `다음: error ${errors.length}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule ${rule}`;
     return `다음: error ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
@@ -334,7 +351,7 @@ function runLint(args) {
     emit([...shown].map(([name, findings]) => renderGithub(name, findings)).join("\n"), output);
   } else {
     const parts = [];
-    if (!options["--quiet"]) parts.push(`설정: ${configLabel(config)}`);
+    if (!options["--quiet"]) parts.push(header(config));
     if (format === "compact") {
       const body = [...shown]
         .filter(([, findings]) => findings.length)

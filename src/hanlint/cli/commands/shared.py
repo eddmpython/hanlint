@@ -7,7 +7,7 @@ import os
 import sys
 from pathlib import Path
 
-from ...config import Config, loadConfig
+from ...config import DEFAULT_PRESET, PRESET_NAMES, Config, loadConfig
 from ...data import patternsAvoiding
 from ...rules import Finding
 
@@ -28,6 +28,11 @@ def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] =
     무시돼도 잃는 것이 없다.
     """
     parser.add_argument("--config", type=Path, help="설정 파일. 없으면 hanlint.toml 이나 pyproject.toml 을 찾는다")
+    parser.add_argument(
+        "--preset",
+        choices=PRESET_NAMES,
+        help="글의 종류. 설정 파일 없이 이번 실행에만 정한다. 기본은 설정이나 blog",
+    )
     parser.add_argument(
         "--disable", action="append", default=[], metavar="RULE", help="이번 실행에서 끌 규칙. 여러 번 줄 수 있다"
     )
@@ -63,6 +68,8 @@ def keep(findings: list[Finding], severity: str) -> list[Finding]:
 
 def configFrom(args: argparse.Namespace, start: Path | None = None) -> Config:
     config = loadConfig(args.config, start=start)
+    if getattr(args, "preset", None):
+        config.preset = args.preset
     config.disable |= set(getattr(args, "disable", []) or [])
     if getattr(args, "analyzer", None):
         config.analyzer = args.analyzer
@@ -81,13 +88,27 @@ def configLabel(config: Config) -> str:
 
 
 def header(config: Config) -> str:
-    return f"설정: {configLabel(config)}"
+    """설정 출처와 지금 도는 프리셋. 기본 프리셋이면 이름을 빼서 줄이 길어지지 않게 한다."""
+    where = configLabel(config)
+    return f"설정: {where}" if config.preset == DEFAULT_PRESET else f"설정: {where}, 프리셋 {config.preset}"
 
 
 def summary(results: dict[str, list[Finding]]) -> str:
     errors = sum(1 for findings in results.values() for f in findings if f.severity == "error")
     notices = sum(1 for findings in results.values() for f in findings if f.severity == "notice")
     return f"파일 {len(results)}개, error {errors}, notice {notices}"
+
+
+def commonest(findings: list[Finding]) -> str:
+    """가장 많이 난 규칙. 같은 수면 이름 순으로 갈라 같은 입력에 같은 답이 나온다.
+
+    실측: 다섯 편에 error 15건이 나왔을 때 알파벳 첫 규칙은 cliche (2건) 였고 실제로 가장 많은 것은
+    noQuestion (4건) 이었다. 한 줄뿐인 다음 걸음이 가장 작은 더미를 가리키고 있었다.
+    """
+    counted: dict[str, int] = {}
+    for finding in findings:
+        counted[finding.rule] = counted.get(finding.rule, 0) + 1
+    return min(counted, key=lambda rule: (-counted[rule], rule))
 
 
 def nextStep(results: dict[str, list[Finding]]) -> str:
@@ -97,7 +118,7 @@ def nextStep(results: dict[str, list[Finding]]) -> str:
     notices = len(findings) - len(errors)
     fixable = sum(1 for f in errors if f.replacement is not None)
     if errors:
-        rule = sorted({f.rule for f in errors})[0]
+        rule = commonest(errors)
         if fixable:
             return f"다음: error {len(errors)}건 가운데 {fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다"
         if patternsAvoiding(rule):

@@ -26,6 +26,8 @@ export const PRESETS = {
 };
 
 export const PRESET_NAMES = Object.keys(PRESETS);
+/** 설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다. */
+export const DEFAULT_PRESET = PRESET_NAMES[0];
 
 /**
  * @typedef {object} Config
@@ -60,7 +62,7 @@ export const PRESET_NAMES = Object.keys(PRESETS);
 /** @returns {Config} */
 export function defaultConfig() {
   return {
-    preset: "blog",
+    preset: DEFAULT_PRESET,
     disable: new Set(),
     analyzer: "surface",
     keywordField: null,

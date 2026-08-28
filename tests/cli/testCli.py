@@ -13,6 +13,14 @@ CLEAN = "## 절\n\n파일을 엽니다. 그러면 표가 생길까요? 작업 �
 MIXED = "## 절\n\n핵심은 속도입니다. 파일을 엽니다. 표가 보입니다. 열이 다섯입니다. 값을 고칩니다.\n"
 
 
+DOCLIKE = (
+    "# 설정 파일 형식\n\n이 문서는 설정 파일의 키를 정의한다. 키마다 형과 기본값이 있다.\n\n"
+    "## 위치\n\n프로그램은 현재 폴더에서 파일을 찾는다. 없으면 상위로 올라간다.\n\n"
+    "## 우선순위\n\n환경 변수가 파일을 이긴다. 그래서 명령줄 인자가 가장 강하다.\n"
+)
+"""블로그 프리셋에서는 독자를 안 부른다고 잡히고 docs 프리셋에서는 안 잡히는 글."""
+
+
 def write(tmp_path: Path, name: str, text: str) -> Path:
     path = tmp_path / name
     path.write_text(text, encoding="utf-8")
@@ -359,3 +367,44 @@ def testMissingBaselineFileIsAnErrorNotSilence(tmp_path, capsys):
     draft = write(tmp_path, "초안.md", BAD)
     assert main([str(draft), "--baseline", str(tmp_path / "없다.json")]) == 2
     assert "찾지 못했다" in capsys.readouterr().err
+
+
+def testPresetFlagWorksWithoutAConfigFile(tmp_path, capsys):
+    """글 하나를 검사하려고 남의 저장소에 hanlint.toml 을 만들게 하지 않는다."""
+    doc = write(tmp_path, "문서.md", DOCLIKE)
+    assert main([str(doc), "--format", "compact"]) == 1
+    blog = capsys.readouterr().out
+    assert "[noQuestion]" in blog and "[readerAbsent]" in blog
+
+    assert main([str(doc), "--preset", "docs", "--format", "compact"]) == 0
+    docs = capsys.readouterr().out
+    assert "[noQuestion]" not in docs and "[readerAbsent]" not in docs
+    assert docs.startswith("설정: 기본값, 프리셋 docs\n")
+
+
+def testHeaderNamesThePresetOnlyWhenItIsNotTheDefault(tmp_path, capsys):
+    doc = write(tmp_path, "초안.md", CLEAN)
+    main([str(doc), "--format", "compact"])
+    assert capsys.readouterr().out.startswith("설정: 기본값\n")
+    main([str(doc), "--preset", "report", "--format", "compact"])
+    assert capsys.readouterr().out.startswith("설정: 기본값, 프리셋 report\n")
+
+
+def testUnknownPresetIsRefused(tmp_path, capsys):
+    doc = write(tmp_path, "초안.md", CLEAN)
+    with __import__("pytest").raises(SystemExit):
+        main([str(doc), "--preset", "없는것"])
+    assert "invalid choice" in capsys.readouterr().err
+
+
+def testNextStepPointsAtTheBiggestPile():
+    """한 줄뿐인 다음 걸음이 가장 작은 더미를 가리키면 안 된다. 알파벳 순은 사용자에게 뜻이 없다."""
+    from hanlint.cli.commands.shared import commonest
+    from hanlint.rules import Finding
+
+    def finding(rule):
+        return Finding(rule, 1, "인용", "왜")
+
+    errors = [finding("cliche"), finding("cliche"), finding("noQuestion"), finding("noQuestion"), finding("noQuestion")]
+    assert commonest(errors) == "noQuestion"
+    assert commonest([finding("zebra"), finding("apple")]) == "apple"

@@ -46,11 +46,13 @@ docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기�
 """
 
 PRESET_NAMES = tuple(PRESETS)
+DEFAULT_PRESET = PRESET_NAMES[0]
+"""설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다."""
 
 
 @dataclass
 class Config:
-    preset: str = "blog"
+    preset: str = PRESET_NAMES[0]
     """글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다. disable 은 그 위에 더한다."""
     disable: set[str] = field(default_factory=set)
     """끌 규칙 이름."""

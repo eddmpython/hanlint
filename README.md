@@ -113,7 +113,8 @@ hanlint 0.0.7  한국어 글에서 세면 확정되는 결함을 집는다. 좋�
 그대로 대면 맞지 않는 지적이 나온다. 그때는 규칙을 하나씩 끄지 말고 종류를 고른다.
 
 ```powershell
-hanlint init --preset docs
+hanlint 명세.md --preset docs      # 이번 검사에만
+hanlint init --preset docs         # 저장소에 고정할 때
 ```
 
 | 프리셋 | 누구를 위한 것 | 끄는 것 |
@@ -122,7 +123,9 @@ hanlint init --preset docs
 | `report` | 보고서 | 독자 호출과 절 결과 요구 여섯 |
 | `docs` | 참고 문서, 명세, README | 위에 더해 검증 기록과 그림용 펜스 둘 |
 
-지금 무엇이 켜져 있는지는 `hanlint doctor` 가 한 화면으로 답한다.
+`--preset` 은 설정 파일 없이 이번 실행에만 정한다. 남의 저장소에 파일을 만들지 않고 문서 한 편을
+검사할 때 쓴다. 한 폴더에 종류가 섞여 있으면 종류마다 나눠 돌린다. 지금 무엇이 켜져 있는지는
+`hanlint doctor` 가 한 화면으로 답한다.
 
 ## 이미 쓴 글이 많은 저장소에 들일 때
 
@@ -300,6 +303,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 |
 | `hanlint 글들/ --baseline` | 잠근 것은 넘기고 새로 생긴 것만 막는다 |
+| `hanlint 글.md --preset docs` | 설정 파일 없이 이번 검사의 글 종류만 정한다 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` |
 | `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. 스크립트가 쓴다 |

@@ -63,7 +63,14 @@ def testBothClisGiveTheSameOutput(tmp_path):
         files.append(str(path))
     files.extend(str(p) for p in [ROOT / "README.md", *sorted((ROOT / "skills").rglob("*.md"))])
 
-    formats = (["--format", "json"], ["--format", "text", "--no-color"], ["--format", "compact", "--errors-only"])
+    formats = (
+        ["--format", "json"],
+        ["--format", "text", "--no-color"],
+        ["--format", "compact", "--errors-only"],
+        # 프리셋은 어느 규칙이 도는지를 바꾼다. 두 판이 같은 묶음을 끄는지 여기서 본다.
+        ["--format", "compact", "--preset", "docs"],
+        ["--format", "compact", "--preset", "report"],
+    )
     for start in range(0, len(files), CHUNK):
         chunk = files[start : start + CHUNK]
         for extra in formats:
