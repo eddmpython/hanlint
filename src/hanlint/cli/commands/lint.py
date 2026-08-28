@@ -25,6 +25,7 @@ from .shared import (
     configFrom,
     configLabel,
     emit,
+    fixableCount,
     header,
     keep,
     nextStep,
@@ -78,8 +79,10 @@ def run(args: argparse.Namespace) -> int:
     baselinePath = args.baseline or (Path(config.baseline) if config.baseline else None)
     baseline = load(baselinePath) if baselinePath else Baseline()
     results: dict[str, list[Finding]] = {}
+    texts: dict[str, str] = {}
     for path in files:
         name, text = readInput(path, args.stdinPath)
+        texts[name] = text
         doc = buildFingerprint(parseMarkdown(text, path=name), analyzer, config)
         findings = runAll(doc, config)
         if profile:
@@ -102,14 +105,15 @@ def run(args: argparse.Namespace) -> int:
             body = "\n".join(renderCompact(name, findings) for name, findings in shown.items() if findings)
             if body:
                 parts.append(body)
-            parts.append(summary(shown))
+            parts.append(summary(results))
         else:
             parts.append("\n\n".join(renderText(name, findings) for name, findings in shown.items()))
             if len(shown) > 1:
-                parts.append(summary(shown))
+                parts.append(summary(results))
+        fixable = fixableCount(texts, results)
         if not args.quiet:
             if baseline.count:
                 parts.append(f"잠근 자리 {baseline.count}건은 넘겼다 ({baseline.source}). 그 문장을 고치면 다시 나온다")
-            parts.append(nextStep(shown))
+            parts.append(nextStep(results, fixable))
         emit("\n\n".join(parts) if args.format == "text" else "\n".join(parts), args.output)
     return 1 if hasError else 0

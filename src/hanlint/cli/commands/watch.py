@@ -24,6 +24,7 @@ from .shared import (
     addSeverityOptions,
     collectFiles,
     configFrom,
+    fixableCount,
     header,
     keep,
     nextStep,
@@ -59,19 +60,21 @@ def stampOf(paths: list[str]) -> dict[str, float]:
 def report(paths: list[str], args: argparse.Namespace, config: Config) -> str:
     analyzer = analyzerFor(config)
     results: dict[str, list[Finding]] = {}
+    texts: dict[str, str] = {}
     for path in paths:
-        doc = buildFingerprint(parseMarkdown(readFile(Path(path)), path=path), analyzer, config)
+        texts[path] = readFile(Path(path))
+        doc = buildFingerprint(parseMarkdown(texts[path], path=path), analyzer, config)
         results[path] = runAll(doc, config)
     shown = {name: keep(found, severityOf(args)) for name, found in results.items()}
     if args.format == "compact":
         body = "\n".join(renderCompact(name, found) for name, found in shown.items() if found)
         parts = [body] if body else []
-        parts.append(summary(shown))
+        parts.append(summary(results))
     else:
         parts = ["\n\n".join(renderText(name, found) for name, found in shown.items())]
         if len(shown) > 1:
-            parts.append(summary(shown))
-    parts.append(nextStep(shown))
+            parts.append(summary(results))
+    parts.append(nextStep(results, fixableCount(texts, results)))
     return "\n\n".join(parts) if args.format == "text" else "\n".join(parts)
 
 

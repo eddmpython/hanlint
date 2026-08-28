@@ -28,6 +28,7 @@ import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { CATEGORY_TITLES, ruleCategory, runAll } from "../rules/registry.js";
+import { MARKDOWN, SKIPPED_FOLDERS, markdownUnder } from "./walk.js";
 import { welcome } from "./welcome.js";
 import { renderCompact } from "../report/compactReport.js";
 import { LAYERS, renderFingerprintJson } from "../report/fingerprintJson.js";
@@ -43,7 +44,6 @@ const ANALYZER_CHOICES = ["surface", "kiwi"];
 const STDIN = "-";
 const STDIN_NAME = "<stdin>";
 /** 폴더를 주면 이 확장자만 찾는다. 파이썬 cli/commands/shared.py 의 MARKDOWN 과 같다. */
-const MARKDOWN = [".md", ".markdown"];
 const THRESHOLD_FIELDS = [
   "fragmentRun",
   "introMaxParagraphs",
@@ -65,19 +65,22 @@ const THRESHOLD_FIELDS = [
 const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength", "headingQuestionRatio"]);
 
 const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|json|github] [--severity all|error|notice] [--errors-only]
-                [--config 파일] [--disable 규칙] [--output 파일] [--quiet] [--path 이름 (stdin 의 이름)]
+                [--config 파일] [--preset blog|report|docs] [--disable 규칙] [--baseline [파일]] [--output 파일] [--quiet]
+                [--path 이름 (stdin 의 이름)]
         hanlint fix 글.md [--dry-run]
         hanlint print 글.md [--layer all|sentences|paragraphs|sections|document]
         hanlint rules [--names]
         hanlint explain <규칙>
         hanlint patterns [--rule 규칙]
+        hanlint baseline 글들/ [--prune] [--output 파일]
         hanlint doctor
         hanlint init [--output hanlint.toml] [--preset blog|report|docs] [--force]
         hanlint --version
 
-파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다. 인자가 없으면 첫 화면이 나온다.
+파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다 (점으로 시작하는 폴더와 node_modules 는 건너뛴다).
+인자가 없으면 첫 화면이 나온다.
 한국어 글에서 반복되는 결함을 결정적으로 잡는다. 종료 코드는 0 (지적 없음), 1 (error 지적), 2 (파일이나 설정 문제).
-audit, map, watch, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.`;
+${PYTHON_ONLY.join(", ")} 와 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.`;
 
 /** @type {Record<string, "value" | "list" | "flag">} */
 const OPTION_KINDS = {
@@ -152,8 +155,20 @@ function parseArgs(args) {
  * 서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. 빈 인자는 여기서 다루지 않는다. `main` 이 첫 화면으로 보낸다.
  * @param {string[]} argv
  */
-export function normalizeArgv(argv) {
+export /** 파일 이름이 아니라 서브커맨드를 치려던 것으로 보이나. 뜻은 파이썬 cli/main.py 가 소유한다. @param {string} word */
+function looksLikeCommand(word) {
+  if (!word || !/^[A-Za-z]+$/.test(word)) return false;
+  return !existsSync(word);
+}
+
+/** @param {string[]} argv */
+function normalizeArgv(argv) {
   if (COMMANDS.includes(argv[0]) || PYTHON_ONLY.includes(argv[0]) || ["-h", "--help", "--version"].includes(argv[0])) return argv;
+  if (looksLikeCommand(argv[0])) {
+    const near = nearNames(argv[0], [...COMMANDS, ...PYTHON_ONLY]);
+    const hint = near.length ? ` 가까운 이름: ${near.join(", ")}.` : "";
+    throw new Error(`${argv[0]} 는 모르는 명령이다.${hint} 전체 목록은 hanlint --help`);
+  }
   return ["lint", ...argv];
 }
 
@@ -180,11 +195,22 @@ function startFolder(paths) {
 }
 
 /** @param {Record<string, string | string[] | boolean>} options @param {string[]} paths */
+function checkDisabled(config) {
+  const names = ruleNames();
+  const unknown = [...config.disable].filter((rule) => !names.includes(rule)).sort();
+  if (!unknown.length) return;
+  const near = nearNames(unknown[0], names);
+  const hint = near.length ? ` 가까운 이름: ${near.join(", ")}.` : "";
+  throw new Error(`모르는 규칙 이름: ${unknown.join(", ")}.${hint} 목록은 hanlint rules --names`);
+}
+
+/** @param {Record<string, string | string[] | boolean>} options @param {string[]} paths */
 function configFrom(options, paths) {
   const config = loadConfig(/** @type {string | undefined} */ (options["--config"]) ?? null, startFolder(paths));
   if (options["--preset"]) config.preset = choose(/** @type {string} */ (options["--preset"]), PRESET_NAMES, "--preset");
   for (const rule of /** @type {string[]} */ (options["--disable"] ?? [])) config.disable.add(rule);
   if (options["--analyzer"]) config.analyzer = choose(/** @type {string} */ (options["--analyzer"]), ANALYZER_CHOICES, "--analyzer");
+  checkDisabled(config);
   return config;
 }
 
@@ -205,6 +231,7 @@ function header(config) {
 
 /** @param {Map<string, import("../rules/finding.js").Finding[]>} results */
 function summary(results) {
+  // 글에 실제로 있는 수. 거른 뒤가 아니라 거르기 전을 센다. 뜻은 파이썬 shared.summary 가 소유한다.
   let errors = 0;
   let notices = 0;
   for (const findings of results.values()) {
@@ -219,19 +246,19 @@ function summary(results) {
 /** (이름, 본문). `-` 면 stdin 을 UTF-8 로 읽는다. @param {string} path @param {string} stdinName @returns {[string, string]} */
 function readInput(path, stdinName) {
   if (path === STDIN) return [stdinName, readFileSync(0, "utf-8")];
-  return [path, readFileSync(path, "utf-8")];
+  return [path, readOne(path)];
 }
 
-/** 폴더 안의 마크다운 전부. 부른 쪽이 경로 문자열로 정렬한다 (파이썬 판과 같은 순서). @param {string} folder */
-function markdownUnder(folder) {
-  /** @type {string[]} */
-  const found = [];
-  for (const name of readdirSync(folder)) {
-    const path = join(folder, name);
-    if (statSync(path).isDirectory()) found.push(...markdownUnder(path));
-    else if (MARKDOWN.includes(name.slice(name.lastIndexOf(".")).toLowerCase())) found.push(path);
+/** 글 하나를 읽는다. 폴더를 주면 말로 막는다. 뜻은 파이썬 shared.readFile 이 소유한다. @param {string} path */
+function readOne(path) {
+  let isFolder = false;
+  try {
+    isFolder = statSync(path).isDirectory();
+  } catch {
+    isFolder = false;
   }
-  return found;
+  if (isFolder) throw new Error(`${path} 는 폴더다. 이 명령은 글 하나를 본다. 폴더는 hanlint 와 hanlint fix 가 받는다`);
+  return readFileSync(path, "utf-8");
 }
 
 /** 폴더를 주면 그 아래 마크다운을 편다. 파일과 `-` 는 그대로 둔다. @param {string[]} paths */
@@ -254,7 +281,10 @@ function collectFiles(paths) {
       continue;
     }
     const inside = markdownUnder(path).sort();
-    if (!inside.length) throw new Error(`${path} 안에 마크다운 파일이 없다. 다른 폴더를 주거나 파일을 직접 준다`);
+    if (!inside.length)
+      throw new Error(
+        `${path} 안에 마크다운 파일이 없다. 점으로 시작하는 폴더와 node_modules 는 건너뛴다. 그 안을 보려면 그 폴더를 직접 준다`,
+      );
     found.push(...inside);
   }
   return found;
@@ -269,13 +299,24 @@ function commonest(findings) {
   return [...counted.keys()].sort((a, b) => (counted.get(b) ?? 0) - (counted.get(a) ?? 0) || a.localeCompare(b))[0];
 }
 
-/** 검사 끝에 붙는 다음 행동 한 줄. 합격을 판정하지 않고 지금 무엇을 하면 되는지만 말한다.
- * @param {Map<string, import("../rules/finding.js").Finding[]>} results */
-function nextStep(results) {
+/** `hanlint fix` 가 실제로 고칠 error 수. 고침이 달렸다는 것과 자리를 잡을 수 있다는 것은 다르다.
+ * @param {Map<string, string>} texts @param {Map<string, import("../rules/finding.js").Finding[]>} results */
+function fixableCount(texts, results) {
+  let total = 0;
+  for (const [name, findings] of results) {
+    const text = texts.get(name);
+    if (text === undefined) continue;
+    total += applyFixes(text, findings.filter((f) => f.severity === "error")).applied.length;
+  }
+  return total;
+}
+
+/** 검사 끝에 붙는 다음 행동 한 줄. 뜻은 파이썬 cli/commands/shared.py 가 소유한다.
+ * @param {Map<string, import("../rules/finding.js").Finding[]>} results @param {number} [fixable] */
+function nextStep(results, fixable = 0) {
   const findings = [...results.values()].flat();
   const errors = findings.filter((f) => f.severity === "error");
   const notices = findings.length - errors.length;
-  const fixable = errors.filter((f) => f.replacement !== null).length;
   if (errors.length) {
     const rule = commonest(errors);
     if (fixable) return `다음: error ${errors.length}건 가운데 ${fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다`;
@@ -335,11 +376,15 @@ function runLint(args) {
   const stdinName = /** @type {string} */ (options["--path"] ?? STDIN_NAME);
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
   const results = new Map();
+  /** @type {Map<string, string>} */
+  const texts = new Map();
   for (const path of files) {
     const [name, text] = readInput(path, stdinName);
+    texts.set(name, text);
     results.set(name, baseline.keep(name, lintText(text, config, name)));
   }
   const hasError = [...results.values()].some((findings) => findings.some((f) => f.severity === "error"));
+  const fixable = fixableCount(texts, results);
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
   const shown = new Map();
   for (const [name, findings] of results) shown.set(name, severity === "all" ? findings : findings.filter((f) => f.severity === severity));
@@ -358,18 +403,18 @@ function runLint(args) {
         .map(([name, findings]) => renderCompact(name, findings))
         .join("\n");
       if (body) parts.push(body);
-      parts.push(summary(shown));
+      parts.push(summary(results));
       if (!options["--quiet"]) {
         if (baseline.count) parts.push(lockedNote(baseline));
-        parts.push(nextStep(shown));
+        parts.push(nextStep(results, fixable));
       }
       emit(parts.join("\n"), output);
     } else {
       parts.push([...shown].map(([name, findings]) => renderText(name, findings)).join("\n\n"));
-      if (shown.size > 1) parts.push(summary(shown));
+      if (shown.size > 1) parts.push(summary(results));
       if (!options["--quiet"]) {
         if (baseline.count) parts.push(lockedNote(baseline));
-        parts.push(nextStep(shown));
+        parts.push(nextStep(results, fixable));
       }
       emit(parts.join("\n\n"), output);
     }
@@ -573,6 +618,7 @@ function runDoctor(args) {
     `분석기    ${config.analyzer}. kiwi 정밀 모드는 파이썬 패키지에 있다 (pip install hanlint[kiwi])`,
     `규칙      ${names.length - off.length}개 켜짐, ${off.length}개 꺼짐`,
     `잠금      ${baselineState(config)}`,
+    `폴더      점으로 시작하는 폴더와 ${SKIPPED_FOLDERS.join(", ")} 는 건너뛴다. 직접 주면 검사한다`,
   ];
   if (off.length) lines.push(`꺼진 규칙  ${off.join(", ")}`);
   lines.push("", "다음: hanlint 글.md 로 검사한다. 설정이 기본값이면 hanlint init 으로 파일을 만든다");
@@ -663,7 +709,7 @@ function dispatch(argv) {
     return 0;
   }
   if (PYTHON_ONLY.includes(command)) {
-    throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 lint, fix, print, rules, explain, doctor, init 을 제공한다`);
+    throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 ${COMMANDS.join(", ")} 을 제공한다`);
   }
   if (command === "lint") return runLint(rest);
   if (command === "fix") return runFix(rest);

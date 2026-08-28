@@ -5,24 +5,30 @@
 바로 해 볼 것이 무엇인지를 답해야 한다. 그래서 세 가지만 담는다.
 
 npm 판 (`npm/src/cli/main.js`) 이 같은 글자를 낸다. 같은 폴더에서 두 판을 돌리면 결과가 같다.
+
+파일을 찾는 것은 검사와 **같은 함수** (`commands/shared.markdownUnder`) 다. 전에는 첫 화면이 바로 아래
+한 층만 보고 검사는 끝까지 내려가서, `posts/` 에 글을 둔 보통 블로그 저장소에서 첫 화면은
+`이 폴더에는 마크다운이 없다` 라고 하고 `hanlint .` 은 파일을 찾았다. 같은 자리에서 두 화면이 서로
+다른 말을 했다.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-MARKDOWN = (".md", ".markdown")
+from .commands.shared import markdownUnder
+
 SAMPLE_LIMIT = 3
 """현재 폴더에서 예시로 보일 파일 수. 넷을 넘으면 목록이 안내를 밀어낸다."""
 
 
 def nearbyMarkdown(folder: Path) -> list[str]:
-    """현재 폴더 바로 아래의 마크다운. 이름 순이라 같은 폴더면 두 판이 같은 것을 고른다."""
+    """이 폴더에서 검사가 실제로 볼 마크다운. 폴더 기준 상대 경로라 그대로 복사해 칠 수 있다."""
     try:
-        names = sorted(p.name for p in folder.iterdir() if p.suffix.lower() in MARKDOWN and p.is_file())
+        found = markdownUnder(folder)
     except OSError:
         return []
-    return names[:SAMPLE_LIMIT]
+    return [Path(path).relative_to(folder).as_posix() for path in found[:SAMPLE_LIMIT]]
 
 
 def welcome(version: str, folder: Path | None = None) -> str:
@@ -43,7 +49,7 @@ def welcome(version: str, folder: Path | None = None) -> str:
     if nearby:
         lines.extend(["", f"이 폴더의 마크다운: {', '.join(nearby)}. 폴더를 통째로 줘도 된다 (hanlint .)"])
     else:
-        lines.extend(["", "이 폴더에는 마크다운이 없다. 파일 하나나 폴더 하나를 인자로 준다"])
+        lines.extend(["", "이 폴더에는 검사할 마크다운이 없다. 파일 하나나 폴더 하나를 인자로 준다"])
     lines.extend(
         [
             "",

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from .. import __version__
 from .commands import (
@@ -46,6 +47,7 @@ from .commands import (
     rules,
     watch,
 )
+from .commands.shared import nearNames
 from .welcome import welcome
 
 COMMANDS = {
@@ -76,6 +78,15 @@ def buildParser() -> argparse.ArgumentParser:
     return parser
 
 
+def looksLikeCommand(word: str) -> bool:
+    """파일 이름이 아니라 서브커맨드를 치려던 것으로 보이나.
+
+    실측: `hanlint rulez` 가 `rulez 를 찾지 못했다. 경로를 확인하거나` 를 냈다. 파일 경로를 뒤지게
+    만든 것이다. 확장자도 경로 구분자도 없는 아스키 한 낱말이면 명령을 치려던 것으로 본다.
+    """
+    return bool(word) and word.isascii() and word.isalpha() and Path(word).suffix == "" and not Path(word).exists()
+
+
 def normalizeArgv(argv: list[str]) -> list[str]:
     """서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. `hanlint 글.md` 가 첫 진입점이다.
 
@@ -83,6 +94,10 @@ def normalizeArgv(argv: list[str]) -> list[str]:
     """
     if argv[0] in COMMANDS or argv[0] in ("-h", "--help", "--version"):
         return argv
+    if looksLikeCommand(argv[0]):
+        near = nearNames(argv[0], list(COMMANDS))
+        hint = f" 가까운 이름: {', '.join(near)}." if near else ""
+        raise ValueError(f"{argv[0]} 는 모르는 명령이다.{hint} 전체 목록은 hanlint --help")
     return ["lint", *argv]
 
 
@@ -99,9 +114,8 @@ def main(argv: list[str] | None = None) -> int:
     if not given:
         print(welcome(__version__))
         return 0
-    parser = buildParser()
-    args = parser.parse_args(normalizeArgv(given))
     try:
+        args = buildParser().parse_args(normalizeArgv(given))
         return COMMANDS[args.command].run(args)
     except FileNotFoundError as error:
         print(f"{error.filename} 를 찾지 못했다. 경로를 확인하거나 hanlint --help", file=sys.stderr)

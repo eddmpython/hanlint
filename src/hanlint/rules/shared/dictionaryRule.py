@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from ...analysis.josa import fitJosa
 from ...fingerprint import DocumentPrint
 from ..finding import ERROR, SENTENCE, Finding
 
@@ -19,7 +20,8 @@ def dictionaryFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
                 continue
             fix = None
             if match.fix is not None:
-                fix = sentence.text[: match.start] + match.fix + sentence.text[match.end :]
+                # 낱말만 갈아 끼우면 뒤에 붙은 조사가 틀어진다. `이슈로` 를 `쟁점로` 로 내밀던 자리다
+                fix = sentence.text[: match.start] + match.fix + fitJosa(match.fix, sentence.text[match.end :])
             yield Finding(
                 ruleName,
                 sentence.line,

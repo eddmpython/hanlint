@@ -1,33 +1,24 @@
 // @ts-check
 /**
  * `hanlint` 를 인자 없이 쳤을 때의 첫 화면. 파이썬 cli/welcome.py 와 같은 글자다.
- * 같은 폴더에서 두 판을 돌리면 결과가 같다.
+ * 같은 폴더에서 두 판을 돌리면 결과가 같다. 파일을 찾는 것은 검사와 같은 함수 (walk.markdownUnder) 다.
  */
-import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { relative, sep } from "node:path";
 
-const MARKDOWN = [".md", ".markdown"];
+import { markdownUnder } from "./walk.js";
+
 /** 현재 폴더에서 예시로 보일 파일 수. 넷을 넘으면 목록이 안내를 밀어낸다. */
 const SAMPLE_LIMIT = 3;
 
-/** 현재 폴더 바로 아래의 마크다운. 이름 순이라 같은 폴더면 두 판이 같은 것을 고른다. @param {string} folder */
+/** 이 폴더에서 검사가 실제로 볼 마크다운. 폴더 기준 상대 경로라 그대로 복사해 칠 수 있다. @param {string} folder */
 export function nearbyMarkdown(folder) {
-  /** @type {string[]} */
-  let names = [];
   try {
-    names = readdirSync(folder);
+    return markdownUnder(folder)
+      .slice(0, SAMPLE_LIMIT)
+      .map((path) => relative(folder, path).split(sep).join("/"));
   } catch {
     return [];
   }
-  const found = names.filter((name) => {
-    if (!MARKDOWN.some((suffix) => name.toLowerCase().endsWith(suffix))) return false;
-    try {
-      return statSync(join(folder, name)).isFile();
-    } catch {
-      return false;
-    }
-  });
-  return found.sort().slice(0, SAMPLE_LIMIT);
 }
 
 /** @param {string} version @param {string} [folder] */
@@ -49,7 +40,7 @@ export function welcome(version, folder) {
   if (nearby.length) {
     lines.push("", `이 폴더의 마크다운: ${nearby.join(", ")}. 폴더를 통째로 줘도 된다 (hanlint .)`);
   } else {
-    lines.push("", "이 폴더에는 마크다운이 없다. 파일 하나나 폴더 하나를 인자로 준다");
+    lines.push("", "이 폴더에는 검사할 마크다운이 없다. 파일 하나나 폴더 하나를 인자로 준다");
   }
   lines.push(
     "",

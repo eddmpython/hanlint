@@ -64,12 +64,11 @@ def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     assert any(line.startswith(f"{mixed}:3 [cliche] ") for line in lines)
     assert any("[factListParagraph]" in line or "[endingRepeat]" in line for line in lines)
     assert lines[-1].startswith("파일 1개, error 1, notice ")
+    # 요약은 거른 뒤가 아니라 글에 있는 것을 센다. 보여 줄 것을 고르는 옵션이 수를 바꾸면 거짓말이다.
     assert main([str(mixed), "--format", "compact", "--errors-only", "--quiet"]) == 1
     lines = capsys.readouterr().out.splitlines()
-    assert lines == [
-        f"{mixed}:3 [cliche] `핵심은` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)",
-        "파일 1개, error 1, notice 0",
-    ]
+    assert lines[0] == f"{mixed}:3 [cliche] `핵심은` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)"
+    assert lines[-1].startswith("파일 1개, error 1, notice ") and not lines[-1].endswith("notice 0")
     assert main([str(mixed), "--severity", "notice", "--format", "json"]) == 1
     data = json.loads(capsys.readouterr().out)
     assert data["files"][0]["findings"] and all(f["severity"] == "notice" for f in data["files"][0]["findings"])
@@ -200,7 +199,7 @@ def testWelcomeScreenWithoutMarkdownNearby(monkeypatch, tmp_path, capsys):
     assert main([]) == 0
     out = capsys.readouterr().out
     assert "hanlint 글.md" in out
-    assert "이 폴더에는 마크다운이 없다" in out
+    assert "이 폴더에는 검사할 마크다운이 없다" in out
 
 
 def testFolderArgumentFindsMarkdownBelow(tmp_path, capsys):
@@ -408,3 +407,71 @@ def testNextStepPointsAtTheBiggestPile():
     errors = [finding("cliche"), finding("cliche"), finding("noQuestion"), finding("noQuestion"), finding("noQuestion")]
     assert commonest(errors) == "noQuestion"
     assert commonest([finding("zebra"), finding("apple")]) == "apple"
+
+
+def testFolderWalkSkipsForeignPackages(tmp_path, capsys):
+    """실측: 블로그 저장소에서 `hanlint .` 이 남의 패키지까지 훑어 error 305건을 냈고 내 글은 97% 지점에 있었다."""
+    (tmp_path / "posts").mkdir()
+    write(tmp_path / "posts", "글.md", CLEAN)
+    for folder in ("node_modules", ".git", ".venv"):
+        (tmp_path / folder).mkdir()
+        write(tmp_path / folder, "README.md", BAD)
+
+    assert main([str(tmp_path), "--format", "compact", "--quiet"]) == 0
+    assert capsys.readouterr().out.splitlines()[-1] == "파일 1개, error 0, notice 0"
+
+    # 명시가 규칙을 이긴다. 그 폴더를 직접 주면 검사한다
+    assert main([str(tmp_path / "node_modules"), "--format", "compact", "--quiet"]) == 1
+    assert "파일 1개, error 1" in capsys.readouterr().out
+
+
+def testFixDoesNotTouchSkippedFolders(tmp_path, capsys):
+    """실측: `hanlint fix .` 이 npm 과 pip 가 소유한 파일을 원문 그대로 덮어썼다."""
+    (tmp_path / "node_modules").mkdir()
+    theirs = write(tmp_path / "node_modules", "README.md", "# pkg\n\n모든 분야에 있어서 기준이 필요합니다.\n")
+    (tmp_path / "posts").mkdir()
+    write(tmp_path / "posts", "글.md", CLEAN)
+    before = theirs.read_text(encoding="utf-8")
+
+    assert main(["fix", str(tmp_path)]) == 0
+    capsys.readouterr()
+    assert theirs.read_text(encoding="utf-8") == before
+
+
+def testWelcomeAgreesWithWhatLintWillCheck(tmp_path, capsys, monkeypatch):
+    """실측: posts/ 에 글을 둔 저장소에서 첫 화면은 없다고 하고 `hanlint .` 은 찾았다."""
+    (tmp_path / "posts").mkdir()
+    write(tmp_path / "posts", "도구.md", CLEAN)
+    monkeypatch.chdir(tmp_path)
+
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "hanlint posts/도구.md" in out
+    assert "이 폴더의 마크다운: posts/도구.md" in out
+
+
+def testFolderCommandsSayFolderInsteadOfCrashing(tmp_path, capsys):
+    """실측: `hanlint audit 글들/` 이 파이썬 PermissionError 트레이스백을 뱉었다."""
+    (tmp_path / "글들").mkdir()
+    write(tmp_path / "글들", "하나.md", CLEAN)
+    for command in ("audit", "map", "print"):
+        assert main([command, str(tmp_path / "글들")]) == 2, command
+        assert "는 폴더다" in capsys.readouterr().err, command
+
+
+def testUnknownSubcommandIsNotTreatedAsAPath(capsys):
+    """실측: `hanlint rulez` 가 `경로를 확인하라` 고 해서 엉뚱한 데를 뒤지게 했다."""
+    assert main(["rulez"]) == 2
+    error = capsys.readouterr().err
+    assert "모르는 명령이다" in error and "rules" in error
+
+
+def testFixPromiseMatchesWhatFixDoes(tmp_path, capsys):
+    """실측: `1건은 hanlint fix 가 바로 고친다` 라고 하고 fix 는 `0곳 고침, 1곳 건너뜀` 을 냈다."""
+    text = "## 절\n\n그래서 `에 있어서` 를 봅니다. 따라서 파일을 엽니다. 그러면 표가 보입니다.\n"
+    draft = write(tmp_path, "초안.md", text)
+    main([str(draft), "--format", "compact", "--quiet"])
+    said = capsys.readouterr().out
+    main(["fix", str(draft), "--dry-run"])
+    did = capsys.readouterr().out
+    assert ("hanlint fix 가 바로 고친다" in said) == ("0곳 고침" not in did)

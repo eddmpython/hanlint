@@ -14,7 +14,7 @@ from ... import __version__
 from ...baseline import Baseline, load
 from ...config import PRESETS
 from ...rules import ruleNames
-from .shared import addCommonOptions, configFrom, configLabel
+from .shared import SKIPPED_FOLDERS, addCommonOptions, configFrom, configLabel
 
 HELP = "설정, 분석기, 꺼진 규칙을 한 화면에 보인다"
 
@@ -55,6 +55,7 @@ def run(args: argparse.Namespace) -> int:
         f"분석기    {config.analyzer}. {kiwiState()}",
         f"규칙      {len(names) - len(off)}개 켜짐, {len(off)}개 꺼짐",
         f"잠금      {baselineState(config)}",
+        f"폴더      점으로 시작하는 폴더와 {', '.join(SKIPPED_FOLDERS)} 는 건너뛴다. 직접 주면 검사한다",
     ]
     if off:
         lines.append(f"꺼진 규칙  {', '.join(off)}")

@@ -207,3 +207,43 @@ def testBaselineAgrees(tmp_path):
     assert python.stdout == node.stdout
 
     lockBoth(["--prune"])
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testWalkAndGuardsAgree(tmp_path):
+    """걷기 규칙과 막는 말. 두 판이 같은 파일을 고르고 같은 말로 막아야 한다."""
+    (folder := tmp_path / "블로그").mkdir()
+    (folder / "posts").mkdir()
+    (folder / "posts" / "글.md").write_text("## 절\n\n핵심은 속도입니다. 파일을 엽니다.\n", encoding="utf-8")
+    for name in ("node_modules", ".git"):
+        (folder / name).mkdir()
+        (folder / name / "README.md").write_text("## 절\n\n결국 중요한 것은 노력입니다.\n", encoding="utf-8")
+
+    for extra in (["--format", "compact"], ["--format", "json"]):
+        python, node = runBoth([str(folder), *extra])
+        assert python.returncode == node.returncode, node.stderr
+        assert python.stdout == node.stdout, extra
+
+    # 명시가 규칙을 이긴다
+    python, node = runBoth([str(folder / "node_modules"), "--format", "compact"])
+    assert python.stdout == node.stdout
+
+    # 조사를 맞춘 고침. 낱말만 갈아 끼우면 비문이 된다
+    draft = tmp_path / "조사.md"
+    draft.write_text("## 절\n\n그래서 잔고가 부족합니다. 따라서 기스를 봅니다. 그러면 해변가로 갑니다.\n", encoding="utf-8")
+    for args in ([str(draft), "--no-color"], ["fix", str(draft), "--dry-run"]):
+        python, node = runBoth(args)
+        assert python.returncode == node.returncode, node.stderr
+        assert python.stdout == node.stdout, args
+    assert "잔액이" in python.stdout and "흠집을" in python.stdout and "해변으로" in python.stdout
+
+    # 거짓 보고 둘. 요약은 거르기 전을 세고, 모르는 규칙 이름은 거절한다
+    for args in ([str(draft), "--severity", "notice", "--format", "compact"], [str(draft), "--disable", "clich"]):
+        python, node = runBoth(args)
+        assert python.returncode == node.returncode, node.stderr
+        assert python.stdout == node.stdout and python.stderr == node.stderr, args
+
+    # 서브커맨드 오타
+    python, node = runBoth(["rulez"])
+    assert python.returncode == node.returncode == 2
+    assert python.stderr == node.stderr
