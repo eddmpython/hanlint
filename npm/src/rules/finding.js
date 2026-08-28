@@ -21,7 +21,10 @@ export const DOCUMENT = "document";
  * @property {number} at scope 가 가리키는 지문의 index
  * @property {string | null} fragment 원문에서 바꿀 조각. hanlint fix 가 replacement 로 바꾼다
  * @property {string | null} replacement
+ * @property {Candidate[]} candidates 뜻을 정하지 않고 형태로 좁힐 수 있을 때만. 순위와 점수는 없다
  */
+
+/** @typedef {{text: string, why: string}} Candidate */
 
 /**
  * @param {string} rule
@@ -34,10 +37,11 @@ export const DOCUMENT = "document";
  * @param {number} [at]
  * @param {string | null} [fragment]
  * @param {string | null} [replacement]
+ * @param {Candidate[]} [candidates]
  * @returns {Finding}
  */
-export function finding(rule, line, quote, why, fix = null, severity = ERROR, scope = SENTENCE, at = -1, fragment = null, replacement = null) {
-  return { rule, line, quote, why, fix, severity, scope, at, fragment, replacement };
+export function finding(rule, line, quote, why, fix = null, severity = ERROR, scope = SENTENCE, at = -1, fragment = null, replacement = null, candidates = []) {
+  return { rule, line, quote, why, fix, severity, scope, at, fragment, replacement, candidates };
 }
 
 /** @param {Finding} f */
@@ -49,5 +53,6 @@ export function findingAsDict(f) {
     data.fragment = f.fragment;
     data.replacement = f.replacement;
   }
+  if (f.candidates.length) data.candidates = f.candidates.map((candidate) => ({ text: candidate.text, why: candidate.why }));
   return data;
 }

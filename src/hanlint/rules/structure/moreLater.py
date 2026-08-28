@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterator
 
 from ...config import Config
+from ...document import plainText
 from ...document.model import LIST
 from ...fingerprint import DocumentPrint
 from ..finding import NOTICE, SECTION, Finding
@@ -47,8 +48,9 @@ def moreLater(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         if block.kind != LIST or block.startLine < last.startLine:
             continue
         for offset, item in itemsOf(block.text):
-            if len(item) > config.moreLaterMaxChars:
-                over.append((block.startLine + offset, item))
+            visible = plainText(item)
+            if len(visible) > config.moreLaterMaxChars:
+                over.append((block.startLine + offset, visible))
     if not over:
         return
     line, longest = max(over, key=lambda pair: len(pair[1]))

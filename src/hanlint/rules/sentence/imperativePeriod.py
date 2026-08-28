@@ -8,7 +8,7 @@ from ...fingerprint import DocumentPrint
 from ..finding import SENTENCE, Finding
 from ..registry import rule
 
-IMPERATIVE_PERIOD = re.compile(r"(세요|십시오|합시다|봅시다|하자|해라)\.(?=\s|$)")
+IMPERATIVE_PERIOD = re.compile(r"(세요|십시오|합시다|봅시다|하자|해라|라)\.(?=\s|$)")
 
 
 @rule("imperativePeriod")

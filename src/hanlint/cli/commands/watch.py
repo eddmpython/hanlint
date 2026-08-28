@@ -61,9 +61,11 @@ def report(paths: list[str], args: argparse.Namespace, config: Config) -> str:
     analyzer = analyzerFor(config)
     results: dict[str, list[Finding]] = {}
     texts: dict[str, str] = {}
+    registers: dict[str, str] = {}
     for path in paths:
         texts[path] = readFile(Path(path))
         doc = buildFingerprint(parseMarkdown(texts[path], path=path), analyzer, config)
+        registers[path] = doc.register
         results[path] = runAll(doc, config)
     shown = {name: keep(found, severityOf(args)) for name, found in results.items()}
     if args.format == "compact":
@@ -71,7 +73,7 @@ def report(paths: list[str], args: argparse.Namespace, config: Config) -> str:
         parts = [body] if body else []
         parts.append(summary(results))
     else:
-        parts = ["\n\n".join(renderText(name, found) for name, found in shown.items())]
+        parts = ["\n\n".join(renderText(name, found, registers[name]) for name, found in shown.items())]
         if len(shown) > 1:
             parts.append(summary(results))
     parts.append(nextStep(results, fixableCount(texts, results)))

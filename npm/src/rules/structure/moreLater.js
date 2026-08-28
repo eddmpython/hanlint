@@ -1,5 +1,6 @@
 // @ts-check
 import { LIST } from "../../document/model.js";
+import { plainText } from "../../document/plainText.js";
 import { NOTICE, SECTION, finding } from "../finding.js";
 
 export const name = "moreLater";
@@ -33,7 +34,8 @@ export function run(doc, config) {
   for (const block of doc.blocks) {
     if (block.kind !== LIST || block.startLine < last.startLine) continue;
     for (const [offset, item] of itemsOf(block.text)) {
-      if (item.length > config.moreLaterMaxChars) over.push([block.startLine + offset, item]);
+      const visible = plainText(item);
+      if (visible.length > config.moreLaterMaxChars) over.push([block.startLine + offset, visible]);
     }
   }
   if (!over.length) return [];

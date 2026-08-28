@@ -98,6 +98,27 @@ def testUnclosedFenceIsCode():
     assert [b.kind for b in doc.blocks] == ["prose", "code"]
 
 
+def testInlineTripleBackticksDoNotOpenFence():
+    text = "```kubectl -A```\n\n```bash\n# 셸 주석이다\nkubectl get pods\n```\n"
+    doc = parseMarkdown(text)
+    assert doc.headings() == []
+    assert [block.kind for block in doc.blocks] == ["prose", "code"]
+
+
+def testIndentedCodeAndQuoteAreNotProse():
+    text = "설명.\n\n    root 1 ...\n    root 2 ...\n\n> 인용은 ... 그대로 둔다.\n"
+    doc = parseMarkdown(text)
+    assert [block.kind for block in doc.blocks] == ["prose", "code", "quote"]
+    assert [block.text for block in doc.prose()] == ["설명."]
+
+
+def testIndentedListParagraphIsProseButDeeperCodeIsCode():
+    text = "1. 단계입니다.\n\n    목록 안 설명입니다.\n\n        result: ok\n\n목록 밖입니다.\n"
+    doc = parseMarkdown(text)
+    assert [block.kind for block in doc.blocks] == ["list", "prose", "code", "prose"]
+    assert [block.text for block in doc.prose()] == ["    목록 안 설명입니다.", "목록 밖입니다."]
+
+
 def testPlainTextStripsMarkup():
     assert plainText("`read_csv` 를 [문서](https://x)에서 **강조**해 *봅니다*") == "read_csv 를 문서에서 강조해 봅니다"
     assert plainText("줄 하나\n줄 둘") == "줄 하나\n줄 둘"

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from ...analysis.josa import fitJosa
+from ...analysis.grammar import fitJosa
 from ...fingerprint import DocumentPrint
 from ..finding import ERROR, SENTENCE, Finding
 

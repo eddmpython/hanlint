@@ -1,6 +1,6 @@
 """문서 모델. 세 층이다.
 
-- `Block` 빈 줄로 나뉜 덩어리 하나. 종류가 있다 (prose, heading, code, image, list, table, embed, html)
+- `Block` 빈 줄로 나뉜 덩어리 하나. 종류가 있다 (prose, heading, code, quote, image, list, table, embed, html)
 - `Section` H2 하나가 여는 절. 첫 H2 앞은 제목 없는 도입 절이다
 - `Document` 전체. frontmatter 와 절 목록을 든다
 
@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 PROSE = "prose"
 HEADING = "heading"
 CODE = "code"
+QUOTE = "quote"
 IMAGE = "image"
 LIST = "list"
 TABLE = "table"

@@ -7,6 +7,7 @@
 export const PROSE = "prose";
 export const HEADING = "heading";
 export const CODE = "code";
+export const QUOTE = "quote";
 export const IMAGE = "image";
 export const LIST = "list";
 export const TABLE = "table";

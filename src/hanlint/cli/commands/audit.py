@@ -27,7 +27,14 @@ def run(args: argparse.Namespace) -> int:
     findings = runAll(doc, config)
     audit = auditDocument(doc, config)
     if args.format == "json":
-        emit(renderJson({str(args.file): findings}, {str(args.file): audit}), args.output)
+        emit(
+            renderJson(
+                {str(args.file): findings},
+                {str(args.file): audit},
+                registers={str(args.file): doc.register},
+            ),
+            args.output,
+        )
     elif args.format == "html":
         emit(renderMapHtml(doc, findings), args.output)
     else:

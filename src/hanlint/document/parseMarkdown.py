@@ -8,13 +8,16 @@ from __future__ import annotations
 
 import re
 
-from .model import CODE, EMBED, HEADING, HTML, IMAGE, LIST, PROSE, TABLE, Block, Document, Section
+from .model import CODE, EMBED, HEADING, HTML, IMAGE, LIST, PROSE, QUOTE, TABLE, Block, Document, Section
 
 FRONTMATTER = re.compile(r"^---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
-FENCE = re.compile(r"^\s*(```|~~~)")
+FENCE_OPEN = re.compile(r"^\s*(?:(?P<ticks>`{3,})(?P<tickInfo>[^`]*)|(?P<tildes>~{3,})(?P<tildeInfo>[^~]*))$")
+FENCE_CLOSE = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})\s*$")
 HEADING_LINE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
+INDENTED_CODE_LINE = re.compile(r"^(?: {4}|\t)")
+QUOTE_LINE = re.compile(r"^\s*>")
 IMAGE_LINE = re.compile(r"^!\[")
-LIST_LINE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
+LIST_LINE = re.compile(r"^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+")
 TABLE_LINE = re.compile(r"^\s*\|")
 URL_LINE = re.compile(r"^\s*https?://\S+\s*$")
 HTML_LINE = re.compile(r"^\s*<")
@@ -38,8 +41,12 @@ def parseFrontmatter(text: str) -> tuple[dict[str, str], int]:
 
 
 def classify(firstLine: str) -> str:
+    if INDENTED_CODE_LINE.match(firstLine):
+        return CODE
     if HEADING_LINE.match(firstLine):
         return HEADING
+    if QUOTE_LINE.match(firstLine):
+        return QUOTE
     if IMAGE_LINE.match(firstLine):
         return IMAGE
     if TABLE_LINE.match(firstLine):
@@ -53,6 +60,29 @@ def classify(firstLine: str) -> str:
     return PROSE
 
 
+def indentWidth(line: str) -> int:
+    """첫 글자 앞 들여쓰기 너비. 탭은 마크다운의 네 칸 탭 정지점으로 센다."""
+    width = 0
+    for char in line:
+        if char == " ":
+            width += 1
+        elif char == "\t":
+            width += 4 - width % 4
+        else:
+            break
+    return width
+
+
+def afterIndent(line: str, width: int) -> str:
+    """들여쓰기 width 칸을 없앤 나머지. 목록 속 문단의 실제 첫 글자를 분류할 때 쓴다."""
+    index = 0
+    consumed = 0
+    while index < len(line) and consumed < width and line[index] in " \t":
+        consumed += 1 if line[index] == " " else 4 - consumed % 4
+        index += 1
+    return line[index:]
+
+
 def splitBlocks(text: str, firstLine: int) -> list[Block]:
     blocks: list[Block] = []
     buffer: list[str] = []
@@ -61,12 +91,17 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
     fence: str | None = None
     fenceStart = 0
     fenceLines: list[str] = []
+    listContinuation: int | None = None
+    bufferListContinuation: int | None = None
 
     def flush() -> None:
-        nonlocal buffer
+        nonlocal buffer, bufferListContinuation
         if not buffer:
             return
-        kind = classify(buffer[0])
+        firstLine = buffer[0]
+        if bufferListContinuation is not None and indentWidth(firstLine) >= bufferListContinuation:
+            firstLine = afterIndent(firstLine, bufferListContinuation)
+        kind = classify(firstLine)
         joined = "\n".join(buffer)
         level = 0
         if kind == HEADING:
@@ -75,21 +110,24 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
             joined = match.group(2)
         blocks.append(Block(kind, bufferStart, bufferStart + len(buffer) - 1, joined, level, len(blocks)))
         buffer = []
+        bufferListContinuation = None
 
     for raw in text.splitlines():
         lineNo += 1
         line = raw.rstrip("\r")
         if fence:
             fenceLines.append(line)
-            if FENCE.match(line) and line.strip().startswith(fence):
+            closing = FENCE_CLOSE.match(line)
+            closingFence = closing.group("fence") if closing else ""
+            if closingFence.startswith(fence) and closingFence[0] == fence[0]:
                 blocks.append(Block(CODE, fenceStart, lineNo, "\n".join(fenceLines), 0, len(blocks)))
                 fence = None
                 fenceLines = []
             continue
-        opening = FENCE.match(line)
+        opening = FENCE_OPEN.match(line)
         if opening:
             flush()
-            fence = opening.group(1)
+            fence = opening.group("ticks") or opening.group("tildes")
             fenceStart = lineNo
             fenceLines = [line]
             continue
@@ -103,8 +141,15 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
             continue
         if HEADING_LINE.match(line) and buffer:
             flush()
+        listMatch = LIST_LINE.match(line)
+        if listMatch:
+            contentColumn = listMatch.end()
+            listContinuation = ((contentColumn + 3) // 4) * 4
+        elif listContinuation is not None and indentWidth(line) < listContinuation:
+            listContinuation = None
         if not buffer:
             bufferStart = lineNo
+            bufferListContinuation = listContinuation
         buffer.append(line)
         if HEADING_LINE.match(line):
             flush()

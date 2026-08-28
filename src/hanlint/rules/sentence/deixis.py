@@ -7,6 +7,7 @@ from ...fingerprint import DocumentPrint
 from ...fingerprint.topics import overlap
 from ..finding import SENTENCE, Finding
 from ..registry import rule
+from ..shared import hasLocalAntecedent
 
 
 @rule("deixis")
@@ -22,6 +23,8 @@ def deixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """
     for sentence in doc.sentences:
         if not sentence.deixis or sentence.index == 0:
+            continue
+        if hasLocalAntecedent(sentence):
             continue
         previous = doc.sentences[sentence.index - 1]
         if overlap(previous.topics, sentence.topics) == 0.0:

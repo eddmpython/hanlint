@@ -1,0 +1,72 @@
+[corpus]
+version = 1
+root = "../hanlint.out/corpus"
+manifest = "corpus/documents.json"
+minimumDocuments = 300
+types = ["blog", "technicalDocs", "report", "essay", "guide"]
+
+[[source]]
+id = "kubernetesWebsite"
+kind = "zipArchive"
+title = "Kubernetes 한국어 웹사이트"
+owner = "Kubernetes Authors"
+home = "https://kubernetes.io/ko/"
+source = "https://github.com/kubernetes/website"
+revision = "3f13d3c02f5f771f1271dad9c97fc293c99d5bcd"
+archive = "https://codeload.github.com/kubernetes/website/zip/3f13d3c02f5f771f1271dad9c97fc293c99d5bcd"
+license = "CC-BY-4.0"
+licenseUrl = "https://github.com/kubernetes/website/blob/3f13d3c02f5f771f1271dad9c97fc293c99d5bcd/LICENSE"
+
+[[source.collection]]
+type = "blog"
+include = "content/ko/blog/**/*.md"
+limit = 50
+minimumKoreanChars = 300
+preset = "blog"
+
+[[source.collection]]
+type = "technicalDocs"
+include = "content/ko/docs/**/*.md"
+exclude = ["content/ko/docs/tasks/**", "content/ko/docs/tutorials/**"]
+limit = 90
+minimumKoreanChars = 500
+preset = "docs"
+
+[[source.collection]]
+type = "guide"
+include = "content/ko/docs/tasks/**/*.md"
+alsoInclude = ["content/ko/docs/tutorials/**/*.md"]
+limit = 90
+minimumKoreanChars = 500
+preset = "blog"
+
+[[source]]
+id = "koWikinews"
+kind = "mediaWiki"
+title = "한국어 위키뉴스 대한민국 기사"
+owner = "한국어 위키뉴스 기여자"
+home = "https://ko.wikinews.org/"
+api = "https://ko.wikinews.org/w/api.php"
+category = "분류:대한민국"
+type = "report"
+limit = 100
+minimumKoreanChars = 300
+preset = "report"
+license = "CC-BY-4.0"
+licenseUrl = "https://creativecommons.org/licenses/by/4.0/"
+
+[[source]]
+id = "koWikisource"
+kind = "mediaWiki"
+title = "한국어 위키문헌 수필"
+owner = "한국어 위키문헌 기여자"
+home = "https://ko.wikisource.org/"
+api = "https://ko.wikisource.org/w/api.php"
+category = "분류:수필"
+type = "essay"
+limit = 100
+minimumKoreanChars = 500
+preferUnwrapped = true
+preset = "report"
+license = "CC-BY-SA-4.0"
+licenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/"

@@ -6,6 +6,7 @@ from ...config import Config
 from ...fingerprint import DocumentPrint
 from ..finding import NOTICE, SENTENCE, Finding
 from ..registry import rule
+from ..shared import longSentenceCandidates
 
 
 @rule("longSentence")
@@ -29,4 +30,5 @@ def longSentence(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                 NOTICE,
                 SENTENCE,
                 sentence.index,
+                candidates=longSentenceCandidates(sentence.text),
             )

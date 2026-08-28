@@ -2,13 +2,15 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "doubleNegative";
-const DOUBLE_NEGATIVE = /(하지 않으면 안 (?:된다|됩니다)|하지 않을 수 없(?:다|습니다)|지 않으면 안 (?:된다|됩니다)|지 않을 수 없(?:다|습니다))/;
+const DOUBLE_NEGATIVE = /(하지 않으면 안 (?:된다|됩니다|돼요)|하지 않을 수 없(?:다|습니다|어요)|지 않으면 안 (?:된다|됩니다|돼요)|지 않을 수 없(?:다|습니다|어요))/;
 /** @type {Record<string, string>} */
 const FIXES = {
   "하지 않으면 안 된다": "해야 한다",
   "하지 않으면 안 됩니다": "해야 합니다",
   "하지 않을 수 없다": "한다",
   "하지 않을 수 없습니다": "합니다",
+  "하지 않으면 안 돼요": "해야 해요",
+  "하지 않을 수 없어요": "해요",
 };
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */

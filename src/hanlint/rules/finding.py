@@ -14,6 +14,17 @@ DOCUMENT = "document"
 
 
 @dataclass(frozen=True)
+class Candidate:
+    text: str
+    """사람이나 LLM이 고를 수 있는 꼴. 기계가 순위를 매기지 않는다."""
+    why: str
+    """이 꼴을 낸 표층 근거."""
+
+    def asDict(self) -> dict:
+        return {"text": self.text, "why": self.why}
+
+
+@dataclass(frozen=True)
 class Finding:
     rule: str
     line: int
@@ -30,6 +41,8 @@ class Finding:
     fragment: str | None = None
     """원문에서 바꿀 조각. `hanlint fix` 가 이 조각을 찾아 replacement 로 바꾼다."""
     replacement: str | None = None
+    candidates: tuple[Candidate, ...] = ()
+    """뜻을 정하지 않고 형태로 좁힐 수 있을 때만. 순위와 점수는 없다."""
 
     def asDict(self) -> dict:
         data = {
@@ -46,4 +59,6 @@ class Finding:
         if self.replacement is not None:
             data["fragment"] = self.fragment
             data["replacement"] = self.replacement
+        if self.candidates:
+            data["candidates"] = [candidate.asDict() for candidate in self.candidates]
         return data

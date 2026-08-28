@@ -4,13 +4,16 @@
  * 빈 줄로 블록을 나누고 첫 줄로 종류를 정한다. 코드 펜스 안은 통째로 code 다. H2 가 절을 열고 첫 H2 앞은 도입 절이다.
  */
 import { splitLines } from "../text.js";
-import { CODE, EMBED, HEADING, HTML, IMAGE, LIST, PROSE, TABLE } from "./model.js";
+import { CODE, EMBED, HEADING, HTML, IMAGE, LIST, PROSE, QUOTE, TABLE } from "./model.js";
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
-const FENCE = /^\s*(```|~~~)/;
+const FENCE_OPEN = /^\s*(?:(`{3,})([^`]*)|(~{3,})([^~]*))$/;
+const FENCE_CLOSE = /^\s*(`{3,}|~{3,})\s*$/;
 const HEADING_LINE = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
+const INDENTED_CODE_LINE = /^(?: {4}|\t)/;
+const QUOTE_LINE = /^\s*>/;
 const IMAGE_LINE = /^!\[/;
-const LIST_LINE = /^\s*(?:[-*+]|\d+[.)])\s+/;
+const LIST_LINE = /^(\s*)(?:[-*+]|\d+[.)])\s+/;
 const TABLE_LINE = /^\s*\|/;
 const URL_LINE = /^\s*https?:\/\/\S+\s*$/;
 const HTML_LINE = /^\s*</;
@@ -35,13 +38,37 @@ export function parseFrontmatter(text) {
 
 /** @param {string} firstLine */
 export function classify(firstLine) {
+  if (INDENTED_CODE_LINE.test(firstLine)) return CODE;
   if (HEADING_LINE.test(firstLine)) return HEADING;
+  if (QUOTE_LINE.test(firstLine)) return QUOTE;
   if (IMAGE_LINE.test(firstLine)) return IMAGE;
   if (TABLE_LINE.test(firstLine)) return TABLE;
   if (LIST_LINE.test(firstLine)) return LIST;
   if (URL_LINE.test(firstLine)) return EMBED;
   if (HTML_LINE.test(firstLine)) return HTML;
   return PROSE;
+}
+
+/** @param {string} line */
+function indentWidth(line) {
+  let width = 0;
+  for (const char of line) {
+    if (char === " ") width += 1;
+    else if (char === "\t") width += 4 - (width % 4);
+    else break;
+  }
+  return width;
+}
+
+/** @param {string} line @param {number} width */
+function afterIndent(line, width) {
+  let index = 0;
+  let consumed = 0;
+  while (index < line.length && consumed < width && (line[index] === " " || line[index] === "\t")) {
+    consumed += line[index] === " " ? 1 : 4 - (consumed % 4);
+    index += 1;
+  }
+  return line.slice(index);
 }
 
 /**
@@ -61,10 +88,18 @@ export function splitBlocks(text, firstLine) {
   let fenceStart = 0;
   /** @type {string[]} */
   let fenceLines = [];
+  /** @type {number | null} */
+  let listContinuation = null;
+  /** @type {number | null} */
+  let bufferListContinuation = null;
 
   const flush = () => {
     if (!buffer.length) return;
-    const kind = classify(buffer[0]);
+    let firstLine = buffer[0];
+    if (bufferListContinuation !== null && indentWidth(firstLine) >= bufferListContinuation) {
+      firstLine = afterIndent(firstLine, bufferListContinuation);
+    }
+    const kind = classify(firstLine);
     let joined = buffer.join("\n");
     let level = 0;
     if (kind === HEADING) {
@@ -74,6 +109,7 @@ export function splitBlocks(text, firstLine) {
     }
     blocks.push({ kind, startLine: bufferStart, endLine: bufferStart + buffer.length - 1, text: joined, level, index: blocks.length });
     buffer = [];
+    bufferListContinuation = null;
   };
 
   for (const raw of splitLines(text)) {
@@ -81,17 +117,18 @@ export function splitBlocks(text, firstLine) {
     const line = raw.replace(/\r+$/, "");
     if (fence) {
       fenceLines.push(line);
-      if (FENCE.test(line) && line.trim().startsWith(fence)) {
+      const closing = FENCE_CLOSE.exec(line);
+      if (closing && closing[1].startsWith(fence) && closing[1][0] === fence[0]) {
         blocks.push({ kind: CODE, startLine: fenceStart, endLine: lineNo, text: fenceLines.join("\n"), level: 0, index: blocks.length });
         fence = null;
         fenceLines = [];
       }
       continue;
     }
-    const opening = FENCE.exec(line);
+    const opening = FENCE_OPEN.exec(line);
     if (opening) {
       flush();
-      fence = opening[1];
+      fence = opening[1] || opening[3];
       fenceStart = lineNo;
       fenceLines = [line];
       continue;
@@ -106,7 +143,17 @@ export function splitBlocks(text, firstLine) {
       continue;
     }
     if (HEADING_LINE.test(line) && buffer.length) flush();
-    if (!buffer.length) bufferStart = lineNo;
+    const listMatch = LIST_LINE.exec(line);
+    if (listMatch) {
+      const contentColumn = listMatch[0].length;
+      listContinuation = Math.ceil(contentColumn / 4) * 4;
+    } else if (listContinuation !== null && indentWidth(line) < listContinuation) {
+      listContinuation = null;
+    }
+    if (!buffer.length) {
+      bufferStart = lineNo;
+      bufferListContinuation = listContinuation;
+    }
     buffer.push(line);
     if (HEADING_LINE.test(line)) flush();
   }

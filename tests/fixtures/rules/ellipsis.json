@@ -7,6 +7,8 @@
   "spare": [
     "그게 될지는 실행해 보면 압니다.",
     "설명.\n\n```python\nx = [...]\n```\n",
+    "설명.\n\n    root 1 ...\n    root 2 ...\n",
+    "> 원문은 ... 그대로 인용합니다.",
     "볼 것은 `rank() OVER (...)` 한 줄로 순위 열이 붙었다는 사실입니다.",
     "DuckDB 에게는 `EXTRACT(month FROM ...)` 으로 갑니다.",
     "달라진 것은 https://github.com/eddmpython/hanlint/compare/v0.0.1...HEAD 에서 봅니다.",

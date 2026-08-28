@@ -1,6 +1,7 @@
 // @ts-check
 /** 문서 모델을 한 번 훑어 글 지문을 만든다. 텍스트를 읽는 유일한 자리다. 파이썬 fingerprint/build.py 와 같다. */
 import { defaultConfig } from "../config/settings.js";
+import { NONE as NO_REGISTER, documentRegister, lastWord, registerOfWord } from "../analysis/grammar/register.js";
 import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/model.js";
 import { codeSpans, plainText } from "../document/plainText.js";
 import { countIn, mean, pstdev, wordCount } from "../text.js";
@@ -19,6 +20,7 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {number} length 어절 수
  * @property {string} ending
  * @property {string} mood
+ * @property {string} register
  * @property {number} commas
  * @property {string | null} connectorStart
  * @property {number} causal
@@ -84,6 +86,8 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {[number, string][]} promises
  * @property {[number, string][]} recalls
  * @property {[string, number, number][]} disabled
+ * @property {string} register
+ * @property {number} registerShare
  * @property {SectionPrint} intro
  * @property {SectionPrint[]} bodySections
  */
@@ -127,6 +131,7 @@ function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
     .filter(([start, end]) => !markers.insideAny(start, end, quoted))
     .map(([, , found]) => found);
   const matches = matchesIn(text, entries).filter((m) => !markers.insideAny(m.start, m.end, quoted));
+  const mood = markers.moodOf(text, ending);
   return {
     index: build.sentences.length,
     line,
@@ -136,7 +141,8 @@ function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
     sectionIndex,
     length: wordCount(text),
     ending,
-    mood: markers.moodOf(text, ending),
+    mood,
+    register: mood === "평서" ? (registerOfWord(lastWord(text)) ?? NO_REGISTER) : NO_REGISTER,
     commas: markers.countCommas(text),
     connectorStart: markers.connectorStartOf(text),
     causal: markers.countMatches(text, "causalMarkers.txt"),
@@ -261,6 +267,10 @@ export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
   /** @type {[number, string, number][]} */
   const headings = headingBlocks.map((b) => [b.level, b.text, b.startLine]);
   const headingQuestions = headingBlocks.filter((b) => b.text.includes("?")).length;
+  const [register, registerShare] = documentRegister(
+    sentences.filter((sentence) => sentence.mood === "평서").map((sentence) => lastWord(sentence.text)),
+    config.registerMinShare,
+  );
   return {
     path: doc.path,
     frontmatter: { ...doc.frontmatter },
@@ -275,6 +285,8 @@ export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
     countPromises: sentences.flatMap((s) => s.countPromises.map(([n, unit, text]) => [n, unit, s.line, text])),
     promises: sentences.flatMap((s) => s.promises.map((text) => [s.line, text])),
     recalls: sentences.flatMap((s) => s.recalls.map((text) => [s.line, text])),
+    register,
+    registerShare,
     disabled: doc.disabled,
     intro: sections[0],
     bodySections: sections.filter((s) => !s.isIntro),

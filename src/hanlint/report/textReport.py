@@ -11,9 +11,10 @@ from __future__ import annotations
 
 from ..data import exemplarFor
 from ..rules import Finding
+from .registerMatch import exemplarInRegister
 
 
-def exemplarLines(findings: list[Finding]) -> list[str]:
+def exemplarLines(findings: list[Finding], register: str | None = None) -> list[str]:
     """그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다."""
     lines: list[str] = []
     cut = False
@@ -21,6 +22,7 @@ def exemplarLines(findings: list[Finding]) -> list[str]:
         exemplar = exemplarFor(name)
         if not exemplar:
             continue
+        exemplar = exemplarInRegister(exemplar, register)
         before, after = exemplar.twoLines
         cut = cut or exemplar.shortened
         lines.extend([f"  [{name}]", f"    전  {before}", f"    후  {after}"])
@@ -30,7 +32,20 @@ def exemplarLines(findings: list[Finding]) -> list[str]:
     return [f"{head}. 잘린 것은 hanlint explain <규칙>" if cut else head, *lines]
 
 
-def renderText(path: str, findings: list[Finding]) -> str:
+def candidateLines(findings: list[Finding]) -> list[str]:
+    """본보기 아래에 붙이는 선택지. 지적 자리별이며 순위는 없다."""
+    chosen = [finding for finding in findings if finding.candidates]
+    if not chosen:
+        return []
+    lines = ["후보 (기계가 고르지 않음)"]
+    for finding in chosen:
+        lines.append(f"  {finding.line}줄 [{finding.rule}]")
+        for candidate in finding.candidates:
+            lines.append(f"    - {candidate.text} ({candidate.why})")
+    return lines
+
+
+def renderText(path: str, findings: list[Finding], register: str | None = None) -> str:
     if not findings:
         return f"{path}  집은 자리 없음"
     errors = sum(1 for f in findings if f.severity == "error")
@@ -45,5 +60,8 @@ def renderText(path: str, findings: list[Finding]) -> str:
         if finding.fix:
             lines.append(f"  고친 뒤: {finding.fix}")
         lines.append("")
-    lines.extend(exemplarLines(findings))
+    lines.extend(exemplarLines(findings, register))
+    candidates = candidateLines(findings)
+    if candidates:
+        lines.extend(["", *candidates])
     return "\n".join(lines).rstrip("\n")

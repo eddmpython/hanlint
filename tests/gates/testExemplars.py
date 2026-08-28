@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import pytest
 
+from hanlint.analysis.grammar import REGISTERS
 from hanlint.config import Config
 from hanlint.data import exemplarFor, exemplars
+from hanlint.report import exemplarInRegister
 from hanlint.rules import ruleNames
 from tests.conftest import ANALYZERS, findingsOf
 
@@ -38,15 +40,17 @@ def testEveryRuleHasAnExemplar():
 
 
 @pytest.mark.parametrize("name", ruleNames())
+@pytest.mark.parametrize("register", REGISTERS)
 @pytest.mark.parametrize("analyzer", ANALYZERS, ids=lambda a: a.name)
-def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, analyzer):
+def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, register: str, analyzer):
     exemplar = exemplarFor(name)
     assert exemplar is not None
+    exemplar = exemplarInRegister(exemplar, register)
     config = configFor(name)
     before = [f.rule for f in findingsOf(exemplar.before, config, analyzer)]
-    assert name in before, f"[{analyzer.name}] {name} 의 before 가 안 잡힌다: {exemplar.before!r} -> {before}"
+    assert name in before, f"[{analyzer.name}/{register}] {name} 의 before 가 안 잡힌다: {exemplar.before!r} -> {before}"
     after = [f.rule for f in findingsOf(exemplar.after, config, analyzer)]
-    assert name not in after, f"[{analyzer.name}] {name} 의 after 가 잡힌다: {exemplar.after!r}"
+    assert name not in after, f"[{analyzer.name}/{register}] {name} 의 after 가 잡힌다: {exemplar.after!r}"
 
 
 def testMovedSaysWhatChanged():

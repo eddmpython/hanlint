@@ -57,6 +57,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {number} headingQuestionRatio
  * @property {number} moreLaterMaxChars
  * @property {number} tableOddCellMinRows
+ * @property {number} registerMinShare
  */
 
 /** @returns {Config} */
@@ -88,6 +89,8 @@ export function defaultConfig() {
     headingQuestionRatio: 0.5,
     moreLaterMaxChars: 150,
     tableOddCellMinRows: 4,
+    // 기준 말뭉치에서 일관된 에세이 하위 5%는 0.7576, 실제 혼합 기사는 0.625였다.
+    registerMinShare: 0.7,
   };
 }
 

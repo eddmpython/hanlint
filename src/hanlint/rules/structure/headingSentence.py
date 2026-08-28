@@ -7,7 +7,7 @@ from ...fingerprint import DocumentPrint
 from ..finding import DOCUMENT, Finding
 from ..registry import rule
 
-SENTENCE_ENDINGS = ("니다", "세요", "십시오", "합시다", ".")
+SENTENCE_ENDINGS = ("니다", "한다", "해요", "세요", "십시오", "합시다", ".")
 
 
 @rule("headingSentence")

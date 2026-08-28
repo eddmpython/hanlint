@@ -34,6 +34,8 @@ class SentencePrint:
     """종결어미 부류. data/endings.txt 의 첫 열이거나 `없음`."""
     mood: str
     """평서, 의문, 명령."""
+    register: str
+    """문장 끝 서술어의 문체. 합니다, 한다, 해요, 또는 없음. 평서문이 아니면 없음이다."""
     commas: int
     connectorStart: str | None
     """문두 접속부사."""

@@ -29,6 +29,10 @@ class DocumentPrint:
     promises: tuple[tuple[int, str], ...]
     """(줄, 표지 원문)."""
     recalls: tuple[tuple[int, str], ...]
+    register: str = "없음"
+    """글의 문체. 평서문 끝 서술어 가운데 가장 많은 것. 합니다, 한다, 해요, 섞임, 없음."""
+    registerShare: float = 0.0
+    """그 문체가 평서문에서 차지하는 비율."""
     disabled: tuple[tuple[str, int, int], ...] = ()
     """인라인 제어가 끈 (규칙 또는 *, 시작 줄, 끝 줄). 등록부가 지적을 거른다."""
 

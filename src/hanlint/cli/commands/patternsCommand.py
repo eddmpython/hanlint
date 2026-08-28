@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 
+from ...analysis.grammar import HAPNIDA, REGISTERS
 from ...data import patterns, patternsAvoiding
+from ...report import patternInRegister
 from .shared import addCommonOptions, emit
 
 HELP = "문장 틀 목록. 지적을 받은 자리를 다시 쓸 때"
@@ -20,6 +22,7 @@ HELP = "문장 틀 목록. 지적을 받은 자리를 다시 쓸 때"
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--rule", help="그 규칙을 피하는 문형만 보인다. hanlint rules 로 이름을 본다")
+    parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="문형 문체. 기본 합니다체")
     addCommonOptions(parser, ("text", "json"))
 
 
@@ -34,6 +37,7 @@ def run(args: argparse.Namespace) -> int:
     chosen = patternsAvoiding(args.rule) if args.rule else patterns()
     if not chosen:
         raise KeyError(f"`{args.rule}` 을 피하는 문형이 없다. hanlint patterns 로 전부 본다")
+    chosen = [patternInRegister(pattern, args.register) for pattern in chosen]
     if args.format == "json":
         emit(json.dumps({"version": 1, "patterns": [p.asDict() for p in chosen]}, ensure_ascii=False, indent=2), args.output)
         return 0

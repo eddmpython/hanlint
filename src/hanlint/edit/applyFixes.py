@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..analysis.josa import josaSwap
+from ..analysis.grammar import josaSwap
 from ..rules import Finding
 
 

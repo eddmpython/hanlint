@@ -80,10 +80,12 @@ def run(args: argparse.Namespace) -> int:
     baseline = load(baselinePath) if baselinePath else Baseline()
     results: dict[str, list[Finding]] = {}
     texts: dict[str, str] = {}
+    registers: dict[str, str] = {}
     for path in files:
         name, text = readInput(path, args.stdinPath)
         texts[name] = text
         doc = buildFingerprint(parseMarkdown(text, path=name), analyzer, config)
+        registers[name] = doc.register
         findings = runAll(doc, config)
         if profile:
             findings = sorted(findings + profileFindings(doc, profile), key=lambda f: (f.line, f.rule))
@@ -94,7 +96,7 @@ def run(args: argparse.Namespace) -> int:
     shown = {name: keep(findings, severity) for name, findings in results.items()}
 
     if args.format == "json":
-        emit(renderJson(shown, configLabel=configLabel(config)), args.output)
+        emit(renderJson(shown, configLabel=configLabel(config), registers=registers), args.output)
     elif args.format == "github":
         emit("\n".join(renderGithub(name, findings) for name, findings in shown.items()), args.output)
     else:
@@ -107,7 +109,7 @@ def run(args: argparse.Namespace) -> int:
                 parts.append(body)
             parts.append(summary(results))
         else:
-            parts.append("\n\n".join(renderText(name, findings) for name, findings in shown.items()))
+            parts.append("\n\n".join(renderText(name, findings, registers[name]) for name, findings in shown.items()))
             if len(shown) > 1:
                 parts.append(summary(results))
         fixable = fixableCount(texts, results)

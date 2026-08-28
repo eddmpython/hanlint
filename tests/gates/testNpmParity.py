@@ -103,8 +103,9 @@ def testRuleListsAgree():
     python, node = runBoth(["rules", "--names"])
     assert python.stdout == node.stdout
     for rule in ("doublePassive", "moreLater", "numberOrphan"):
-        python, node = runBoth(["explain", rule])
-        assert python.stdout == node.stdout, rule
+        for register in ("합니다", "한다", "해요"):
+            python, node = runBoth(["explain", rule, "--register", register])
+            assert python.stdout == node.stdout, (rule, register)
     python, node = runBoth(["explain"])
     assert python.returncode == node.returncode == 2
     assert python.stdout == node.stdout
@@ -113,7 +114,12 @@ def testRuleListsAgree():
     assert "doubleNegative, doublePassive" in node.stderr
 
     # 기계가 읽는 꼴. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 판이 같아야 한다.
-    for args in (["rules", "--format", "json"], ["explain", "nounPile", "--format", "json"]):
+    for args in (
+        ["rules", "--format", "json"],
+        ["explain", "nounPile", "--format", "json", "--register", "합니다"],
+        ["explain", "nounPile", "--format", "json", "--register", "한다"],
+        ["explain", "nounPile", "--format", "json", "--register", "해요"],
+    ):
         python, node = runBoth(args)
         assert python.returncode == node.returncode == 0, node.stderr
         assert python.stdout == node.stdout, args
@@ -138,10 +144,27 @@ def testEntryPointsAgree(tmp_path):
     python, node = runBoth(["rules"])
     assert python.stdout == node.stdout
 
-    for extra in ([], ["--rule", "nounPile"], ["--format", "json"]):
-        python, node = runBoth(["patterns", *extra])
-        assert python.returncode == node.returncode == 0, node.stderr
-        assert python.stdout == node.stdout, extra
+    for register in ("합니다", "한다", "해요"):
+        for extra in ([], ["--rule", "nounPile"], ["--format", "json"]):
+            python, node = runBoth(["patterns", *extra, "--register", register])
+            assert python.returncode == node.returncode == 0, node.stderr
+            assert python.stdout == node.stdout, (extra, register)
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testMatchedRegisterReportsAgree(tmp_path):
+    texts = {
+        "합니다": "## 절\n\n핵심은 속도입니다.\n",
+        "한다": "## 절\n\n핵심은 속도다.\n",
+        "해요": "## 절\n\n핵심은 속도예요.\n",
+    }
+    for register, text in texts.items():
+        path = tmp_path / f"{register}.md"
+        path.write_text(text, encoding="utf-8")
+        for formatName in ("text", "json"):
+            python, node = runBoth([str(path), "--format", formatName, "--no-color"])
+            assert python.returncode == node.returncode == 1, node.stderr
+            assert python.stdout == node.stdout, (register, formatName)
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")

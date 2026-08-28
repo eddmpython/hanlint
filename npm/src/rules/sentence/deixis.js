@@ -1,6 +1,7 @@
 // @ts-check
 import { overlap } from "../../fingerprint/topics.js";
 import { SENTENCE, finding } from "../finding.js";
+import { hasLocalAntecedent } from "../shared/localAntecedent.js";
 
 export const name = "deixis";
 
@@ -9,6 +10,7 @@ export function run(doc) {
   const findings = [];
   for (const sentence of doc.sentences) {
     if (!sentence.deixis.length || sentence.index === 0) continue;
+    if (hasLocalAntecedent(sentence)) continue;
     const previous = doc.sentences[sentence.index - 1];
     if (overlap(previous.topics, sentence.topics) === 0) continue;
     findings.push(

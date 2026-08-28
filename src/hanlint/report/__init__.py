@@ -10,6 +10,7 @@ from .githubReport import renderGithub
 from .jsonReport import renderJson
 from .mapHtml import renderMapHtml
 from .mapText import renderMap
+from .registerMatch import exemplarInRegister, patternInRegister, targetRegister
 from .textReport import renderText
 
 __all__ = [
@@ -24,4 +25,7 @@ __all__ = [
     "renderMap",
     "renderMapHtml",
     "renderText",
+    "exemplarInRegister",
+    "patternInRegister",
+    "targetRegister",
 ]

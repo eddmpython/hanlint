@@ -1,0 +1,620 @@
+{
+  "version": 1,
+  "corpus": {
+    "documents": 390,
+    "types": {
+      "blog": 10,
+      "essay": 100,
+      "guide": 90,
+      "report": 100,
+      "technicalDocs": 90
+    },
+    "sentences": {
+      "blog": 1140,
+      "essay": 6253,
+      "guide": 3845,
+      "report": 1354,
+      "technicalDocs": 4828
+    },
+    "registers": {
+      "blog": {
+        "한다": 3,
+        "합니다": 7
+      },
+      "essay": {
+        "섞임": 2,
+        "없음": 1,
+        "한다": 59,
+        "합니다": 37,
+        "해요": 1
+      },
+      "guide": {
+        "한다": 90
+      },
+      "report": {
+        "섞임": 1,
+        "한다": 98,
+        "합니다": 1
+      },
+      "technicalDocs": {
+        "한다": 90
+      }
+    },
+    "meanRegisterShare": {
+      "blog": 0.9997,
+      "essay": 0.9442,
+      "guide": 0.9995,
+      "report": 0.9914,
+      "technicalDocs": 0.9999
+    },
+    "registerShareDistribution": {
+      "blog": {
+        "min": 0.9968,
+        "p05": 0.9968,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "essay": {
+        "min": 0.0,
+        "p05": 0.7576,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "guide": {
+        "min": 0.9778,
+        "p05": 1.0,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "report": {
+        "min": 0.625,
+        "p05": 1.0,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "technicalDocs": {
+        "min": 0.9965,
+        "p05": 1.0,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      }
+    }
+  },
+  "rules": [
+    {
+      "rule": "blockUnread",
+      "occurrences": 30,
+      "documents": 12,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 18,
+      "falsePositive": 2,
+      "precision": 0.9
+    },
+    {
+      "rule": "cliche",
+      "occurrences": 11,
+      "documents": 11,
+      "sampled": 11,
+      "reviewed": 11,
+      "correct": 11,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "confusable",
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
+      "correct": 1,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "connectorRepeat",
+      "occurrences": 25,
+      "documents": 20,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "countMismatch",
+      "occurrences": 10,
+      "documents": 10,
+      "sampled": 10,
+      "reviewed": 10,
+      "correct": 0,
+      "falsePositive": 10,
+      "precision": 0.0
+    },
+    {
+      "rule": "danglingDeixis",
+      "occurrences": 319,
+      "documents": 144,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 12,
+      "falsePositive": 8,
+      "precision": 0.6
+    },
+    {
+      "rule": "dash",
+      "occurrences": 32,
+      "documents": 9,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "deixis",
+      "occurrences": 452,
+      "documents": 155,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 17,
+      "falsePositive": 3,
+      "precision": 0.85
+    },
+    {
+      "rule": "doubleNegative",
+      "occurrences": 6,
+      "documents": 5,
+      "sampled": 6,
+      "reviewed": 6,
+      "correct": 6,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "doublePassive",
+      "occurrences": 21,
+      "documents": 15,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "draftHistory",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "duplicateBlock",
+      "occurrences": 22,
+      "documents": 14,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 0,
+      "falsePositive": 20,
+      "precision": 0.0
+    },
+    {
+      "rule": "ellipsis",
+      "occurrences": 43,
+      "documents": 32,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 0,
+      "falsePositive": 20,
+      "precision": 0.0
+    },
+    {
+      "rule": "emojiBullet",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "endingRepeat",
+      "occurrences": 340,
+      "documents": 188,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "enoughOnce",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "euiChain",
+      "occurrences": 599,
+      "documents": 166,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "factListParagraph",
+      "occurrences": 177,
+      "documents": 91,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 9,
+      "falsePositive": 11,
+      "precision": 0.45
+    },
+    {
+      "rule": "fieldEcho",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "fillerOpener",
+      "occurrences": 32,
+      "documents": 22,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "firstResultDistance",
+      "occurrences": 38,
+      "documents": 38,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "hardWord",
+      "occurrences": 91,
+      "documents": 48,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "headingQuestion",
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
+      "correct": 0,
+      "falsePositive": 1,
+      "precision": 0.0
+    },
+    {
+      "rule": "headingSentence",
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
+      "correct": 1,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "headingSkip",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "headingUniform",
+      "occurrences": 18,
+      "documents": 18,
+      "sampled": 18,
+      "reviewed": 18,
+      "correct": 0,
+      "falsePositive": 18,
+      "precision": 0.0
+    },
+    {
+      "rule": "imperativePeriod",
+      "occurrences": 286,
+      "documents": 75,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "inputFileSource",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "installImport",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "introImage",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "introLong",
+      "occurrences": 55,
+      "documents": 55,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 6,
+      "falsePositive": 14,
+      "precision": 0.3
+    },
+    {
+      "rule": "japaneseLoan",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "keywordHeading",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "keywordMissing",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "loneSubheading",
+      "occurrences": 4,
+      "documents": 4,
+      "sampled": 4,
+      "reviewed": 4,
+      "correct": 4,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "longSentence",
+      "occurrences": 676,
+      "documents": 160,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "moreLater",
+      "occurrences": 4,
+      "documents": 4,
+      "sampled": 4,
+      "reviewed": 4,
+      "correct": 4,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "negationRedefine",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "noQuestion",
+      "occurrences": 81,
+      "documents": 81,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "nounPile",
+      "occurrences": 142,
+      "documents": 98,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 17,
+      "falsePositive": 3,
+      "precision": 0.85
+    },
+    {
+      "rule": "numberOrphan",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "paraFragment",
+      "occurrences": 508,
+      "documents": 223,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 11,
+      "falsePositive": 9,
+      "precision": 0.55
+    },
+    {
+      "rule": "platformApi",
+      "occurrences": 5,
+      "documents": 2,
+      "sampled": 5,
+      "reviewed": 5,
+      "correct": 0,
+      "falsePositive": 5,
+      "precision": 0.0
+    },
+    {
+      "rule": "promiseRecall",
+      "occurrences": 4,
+      "documents": 2,
+      "sampled": 4,
+      "reviewed": 4,
+      "correct": 4,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "readerAbsent",
+      "occurrences": 51,
+      "documents": 51,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "redundantPair",
+      "occurrences": 3,
+      "documents": 2,
+      "sampled": 3,
+      "reviewed": 3,
+      "correct": 3,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "sectionNoProse",
+      "occurrences": 32,
+      "documents": 26,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "sectionResult",
+      "occurrences": 41,
+      "documents": 26,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 0,
+      "falsePositive": 20,
+      "precision": 0.0
+    },
+    {
+      "rule": "spacing",
+      "occurrences": 58,
+      "documents": 24,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "spelling",
+      "occurrences": 4,
+      "documents": 3,
+      "sampled": 4,
+      "reviewed": 4,
+      "correct": 4,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "tableOddCell",
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
+      "correct": 0,
+      "falsePositive": 0,
+      "precision": null
+    },
+    {
+      "rule": "topicBreak",
+      "occurrences": 328,
+      "documents": 111,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 0,
+      "falsePositive": 20,
+      "precision": 0.0
+    },
+    {
+      "rule": "translationese",
+      "occurrences": 2075,
+      "documents": 330,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 19,
+      "falsePositive": 1,
+      "precision": 0.95
+    }
+  ]
+}

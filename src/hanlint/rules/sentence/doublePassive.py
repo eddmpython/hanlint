@@ -6,6 +6,7 @@ from ...config import Config
 from ...fingerprint import DocumentPrint
 from ..finding import SENTENCE, Finding
 from ..registry import rule
+from ..shared import doublePassiveCandidates
 
 
 @rule("doublePassive")
@@ -29,4 +30,5 @@ def doublePassive(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                 "error",
                 SENTENCE,
                 sentence.index,
+                candidates=doublePassiveCandidates(sentence.text, sentence.passives),
             )

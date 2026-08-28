@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import pytest
 
+from hanlint.analysis.grammar import REGISTERS
 from hanlint.config import Config
 from hanlint.data import patterns, patternsAvoiding
+from hanlint.report import patternInRegister
 from hanlint.rules import ruleNames
 from tests.conftest import ANALYZERS, findingsOf
 
@@ -38,13 +40,15 @@ def testFormHasSlots():
 
 
 @pytest.mark.parametrize("pattern", patterns(), ids=lambda p: p.name)
+@pytest.mark.parametrize("register", REGISTERS)
 @pytest.mark.parametrize("analyzer", ANALYZERS, ids=lambda a: a.name)
-def testExamplePassesAndInsteadIsCaught(pattern, analyzer):
+def testExamplePassesAndInsteadIsCaught(pattern, register: str, analyzer):
+    pattern = patternInRegister(pattern, register)
     found = [f.rule for f in findingsOf(pattern.example, BLOG, analyzer) if f.severity == "error"]
-    assert not found, f"[{analyzer.name}] {pattern.name} 의 example 이 잡힌다: {found}"
+    assert not found, f"[{analyzer.name}/{register}] {pattern.name} 의 example 이 잡힌다: {found}"
     caught = {f.rule for f in findingsOf(pattern.instead, BLOG, analyzer)}
     missing = [rule for rule in pattern.avoids if rule not in caught]
-    assert not missing, f"[{analyzer.name}] {pattern.name} 의 instead 가 {missing} 에 안 잡힌다: {caught}"
+    assert not missing, f"[{analyzer.name}/{register}] {pattern.name} 의 instead 가 {missing} 에 안 잡힌다: {caught}"
 
 
 def testLookupByRule():

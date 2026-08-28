@@ -1,6 +1,6 @@
 // @ts-check
 /** 사전 규칙의 공통 구현. cliche, translationese, redundantPair, japaneseLoan 이 사전 이름만 바꿔 쓴다. */
-import { fitJosa } from "../../analysis/josa.js";
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { ERROR, SENTENCE, finding } from "../finding.js";
 
 /**

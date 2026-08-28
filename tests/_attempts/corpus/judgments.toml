@@ -1,0 +1,281 @@
+version = 1
+
+[[rule]]
+name = "blockUnread"
+sampled = 20
+default = "correct"
+falsePositive = ["7a0fab30f4f2978d21d5", "a722da55183b8184d017"]
+note = "출력 블록은 설명이 없으면 정탐이다. HTML 줄과 목록 속 설명문 두 건은 코드로 읽힌 경계 오탐이다."
+
+[[rule]]
+name = "cliche"
+sampled = 11
+default = "correct"
+note = "검출된 표현은 모두 판단을 흐리거나 중요성을 말로 대신하는 상투 표현이다."
+
+[[rule]]
+name = "confusable"
+sampled = 1
+default = "correct"
+note = "후배라는 자격에는 로써가 아니라 로서가 와야 한다."
+
+[[rule]]
+name = "connectorRepeat"
+sampled = 20
+default = "correct"
+note = "같은 접속어가 가까운 문장 첫머리에 되풀이된 경우만 검출됐다."
+
+[[rule]]
+name = "countMismatch"
+sampled = 10
+default = "falsePositive"
+note = "모두 같은 문서에서 서로 다른 대상을 세는 수였다. 약속한 항목 수의 불일치는 없었다."
+
+[[rule]]
+name = "danglingDeixis"
+sampled = 20
+default = "correct"
+falsePositive = [
+  "d774521b5d4edfc8e6fa",
+  "52bc0a9970e5574cd613",
+  "097be60e0bebc231a2a9",
+  "c9cb9298234014f4fa09",
+  "a11ebc2b59808aef0b9a",
+  "b64ecde9a576f11bdbed",
+  "086e18b34272ab1773d9",
+  "85970f1c8e2a4bf1cef9",
+]
+note = "기술 문서에서 이름 없는 지시어는 정탐이다. 수필의 몸짓, 대화, 앞 단락을 받는 서술과 기사 문맥 한 건은 자연스러웠다."
+
+[[rule]]
+name = "dash"
+sampled = 20
+default = "correct"
+note = "부연, 날짜와 주소 범위, 잘못 옮긴 목록 기호까지 모두 저장소의 줄표 계약을 어겼다."
+
+[[rule]]
+name = "deixis"
+sampled = 20
+default = "correct"
+falsePositive = ["37f3a7f2a058c92dec3d", "ae2ffb659e58bae76afc", "6533bd26846b9cbbdb20"]
+note = "기술 문서의 지시어는 이름으로 바꿀 수 있었다. 수필 대화와 서사 세 건은 현장 대상을 자연스럽게 가리켰다."
+
+[[rule]]
+name = "doubleNegative"
+sampled = 6
+default = "correct"
+note = "모두 하지 않을 수 없다 또는 하지 않으면 안 된다 꼴로 긍정문보다 복잡했다."
+
+[[rule]]
+name = "doublePassive"
+sampled = 20
+default = "correct"
+note = "잊혀지다, 쓰여지다, 되어지다처럼 피동 표현에 어지다가 다시 붙은 사례다."
+
+[[rule]]
+name = "duplicateBlock"
+sampled = 20
+default = "falsePositive"
+note = "명령 전후 상태와 독립된 설정 예제를 보여 주려고 같은 코드나 출력을 다시 둔 사례였다."
+
+[[rule]]
+name = "ellipsis"
+sampled = 20
+default = "falsePositive"
+note = "수필의 대화와 여운, 생략한 코드, 명령 예시의 자리표시자, API 경로에 쓰인 표지였다."
+
+[[rule]]
+name = "endingRepeat"
+sampled = 20
+default = "correct"
+note = "연속 문장의 종결형이 실제로 같았고 질문, 인과, 행동으로 리듬을 바꿀 자리가 있었다."
+
+[[rule]]
+name = "euiChain"
+sampled = 20
+default = "correct"
+note = "모두 한 문장 안에서 의가 겹쳐 관계를 동사나 다른 조사로 펴는 편이 분명했다."
+
+[[rule]]
+name = "factListParagraph"
+sampled = 20
+default = "falsePositive"
+correct = [
+  "981d15e7fad025b65547",
+  "46832453a7729cbbebef",
+  "3ec68ad46938ec3a0969",
+  "f975823ef8d8ded51d2c",
+  "1caf629988db4ca45da8",
+  "65bd2550e2df587c3512",
+  "a6176645083fa0c07e4f",
+  "4f6bf2b8472d132f395c",
+  "aebed7a04be3ba9ab4fc",
+]
+note = "기술 설명에서 인과 없이 이어진 사실은 정탐이다. 수필의 대화, 장면과 사건 진행은 나열이 아니었다."
+
+[[rule]]
+name = "fillerOpener"
+sampled = 20
+default = "correct"
+note = "다음으로, 마지막으로, 이어서만으로 연결한 문장이라 대상 이름이나 행동을 앞세울 수 있었다."
+
+[[rule]]
+name = "firstResultDistance"
+sampled = 20
+default = "correct"
+note = "실행 안내에서 첫 코드나 표보다 앞선 산문이 계약의 네 문단을 모두 넘었다."
+
+[[rule]]
+name = "hardWord"
+sampled = 20
+default = "correct"
+note = "검토, 단계별 계획, 의견, 오늘, 참고 자료처럼 문맥을 잃지 않는 쉬운 말이 모두 있었다."
+
+[[rule]]
+name = "headingQuestion"
+sampled = 1
+default = "falsePositive"
+note = "서비스 장애를 질문 순서로 좁히는 문제 해결 문서라 물음형 제목이 기능을 했다."
+
+[[rule]]
+name = "headingSentence"
+sampled = 1
+default = "correct"
+note = "표본 d67c86efbf23c37edb91은 노드 이름 확인이라는 대상형으로 줄일 수 있는 본문 문장형 절 제목이었다."
+
+[[rule]]
+name = "headingUniform"
+sampled = 18
+default = "falsePositive"
+note = "작업 절차의 제목을 모두 행동 명사형으로 맞춘 것이 탐색성과 예측 가능성을 높였다."
+
+[[rule]]
+name = "imperativePeriod"
+sampled = 20
+default = "correct"
+note = "명령형과 청유형 뒤 마침표를 두지 않는 저장소 글쓰기 계약에 모두 해당했다."
+
+[[rule]]
+name = "introLong"
+sampled = 20
+default = "falsePositive"
+correct = [
+  "9659a37359463eaa7cf7",
+  "f39b06c78d650c2ecffb",
+  "915bc5da66cd49f45086",
+  "97c8c8b23b2b1a2455a7",
+  "202daa7fc5507bcfcbe5",
+  "f8ab99f69b3fa52b7b9a",
+]
+note = "블로그와 기술 안내에서 긴 도입은 정탐이다. 제목 구조가 없는 수필과 단신 전체를 도입으로 센 것은 오탐이다."
+
+[[rule]]
+name = "loneSubheading"
+sampled = 4
+default = "correct"
+note = "상위 절과 뜻이 겹치는 소제목이 하나만 있어 계층을 더하지 않았다."
+
+[[rule]]
+name = "longSentence"
+sampled = 20
+default = "correct"
+note = "모두 서른 어절을 넘었고 독립된 판단이나 나열을 둘 이상 품어 나눌 수 있었다."
+
+[[rule]]
+name = "moreLater"
+sampled = 4
+default = "correct"
+note = "마지막 참고 절의 목록 항목이 링크 소개를 넘어 본문 분량이어서 줄일 수 있었다."
+
+[[rule]]
+name = "noQuestion"
+sampled = 20
+default = "correct"
+note = "문서 전체에 물음표가 없었고 독자가 품을 질문을 한 번도 대신 묻지 않았다."
+
+[[rule]]
+name = "nounPile"
+sampled = 20
+default = "correct"
+falsePositive = ["1b9b8d96704680c4787d", "f45dfc5170c646b46e3b", "606a5ed8480608b57c01"]
+note = "기술 용어와 고유 명사가 다섯 개 이상 이어진 자리는 정탐이다. 옛말의 동사와 부사가 명사로 읽힌 세 건은 오탐이다."
+
+[[rule]]
+name = "paraFragment"
+sampled = 20
+default = "falsePositive"
+correct = [
+  "f94b034ca7280064ac0b",
+  "09b8d4455706a54822b0",
+  "702b916f03ecaed8c17b",
+  "8812376f798e391ec586",
+  "440f9f9deba6a753b817",
+  "bd36efdd6e3708bd3d0a",
+  "089cc5c306346fedcaae",
+  "be4f2b731ce113a919b7",
+  "3873ad14d3bedb5970a7",
+  "3a8a702e85afed311949",
+  "6b07aab45aae4f9711fa",
+]
+note = "같은 기술 화제를 짧게 끊은 문단은 정탐이다. 편집자 정보, 대화, 장면 전환, 기사 단락은 분리할 이유가 있었다."
+
+[[rule]]
+name = "platformApi"
+sampled = 5
+default = "falsePositive"
+note = "모두 사용자 네임스페이스나 AppArmor처럼 리눅스 자체를 설명하는 문서라 proc 경로가 대상 환경의 정식 표면이었다."
+
+[[rule]]
+name = "promiseRecall"
+sampled = 4
+default = "correct"
+note = "뒤에서 설명한다고 미룬 네 곳 모두 나중에 같은 약속을 이름으로 회수하지 않았다."
+
+[[rule]]
+name = "readerAbsent"
+sampled = 20
+default = "correct"
+note = "문서 전체에 질문도 독자가 실행하거나 확인할 행동도 없어 저장소의 독자 접점 계약을 어겼다."
+
+[[rule]]
+name = "redundantPair"
+sampled = 3
+default = "correct"
+note = "재건과 재개에 다시를 붙인 세 건 모두 같은 뜻을 겹쳤다."
+
+[[rule]]
+name = "sectionNoProse"
+sampled = 20
+default = "correct"
+note = "제목 아래에 코드, 표, 그림만 있고 그것을 읽어 주는 산문이 실제로 없었다."
+
+[[rule]]
+name = "sectionResult"
+sampled = 20
+default = "falsePositive"
+note = "릴리스 설명과 개념 절은 자체로 목적을 이뤘고, 실행 절의 자료는 원문 서식 안에 있어 별도 결과를 요구하지 않았다."
+
+[[rule]]
+name = "spacing"
+sampled = 20
+default = "correct"
+note = "의존 명사 수와 때, 조사 밖에, 단위 명사 번의 띄어쓰기가 모두 현행 맞춤법과 달랐다."
+
+[[rule]]
+name = "spelling"
+sampled = 4
+default = "correct"
+note = "오랜동안, 오랫만, 부정 표현 지 안이 각각 오랫동안, 오랜만, 지 않으로 고쳐질 자리였다."
+
+[[rule]]
+name = "topicBreak"
+sampled = 20
+default = "falsePositive"
+note = "서사 장면 전환과 기술 문서의 새 단락이었고 제목과 문맥이 이미 화제 관계를 드러냈다. 낱말 겹침이 없어도 단절되지 않았다."
+
+[[rule]]
+name = "translationese"
+sampled = 20
+default = "correct"
+falsePositive = ["7be9f59eee471becd3ef"]
+note = "조사와 피동을 걷어 능동문으로 바꿀 수 있는 번역투였다. 데이터 안전을 위해 한 건은 자연스러운 목적 표현이었다."

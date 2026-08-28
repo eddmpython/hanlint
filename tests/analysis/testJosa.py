@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from hanlint.analysis.josa import digitFinal, finalOf, fitJosa, josaSwap
+from hanlint.analysis.grammar.josa import digitFinal, finalOf, fitJosa, josaSwap
 
 CHANGED = [
     ("쟁점", "로 알려 준다", "으로 알려 준다"),

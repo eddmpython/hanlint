@@ -2,7 +2,7 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "imperativePeriod";
-const IMPERATIVE_PERIOD = /(세요|십시오|합시다|봅시다|하자|해라)\.(?=\s|$)/;
+const IMPERATIVE_PERIOD = /(세요|십시오|합시다|봅시다|하자|해라|라)\.(?=\s|$)/;
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

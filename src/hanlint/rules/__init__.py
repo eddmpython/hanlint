@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from .finding import Finding
+from .finding import Candidate, Finding
 from .registry import CATEGORY_TITLES, ruleCategories, ruleCategory, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
     "CATEGORY_TITLES",
+    "Candidate",
     "Finding",
     "ruleCategories",
     "ruleCategory",

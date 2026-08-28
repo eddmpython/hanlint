@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
+from ...analysis.grammar import COPULA as COPULA_KIND
+from ...analysis.grammar import lastWord, parsePredicate
 from ...config import Config
 from ...fingerprint import DocumentPrint
 from ..finding import SENTENCE, Finding
@@ -10,6 +12,13 @@ from ..registry import rule
 
 NEGATION = re.compile(r"단순(?:한|히)\s?.{0,15}?(?:이|가)\s?아(?:닙니다|니다|니에요|니죠|닌)")
 COPULA = re.compile(r"(입니다|이다|이에요|예요)[.!]?$")
+
+
+def isDefinition(text: str) -> bool:
+    if COPULA.search(text.strip()):
+        return True
+    predicate = parsePredicate(lastWord(text))
+    return predicate is not None and predicate.kind == COPULA_KIND
 
 
 @rule("negationRedefine")
@@ -26,7 +35,7 @@ def negationRedefine(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     for paragraph in doc.paragraphs:
         sentences = paragraph.sentences
         for current, following in zip(sentences, sentences[1:], strict=False):
-            if NEGATION.search(current.text) and COPULA.search(following.text.strip()):
+            if NEGATION.search(current.text) and isDefinition(following.text):
                 yield Finding(
                     "negationRedefine",
                     current.line,

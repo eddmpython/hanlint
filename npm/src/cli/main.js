@@ -27,6 +27,7 @@ import { DEFAULT_PRESET, defaultConfig, offRules, PRESET_NAMES, PRESETS } from "
 import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
+import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
 import { CATEGORY_TITLES, ruleCategory, runAll } from "../rules/registry.js";
 import { MARKDOWN, SKIPPED_FOLDERS, markdownUnder } from "./walk.js";
 import { welcome } from "./welcome.js";
@@ -35,6 +36,7 @@ import { LAYERS, renderFingerprintJson } from "../report/fingerprintJson.js";
 import { renderGithub } from "../report/githubReport.js";
 import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
+import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init"];
 const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
@@ -102,6 +104,7 @@ const OPTION_KINDS = {
   "--force": "flag",
   "--preset": "value",
   "--rule": "value",
+  "--register": "value",
   "--baseline": "optional",
   "--prune": "flag",
 };
@@ -380,10 +383,14 @@ function runLint(args) {
   const results = new Map();
   /** @type {Map<string, string>} */
   const texts = new Map();
+  /** @type {Map<string, string>} */
+  const registers = new Map();
   for (const path of files) {
     const [name, text] = readInput(path, stdinName);
     texts.set(name, text);
-    results.set(name, baseline.keep(name, lintText(text, config, name)));
+    const document = fingerprint(text, config, name);
+    registers.set(name, document.register);
+    results.set(name, baseline.keep(name, runAll(document, config)));
   }
   const hasError = [...results.values()].some((findings) => findings.some((f) => f.severity === "error"));
   const fixable = fixableCount(texts, results);
@@ -393,7 +400,7 @@ function runLint(args) {
 
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (format === "json") {
-    emit(renderJson(shown, configLabel(config)), output);
+    emit(renderJson(shown, configLabel(config), registers), output);
   } else if (format === "github") {
     emit([...shown].map(([name, findings]) => renderGithub(name, findings)).join("\n"), output);
   } else {
@@ -412,7 +419,7 @@ function runLint(args) {
       }
       emit(parts.join("\n"), output);
     } else {
-      parts.push([...shown].map(([name, findings]) => renderText(name, findings)).join("\n\n"));
+      parts.push([...shown].map(([name, findings]) => renderText(name, findings, registers.get(name))).join("\n\n"));
       if (shown.size > 1) parts.push(summary(results));
       if (!options["--quiet"]) {
         if (baseline.count) parts.push(lockedNote(baseline));
@@ -550,17 +557,21 @@ function runExplain(args) {
   }
   const category = ruleCategory(wanted);
   const exemplarOf = exemplarFor(wanted);
+  const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
   if (options["--format"] === "json") {
     /** @type {Record<string, unknown>} */
     const data = { version: 1, rule: wanted, category, doc: ruleDoc(wanted) };
-    if (exemplarOf) data.exemplar = { before: exemplarOf.before, after: exemplarOf.after, moved: exemplarOf.moved };
-    const forms = patternsAvoiding(wanted);
+    if (exemplarOf) {
+      const adapted = exemplarInRegister(exemplarOf, register);
+      data.exemplar = { before: adapted.before, after: adapted.after, moved: adapted.moved };
+    }
+    const forms = patternsAvoiding(wanted).map((pattern) => patternInRegister(pattern, register));
     if (forms.length) data.patterns = forms;
     emit(JSON.stringify(data, null, 2), /** @type {string | undefined} */ (options["--output"]));
     return 0;
   }
   process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n\n${ruleDoc(wanted)}\n`);
-  const exemplar = exemplarOf;
+  const exemplar = exemplarOf ? exemplarInRegister(exemplarOf, register) : undefined;
   if (exemplar) {
     process.stdout.write("\n본보기\n");
     process.stdout.write(`${indent(exemplar.before, "  전  ")}\n`);
@@ -578,7 +589,8 @@ function runExplain(args) {
 function runPatterns(args) {
   const { options } = parseArgs(args);
   const rule = /** @type {string | undefined} */ (options["--rule"]);
-  const chosen = rule ? patternsAvoiding(rule) : patterns();
+  const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
+  const chosen = (rule ? patternsAvoiding(rule) : patterns()).map((pattern) => patternInRegister(pattern, register));
   if (!chosen.length) throw new Error(` 을 피하는 문형이 없다. hanlint patterns 로 전부 본다`);
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (options["--format"] === "json") {

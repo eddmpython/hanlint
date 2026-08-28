@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from statistics import mean, pstdev
 
 from ..analysis import Analyzer, Sentence
+from ..analysis.grammar import NONE as NO_REGISTER
+from ..analysis.grammar import documentRegister, lastWord, registerOfWord
 from ..config import Config
 from ..document import Block, Document, Section, codeSpans, plainText
 from ..document.model import HEADING, PROSE
@@ -66,7 +68,8 @@ def makeSentencePrint(
         sectionIndex=sectionIndex,
         length=len(text.split()),
         ending=ending,
-        mood=markers.moodOf(text, ending),
+        mood=(mood := markers.moodOf(text, ending)),
+        register=(registerOfWord(lastWord(text)) or NO_REGISTER) if mood == "평서" else NO_REGISTER,
         commas=markers.countCommas(text),
         connectorStart=markers.connectorStartOf(text),
         causal=markers.countMatches(text, "causalMarkers.txt"),
@@ -161,6 +164,7 @@ def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = 
     sentences, paragraphs = build.sentences, build.paragraphs
     headings = tuple((b.level, b.text, b.startLine) for b in doc.blocks if b.kind == HEADING)
     headingQuestions = sum(1 for b in doc.blocks if b.kind == HEADING and "?" in b.text)
+    register, registerShare = documentRegister([lastWord(s.text) for s in sentences if s.mood == "평서"], config.registerMinShare)
     return DocumentPrint(
         path=doc.path,
         frontmatter=dict(doc.frontmatter),
@@ -175,5 +179,7 @@ def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = 
         countPromises=tuple((n, unit, s.line, text) for s in sentences for n, unit, text in s.countPromises),
         promises=tuple((s.line, text) for s in sentences for text in s.promises),
         recalls=tuple((s.line, text) for s in sentences for text in s.recalls),
+        register=register,
+        registerShare=registerShare,
         disabled=tuple(doc.disabled),
     )

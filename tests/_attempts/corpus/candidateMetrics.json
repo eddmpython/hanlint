@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "documents": 390,
+  "sampleLimitPerRule": 10,
+  "rules": [
+    {
+      "rule": "longSentence",
+      "findings": 676,
+      "withCandidates": 597,
+      "candidateCoverage": 0.8831,
+      "candidates": 1843,
+      "sampled": 10,
+      "reviewed": 10,
+      "selected": 7,
+      "notSelected": 3,
+      "selectionRate": 0.7,
+      "published": true
+    },
+    {
+      "rule": "danglingDeixis",
+      "findings": 319,
+      "withCandidates": 300,
+      "candidateCoverage": 0.9404,
+      "candidates": 2113,
+      "sampled": 10,
+      "reviewed": 10,
+      "selected": 7,
+      "notSelected": 3,
+      "selectionRate": 0.7,
+      "published": true
+    },
+    {
+      "rule": "nounPile",
+      "findings": 142,
+      "withCandidates": 24,
+      "candidateCoverage": 0.169,
+      "candidates": 31,
+      "sampled": 10,
+      "reviewed": 10,
+      "selected": 1,
+      "notSelected": 9,
+      "selectionRate": 0.1,
+      "published": false
+    },
+    {
+      "rule": "endingRepeat",
+      "findings": 340,
+      "withCandidates": 340,
+      "candidateCoverage": 1.0,
+      "candidates": 680,
+      "sampled": 10,
+      "reviewed": 10,
+      "selected": 0,
+      "notSelected": 10,
+      "selectionRate": 0.0,
+      "published": false
+    },
+    {
+      "rule": "doublePassive",
+      "findings": 21,
+      "withCandidates": 21,
+      "candidateCoverage": 1.0,
+      "candidates": 21,
+      "sampled": 10,
+      "reviewed": 10,
+      "selected": 10,
+      "notSelected": 0,
+      "selectionRate": 1.0,
+      "published": true
+    }
+  ]
+}

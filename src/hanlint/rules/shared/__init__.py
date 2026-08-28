@@ -2,8 +2,27 @@
 
 from __future__ import annotations
 
+from .candidates import (
+    danglingDeixisCandidates,
+    doublePassiveCandidates,
+    endingRepeatCandidates,
+    longSentenceCandidates,
+    nounPileCandidates,
+)
 from .codeBlocks import CodeBlock, codeBlocksOf
 from .dictionaryRule import dictionaryFindings
+from .localAntecedent import hasLocalAntecedent
 from .runs import runsOf
 
-__all__ = ["CodeBlock", "codeBlocksOf", "dictionaryFindings", "runsOf"]
+__all__ = [
+    "CodeBlock",
+    "codeBlocksOf",
+    "danglingDeixisCandidates",
+    "dictionaryFindings",
+    "doublePassiveCandidates",
+    "endingRepeatCandidates",
+    "hasLocalAntecedent",
+    "longSentenceCandidates",
+    "nounPileCandidates",
+    "runsOf",
+]

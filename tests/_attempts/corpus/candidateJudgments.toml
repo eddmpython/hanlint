@@ -1,0 +1,93 @@
+# candidateSample.json의 50건을 한 건씩 읽고, 제시된 후보 가운데 실제 고칠 때 고를 것이 하나라도
+# 있으면 selected에 넣었다. 뜻을 보지 않고 후보 수나 규칙 이름으로 판정하지 않았다.
+
+[[rule]]
+name = "longSentence"
+sampled = 10
+selected = [
+  "cd56c283718f35fe8263",
+  "0e991ecd285f5758c2e6",
+  "05497b4ad629efc6d96b",
+  "a9aa76011afb2b09035f",
+  "09b0de5504ddd25a7941",
+  "544d7496d3b439c32447",
+  "ae993c1b45bfe82ef0a9",
+]
+notSelected = [
+  "9320845a3b9973e7aa7d",
+  "72a8f83c00ed5a3841a0",
+  "f76e0b544aa328b46327",
+]
+note = "접속 어미 뒤가 두 주어나 두 사실을 가르는 자리면 골랐다. 보조 용언, 선택 관계, 직접 인용 안처럼 문장 경계가 아닌 자리는 고르지 않았다."
+
+[[rule]]
+name = "danglingDeixis"
+sampled = 10
+selected = [
+  "bc64d55a8d711c562ee0",
+  "0479dccf63c7d8df0b9c",
+  "862bd37df86d2b88b0f1",
+  "81a243beb611911d383f",
+  "5319735fce001cd86519",
+  "e3c658bdc6fcf6cc20a9",
+  "d4e3e0abe798a119b211",
+]
+notSelected = [
+  "de6346bb779a946c5409",
+  "ca4b8e08edf635b6bd0a",
+  "1635252626329f6820f8",
+]
+note = "앞 문장의 ResourceClaims, 자연주의, 신청년, 스테이트풀셋, 필드, 경합, 예시처럼 실제 가리키는 이름이 후보에 있으면 골랐다. 동사 조각이나 관계없는 명사뿐이면 고르지 않았다."
+
+[[rule]]
+name = "nounPile"
+sampled = 10
+selected = ["de09d20db69b7b0834e8"]
+notSelected = [
+  "f57969f5fc3581bd9a69",
+  "bde3dfb00f04b2631b3d",
+  "7c47d6e9aae8100b7239",
+  "68f7bc5d6b9e3c4fc2d3",
+  "54601f8abb8ca6154844",
+  "707f2d06dd758b9853c7",
+  "d8f4dfa6ef614b26c6f2",
+  "21610bbfe351a63226b4",
+  "27f7527d96879a009c52",
+]
+note = "제공 업체를 솔루션을 제공하는 업체로 풀 수 있는 한 건만 골랐다. 응답 형식, 요청 볼륨, 운영 체제처럼 명사로 남아야 하는 말은 하다 동사 후보가 있어도 고르지 않았다."
+
+[[rule]]
+name = "endingRepeat"
+sampled = 10
+selected = []
+notSelected = [
+  "01a9bbef684e9650a5b5",
+  "cee9e0481d7b6080b20d",
+  "37c99a908f9a531df2cb",
+  "93f58bedcd64fecbc7d9",
+  "8ead7179b0d7b075fcda",
+  "2f48ef3c392843f5879c",
+  "ce74d94a0877004aa57d",
+  "e5e309b519dab07c1e63",
+  "ce9dfc206e81ab089c69",
+  "f4666333a22c1afaddac",
+]
+note = "어미 조각만으로는 어느 문장을 질문이나 인과문으로 바꿀지 정할 수 없었다. 열 건 모두 문맥에 붙여 바로 고를 후보가 아니어서 제품 출력에서 뺀다."
+
+[[rule]]
+name = "doublePassive"
+sampled = 10
+selected = [
+  "9f4a3c8a6d44b23747d7",
+  "6b3d5814663d03c9b5bb",
+  "6d7035fe4cb98d9fcb87",
+  "2ae255059bc1ac9e1c32",
+  "1fe952bb386ffcc11a1e",
+  "f9eb12df2cedece2757c",
+  "9db87b4e24996840af2d",
+  "7c254c940a011b762a62",
+  "f5268cca6da749af0a8c",
+  "597dd4878769c5722f2c",
+]
+notSelected = []
+note = "잊히지 않는, 쓰이는, 쓰여 있었다, 불리고, 열린, 덮어쓰일, 된, 보이게처럼 시제와 관형형을 보존해 피동 한 겹만 뺀 문장을 열 건 모두 골랐다."

@@ -26,7 +26,7 @@ status: curated
 | `data` | 사전과 표지 목록. 코드 없음 | 아무것도 (npm 은 util) |
 | `config` | 설정과 임계 기본값 | 아무것도 |
 | `document` | 마크다운 → 문서 모델. 순수 파싱 | config |
-| `analysis` | 분석기 인터페이스와 구현 (surface, kiwi). 문서 모델을 모른다 | config, data |
+| `analysis` | 분석기 구현 (surface, kiwi)과 분석기와 무관한 한국어 형태 층 (grammar). 문서 모델을 모른다 | config, data |
 | `fingerprint` | 문장·문단·절·글 지문. 사전 매치 포함 | document, analysis, config, data |
 | `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint 와 그 아래 |
 | `report`, `edit`, `coverage`, `baseline` | Finding 을 사람과 파일로 옮기는 넷. 서로 import 하지 않는다 | rules, audit, profile 과 그 아래 |

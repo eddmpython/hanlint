@@ -1,4 +1,4 @@
-"""받침에 따라 꼴이 갈리는 조사를 맞춘다. 분석기와 무관하게 참인 한국어 사실이라 여기 둔다.
+"""받침에 따라 꼴이 갈리는 조사를 맞춘다. 분석기와 무관하게 참인 한국어 사실이라 형태 층에 둔다.
 
 **왜 있는가.** 실측: `이슈로 알려 주면 된다` 에서 `이슈` 를 `쟁점` 으로 바꾸라는 제안이
 `쟁점로 알려 주면 된다` 를 냈다. 받침 뒤는 `으로` 다. **한국어 린터가 비문을 고침이라고 내밀고
@@ -8,6 +8,8 @@
 """
 
 from __future__ import annotations
+
+from . import hangul
 
 PAIRS: tuple[tuple[str, str], ...] = (
     ("으로부터", "로부터"),
@@ -35,24 +37,27 @@ PAIRS: tuple[tuple[str, str], ...] = (
 )
 """(받침 뒤 꼴, 받침 없는 뒤 꼴). 긴 것부터 대조해야 `으로` 가 `은` 보다 먼저 걸린다."""
 
-DIGIT_FINALS = (21, 8, 0, 16, 0, 0, 1, 8, 8, 0)
+DIGIT_FINALS = (
+    hangul.IEUNG,
+    hangul.RIEUL,
+    hangul.NONE,
+    hangul.MIEUM,
+    hangul.NONE,
+    hangul.NONE,
+    hangul.GIYEOK,
+    hangul.RIEUL,
+    hangul.RIEUL,
+    hangul.NONE,
+)
 """숫자 하나를 한자어로 읽었을 때의 종성. 영 일 이 삼 사 오 육 칠 팔 구 차례다.
 
-영 ㅇ, 일 ㄹ, 삼 ㅁ, 육 ㄱ, 칠 ㄹ, 팔 ㄹ 이고 나머지는 받침이 없다. 값은 한글 종성 표의 자리 번호다
-(ㄱ 1, ㄴ 4, ㄹ 8, ㅁ 16, ㅂ 17, ㅇ 21)."""
+영 ㅇ, 일 ㄹ, 삼 ㅁ, 육 ㄱ, 칠 ㄹ, 팔 ㄹ 이고 나머지는 받침이 없다."""
 
-PLACE_FINALS = {1: 17, 2: 1, 3: 4}
+PLACE_FINALS = {1: hangul.BIEUP, 2: hangul.GIYEOK, 3: hangul.NIEUN}
 """뒤에 붙은 0 의 개수가 정하는 자리값의 종성. 십 ㅂ, 백 ㄱ, 천 ㄴ 이다."""
 
-GROUP_FINALS = (4, 1, 0, 21)
+GROUP_FINALS = (hangul.NIEUN, hangul.GIYEOK, hangul.NONE, hangul.IEUNG)
 """네 자리 묶음의 이름. 만 ㄴ, 억 ㄱ, 조 (받침 없음), 경 ㅇ 차례다."""
-
-HANGUL_BASE = 0xAC00
-HANGUL_LAST = 0xD7A3
-JONGSEONG_COUNT = 28
-"""한글 음절 하나에 들어가는 종성 자리 수. 0 이 받침 없음이다."""
-RIEUL = 8
-"""종성 표에서 `ㄹ` 의 자리. `으로` 만 이 받침을 없는 것처럼 다룬다 (`서울로`, `실행로`가 아니라 `실행으로`)."""
 
 
 def digitFinal(digits: str) -> int:
@@ -84,10 +89,7 @@ def finalOf(word: str) -> int | None:
     if word[-1].isdigit():
         digits = word[len(word.rstrip("0123456789")) :]
         return digitFinal(digits)
-    code = ord(word[-1])
-    if not HANGUL_BASE <= code <= HANGUL_LAST:
-        return None
-    return (code - HANGUL_BASE) % JONGSEONG_COUNT
+    return hangul.finalOf(word[-1])
 
 
 def josaSwap(word: str, following: str) -> tuple[str, str] | None:
@@ -108,7 +110,7 @@ def josaSwap(word: str, following: str) -> tuple[str, str] | None:
                 # 조사가 아니라 더 긴 낱말의 앞머리다 (`이유`, `과정`, `로그`). 한글도 isalnum 이 참이다
                 break
             if withFinal == "으로":
-                wanted = withoutFinal if final in (0, RIEUL) else withFinal
+                wanted = withoutFinal if final in (hangul.NONE, hangul.RIEUL) else withFinal
             else:
                 wanted = withFinal if final else withoutFinal
             return None if wanted == form else (form, wanted)

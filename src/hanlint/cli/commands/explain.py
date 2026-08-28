@@ -9,7 +9,9 @@ from __future__ import annotations
 import argparse
 import json
 
+from ...analysis.grammar import HAPNIDA, REGISTERS
 from ...data import exemplarFor, patternsAvoiding
+from ...report import exemplarInRegister, patternInRegister
 from ...rules import CATEGORY_TITLES, ruleCategory, ruleDoc, ruleNames
 from .shared import addOutputOption, emit
 
@@ -33,10 +35,11 @@ def indent(text: str, label: str) -> str:
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("rule", nargs="?", help="규칙 이름. hanlint rules 로 목록을 본다")
     parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="본보기 문체. 기본 합니다체")
     addOutputOption(parser)
 
 
-def asJson(rule: str) -> str:
+def asJson(rule: str, register: str = HAPNIDA) -> str:
     """규칙 하나를 기계가 읽는 꼴로. 기술서와 본보기와 다시 쓸 틀을 한 덩어리로 준다."""
     exemplar = exemplarFor(rule)
     data: dict = {
@@ -46,8 +49,8 @@ def asJson(rule: str) -> str:
         "doc": ruleDoc(rule),
     }
     if exemplar:
-        data["exemplar"] = exemplar.asDict()
-    patterns = patternsAvoiding(rule)
+        data["exemplar"] = exemplarInRegister(exemplar, register).asDict()
+    patterns = [patternInRegister(pattern, register) for pattern in patternsAvoiding(rule)]
     if patterns:
         data["patterns"] = [p.asDict() for p in patterns]
     return json.dumps(data, ensure_ascii=False, indent=2)
@@ -77,13 +80,14 @@ def run(args: argparse.Namespace) -> int:
         hint = f" 이것을 찾았나: {', '.join(near)}" if near else " hanlint rules 로 목록을 본다"
         raise KeyError(f"모르는 규칙: {args.rule}.{hint}")
     if args.format == "json":
-        emit(asJson(args.rule), args.output)
+        emit(asJson(args.rule, args.register), args.output)
         return 0
     category = ruleCategory(args.rule)
     print(f"{args.rule}  ({CATEGORY_TITLES[category]})\n")
     print(ruleDoc(args.rule))
     exemplar = exemplarFor(args.rule)
     if exemplar:
+        exemplar = exemplarInRegister(exemplar, args.register)
         print("\n본보기")
         print(indent(exemplar.before, "  전  "))
         print(indent(exemplar.after, "  후  "))

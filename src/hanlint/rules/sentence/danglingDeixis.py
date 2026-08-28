@@ -7,6 +7,7 @@ from ...fingerprint import DocumentPrint
 from ...fingerprint.topics import overlap
 from ..finding import SENTENCE, Finding
 from ..registry import rule
+from ..shared import danglingDeixisCandidates, hasLocalAntecedent
 
 
 @rule("danglingDeixis")
@@ -23,6 +24,8 @@ def danglingDeixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     for sentence in doc.sentences:
         if not sentence.deixis:
             continue
+        if hasLocalAntecedent(sentence):
+            continue
         previous = doc.sentences[sentence.index - 1] if sentence.index > 0 else None
         if previous is not None and overlap(previous.topics, sentence.topics) > 0.0:
             continue
@@ -35,4 +38,5 @@ def danglingDeixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "error",
             SENTENCE,
             sentence.index,
+            candidates=danglingDeixisCandidates(sentence, previous),
         )

@@ -106,6 +106,10 @@ class Config:
     문장 셋 이상으로 본문만큼 설명하는 것이었다."""
     tableOddCellMinRows: int = 4
     """한 칸만 딴 것을 물으려면 그 열에 몇 줄이 있어야 하는가. 셋 이하는 모양을 정할 수 없다."""
+    registerMinShare: float = 0.7
+    """평서문 가운데 가장 많은 문체가 이 비율 아래면 섞임으로 본다. 기준 말뭉치 390편에서 안내와 기술
+    문서의 최솟값은 0.9778, 에세이 하위 5%는 0.7576이었고 실제 혼합 기사 한 편은 0.625였다. 0.7은
+    그 기사를 섞임으로 가르면서 일관된 발행문을 보존한다 (2026-08-28)."""
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable and ruleName not in PRESETS[self.preset]

@@ -326,7 +326,7 @@ def testBaselineDoesNotHideNewProblems(tmp_path, capsys):
     main(["baseline", str(draft), "--output", str(lock)])
     capsys.readouterr()
 
-    draft.write_text(BAD + "\n어쨌든 핵심은 결국 속도입니다.\n", encoding="utf-8")
+    draft.write_text(BAD + "\n핵심은 결국 새로 잰 속도입니다.\n", encoding="utf-8")
     assert main([str(draft), "--baseline", str(lock), "--format", "compact"]) == 1
     assert "[cliche]" in capsys.readouterr().out
 
