@@ -78,10 +78,15 @@ def testBothClisGiveTheSameOutput(tmp_path):
             assert python.returncode == node.returncode, node.stderr
             assert python.stdout == node.stdout
 
-    for layer in ("all", "paragraphs"):
-        python, node = runBoth(["print", str(ROOT / "README.md"), "--layer", layer])
-        assert python.returncode == node.returncode == 0, node.stderr
-        assert python.stdout == node.stdout
+    # 13/16 = 0.8125 는 정확히 절반이다. 파이썬 round 는 짝수로 가고 Math.round 는 위로 가서 registerShare 가 0.812 와
+    # 0.813 으로 갈렸다 (실측: 말뭉치 essay/2f729a83442d66d6). 절반인 값이 지문에 하나는 있어야 이 게이트가 그것을 본다.
+    share = tmp_path / "share.md"
+    share.write_text("## 절\n\n" + "표를 만듭니다. " * 13 + "표를 만든다. " * 3 + "\n", encoding="utf-8")
+    for path in (ROOT / "README.md", share):
+        for layer in ("all", "paragraphs", "document"):
+            python, node = runBoth(["print", str(path), "--layer", layer])
+            assert python.returncode == node.returncode == 0, node.stderr
+            assert python.stdout == node.stdout, (path.name, layer)
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")

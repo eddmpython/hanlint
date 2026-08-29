@@ -61,3 +61,22 @@ export function countIn(text, needle, end = text.length) {
     from = at + needle.length;
   }
 }
+
+/**
+ * 파이썬 round(value, digits). 정확한 이진 값을 십진으로 풀어 반올림하고 정확히 절반이면 짝수로 간다.
+ * Math.round 는 절반을 위로 올려 13/16 을 0.813 으로 만들고 파이썬은 0.812 다. 두 판의 글자가 같으려면 파이썬 쪽이다.
+ * toFixed(100) 은 1e21 아래의 수를 정확한 십진 전개로 준다. 지문의 비율과 평균이 사는 범위다.
+ * @param {number} value
+ * @param {number} digits
+ */
+export function roundHalfEven(value, digits) {
+  if (!Number.isFinite(value) || Math.abs(value) >= 1e21) return value;
+  const sign = value < 0 ? -1 : 1;
+  const [whole, fraction] = Math.abs(value).toFixed(100).split(".");
+  const rest = fraction.slice(digits);
+  let units = BigInt(whole + fraction.slice(0, digits));
+  const next = rest.charCodeAt(0) - 48;
+  const halfway = next === 5 && /^0*$/.test(rest.slice(1));
+  if (next > 5 || (next === 5 && !halfway) || (halfway && units % 2n === 1n)) units += 1n;
+  return sign * (Number(units) / 10 ** digits);
+}

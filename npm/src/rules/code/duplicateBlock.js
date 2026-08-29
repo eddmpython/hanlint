@@ -1,4 +1,5 @@
 // @ts-check
+import { roundHalfEven } from "../../text.js";
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
 
 export const name = "duplicateBlock";
@@ -38,7 +39,7 @@ export function run(doc, config) {
       const ratio = similarity(previous.lines.filter(([, line]) => line.trim()).map(([, line]) => line.trim()), currentLines);
       if (ratio >= config.duplicateBlockRatio) {
         findings.push(
-          finding(name, current.startLine, currentLines[0], `${previous.startLine}번째 줄의 블록과 ${Math.round(ratio * 100)}% 같다. 다른 줄만 남기거나 앞 블록을 가리킨다`, null, NOTICE, DOCUMENT, current.index),
+          finding(name, current.startLine, currentLines[0], `${previous.startLine}번째 줄의 블록과 ${roundHalfEven(ratio * 100, 0)}% 같다. 다른 줄만 남기거나 앞 블록을 가리킨다`, null, NOTICE, DOCUMENT, current.index),
         );
         break;
       }

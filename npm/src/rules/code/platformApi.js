@@ -5,13 +5,14 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 export const name = "platformApi";
 export const mechanism = "dictionary";
 
-/** @type {[RegExp, string, string][] | null} */
+/** @type {[RegExp, string, string, string][] | null} */
 let cache = null;
 function platformApis() {
   if (!cache) {
     cache = loadLines("platformApis.txt").map((line) => {
       const [pattern, platform, alternative] = line.split("\t");
-      return /** @type {[RegExp, string, string]} */ ([new RegExp(pattern), platform, alternative]);
+      // 지적문에는 정규식 원문을 적는다. V8 의 RegExp.source 는 / 를 \/ 로 돌려줘 파이썬의 pattern.pattern 과 갈린다.
+      return /** @type {[RegExp, string, string, string]} */ ([new RegExp(pattern), pattern, platform, alternative]);
     });
   }
   return cache;
@@ -23,10 +24,10 @@ export function run(doc) {
   for (const block of doc.codeBlocks) {
     if (block.isOutput) continue;
     for (const [line, code] of block.lines) {
-      for (const [pattern, platform, alternative] of platformApis()) {
+      for (const [pattern, source, platform, alternative] of platformApis()) {
         pattern.lastIndex = 0;
         if (pattern.test(code)) {
-          findings.push(finding(name, line, code.trim(), `\`${pattern.source}\` 은 ${platform} 전용이다. 다른 운영체제 독자는 여기서 멈춘다. ${alternative}`, null, NOTICE, DOCUMENT, block.index));
+          findings.push(finding(name, line, code.trim(), `\`${source}\` 은 ${platform} 전용이다. 다른 운영체제 독자는 여기서 멈춘다. ${alternative}`, null, NOTICE, DOCUMENT, block.index));
           break;
         }
       }

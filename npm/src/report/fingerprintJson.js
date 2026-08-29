@@ -4,12 +4,14 @@
  * 아래층을 index 로 가리킨다. 실수는 소수 여섯째 자리로 맞춰 두 구현이 같은 글자를 낸다.
  */
 
+import { roundHalfEven } from "../text.js";
+
 export const LAYERS = ["all", "sentences", "paragraphs", "sections", "document"];
 
 /** @param {number | null} value */
 function num(value) {
   if (value === null) return null;
-  return Math.round(value * 1e6) / 1e6;
+  return roundHalfEven(value, 6);
 }
 
 /** @param {Set<string>} set */
@@ -104,7 +106,7 @@ function documentDict(doc) {
     questionCount: doc.questionCount,
     readerCallCount: doc.readerCallCount,
     register: doc.register,
-    registerShare: Math.round(doc.registerShare * 1000) / 1000,
+    registerShare: roundHalfEven(doc.registerShare, 3),
     countPromises: doc.countPromises.map(([n, unit, line, text]) => [n, unit, line, text]),
     promises: doc.reader.final.promises.map(([line, text]) => [line, text]),
     recalls: doc.reader.final.recalls.map(([line, text]) => [line, text]),

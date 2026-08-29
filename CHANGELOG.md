@@ -89,6 +89,10 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Fixed
 
+- **npm 투영이 파이썬과 갈리던 자리 둘.** `platformApi` 의 지적문이 V8 의 `RegExp.source` 를 써서 `/proc/` 가
+  `\/proc\/` 로 나왔고, 실수 반올림이 `Math.round` 라 정확히 절반인 값 (registerShare 13/16) 이 파이썬의 짝수
+  반올림과 달리 위로 갔다. 정규식 원문을 적고 `roundHalfEven` 이 파이썬 `round` 와 같은 셈을 한다. 파리티 게이트가
+  두 자리를 보도록 fixture 와 시험 글을 더했다. `npm test` 가 윈도의 node 22 에서 폴더 인자로 실패하던 것도 고쳤다
 - **`hanlint fix` 가 남의 파일을 덮어썼다.** 폴더를 훑을 때 `node_modules` 와 `.git` 과 `.venv` 에
   들어가서, 실측에서 npm 과 pip 가 소유한 README 를 원문 그대로 고쳐 썼다. 검사도 마찬가지라 블로그
   저장소에서 error 305건이 나오고 내 글은 출력 97% 지점에 있었다. 이제 점으로 시작하는 폴더와

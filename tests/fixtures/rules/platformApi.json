@@ -3,7 +3,8 @@
   "catch": [
     "```python\nimport psutil\nprint(psutil.Process().memory_info().peak_wset)\n```\n",
     "```python\nimport os\nos.startfile(\"report.xlsx\")\n```\n",
-    "```python\npath = \"C:\\\\Users\\\\name\\\\data.csv\"\n```\n"
+    "```python\npath = \"C:\\\\Users\\\\name\\\\data.csv\"\n```\n",
+    "```python\nwith open(\"/proc/meminfo\") as f:\n    print(f.read())\n```\n"
   ],
   "spare": [
     "```python\nimport psutil\nprint(psutil.Process().memory_info().rss)\n```\n",
