@@ -9,8 +9,9 @@ from __future__ import annotations
 
 from .analyzer import Analyzer, Sentence
 from .surface.surfaceAnalyzer import SurfaceAnalyzer
+from .surface.tokenize import euiAdjacent
 
-__all__ = ["Analyzer", "Sentence", "SurfaceAnalyzer", "makeAnalyzer"]
+__all__ = ["Analyzer", "Sentence", "SurfaceAnalyzer", "euiAdjacent", "makeAnalyzer"]
 
 
 def makeAnalyzer(name: str = "surface") -> Analyzer:

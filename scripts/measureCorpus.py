@@ -1,6 +1,7 @@
 """기준 말뭉치에서 규칙 발화와 문체 분포를 잰다.
 
-발화 수는 전수로 센다. 정탐률은 규칙마다 종류와 문서에 걸쳐 최대 20건을 고르게 뽑아 사람이 읽는다.
+발화 수는 전수로 센다. 정탐률은 규칙마다 최대 20건의 표본을 사람이 읽는다. 표본은 판정이 붙은 자리를 지키고
+빈자리만 고르게 채우므로 규칙을 고쳐도 사라진 자리만큼만 새로 읽는다.
 표본은 tests/_attempts/corpus/reviewSample.json, 판정은 judgments.toml, 합친 수치는 ruleMetrics.json 이
 소유한다. 판정 파일은 이 스크립트가 만들거나 고치지 않는다.
 """
@@ -129,11 +130,37 @@ def evenly(items: list[dict], limit: int) -> list[dict]:
     return [items[round(index * (len(items) - 1) / (limit - 1))] for index in range(limit)]
 
 
+def previousSampleIds() -> dict[str, set[str]]:
+    """지금 기록된 표본의 id. 판정이 붙은 자리를 지키기 위한 것이다."""
+    if not REVIEW_SAMPLE.exists():
+        return {}
+    byRule: dict[str, set[str]] = defaultdict(set)
+    for item in readJson(REVIEW_SAMPLE)["observations"]:
+        byRule[item["rule"]].add(item["id"])
+    return byRule
+
+
 def sampleOf(observations: list[dict]) -> list[dict]:
+    """규칙마다 최대 SAMPLE_LIMIT 건. 이미 표본에 있던 자리는 지금도 있으면 그대로 두고 빈자리만 나머지에서 고르게 채운다.
+
+    실측: 발화 순서에서 고르게 뽑기만 하면 발화 수가 2건만 바뀌어도 자리가 전부 밀려 판정이 표본 밖으로 나갔다
+    (2026-08-28, 2026-08-29). 판정이 붙은 자리를 지키면 규칙을 고칠 때 새로 읽을 것은 사라진 자리의 수만큼이다.
+    기록이 지금과 같으면 다시 재어도 같은 표본이 나온다.
+    """
+    previous = previousSampleIds()
     byRule: dict[str, list[dict]] = defaultdict(list)
     for observation in observations:
         byRule[observation["rule"]].append(observation)
-    return [item for name in ruleNames() for item in evenly(byRule[name], SAMPLE_LIMIT)]
+    sample: list[dict] = []
+    for name in ruleNames():
+        # 같은 자리 (문서, 줄, 인용) 의 지적 둘은 id 가 같고 판정도 하나다. 표본에는 한 번만 든다.
+        seen: set[str] = set()
+        found = [item for item in byRule[name] if not (item["id"] in seen or seen.add(item["id"]))]
+        keptIds = previous.get(name, set()) & {item["id"] for item in found}
+        rest = [item for item in found if item["id"] not in keptIds]
+        chosen = keptIds | {item["id"] for item in evenly(rest, max(0, SAMPLE_LIMIT - len(keptIds)))}
+        sample.extend(item for item in found if item["id"] in chosen)
+    return sample
 
 
 def metrics(observations: list[dict], sample: list[dict], corpusStats: dict) -> dict:

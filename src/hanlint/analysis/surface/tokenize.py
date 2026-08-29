@@ -16,11 +16,17 @@ from functools import cache
 from ...data import loadLines
 
 HANGUL = re.compile(r"[가-힣]")
+HANGUL_WORD = re.compile(r"^[가-힣]+$")
 WORD_CHARS = re.compile(r"^[가-힣A-Za-z0-9]+$")
-GENITIVE = re.compile(r"([가-힣]+)의(?=[\s,.)\]]|$)")
+GENITIVE = re.compile(r"([가-힣A-Za-z0-9]+|\))의(?=[\s,.)\]]|$)")
+"""관형격 조사 의. 영문과 숫자 뒤 (API의, 600MiB의, 2054명의) 와 닫는 괄호 뒤 (L7(HTTP)의) 도 센다. 실측: 말뭉치
+390편에서 형태소 분석기가 표층보다 euiChain 을 297건 더 잡았고 거의 전부가 그 두 자리였다 (2026-08-29)."""
 SPACED_GENITIVE = re.compile(r"(?<=\s)의(?=\s)")
 COPULA = re.compile(r"^(?:이(?:고|며|다|라|란|면|라서|므로|지만|어서|었다|었고)|인|인데|입니다|였다)$")
 DIGITS = re.compile(r"^\d+$")
+QUANTITY = re.compile(r"^제?\d[\d,.]*[가-힣]{1,3}$")
+"""수에 단위가 붙은 어절 (2012년, 30분쯤, 제16호, 100명). 수량이라 명사 나열에서 세지도 끊지도 않는다. 실측: 말뭉치의
+날짜와 시각 (`2012년 11월 29일 4시`) 이 명사 다섯으로 세어졌다 (2026-08-29)."""
 OPENERS = "([{\"“‘'"
 CLOSERS = ",.?!;:)]}\"”’'"
 EDGE_PUNCTUATION = ".,?!:;\"'“”‘’()[]{}<>"
@@ -63,8 +69,27 @@ def nonNouns() -> frozenset[str]:
     return frozenset(loadLines("nonNouns.txt"))
 
 
+@cache
+def inNouns() -> frozenset[str]:
+    return frozenset(loadLines("inNouns.txt"))
+
+
+def isCopulaAdnominal(core: str) -> bool:
+    """`도구인`, `규모인` 처럼 명사에 계사 관형형 인 이 붙은 어절. 서술어라 명사 나열을 끊는다.
+
+    어간이 두 음절 이상일 때만이다. 개인, 원인, 확인 은 어간이 한 음절이라 명사로 두고, 외국인 같은 세 음절 명사는
+    data/inNouns.txt 가 뺀다. 실측: 말뭉치 390편에서 표층만 명사 다섯으로 본 15문장 가운데 넷이 이 꼴이었다 (2026-08-29).
+    """
+    return len(core) >= 3 and core.endswith("인") and bool(HANGUL_WORD.match(core)) and core not in inNouns()
+
+
 def isNumeral(core: str) -> bool:
     return core in numerals() or bool(DIGITS.match(core))
+
+
+def isQuantity(core: str) -> bool:
+    """단위가 붙은 수. 수사와 달리 뒤 어절을 단위로 삼지 않는다."""
+    return bool(QUANTITY.match(core))
 
 
 def words(text: str) -> list[Word]:
@@ -109,9 +134,9 @@ def longestNounRun(text: str) -> int:
     for word in words(text):
         if word.opens:
             run, previousAscii = 0, False
-        transparent = isNumeral(word.core) or afterNumeral
+        transparent = isNumeral(word.core) or afterNumeral or isQuantity(word.core)
         afterNumeral = isNumeral(word.core)
-        if word.particle or word.core in nonNouns() or not isBareNoun(word.core):
+        if word.particle or word.core in nonNouns() or not isBareNoun(word.core) or isCopulaAdnominal(word.core):
             run, previousAscii = 0, False
         elif not transparent:
             isAscii = not HANGUL.search(word.core)
@@ -124,10 +149,23 @@ def longestNounRun(text: str) -> int:
     return longest
 
 
+def genitiveSpans(text: str) -> list[tuple[int, int]]:
+    """관형격 조사 의 가 붙은 자리 (시작, 끝). 정의, 회의 처럼 의 로 끝나는 낱말은 빼고 띄어 쓴 의 는 넣는다."""
+    spans = [m.span() for m in GENITIVE.finditer(text) if m.group(1) + "의" not in euiNouns()]
+    spans.extend(m.span() for m in SPACED_GENITIVE.finditer(text))
+    return sorted(spans)
+
+
 def euiCount(text: str) -> int:
-    """관형격 조사 의 의 수. 정의, 회의 처럼 의 로 끝나는 낱말은 빼고 띄어 쓴 의 는 센다."""
-    attached = sum(1 for m in GENITIVE.finditer(text) if m.group(1) + "의" not in euiNouns())
-    return attached + len(SPACED_GENITIVE.findall(text))
+    """관형격 조사 의 의 수."""
+    return len(genitiveSpans(text))
+
+
+def euiAdjacent(text: str) -> bool:
+    """의 로 끝나는 어절 둘이 붙어 있는가 (회사의 팀의). 사이가 공백뿐이어야 한다. 정의 리소스의 처럼 앞이 의 로 끝나는
+    낱말이면 아니다. 실측: 사용자 정의 리소스의 컨트롤러 가 인접으로 잡혔다 (2026-08-29)."""
+    spans = genitiveSpans(text)
+    return any(text[a:b].isspace() for (_, a), (b, _) in zip(spans, spans[1:], strict=False))
 
 
 def syllableRange(initial: int, vowel: int) -> str:

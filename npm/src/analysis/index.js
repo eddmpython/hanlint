@@ -6,6 +6,8 @@
 import { splitSentences } from "./surface/splitSentences.js";
 import * as tokenize from "./surface/tokenize.js";
 
+export const euiAdjacent = tokenize.euiAdjacent;
+
 /**
  * @typedef {object} Analyzer
  * @property {string} name

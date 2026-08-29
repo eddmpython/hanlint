@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-import re
 from collections.abc import Iterator
 
+from ...analysis import euiAdjacent
 from ...config import Config
 from ...fingerprint import DocumentPrint
 from ..finding import SENTENCE, Finding
 from ..registry import rule
-
-ADJACENT = re.compile(r"[가-힣]+의\s+[가-힣]+의(?=[\s,.)\]]|$)")
 
 
 @rule("euiChain", mechanism="threshold")
@@ -24,7 +22,7 @@ def euiChain(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         둘 기준이 오탐 4건을 냈다. surface 분석기는 의 뒤에 공백이 올 때만 세고 kiwi 는 JKG 태그를 센다.
     """
     for sentence in doc.sentences:
-        if sentence.euiCount >= 3 or (sentence.euiCount >= 2 and ADJACENT.search(sentence.text)):
+        if sentence.euiCount >= 3 or (sentence.euiCount >= 2 and euiAdjacent(sentence.text)):
             yield Finding(
                 "euiChain",
                 sentence.line,

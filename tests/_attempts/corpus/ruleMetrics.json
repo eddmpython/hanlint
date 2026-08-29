@@ -148,7 +148,7 @@
     },
     {
       "rule": "danglingDeixis",
-      "occurrences": 300,
+      "occurrences": 302,
       "documents": 144,
       "sampled": 20,
       "reviewed": 20,
@@ -258,8 +258,8 @@
     },
     {
       "rule": "euiChain",
-      "occurrences": 599,
-      "documents": 166,
+      "occurrences": 645,
+      "documents": 171,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -488,13 +488,13 @@
     },
     {
       "rule": "nounPile",
-      "occurrences": 142,
-      "documents": 98,
+      "occurrences": 23,
+      "documents": 23,
       "sampled": 20,
       "reviewed": 20,
-      "correct": 17,
-      "falsePositive": 3,
-      "precision": 0.85
+      "correct": 14,
+      "falsePositive": 6,
+      "precision": 0.7
     },
     {
       "rule": "numberOrphan",
@@ -598,7 +598,7 @@
     },
     {
       "rule": "topicBreak",
-      "occurrences": 328,
+      "occurrences": 330,
       "documents": 111,
       "sampled": 20,
       "reviewed": 20,

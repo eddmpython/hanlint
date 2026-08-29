@@ -7,11 +7,15 @@ import { loadLines } from "../../data/load.js";
 import { splitWords, stripChars } from "../../text.js";
 
 const HANGUL = /[가-힣]/;
+const HANGUL_WORD = /^[가-힣]+$/;
 const WORD_CHARS = /^[가-힣A-Za-z0-9]+$/;
-const GENITIVE = /([가-힣]+)의(?=[\s,.)\]]|$)/g;
+/** 관형격 조사 의. 영문과 숫자 뒤 (API의, 600MiB의) 와 닫는 괄호 뒤 (L7(HTTP)의) 도 센다. 파이썬 tokenize.py 와 같다. */
+const GENITIVE = /([가-힣A-Za-z0-9]+|\))의(?=[\s,.)\]]|$)/g;
 const SPACED_GENITIVE = /(?<=\s)의(?=\s)/g;
 const COPULA = /^(?:이(?:고|며|다|라|란|면|라서|므로|지만|어서|었다|었고)|인|인데|입니다|였다)$/;
 const DIGITS = /^\d+$/;
+/** 수에 단위가 붙은 어절 (2012년, 30분쯤, 제16호, 100명). 수량이라 명사 나열에서 세지도 끊지도 않는다. */
+const QUANTITY = /^제?\d[\d,.]*[가-힣]{1,3}$/;
 const OPENERS = "([{\"“‘'";
 const CLOSERS = ",.?!;:)]}\"”’'";
 const EDGE_PUNCTUATION = ".,?!:;\"'“”‘’()[]{}<>";
@@ -65,9 +69,30 @@ export function nonNouns() {
   return nonNounCache;
 }
 
+/** @type {Set<string> | null} */
+let inNounCache = null;
+export function inNouns() {
+  if (!inNounCache) inNounCache = new Set(loadLines("inNouns.txt"));
+  return inNounCache;
+}
+
+/**
+ * `도구인`, `규모인` 처럼 명사에 계사 관형형 인 이 붙은 어절. 서술어라 명사 나열을 끊는다. 어간이 두 음절 이상일 때만이고
+ * 외국인 같은 세 음절 명사는 data/inNouns.txt 가 뺀다. 파이썬 tokenize.py 와 같다.
+ * @param {string} core
+ */
+export function isCopulaAdnominal(core) {
+  return core.length >= 3 && core.endsWith("인") && HANGUL_WORD.test(core) && !inNouns().has(core);
+}
+
 /** @param {string} core */
 export function isNumeral(core) {
   return numerals().has(core) || DIGITS.test(core);
+}
+
+/** 단위가 붙은 수. 수사와 달리 뒤 어절을 단위로 삼지 않는다. @param {string} core */
+export function isQuantity(core) {
+  return QUANTITY.test(core);
 }
 
 /** @param {string} text @returns {Word[]} */
@@ -115,9 +140,9 @@ export function longestNounRun(text) {
       run = 0;
       previousAscii = false;
     }
-    const transparent = isNumeral(word.core) || afterNumeral;
+    const transparent = isNumeral(word.core) || afterNumeral || isQuantity(word.core);
     afterNumeral = isNumeral(word.core);
-    if (word.particle || nonNouns().has(word.core) || !isBareNoun(word.core)) {
+    if (word.particle || nonNouns().has(word.core) || !isBareNoun(word.core) || isCopulaAdnominal(word.core)) {
       run = 0;
       previousAscii = false;
     } else if (!transparent) {
@@ -134,13 +159,26 @@ export function longestNounRun(text) {
   return longest;
 }
 
+/** 관형격 조사 의 가 붙은 자리 [시작, 끝]. 정의, 회의 처럼 의 로 끝나는 낱말은 빼고 띄어 쓴 의 는 넣는다. @param {string} text @returns {[number, number][]} */
+export function genitiveSpans(text) {
+  /** @type {[number, number][]} */
+  const spans = [];
+  for (const match of text.matchAll(GENITIVE)) {
+    if (!euiNouns().has(match[1] + "의")) spans.push([/** @type {number} */ (match.index), /** @type {number} */ (match.index) + match[0].length]);
+  }
+  for (const match of text.matchAll(SPACED_GENITIVE)) spans.push([/** @type {number} */ (match.index), /** @type {number} */ (match.index) + match[0].length]);
+  return spans.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+}
+
+/** 의 로 끝나는 어절 둘이 붙어 있는가 (회사의 팀의). 사이가 공백뿐이어야 한다. @param {string} text */
+export function euiAdjacent(text) {
+  const spans = genitiveSpans(text);
+  return spans.some((span, index) => index > 0 && /^\s+$/.test(text.slice(spans[index - 1][1], span[0])));
+}
+
 /** 관형격 조사 의 의 수. @param {string} text */
 export function euiCount(text) {
-  let attached = 0;
-  for (const match of text.matchAll(GENITIVE)) {
-    if (!euiNouns().has(`${match[1]}의`)) attached += 1;
-  }
-  return attached + [...text.matchAll(SPACED_GENITIVE)].length;
+  return genitiveSpans(text).length;
 }
 
 /** 초성과 중성이 정해진 한글 음절 28개의 정규식 범위. @param {number} initial @param {number} vowel */
