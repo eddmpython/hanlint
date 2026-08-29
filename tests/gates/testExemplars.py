@@ -2,6 +2,8 @@
 
 본보기는 글쓴이와 AI 가 그대로 본떠 고치는 것이라 틀리면 나쁜 글을 퍼뜨린다. 그래서 세 가지를 강제한다.
 `before` 는 그 규칙에 실제로 잡혀야 하고, `after` 는 잡히지 않아야 하며, 규칙과 본보기는 짝이어야 한다.
+`after` 는 다른 어느 규칙의 error 에도 잡히지 않아야 한다. 규칙 A 의 답이 규칙 B 의 문제가 되는 충돌을
+규칙을 더하는 순간 잡는 자리다. 실측: 지시어를 이름으로 바꾸다 nounPile 이, 문단을 나누다 paraFragment 가 났다.
 
 fixture 와 다른 점은 방향이다. fixture 는 규칙이 맞는지 보고 여기는 안내가 맞는지 본다. 규칙을 좁혀
 `before` 가 안 잡히게 되면 본보기가 낡은 것이므로 여기가 빨갛다.
@@ -49,8 +51,12 @@ def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, register: str, analyzer):
     config = configFor(name)
     before = [f.rule for f in findingsOf(exemplar.before, config, analyzer)]
     assert name in before, f"[{analyzer.name}/{register}] {name} 의 before 가 안 잡힌다: {exemplar.before!r} -> {before}"
-    after = [f.rule for f in findingsOf(exemplar.after, config, analyzer)]
+    afterFindings = findingsOf(exemplar.after, config, analyzer)
+    after = [f.rule for f in afterFindings]
     assert name not in after, f"[{analyzer.name}/{register}] {name} 의 after 가 잡힌다: {exemplar.after!r}"
+    # 규칙 A 의 답이 규칙 B 의 문제가 되면 충돌이다. 본보기의 after 는 어느 규칙의 error 에도 안 잡혀야 한다.
+    conflicts = sorted({f.rule for f in afterFindings if f.severity == "error"})
+    assert not conflicts, f"[{analyzer.name}/{register}] {name} 의 after 가 다른 규칙에 잡힌다 {conflicts}: {exemplar.after!r}"
 
 
 def testMovedSaysWhatChanged():

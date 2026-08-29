@@ -23,7 +23,11 @@ test("every exemplar still points both ways in three registers", () => {
       const adapted = exemplarInRegister(exemplar, register);
       const config = configFor(name);
       assert.ok(lintText(adapted.before, config).some((finding) => finding.rule === name), `${name}/${register} before`);
-      assert.ok(!lintText(adapted.after, config).some((finding) => finding.rule === name), `${name}/${register} after`);
+      const afterFindings = lintText(adapted.after, config);
+      assert.ok(!afterFindings.some((finding) => finding.rule === name), `${name}/${register} after`);
+      // 규칙 A 의 답이 규칙 B 의 문제가 되면 충돌이다. after 는 어느 규칙의 error 에도 안 잡혀야 한다. 파이썬 게이트와 같다.
+      const conflicts = [...new Set(afterFindings.filter((finding) => finding.severity === "error").map((finding) => finding.rule))].sort();
+      assert.deepEqual(conflicts, [], `${name}/${register} after conflicts`);
     }
   }
 });
