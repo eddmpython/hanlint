@@ -38,6 +38,8 @@ HUGO_HEADING = re.compile(r'^[ \t]*\{\{[%<][ \t]*heading[ \t]+"([^"]+)"[ \t]*[%>
 HUGO_TOOLTIP = re.compile(r"\{\{<\s*glossary_tooltip\s+([^>]+)>\}\}")
 HUGO_TEXT = re.compile(r'\btext="([^"]+)"')
 HUGO_SHORTCODE = re.compile(r"\{\{[%<].*?[%>]\}\}")
+# 도표 본문은 산문이 아니다. 실측: `flowchart LR subgraph ...` 가 문장으로 세어졌다 (2026-08-29).
+HUGO_MERMAID = re.compile(r"\{\{<\s*mermaid\s*>\}\}.*?\{\{<\s*/mermaid\s*>\}\}", re.DOTALL)
 HUGO_ANCHOR = re.compile(r"[ \t]+\{#[^}\r\n]+\}[ \t]*$", re.MULTILINE)
 FRONTMATTER = re.compile(r"\A---\n.*?\n---\s*\n", re.DOTALL)
 HUGO_HEADINGS = {
@@ -168,21 +170,25 @@ def frontmatterTitle(text: str) -> str | None:
 
 
 def categoryMembers(source: dict) -> list[dict]:
-    params = {
-        "action": "query",
-        "format": "json",
-        "list": "categorymembers",
-        "cmtitle": source["category"],
-        "cmnamespace": "0",
-        "cmlimit": "500",
-    }
-    members: list[dict] = []
-    while True:
-        data = requestJson(source["api"], params)
-        members.extend(data["query"]["categorymembers"])
-        if "continue" not in data:
-            return sorted(members, key=lambda item: item["title"])
-        params["cmcontinue"] = data["continue"]["cmcontinue"]
+    """분류 하나 또는 여럿 (categories) 의 문서. 여러 분류에 든 문서는 한 번만 센다."""
+    byId: dict[int, dict] = {}
+    for category in source.get("categories") or [source["category"]]:
+        params = {
+            "action": "query",
+            "format": "json",
+            "list": "categorymembers",
+            "cmtitle": category,
+            "cmnamespace": "0",
+            "cmlimit": "500",
+        }
+        while True:
+            data = requestJson(source["api"], params)
+            for item in data["query"]["categorymembers"]:
+                byId.setdefault(item["pageid"], item)
+            if "continue" not in data:
+                break
+            params["cmcontinue"] = data["continue"]["cmcontinue"]
+    return sorted(byId.values(), key=lambda item: item["title"])
 
 
 def batches(items: list[int], size: int = 40) -> Iterable[list[int]]:
@@ -240,6 +246,59 @@ def mediaWikiDocuments(source: dict) -> list[RawDocument]:
     return evenly(sorted(candidates, key=lambda doc: doc.title), source["limit"])
 
 
+def gitHubTree(source: dict) -> list[dict]:
+    """자료원의 treePath 아래 파일 목록 (path, size). 목록 두 번이면 되므로 인증 없는 API 한도 (시간당 60) 안이다."""
+    parent, _, name = source["treePath"].rpartition("/")
+    listing = requestJson(f"https://api.github.com/repos/{source['repo']}/contents/{parent}", {"ref": source["revision"]})
+    treeSha = next(item["sha"] for item in listing if item["name"] == name)
+    tree = requestJson(f"https://api.github.com/repos/{source['repo']}/git/trees/{treeSha}", {"recursive": "1"})
+    if tree.get("truncated"):
+        raise ValueError(f"{source['id']} 의 파일 나무가 잘렸다. treePath 를 좁힌다")
+    return sorted((item for item in tree["tree"] if item["type"] == "blob"), key=lambda item: item["path"])
+
+
+def gitHubRaw(source: dict, path: str) -> str:
+    time.sleep(0.1)
+    return request(source["raw"].rstrip("/") + "/" + urllib.parse.quote(path)).decode("utf-8")
+
+
+def gitHubTreeDocuments(source: dict) -> list[RawDocument]:
+    """수집 조건마다 경로를 고르게 뽑아 원문을 받고 한글 글자 수로 거른다. 한도의 1.3배를 받아 거른 뒤 한도로 줄인다."""
+    files = [item["path"] for item in gitHubTree(source)]
+    found: list[RawDocument] = []
+    for collection in source["collection"]:
+        patterns = [collection["include"], *collection.get("alsoInclude", [])]
+        excludes = collection.get("exclude", [])
+        paths = [p for p in files if any(matches(p, x) for x in patterns) and not any(matches(p, x) for x in excludes)]
+        wanted = [p for p in evenly(paths, int(collection["limit"] * 1.3) + 1)]
+        candidates: list[RawDocument] = []
+        for path in wanted:
+            raw = gitHubRaw(source, path)
+            if koreanChars(normalizeMdn(raw) if source.get("normalizer") == "mdn" else raw) < collection["minimumKoreanChars"]:
+                continue
+            candidates.append(
+                RawDocument(
+                    sourceId=source["id"],
+                    type=collection["type"],
+                    preset=collection["preset"],
+                    title=frontmatterTitle(raw) or Path(path).parent.name,
+                    sourcePath=path,
+                    revision=source["revision"],
+                    url=f"{source['home'].rstrip('/')}/{path.removesuffix('/index.md').removesuffix('.md')}",
+                    license=source["license"],
+                    licenseUrl=source["licenseUrl"],
+                    owner=source["owner"],
+                    raw=raw,
+                )
+            )
+        found.extend(evenly(candidates, collection["limit"]))
+    return found
+
+
+def gitHubTreeRaw(source: dict, entries: list[dict]) -> dict[str, str]:
+    return {entry["sourcePath"]: gitHubRaw(source, entry["sourcePath"]) for entry in entries}
+
+
 def wrappedLineRatio(text: str) -> float:
     """문장 부호 없이 이어지는 일반 본문 줄의 비율을 센다."""
     normalized = normalizeWikitext(text)
@@ -255,9 +314,45 @@ def wrappedLineRatio(text: str) -> float:
     return wrapped / pairs if pairs else 0.0
 
 
+FILE_LINK_HEADS = ("[[파일:", "[[File:", "[[그림:", "[[Image:", "[[미디어:", "[[Media:")
+EMPTY_BULLETS = frozenset({"*", "**", "***", "#", "##", "-"})
+
+
+def stripFileLinks(text: str) -> str:
+    """그림과 파일 링크를 통째로 뺀다. 설명에 링크가 겹쳐 들어 있어 (`[[파일:X|섬네일|[[원각사]]의 사진]]`) 괄호 깊이를 센다.
+
+    실측: 말뭉치에 `섬네일|upright=1.2|left|alt=...` 와 `250px|섬네일|...` 가 문장으로 새어 들었다 (2026-08-29).
+    """
+    out: list[str] = []
+    position = 0
+    while True:
+        starts = [text.find(head, position) for head in FILE_LINK_HEADS]
+        starts = [at for at in starts if at >= 0]
+        if not starts:
+            out.append(text[position:])
+            return "".join(out)
+        start = min(starts)
+        out.append(text[position:start])
+        depth = 0
+        cursor = start
+        while cursor < len(text):
+            if text.startswith("[[", cursor):
+                depth += 1
+                cursor += 2
+            elif text.startswith("]]", cursor):
+                depth -= 1
+                cursor += 2
+                if depth == 0:
+                    break
+            else:
+                cursor += 1
+        position = cursor
+
+
 def normalizeWikitext(text: str) -> str:
     text = COMMENT.sub("", text)
     text = REF.sub("", text)
+    text = stripFileLinks(text)
     previous = None
     while previous != text:
         previous = text
@@ -280,7 +375,11 @@ def normalizeWikitext(text: str) -> str:
         if stripped.startswith("|}"):
             inTable = False
             continue
-        if inTable or stripped.startswith(("[[분류:", "[[Category:")):
+        # 링크 치환 뒤라 [[분류:X]] 는 분류:X 로 남아 있다. 어느 꼴이든 본문이 아니다 (실측: 마지막 문단에 분류 줄이 새어 들었다).
+        if inTable or stripped.startswith(("[[분류:", "[[Category:", "분류:", "Category:")):
+            continue
+        if stripped in EMPTY_BULLETS:
+            # 각주 틀만 있던 목록 항목은 틀을 빼면 빈 불릿이다. 본문이 아니다.
             continue
         heading = HEADING.match(stripped)
         if heading:
@@ -311,17 +410,39 @@ def normalizeKubernetes(text: str) -> str:
         return textAttribute.group(1) if textAttribute else ""
 
     text = HUGO_TOOLTIP.sub(tooltipText, text)
+    text = HUGO_MERMAID.sub("", text)
     text = HUGO_SHORTCODE.sub("", text)
     text = HUGO_ANCHOR.sub("", text)
     return text.strip() + "\n"
 
 
-def normalized(doc: RawDocument) -> str:
-    if doc.sourceId.startswith("koWiki"):
-        return normalizeWikitext(doc.raw)
-    if doc.sourceId == "kubernetesWebsite":
-        return normalizeKubernetes(doc.raw)
-    return normalizeNewlines(doc.raw)
+def normalizeMdn(text: str) -> str:
+    """MDN 마크다운. frontmatter 와 매크로 ({{domxref("X")}}, {{Compat}}) 를 뺀다. 매크로는 본문 글자가 아니다."""
+    text = normalizeNewlines(text)
+    text = FRONTMATTER.sub("", text)
+    previous = None
+    while previous != text:
+        previous = text
+        text = TEMPLATE.sub("", text)
+    return text.strip() + "\n"
+
+
+NORMALIZERS = {
+    "wikitext": normalizeWikitext,
+    "kubernetes": normalizeKubernetes,
+    "mdn": normalizeMdn,
+    "plain": normalizeNewlines,
+}
+
+
+def normalizerFor(source: dict):
+    """카탈로그의 normalizer 가 정본이다. 없으면 자료원 종류로 정한다 (mediaWiki 는 wikitext, 나머지는 plain)."""
+    name = source.get("normalizer") or ("wikitext" if source["kind"] == "mediaWiki" else "plain")
+    return NORMALIZERS[name]
+
+
+def normalized(doc: RawDocument, source: dict) -> str:
+    return normalizerFor(source)(doc.raw)
 
 
 def documentId(doc: RawDocument) -> str:
@@ -329,14 +450,19 @@ def documentId(doc: RawDocument) -> str:
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
 
 
-def manifestEntry(doc: RawDocument) -> dict:
-    text = normalized(doc)
+def trackableTitle(title: str) -> str:
+    """추적되는 목록에 적는 제목. 원문의 긴 줄표는 저장소 표기 계약 (대시 없음) 에 맞춰 하이픈과 물결표로 적는다."""
+    return title.replace(chr(0x2014), "-").replace(chr(0x2013), "~")
+
+
+def manifestEntry(doc: RawDocument, source: dict) -> dict:
+    text = normalized(doc, source)
     return {
         "id": documentId(doc),
         "source": doc.sourceId,
         "type": doc.type,
         "preset": doc.preset,
-        "title": doc.title,
+        "title": trackableTitle(doc.title),
         "sourcePath": doc.sourcePath,
         "revision": doc.revision,
         "url": doc.url,
@@ -350,15 +476,17 @@ def manifestEntry(doc: RawDocument) -> dict:
 
 
 def refreshManifest(catalogue: dict) -> dict:
-    documents: list[RawDocument] = []
+    entries: list[dict] = []
     for source in catalogue["source"]:
         if source["kind"] == "zipArchive":
-            documents.extend(archiveDocuments(source))
+            documents = archiveDocuments(source)
         elif source["kind"] == "mediaWiki":
-            documents.extend(mediaWikiDocuments(source))
+            documents = mediaWikiDocuments(source)
+        elif source["kind"] == "gitHubTree":
+            documents = gitHubTreeDocuments(source)
         else:
             raise ValueError(f"모르는 자료원 종류: {source['kind']}")
-    entries = [manifestEntry(doc) for doc in documents]
+        entries.extend(manifestEntry(doc, source) for doc in documents)
     entries.sort(key=lambda item: (item["type"], item["source"], item["sourcePath"]))
     result = {"version": 1, "documents": entries}
     path = manifestPath(catalogue)
@@ -421,17 +549,18 @@ def fetch(catalogue: dict, manifest: dict) -> None:
     metadata: list[dict] = []
     for sourceId, entries in entriesBySource.items():
         source = sources[sourceId]
-        rawByPath = archiveRaw(source, entries) if source["kind"] == "zipArchive" else mediaWikiRaw(source, entries)
+        if source["kind"] == "zipArchive":
+            rawByPath = archiveRaw(source, entries)
+        elif source["kind"] == "mediaWiki":
+            rawByPath = mediaWikiRaw(source, entries)
+        else:
+            rawByPath = gitHubTreeRaw(source, entries)
+        normalize = normalizerFor(source)
         for entry in entries:
             raw = rawByPath[entry["sourcePath"]]
             if sha256(raw) != entry["rawSha256"]:
                 raise ValueError(f"원문 해시가 달라졌다: {sourceId}/{entry['sourcePath']}")
-            if source["kind"] == "mediaWiki":
-                text = normalizeWikitext(raw)
-            elif sourceId == "kubernetesWebsite":
-                text = normalizeKubernetes(raw)
-            else:
-                text = normalizeNewlines(raw)
+            text = normalize(raw)
             if sha256(text) != entry["textSha256"]:
                 raise ValueError(f"정규화 해시가 달라졌다: {sourceId}/{entry['sourcePath']}")
             target = root / entry["type"] / f"{entry['id']}.md"

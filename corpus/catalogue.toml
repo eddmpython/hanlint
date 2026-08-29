@@ -3,7 +3,7 @@ version = 1
 root = "../hanlint.out/corpus"
 manifest = "corpus/documents.json"
 minimumDocuments = 300
-types = ["blog", "technicalDocs", "report", "essay", "guide"]
+types = ["blog", "technicalDocs", "report", "essay", "guide", "encyclopedia", "fiction"]
 
 [[source]]
 id = "kubernetesWebsite"
@@ -16,11 +16,12 @@ revision = "3f13d3c02f5f771f1271dad9c97fc293c99d5bcd"
 archive = "https://codeload.github.com/kubernetes/website/zip/3f13d3c02f5f771f1271dad9c97fc293c99d5bcd"
 license = "CC-BY-4.0"
 licenseUrl = "https://github.com/kubernetes/website/blob/3f13d3c02f5f771f1271dad9c97fc293c99d5bcd/LICENSE"
+normalizer = "kubernetes"
 
 [[source.collection]]
 type = "blog"
 include = "content/ko/blog/**/*.md"
-limit = 50
+limit = 1000
 minimumKoreanChars = 300
 preset = "blog"
 
@@ -28,7 +29,7 @@ preset = "blog"
 type = "technicalDocs"
 include = "content/ko/docs/**/*.md"
 exclude = ["content/ko/docs/tasks/**", "content/ko/docs/tutorials/**"]
-limit = 90
+limit = 1000
 minimumKoreanChars = 500
 preset = "docs"
 
@@ -36,9 +37,9 @@ preset = "docs"
 type = "guide"
 include = "content/ko/docs/tasks/**/*.md"
 alsoInclude = ["content/ko/docs/tutorials/**/*.md"]
-limit = 90
+limit = 1000
 minimumKoreanChars = 500
-preset = "blog"
+preset = "guide"
 
 [[source]]
 id = "koWikinews"
@@ -49,7 +50,7 @@ home = "https://ko.wikinews.org/"
 api = "https://ko.wikinews.org/w/api.php"
 category = "분류:대한민국"
 type = "report"
-limit = 100
+limit = 1000
 minimumKoreanChars = 300
 preset = "report"
 license = "CC-BY-4.0"
@@ -64,9 +65,75 @@ home = "https://ko.wikisource.org/"
 api = "https://ko.wikisource.org/w/api.php"
 category = "분류:수필"
 type = "essay"
-limit = 100
+limit = 1000
 minimumKoreanChars = 500
 preferUnwrapped = true
-preset = "report"
+preset = "essay"
 license = "CC-BY-SA-4.0"
 licenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/"
+
+[[source]]
+id = "koWikisourceFiction"
+kind = "mediaWiki"
+title = "한국어 위키문헌 소설"
+owner = "한국어 위키문헌 기여자"
+home = "https://ko.wikisource.org/"
+api = "https://ko.wikisource.org/w/api.php"
+categories = ["분류:소설", "분류:한국의 소설"]
+type = "fiction"
+limit = 1000
+minimumKoreanChars = 800
+preferUnwrapped = true
+preset = "fiction"
+license = "CC-BY-SA-4.0"
+licenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/"
+
+[[source]]
+id = "koWikipediaReviewed"
+kind = "mediaWiki"
+title = "한국어 위키백과 알찬 글과 좋은 글"
+owner = "한국어 위키백과 기여자"
+home = "https://ko.wikipedia.org/"
+api = "https://ko.wikipedia.org/w/api.php"
+categories = ["분류:알찬 글", "분류:좋은 글"]
+type = "encyclopedia"
+limit = 1000
+minimumKoreanChars = 1500
+preset = "encyclopedia"
+license = "CC-BY-SA-4.0"
+licenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/"
+
+[[source]]
+id = "mdnKorean"
+kind = "gitHubTree"
+title = "MDN 웹 문서 한국어"
+owner = "Mozilla Contributors"
+home = "https://developer.mozilla.org/ko/docs/"
+repo = "mdn/translated-content"
+revision = "876d0eeb190cddd56d3093b58f0b0b3e52f5478b"
+treePath = "files/ko"
+raw = "https://raw.githubusercontent.com/mdn/translated-content/876d0eeb190cddd56d3093b58f0b0b3e52f5478b/files/ko/"
+license = "CC-BY-SA-2.5"
+licenseUrl = "https://github.com/mdn/translated-content/blob/876d0eeb190cddd56d3093b58f0b0b3e52f5478b/LICENSE.md"
+normalizer = "mdn"
+
+[[source.collection]]
+type = "technicalDocs"
+include = "learn_web_development/**/index.md"
+limit = 200
+minimumKoreanChars = 500
+preset = "docs"
+
+[[source.collection]]
+type = "technicalDocs"
+include = "web/**/index.md"
+limit = 300
+minimumKoreanChars = 500
+preset = "docs"
+
+[[source.collection]]
+type = "technicalDocs"
+include = "glossary/**/index.md"
+limit = 150
+minimumKoreanChars = 300
+preset = "docs"

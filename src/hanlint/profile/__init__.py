@@ -1,12 +1,12 @@
-"""프로파일 층. 승인된 글들의 지문 분포를 만들고 새 글의 편차 구간을 짚는다.
+"""프로파일 층. 같은 종류의 글들이 실제로 어떤 분포인지를 글 여러 편의 지문에서 만든다.
 
-글쓰기 스킬이 말하는 문체 표본의 기계 판이다. 말투가 남았는가 를 결정적으로 근사한다. 편차는 사실이지
-판정이 아니다. 규칙과 형제라 Finding 을 만들지 않고 Deviation 을 낸다. 명령줄이 그것을 notice 로 옮긴다.
+글쓰기 스킬이 말하는 문체 표본의 기계 판이다. 종류별 프로파일은 기준 말뭉치에서 만들어 hanlint 가 싣고
+(`data/profiles.json`), 사용자는 `hanlint profile build 글들/` 로 자기 참조 글의 프로파일을 만든다. 자료형과 읽기는
+`data/profiles.py`, 견줌은 규칙 outsideProfile 이다. 사실이지 판정이 아니다.
 """
 
 from __future__ import annotations
 
-from .build import Profile, buildProfile, loadProfile, saveProfile
-from .compare import Deviation, compareToProfile
+from .build import buildProfile
 
-__all__ = ["Deviation", "Profile", "buildProfile", "compareToProfile", "loadProfile", "saveProfile"]
+__all__ = ["buildProfile"]

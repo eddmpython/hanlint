@@ -44,6 +44,7 @@ import * as japaneseLoan from "./sentence/japaneseLoan.js";
 import * as longSentence from "./sentence/longSentence.js";
 import * as negationRedefine from "./sentence/negationRedefine.js";
 import * as nounPile from "./sentence/nounPile.js";
+import * as outsideProfile from "./sentence/outsideProfile.js";
 import * as redundantPair from "./sentence/redundantPair.js";
 import * as translationese from "./sentence/translationese.js";
 import * as blockUnread from "./structure/blockUnread.js";
@@ -88,6 +89,7 @@ export const RULES = [
   longSentence,
   negationRedefine,
   nounPile,
+  outsideProfile,
   redundantPair,
   translationese,
   factListParagraph,

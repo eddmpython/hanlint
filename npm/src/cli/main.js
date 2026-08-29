@@ -92,6 +92,7 @@ const OPTION_KINDS = {
   "--format": "value",
   "--config": "value",
   "--disable": "list",
+  "--profile": "value",
   "--output": "value",
   "--no-color": "flag",
   "--quiet": "flag",
@@ -214,6 +215,7 @@ function configFrom(options, paths) {
   const config = loadConfig(/** @type {string | undefined} */ (options["--config"]) ?? null, startFolder(paths));
   if (options["--preset"]) config.preset = choose(/** @type {string} */ (options["--preset"]), PRESET_NAMES, "--preset");
   for (const rule of /** @type {string[]} */ (options["--disable"] ?? [])) config.disable.add(rule);
+  if (options["--profile"]) config.profile = /** @type {string} */ (options["--profile"]);
   checkDisabled(config);
   return config;
 }
@@ -668,7 +670,7 @@ export function renderInit(preset = "blog") {
     '# introFields = ["readerQuestion"]',
     '# endingFields = ["readerTakeaway"]',
     "",
-    "# hanlint profile build 가 만든 파일. 있으면 참조 글과의 편차 구간을 notice 로 더한다",
+    "# hanlint profile build 가 만든 파일. 있으면 종류의 프로파일 대신 그것과 견준다 (outsideProfile)",
     '# profile = "profile.json"',
     "",
     "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",

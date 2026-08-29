@@ -41,6 +41,7 @@
   "noQuestion": "document",
   "nounPile": "sentence",
   "numberOrphan": "sentence",
+  "outsideProfile": "sentence",
   "paraFragment": "paragraph",
   "platformApi": "code",
   "promiseRecall": "document",

@@ -10,7 +10,7 @@
  */
 export const PRESETS = {
   blog: [],
-  report: ["noQuestion", "sectionResult", "firstResultDistance", "introImage", "moreLater"],
+  report: ["noQuestion", "sectionResult", "firstResultDistance", "introImage", "moreLater", "numberOrphan"],
   docs: [
     "noQuestion",
     "sectionResult",
@@ -19,7 +19,23 @@ export const PRESETS = {
     "moreLater",
     "draftHistory",
     "blockUnread",
+    "numberOrphan",
   ],
+};
+PRESETS.guide = PRESETS.blog;
+PRESETS.essay = PRESETS.report;
+PRESETS.fiction = PRESETS.report;
+PRESETS.encyclopedia = PRESETS.docs;
+
+/** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
+export const PROFILE_OF = {
+  blog: "blog",
+  report: "report",
+  docs: "technicalDocs",
+  guide: "guide",
+  essay: "essay",
+  fiction: "fiction",
+  encyclopedia: "encyclopedia",
 };
 
 export const PRESET_NAMES = Object.keys(PRESETS);
@@ -33,7 +49,9 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {string | null} keywordField
  * @property {string[]} introFields
  * @property {string[]} endingFields
- * @property {string | null} profile
+ * @property {string | null} profile 사용자 프로파일 파일 경로
+ * @property {number} profilePercentile outsideProfile 이 짚는 백분위
+ * @property {number} countMismatchSpan 절이 없는 글이 이 줄 수 안일 때만 글 전체를 견준다
  * @property {string | null} baseline
  * @property {Record<string, unknown[]>} dictionary
  * @property {string[]} ignoreFences 지문에서 뺄 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록이 아니다
@@ -68,6 +86,8 @@ export function defaultConfig() {
     introFields: [],
     endingFields: [],
     profile: null,
+    profilePercentile: 99,
+    countMismatchSpan: 60,
     baseline: null,
     dictionary: {},
     ignoreFences: [],

@@ -13,6 +13,7 @@ import { numeralsIn } from "./markers.js";
  * @typedef {object} ReaderState
  * @property {import("./build.js").SentencePrint | null} previous 바로 앞에 읽은 산문 문장
  * @property {Set<string>} recent 손에 든 화제어. 바로 앞 문장의 것이고 앞 문장이 없으면 빈 집합
+ * @property {Set<string>} known 이 자리 앞까지 산문에 나온 화제어 전부
  * @property {Set<string>} numerals 지금까지 산문과 블록에 나온 수 (천 단위 쉼표를 뗀 꼴)
  * @property {Set<string>} files 앞선 코드 블록이 만든 파일 이름과 폴더
  * @property {number} sentencesRead 지금까지 읽은 산문 문장 수
@@ -45,6 +46,7 @@ function afterSentence(state, sentence) {
   return {
     previous: sentence,
     recent: sentence.topics,
+    known: union(state.known, sentence.topics),
     numerals: union(state.numerals, numeralsIn(sentence.text)),
     files: state.files,
     sentencesRead: state.sentencesRead + 1,
@@ -83,7 +85,7 @@ export function buildReaderTrail(blocks, codeBlocks, sentences) {
   /** @type {ReaderState[]} */
   const beforeBlock = [];
   /** @type {ReaderState} */
-  let state = { previous: null, recent: NOTHING, numerals: NOTHING, files: NOTHING, sentencesRead: 0, promises: [], recalls: [] };
+  let state = { previous: null, recent: NOTHING, known: NOTHING, numerals: NOTHING, files: NOTHING, sentencesRead: 0, promises: [], recalls: [] };
   let position = 0;
   for (const block of blocks) {
     beforeBlock.push(state);

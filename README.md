@@ -338,7 +338,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 |
 | `hanlint 글들/ --baseline` | 잠근 것은 넘기고 새로 생긴 것만 막는다 |
-| `hanlint 글.md --preset docs` | 설정 파일 없이 이번 검사의 글 종류만 정한다 |
+| `hanlint 글.md --preset docs` | 설정 파일 없이 이번 검사의 글 종류만 정한다. 종류는 blog, report, docs, guide, essay, fiction, encyclopedia 이고 규칙 묶음과 견줄 프로파일이 따라온다 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` |
 | `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. 스크립트가 쓴다 |
@@ -350,7 +350,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint map 글.md --format html` | 지도를 단일 HTML 로 |
 | `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 지문을 JSON 으로 |
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 |
-| `hanlint profile build 글들/` | 승인된 글의 문체 분포. `--profile` 로 새 글을 견준다 |
+| `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 |
 
 종료 코드는 지적이 없으면 0, error 가 있으면 1 이라 발행 게이트에 그대로 물린다. 두 구현은 같은 규칙, 같은

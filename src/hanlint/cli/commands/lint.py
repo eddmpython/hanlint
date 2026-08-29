@@ -1,7 +1,7 @@
 """`hanlint 글.md`. 검사하고 지적을 낸다.
 
 `-` 는 stdin 이고 `--path` 가 그 이름이다. `--severity` 와 `--errors-only` 가 보여 줄 지적을 고르고
-`--format compact` 가 한 줄에 지적 하나를 낸다. `--profile` 을 주면 참조 글과의 편차 구간을 notice 로 더한다.
+`--format compact` 가 한 줄에 지적 하나를 낸다. `--profile` 을 주면 종류의 프로파일 대신 그 파일과 견준다.
 """
 
 from __future__ import annotations
@@ -11,11 +11,9 @@ from pathlib import Path
 
 from ...baseline import DEFAULT_NAME, Baseline, load
 from ...document import parseMarkdown
-from ...fingerprint import DocumentPrint, buildFingerprint
-from ...profile import Profile, compareToProfile, loadProfile
+from ...fingerprint import buildFingerprint
 from ...report import renderCompact, renderGithub, renderJson, renderText
 from ...rules import Finding, runAll
-from ...rules.finding import DOCUMENT, NOTICE, SECTION
 from .shared import (
     STDIN_NAME,
     addCommonOptions,
@@ -35,13 +33,12 @@ from .shared import (
 )
 
 HELP = "글을 검사한다. 서브커맨드 없이 파일만 줘도 된다"
-PROFILE_RULE = "profile"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("files", nargs="+", help="검사할 마크다운 파일. `-` 는 stdin")
     parser.add_argument("--path", dest="stdinPath", default=STDIN_NAME, help="stdin 으로 넣은 글의 이름")
-    parser.add_argument("--profile", type=Path, help="hanlint profile build 가 만든 파일. 편차 구간을 notice 로 더한다")
+    parser.add_argument("--profile", type=Path, help="hanlint profile build 가 만든 파일. 종류의 프로파일 대신 이것과 견준다")
     parser.add_argument(
         "--baseline",
         nargs="?",
@@ -53,27 +50,11 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     addSeverityOptions(parser)
 
 
-def profileFindings(doc: DocumentPrint, profile: Profile) -> list[Finding]:
-    """편차를 notice 지적으로 옮긴다. 규칙 이름은 profile 하나다."""
-    findings = []
-    for deviation in compareToProfile(doc, profile):
-        if deviation.scope == "section":
-            quote = doc.sections[deviation.index].title or "도입"
-            findings.append(
-                Finding(PROFILE_RULE, deviation.line, quote, deviation.describe(), None, NOTICE, SECTION, deviation.index)
-            )
-        else:
-            findings.append(
-                Finding(PROFILE_RULE, deviation.line, doc.path or "글 전체", deviation.describe(), None, NOTICE, DOCUMENT)
-            )
-    return findings
-
-
 def run(args: argparse.Namespace) -> int:
     files = collectFiles(args.files)
     config = configFrom(args, start=startFolder(files))
-    profilePath = args.profile or (Path(config.profile) if config.profile else None)
-    profile = loadProfile(profilePath) if profilePath else None
+    if args.profile:
+        config.profile = str(args.profile)
     baselinePath = args.baseline or (Path(config.baseline) if config.baseline else None)
     baseline = load(baselinePath) if baselinePath else Baseline()
     results: dict[str, list[Finding]] = {}
@@ -84,10 +65,7 @@ def run(args: argparse.Namespace) -> int:
         texts[name] = text
         doc = buildFingerprint(parseMarkdown(text, path=name), config)
         registers[name] = doc.register
-        findings = runAll(doc, config)
-        if profile:
-            findings = sorted(findings + profileFindings(doc, profile), key=lambda f: (f.line, f.rule))
-        results[name] = baseline.keep(name, findings)
+        results[name] = baseline.keep(name, runAll(doc, config))
 
     hasError = any(f.severity == "error" for findings in results.values() for f in findings)
     severity = severityOf(args)

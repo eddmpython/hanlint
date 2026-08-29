@@ -166,7 +166,7 @@ def testProfileBuildAndCompare(tmp_path, capsys):
     )
     assert main([str(longOne), "--profile", str(profile), "--format", "json"]) == 0
     findings = json.loads(capsys.readouterr().out)["files"][0]["findings"]
-    assert any(f["rule"] == "profile" and f["severity"] == "notice" and "문장 길이" in f["why"] for f in findings)
+    assert any(f["rule"] == "outsideProfile" and f["severity"] == "notice" and "문장 길이" in f["why"] for f in findings)
     empty = tmp_path / "empty"
     empty.mkdir()
     assert main(["profile", "build", str(empty)]) == 2

@@ -21,7 +21,7 @@ def render() -> dict[str, str]:
     """파일 이름 → 내용. 결정적이라 같은 정본이면 같은 결과다."""
     files: dict[str, str] = {}
     for path in sorted(SOURCE.iterdir()):
-        if path.suffix == ".txt":
+        if path.suffix in (".txt", ".json"):
             files[path.name] = path.read_text(encoding="utf-8")
         elif path.suffix == ".toml":
             data = tomllib.loads(path.read_text(encoding="utf-8"))

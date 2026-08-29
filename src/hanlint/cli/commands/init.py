@@ -74,7 +74,7 @@ def render(preset: str = "blog") -> str:
             '# introFields = ["readerQuestion"]',
             '# endingFields = ["readerTakeaway"]',
             "",
-            "# hanlint profile build 가 만든 파일. 있으면 참조 글과의 편차 구간을 notice 로 더한다",
+            "# hanlint profile build 가 만든 파일. 있으면 종류의 프로파일 대신 그것과 견준다 (outsideProfile)",
             '# profile = "profile.json"',
             "",
             "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",

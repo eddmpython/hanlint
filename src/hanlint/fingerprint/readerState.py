@@ -27,6 +27,8 @@ class ReaderState:
 
     previous: SentencePrint | None
     """바로 앞에 읽은 산문 문장. 지시어는 여기까지만 가리킬 수 있다."""
+    known: frozenset[str]
+    """이 자리 앞까지 산문에 나온 화제어 전부. 문장이 처음 세우는 화제어는 여기 없는 것이다."""
     numerals: frozenset[str]
     """지금까지 산문과 블록에 나온 수 (천 단위 쉼표를 뗀 꼴). 견줌의 기준값은 여기 있어야 한다."""
     files: frozenset[str]
@@ -44,7 +46,7 @@ class ReaderState:
         return self.previous.topics if self.previous is not None else frozenset()
 
 
-START = ReaderState(None, frozenset(), frozenset(), 0, (), ())
+START = ReaderState(None, frozenset(), frozenset(), frozenset(), 0, (), ())
 """아직 아무것도 읽지 않은 독자."""
 
 
@@ -66,8 +68,10 @@ class ReaderTrail:
 
 def afterSentence(state: ReaderState, sentence: SentencePrint) -> ReaderState:
     found = numeralsIn(sentence.text)
+    fresh = sentence.topics - state.known
     return ReaderState(
         previous=sentence,
+        known=state.known | fresh if fresh else state.known,
         numerals=state.numerals | found if found else state.numerals,
         files=state.files,
         sentencesRead=state.sentencesRead + 1,
@@ -85,6 +89,7 @@ def afterBlock(state: ReaderState, block: Block, code: CodeBlock | None) -> Read
         files = files | made | dirs
     return ReaderState(
         previous=state.previous,
+        known=state.known,
         numerals=state.numerals | found if found else state.numerals,
         files=files,
         sentencesRead=state.sentencesRead,

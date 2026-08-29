@@ -41,6 +41,7 @@
   "noQuestion": "threshold",
   "nounPile": "threshold",
   "numberOrphan": "reader",
+  "outsideProfile": "threshold",
   "paraFragment": "repeat",
   "platformApi": "dictionary",
   "promiseRecall": "reader",

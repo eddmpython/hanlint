@@ -1,51 +1,67 @@
 {
   "version": 1,
   "corpus": {
-    "documents": 390,
+    "documents": 1600,
     "types": {
       "blog": 10,
-      "essay": 100,
-      "guide": 90,
-      "report": 100,
-      "technicalDocs": 90
+      "encyclopedia": 363,
+      "essay": 228,
+      "fiction": 31,
+      "guide": 135,
+      "report": 296,
+      "technicalDocs": 537
     },
     "sentences": {
       "blog": 1140,
-      "essay": 6253,
-      "guide": 3845,
-      "report": 1354,
-      "technicalDocs": 4827
+      "encyclopedia": 53341,
+      "essay": 21986,
+      "fiction": 30479,
+      "guide": 5597,
+      "report": 3897,
+      "technicalDocs": 27774
     },
     "registers": {
       "blog": {
         "한다": 3,
         "합니다": 7
       },
+      "encyclopedia": {
+        "한다": 363
+      },
       "essay": {
-        "섞임": 2,
-        "없음": 1,
-        "한다": 59,
-        "합니다": 37,
+        "섞임": 16,
+        "없음": 3,
+        "한다": 148,
+        "합니다": 60,
         "해요": 1
       },
+      "fiction": {
+        "한다": 28,
+        "합니다": 3
+      },
       "guide": {
-        "한다": 90
+        "한다": 135
       },
       "report": {
-        "섞임": 1,
-        "한다": 98,
-        "합니다": 1
+        "섞임": 3,
+        "한다": 288,
+        "합니다": 5
       },
       "technicalDocs": {
-        "한다": 90
+        "섞임": 2,
+        "없음": 1,
+        "한다": 203,
+        "합니다": 331
       }
     },
     "meanRegisterShare": {
       "blog": 0.9997,
-      "essay": 0.9442,
-      "guide": 0.9995,
-      "report": 0.9914,
-      "technicalDocs": 0.9999
+      "encyclopedia": 0.9958,
+      "essay": 0.9219,
+      "fiction": 0.9111,
+      "guide": 0.9994,
+      "report": 0.9934,
+      "technicalDocs": 0.9903
     },
     "registerShareDistribution": {
       "blog": {
@@ -55,30 +71,44 @@
         "p95": 1.0,
         "max": 1.0
       },
-      "essay": {
-        "min": 0.0,
-        "p05": 0.7576,
+      "encyclopedia": {
+        "min": 0.8163,
+        "p05": 0.9746,
         "median": 1.0,
         "p95": 1.0,
         "max": 1.0
       },
+      "essay": {
+        "min": 0.0,
+        "p05": 0.6111,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "fiction": {
+        "min": 0.7188,
+        "p05": 0.8067,
+        "median": 0.9425,
+        "p95": 1.0,
+        "max": 1.0
+      },
       "guide": {
-        "min": 0.9778,
+        "min": 0.9688,
         "p05": 1.0,
         "median": 1.0,
         "p95": 1.0,
         "max": 1.0
       },
       "report": {
-        "min": 0.625,
+        "min": 0.5556,
         "p05": 1.0,
         "median": 1.0,
         "p95": 1.0,
         "max": 1.0
       },
       "technicalDocs": {
-        "min": 0.9965,
-        "p05": 1.0,
+        "min": 0.0,
+        "p05": 0.9559,
         "median": 1.0,
         "p95": 1.0,
         "max": 1.0
@@ -88,8 +118,8 @@
   "rules": [
     {
       "rule": "blockUnread",
-      "occurrences": 30,
-      "documents": 12,
+      "occurrences": 52,
+      "documents": 21,
       "sampled": 20,
       "reviewed": 20,
       "correct": 18,
@@ -98,38 +128,38 @@
     },
     {
       "rule": "bridgeRepeat",
-      "occurrences": 0,
-      "documents": 0,
-      "sampled": 0,
-      "reviewed": 0,
-      "correct": 0,
+      "occurrences": 5,
+      "documents": 5,
+      "sampled": 5,
+      "reviewed": 5,
+      "correct": 5,
       "falsePositive": 0,
-      "precision": null
+      "precision": 1.0
     },
     {
       "rule": "cliche",
-      "occurrences": 11,
-      "documents": 11,
-      "sampled": 11,
-      "reviewed": 11,
-      "correct": 11,
+      "occurrences": 303,
+      "documents": 168,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
       "rule": "confusable",
-      "occurrences": 1,
-      "documents": 1,
-      "sampled": 1,
-      "reviewed": 1,
-      "correct": 1,
+      "occurrences": 3,
+      "documents": 2,
+      "sampled": 3,
+      "reviewed": 3,
+      "correct": 3,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
       "rule": "connectorRepeat",
-      "occurrences": 25,
-      "documents": 20,
+      "occurrences": 209,
+      "documents": 115,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -138,18 +168,18 @@
     },
     {
       "rule": "countMismatch",
-      "occurrences": 10,
-      "documents": 10,
-      "sampled": 10,
-      "reviewed": 10,
+      "occurrences": 3,
+      "documents": 3,
+      "sampled": 3,
+      "reviewed": 3,
       "correct": 0,
-      "falsePositive": 10,
+      "falsePositive": 3,
       "precision": 0.0
     },
     {
       "rule": "danglingDeixis",
-      "occurrences": 302,
-      "documents": 144,
+      "occurrences": 1860,
+      "documents": 692,
       "sampled": 20,
       "reviewed": 20,
       "correct": 17,
@@ -158,8 +188,8 @@
     },
     {
       "rule": "dash",
-      "occurrences": 32,
-      "documents": 9,
+      "occurrences": 1413,
+      "documents": 229,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -168,8 +198,8 @@
     },
     {
       "rule": "deixis",
-      "occurrences": 436,
-      "documents": 154,
+      "occurrences": 2272,
+      "documents": 731,
       "sampled": 20,
       "reviewed": 20,
       "correct": 16,
@@ -178,18 +208,18 @@
     },
     {
       "rule": "doubleNegative",
-      "occurrences": 6,
-      "documents": 5,
-      "sampled": 6,
-      "reviewed": 6,
-      "correct": 6,
+      "occurrences": 30,
+      "documents": 20,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
       "rule": "doublePassive",
-      "occurrences": 21,
-      "documents": 15,
+      "occurrences": 164,
+      "documents": 127,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -198,18 +228,18 @@
     },
     {
       "rule": "draftHistory",
-      "occurrences": 0,
-      "documents": 0,
-      "sampled": 0,
-      "reviewed": 0,
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
       "correct": 0,
-      "falsePositive": 0,
-      "precision": null
+      "falsePositive": 1,
+      "precision": 0.0
     },
     {
       "rule": "duplicateBlock",
-      "occurrences": 22,
-      "documents": 14,
+      "occurrences": 174,
+      "documents": 56,
       "sampled": 20,
       "reviewed": 20,
       "correct": 0,
@@ -218,8 +248,8 @@
     },
     {
       "rule": "ellipsis",
-      "occurrences": 43,
-      "documents": 32,
+      "occurrences": 878,
+      "documents": 161,
       "sampled": 20,
       "reviewed": 20,
       "correct": 0,
@@ -238,8 +268,8 @@
     },
     {
       "rule": "endingRepeat",
-      "occurrences": 339,
-      "documents": 187,
+      "occurrences": 2174,
+      "documents": 784,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -258,8 +288,8 @@
     },
     {
       "rule": "euiChain",
-      "occurrences": 645,
-      "documents": 171,
+      "occurrences": 7305,
+      "documents": 902,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -268,8 +298,8 @@
     },
     {
       "rule": "factListParagraph",
-      "occurrences": 177,
-      "documents": 91,
+      "occurrences": 1261,
+      "documents": 356,
       "sampled": 20,
       "reviewed": 20,
       "correct": 9,
@@ -288,8 +318,8 @@
     },
     {
       "rule": "fillerOpener",
-      "occurrences": 32,
-      "documents": 22,
+      "occurrences": 202,
+      "documents": 143,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -298,8 +328,8 @@
     },
     {
       "rule": "firstResultDistance",
-      "occurrences": 38,
-      "documents": 38,
+      "occurrences": 60,
+      "documents": 60,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -308,8 +338,8 @@
     },
     {
       "rule": "hardWord",
-      "occurrences": 91,
-      "documents": 48,
+      "occurrences": 389,
+      "documents": 215,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -318,48 +348,48 @@
     },
     {
       "rule": "headingQuestion",
-      "occurrences": 1,
-      "documents": 1,
-      "sampled": 1,
-      "reviewed": 1,
+      "occurrences": 5,
+      "documents": 5,
+      "sampled": 5,
+      "reviewed": 5,
       "correct": 0,
-      "falsePositive": 1,
+      "falsePositive": 5,
       "precision": 0.0
     },
     {
       "rule": "headingSentence",
-      "occurrences": 1,
-      "documents": 1,
-      "sampled": 1,
-      "reviewed": 1,
-      "correct": 1,
+      "occurrences": 37,
+      "documents": 23,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 17,
+      "falsePositive": 3,
+      "precision": 0.85
+    },
+    {
+      "rule": "headingSkip",
+      "occurrences": 22,
+      "documents": 22,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
-      "rule": "headingSkip",
-      "occurrences": 0,
-      "documents": 0,
-      "sampled": 0,
-      "reviewed": 0,
-      "correct": 0,
-      "falsePositive": 0,
-      "precision": null
-    },
-    {
       "rule": "headingUniform",
-      "occurrences": 18,
-      "documents": 18,
-      "sampled": 18,
-      "reviewed": 18,
-      "correct": 0,
-      "falsePositive": 18,
-      "precision": 0.0
+      "occurrences": 46,
+      "documents": 46,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 1,
+      "falsePositive": 19,
+      "precision": 0.05
     },
     {
       "rule": "imperativePeriod",
-      "occurrences": 286,
-      "documents": 75,
+      "occurrences": 2289,
+      "documents": 411,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -368,13 +398,13 @@
     },
     {
       "rule": "inputFileSource",
-      "occurrences": 0,
-      "documents": 0,
-      "sampled": 0,
-      "reviewed": 0,
-      "correct": 0,
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
+      "correct": 1,
       "falsePositive": 0,
-      "precision": null
+      "precision": 1.0
     },
     {
       "rule": "installImport",
@@ -398,8 +428,8 @@
     },
     {
       "rule": "introLong",
-      "occurrences": 55,
-      "documents": 55,
+      "occurrences": 218,
+      "documents": 218,
       "sampled": 20,
       "reviewed": 20,
       "correct": 6,
@@ -408,13 +438,13 @@
     },
     {
       "rule": "japaneseLoan",
-      "occurrences": 0,
-      "documents": 0,
-      "sampled": 0,
-      "reviewed": 0,
-      "correct": 0,
-      "falsePositive": 0,
-      "precision": null
+      "occurrences": 9,
+      "documents": 7,
+      "sampled": 9,
+      "reviewed": 9,
+      "correct": 8,
+      "falsePositive": 1,
+      "precision": 0.8889
     },
     {
       "rule": "keywordHeading",
@@ -438,18 +468,18 @@
     },
     {
       "rule": "loneSubheading",
-      "occurrences": 4,
-      "documents": 4,
-      "sampled": 4,
-      "reviewed": 4,
-      "correct": 4,
+      "occurrences": 10,
+      "documents": 10,
+      "sampled": 10,
+      "reviewed": 10,
+      "correct": 10,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
       "rule": "longSentence",
-      "occurrences": 676,
-      "documents": 160,
+      "occurrences": 6263,
+      "documents": 860,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -458,11 +488,11 @@
     },
     {
       "rule": "moreLater",
-      "occurrences": 4,
-      "documents": 4,
-      "sampled": 4,
-      "reviewed": 4,
-      "correct": 4,
+      "occurrences": 5,
+      "documents": 5,
+      "sampled": 5,
+      "reviewed": 5,
+      "correct": 5,
       "falsePositive": 0,
       "precision": 1.0
     },
@@ -478,8 +508,8 @@
     },
     {
       "rule": "noQuestion",
-      "occurrences": 81,
-      "documents": 81,
+      "occurrences": 122,
+      "documents": 122,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -488,8 +518,8 @@
     },
     {
       "rule": "nounPile",
-      "occurrences": 23,
-      "documents": 23,
+      "occurrences": 672,
+      "documents": 283,
       "sampled": 20,
       "reviewed": 20,
       "correct": 14,
@@ -507,49 +537,59 @@
       "precision": null
     },
     {
-      "rule": "paraFragment",
-      "occurrences": 507,
-      "documents": 222,
+      "rule": "outsideProfile",
+      "occurrences": 3774,
+      "documents": 785,
       "sampled": 20,
       "reviewed": 20,
-      "correct": 11,
-      "falsePositive": 9,
-      "precision": 0.55
+      "correct": 20,
+      "falsePositive": 0,
+      "precision": 1.0
+    },
+    {
+      "rule": "paraFragment",
+      "occurrences": 3049,
+      "documents": 698,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 10,
+      "falsePositive": 10,
+      "precision": 0.5
     },
     {
       "rule": "platformApi",
-      "occurrences": 5,
-      "documents": 2,
-      "sampled": 5,
-      "reviewed": 5,
+      "occurrences": 8,
+      "documents": 3,
+      "sampled": 8,
+      "reviewed": 8,
       "correct": 0,
-      "falsePositive": 5,
+      "falsePositive": 8,
       "precision": 0.0
     },
     {
       "rule": "promiseRecall",
-      "occurrences": 4,
-      "documents": 2,
-      "sampled": 4,
-      "reviewed": 4,
-      "correct": 4,
+      "occurrences": 34,
+      "documents": 30,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
       "rule": "redundantPair",
-      "occurrences": 3,
-      "documents": 2,
-      "sampled": 3,
-      "reviewed": 3,
-      "correct": 3,
+      "occurrences": 22,
+      "documents": 19,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
     },
     {
       "rule": "sectionNoProse",
-      "occurrences": 32,
-      "documents": 26,
+      "occurrences": 159,
+      "documents": 142,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -558,8 +598,8 @@
     },
     {
       "rule": "sectionResult",
-      "occurrences": 41,
-      "documents": 26,
+      "occurrences": 52,
+      "documents": 35,
       "sampled": 20,
       "reviewed": 20,
       "correct": 0,
@@ -568,8 +608,8 @@
     },
     {
       "rule": "spacing",
-      "occurrences": 58,
-      "documents": 24,
+      "occurrences": 350,
+      "documents": 144,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -578,11 +618,11 @@
     },
     {
       "rule": "spelling",
-      "occurrences": 4,
-      "documents": 3,
-      "sampled": 4,
-      "reviewed": 4,
-      "correct": 4,
+      "occurrences": 21,
+      "documents": 17,
+      "sampled": 20,
+      "reviewed": 20,
+      "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
     },
@@ -598,8 +638,8 @@
     },
     {
       "rule": "topicBreak",
-      "occurrences": 330,
-      "documents": 111,
+      "occurrences": 2807,
+      "documents": 520,
       "sampled": 20,
       "reviewed": 20,
       "correct": 0,
@@ -608,8 +648,8 @@
     },
     {
       "rule": "translationese",
-      "occurrences": 2075,
-      "documents": 330,
+      "occurrences": 15270,
+      "documents": 1382,
       "sampled": 20,
       "reviewed": 20,
       "correct": 19,

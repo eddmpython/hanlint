@@ -34,6 +34,8 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5"]
+# 말뭉치의 지문 표 (Parquet) 를 만들고 묻는 개발 도구. 제품은 읽지 않는다.
+corpus = ["polars>=1"]
 
 [project.urls]
 Homepage = "https://github.com/eddmpython/hanlint"

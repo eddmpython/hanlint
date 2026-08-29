@@ -8,16 +8,22 @@ falsePositive = ["1e1cd347c813f98c38b1", "338c9570ab1a11381922"]
 note = "출력 블록은 설명이 없으면 정탐이다. HTML 줄과 목록 속 설명문 두 건은 코드로 읽힌 경계 오탐이다."
 
 [[rule]]
-name = "cliche"
-sampled = 11
+name = "bridgeRepeat"
+sampled = 5
 default = "correct"
-note = "검출된 표현은 모두 판단을 흐리거나 중요성을 말로 대신하는 상투 표현이다."
+note = "MDN 자습서의 절이 다음에는, 이제 로 시작하는 문장으로 닫혔다. 예고의 되풀이가 맞다 (2026-08-29, 말뭉치 1,605편)."
+
+[[rule]]
+name = "cliche"
+sampled = 20
+default = "correct"
+note = "검출된 표현은 모두 판단을 흐리거나 중요성을 말로 대신하는 상투 표현이다. 2026-08-29 표본 20건을 채웠다. MDN 자습서의 살펴보겠습니다 는 행동 없는 예고라 규칙대로다."
 
 [[rule]]
 name = "confusable"
-sampled = 1
+sampled = 3
 default = "correct"
-note = "후배라는 자격에는 로써가 아니라 로서가 와야 한다."
+note = "후배라는 자격에는 로써가 아니라 로서가 와야 한다. 2026-08-29 작가로써 둘도 같다. 출산의 더 낳은 은 규칙에서 뺐다."
 
 [[rule]]
 name = "connectorRepeat"
@@ -27,19 +33,15 @@ note = "같은 접속어가 가까운 문장 첫머리에 되풀이된 경우만
 
 [[rule]]
 name = "countMismatch"
-sampled = 10
+sampled = 3
 default = "falsePositive"
-note = "모두 같은 문서에서 서로 다른 대상을 세는 수였다. 약속한 항목 수의 불일치는 없었다."
+note = "도입의 약속과 마지막 절의 결산이 갈린 자리는 정탐이다. 같은 절 안의 두 수까지 견주던 때는 백과와 수필에서 표본 20건 가운데 11건이 오탐이라 2026-08-29 에 약속과 결산의 꼴만 남겼다. 남은 오탐 한 건은 절 없는 짧은 수필의 한 가지 와 백 가지 다."
 
 [[rule]]
 name = "danglingDeixis"
 sampled = 20
 default = "correct"
-falsePositive = [
-  "0c47e4bb26bf6d8c4091",
-  "42dd6d045897e79b7be0",
-  "3a706471012f14d3e782",
-]
+falsePositive = ["0c47e4bb26bf6d8c4091", "42dd6d045897e79b7be0", "3a706471012f14d3e782"]
 note = "앞 문장과 낱말이 안 겹치는 지시어는 기술 문서에서 전부 이름으로 바꿀 수 있었다 (이 병합 방식은, 이 튜토리얼의 설정은, Suspended 컨디션은). 이러한 을 뒤의 명사까지 잡게 한 뒤 (2026-08-28) 표본이 거의 다 바뀌어 20건을 다시 읽었다. 오탐 셋은 수필의 서사와 대화다. 바로 앞 감탄문이 가리키는 `이러한 무서운 생각`, 바로 앞 물음이 가리키는 `이것이 지금 내가 논구해 보려는 것`, 긴 논증 끝의 `이것이 정말 화장술이 아니오`. 앞 문장이 물음이나 감탄이면 낱말이 안 겹쳐도 그것이 선행어다."
 
 [[rule]]
@@ -52,25 +54,27 @@ note = "부연, 날짜와 주소 범위, 잘못 옮긴 목록 기호까지 모�
 name = "deixis"
 sampled = 20
 default = "correct"
-falsePositive = [
-  "32e0b8fef323985ee61a",
-  "800368d6f81a2655d5cd",
-  "f9920145a6e769adff41",
-  "14171f6cea38fd4d1840",
-]
+falsePositive = ["32e0b8fef323985ee61a", "800368d6f81a2655d5cd", "f9920145a6e769adff41", "14171f6cea38fd4d1840"]
 note = "기술 문서의 지시어는 이름으로 바꿀 수 있었다. 영문 어절 뒤의 위의, 아래의 를 공간 표현으로 보고 이러한 을 뒤의 명사까지 잡게 한 뒤 (2026-08-28) 표본이 거의 다 바뀌어 20건을 다시 읽었다. 오탐 넷은 관용구 (`이러한 차에`), 같은 문장 안의 인용문이 가리키는 것 (`... 하는 박양의 ... 이러한 무용전`), 같은 문장 앞쪽에 있는 requests.cpu 를 가리키는 `해당 리소스`, 각각을 뜻하는 `해당 언어` 다. 한 문장 안 선행어 판정은 화제어가 겹칠 때만 되므로 낱말이 다르면 놓친다."
 
 [[rule]]
 name = "doubleNegative"
-sampled = 6
+sampled = 20
 default = "correct"
-note = "모두 하지 않을 수 없다 또는 하지 않으면 안 된다 꼴로 긍정문보다 복잡했다."
+note = "지 않으면 안 된다, 하지 않을 수 없다 는 전부 이중 부정이다. 1930년대 수필의 문체이기도 하지만 규칙이 말하는 것은 사실이다 (2026-08-29)."
 
 [[rule]]
 name = "doublePassive"
 sampled = 20
 default = "correct"
 note = "잊혀지다, 쓰여지다, 되어지다처럼 피동 표현에 어지다가 다시 붙은 사례다."
+
+[[rule]]
+name = "draftHistory"
+sampled = 1
+default = "correct"
+falsePositive = ["ee1d6810cd0761519a0d"]
+note = "소설의 인물이 쓴 것을 고친 서술 한 건은 글쓴이의 초고가 아니라 오탐이다 (2026-08-29)."
 
 [[rule]]
 name = "duplicateBlock"
@@ -100,17 +104,7 @@ note = "모두 한 문장 안에서 의가 겹쳐 관계를 동사나 다른 조
 name = "factListParagraph"
 sampled = 20
 default = "falsePositive"
-correct = [
-  "f6dcdf8944e563b89ef7",
-  "51fae08221220e9934a4",
-  "be50251eff45dd56bd32",
-  "6c2b7ea605bd7b465dfe",
-  "93398f39d0284d275265",
-  "612cb19dfef5d88bf4bc",
-  "00e4ea4f31a5f33fd007",
-  "fb1a7e2facc8c8a88f9f",
-  "fde530b4150e32c947ca",
-]
+correct = ["f6dcdf8944e563b89ef7", "51fae08221220e9934a4", "be50251eff45dd56bd32", "6c2b7ea605bd7b465dfe", "93398f39d0284d275265", "612cb19dfef5d88bf4bc", "00e4ea4f31a5f33fd007", "fb1a7e2facc8c8a88f9f", "fde530b4150e32c947ca"]
 note = "기술 설명에서 인과 없이 이어진 사실은 정탐이다. 수필의 대화, 장면과 사건 진행은 나열이 아니었다."
 
 [[rule]]
@@ -133,21 +127,29 @@ note = "검토, 단계별 계획, 의견, 오늘, 참고 자료처럼 문맥을 
 
 [[rule]]
 name = "headingQuestion"
-sampled = 1
+sampled = 5
 default = "falsePositive"
-note = "서비스 장애를 질문 순서로 좁히는 문제 해결 문서라 물음형 제목이 기능을 했다."
+note = "FAQ 꼴 문서의 물음 제목이라 그 문서에서는 의도다. 사실은 맞지만 고칠 자리가 아니라 오탐으로 둔다 (2026-08-29, 다섯 건)."
 
 [[rule]]
 name = "headingSentence"
-sampled = 1
+sampled = 20
 default = "correct"
-note = "표본 d67c86efbf23c37edb91은 노드 이름 확인이라는 대상형으로 줄일 수 있는 본문 문장형 절 제목이었다."
+falsePositive = ["9b78af104754b40c7fd6", "33b7444d69cc7c7b386a", "02a93ae881b6218703b8"]
+note = "수필의 一[일]. 같은 번호 제목 셋은 마침표 때문에 문장으로 읽힌 오탐이다. 나머지 열일곱은 문장형 제목이 맞다 (2026-08-29)."
+
+[[rule]]
+name = "headingSkip"
+sampled = 20
+default = "correct"
+note = "위키백과와 MDN 의 제목 수준 건너뜀이다. 정규화 뒤의 사실이다 (2026-08-29)."
 
 [[rule]]
 name = "headingUniform"
-sampled = 18
+sampled = 20
 default = "falsePositive"
-note = "작업 절차의 제목을 모두 행동 명사형으로 맞춘 것이 탐색성과 예측 가능성을 높였다."
+correct = ["974f4f6f86ff576fcff0"]
+note = "옛 판정대로 기본은 오탐이다 (같은 어미의 목차가 그 문서의 관례인 자리). 2026-08-29 새 표본 둘 가운데 alarm() API 구현하기, 사용하기 로 이어진 MDN 목차 한 건은 정탐이고 한자 독음 괄호로 끝난 수필 제목은 표기라 오탐이다."
 
 [[rule]]
 name = "imperativePeriod"
@@ -156,24 +158,30 @@ default = "correct"
 note = "명령형과 청유형 뒤 마침표를 두지 않는 저장소 글쓰기 계약에 모두 해당했다."
 
 [[rule]]
+name = "inputFileSource"
+sampled = 1
+default = "correct"
+note = "Django 문서가 만든 적 없는 secret_key.txt 를 읽는다. 독자는 여기서 멈춘다 (2026-08-29)."
+
+[[rule]]
 name = "introLong"
 sampled = 20
 default = "falsePositive"
-correct = [
-  "5ea69378641a8f3954b0",
-  "21ab42ad1f2696c3c0f9",
-  "390e12237fce5b874c1d",
-  "29ae691a368b06bc29cb",
-  "e28cc1a9480aa3df7516",
-  "da75c758de565c757ae4",
-]
+correct = ["5ea69378641a8f3954b0", "21ab42ad1f2696c3c0f9", "390e12237fce5b874c1d", "29ae691a368b06bc29cb", "e28cc1a9480aa3df7516", "da75c758de565c757ae4"]
 note = "블로그와 기술 안내에서 긴 도입은 정탐이다. 제목 구조가 없는 수필과 단신 전체를 도입으로 센 것은 오탐이다."
 
 [[rule]]
-name = "loneSubheading"
-sampled = 4
+name = "japaneseLoan"
+sampled = 9
 default = "correct"
-note = "상위 절과 뜻이 겹치는 소제목이 하나만 있어 계층을 더하지 않았다."
+falsePositive = ["8aae5251640097d43244"]
+note = "고참, 익일, 곤색, 종지부는 국립국어원 목록의 일본어투다. 호기스럽게 의 기스 한 건은 오탐이다 (2026-08-29)."
+
+[[rule]]
+name = "loneSubheading"
+sampled = 10
+default = "correct"
+note = "절 아래 소제목이 하나뿐이고 절 제목에 없는 말이 없는 자리다. 위키백과와 MDN 열 건 전부 그렇다 (2026-08-29)."
 
 [[rule]]
 name = "longSentence"
@@ -183,9 +191,9 @@ note = "모두 서른 어절을 넘었고 독립된 판단이나 나열을 둘 �
 
 [[rule]]
 name = "moreLater"
-sampled = 4
+sampled = 5
 default = "correct"
-note = "마지막 참고 절의 목록 항목이 링크 소개를 넘어 본문 분량이어서 줄일 수 있었다."
+note = "마지막 절의 목록 항목이 150자를 넘는 자리다 (2026-08-29)."
 
 [[rule]]
 name = "noQuestion"
@@ -197,52 +205,39 @@ note = "문서 전체에 물음표가 없었고 독자가 품을 질문을 한 �
 name = "nounPile"
 sampled = 20
 default = "correct"
-falsePositive = [
-  "0a81758b1d7853f634f0",
-  "a7856c4b5f4fedef0fdd",
-  "83d6186e2222082e813e",
-  "bdd58cf17132daf5dcef",
-  "ec235160fb2d87ae8712",
-  "226a48a85ffc3335d739",
-]
+falsePositive = ["0a81758b1d7853f634f0", "a7856c4b5f4fedef0fdd", "83d6186e2222082e813e", "bdd58cf17132daf5dcef", "ec235160fb2d87ae8712", "226a48a85ffc3335d739"]
 note = "기술 용어와 고유 명사가 다섯 개 이상 이어진 자리와 뉴스의 제목형 나열은 정탐이다. 1930년대 수필의 옛말과 방언 다섯 건과 동사 줄여 한 건은 표층이 명사로 읽은 오탐이다. 2026-08-29 형태소 분석기와 견줘 및, 중인, 날짜, 부사와 관형사, 계사 관형형을 명사에서 뺀 뒤의 판정이다."
+
+[[rule]]
+name = "outsideProfile"
+sampled = 20
+default = "correct"
+note = "사실만 말하는 규칙이다. 쉼표와 문장 길이 지적 네 건의 값과 백분위를 프로파일 표에서 손으로 다시 세어 같았다 (2026-08-29)."
 
 [[rule]]
 name = "paraFragment"
 sampled = 20
 default = "falsePositive"
-correct = [
-  "01a66b4cca0f8811c67c",
-  "02b730143719070cc35c",
-  "137e19a19d7c8ab70ed8",
-  "2b7017eeaf4a63e04b0d",
-  "95e07a00badedcc2703e",
-  "ddc0d199f61c0c4368ba",
-  "0aafcbe92f8836ea2511",
-  "6264690e2cdbb69d8cd7",
-  "8229c34a9770c037a692",
-  "c062daa480ac009cf4c2",
-  "5019321a9f94c8134d21",
-]
+correct = ["01a66b4cca0f8811c67c", "02b730143719070cc35c", "137e19a19d7c8ab70ed8", "2b7017eeaf4a63e04b0d", "95e07a00badedcc2703e", "ddc0d199f61c0c4368ba", "6264690e2cdbb69d8cd7", "8229c34a9770c037a692", "c062daa480ac009cf4c2", "5019321a9f94c8134d21"]
 note = "같은 기술 화제를 짧게 끊은 문단은 정탐이다. 편집자 정보, 대화, 장면 전환, 기사 단락은 분리할 이유가 있었다. 링크 하나뿐인 문단을 embed 로 읽게 한 뒤 표본이 다섯 건 바뀌어 다시 읽었다. 기술 문서의 한두 문장 문단 셋은 정탐이고, 한 문장이 한 문단인 옛 수필과 글자가 빈 목록 항목은 오탐이다."
 
 [[rule]]
 name = "platformApi"
-sampled = 5
+sampled = 8
 default = "falsePositive"
-note = "모두 사용자 네임스페이스나 AppArmor처럼 리눅스 자체를 설명하는 문서라 proc 경로가 대상 환경의 정식 표면이었다."
+note = "Kubernetes 안내서의 /proc/ 은 리눅스 노드 안의 명령이라 독자가 멈추지 않는다. 사실은 맞지만 그 글에서는 오탐으로 둔다 (2026-08-29, 여덟 건)."
 
 [[rule]]
 name = "promiseRecall"
-sampled = 4
+sampled = 20
 default = "correct"
-note = "뒤에서 설명한다고 미룬 네 곳 모두 나중에 같은 약속을 이름으로 회수하지 않았다."
+note = "후술, 아래에서 설명 을 써 놓고 앞에서 미룬 것으로 다시 부르는 자리가 없는 글이다. 백과는 그 관행이 없어 사실은 맞되 notice 로만 낸다 (2026-08-29)."
 
 [[rule]]
 name = "redundantPair"
-sampled = 3
+sampled = 20
 default = "correct"
-note = "재건과 재개에 다시를 붙인 세 건 모두 같은 뜻을 겹쳤다."
+note = "다시 재회, 과반수 이상, 그때 당시 는 겹말이다. 다시 재력, 다시 재주 는 규칙에서 뺐다 (2026-08-29)."
 
 [[rule]]
 name = "sectionNoProse"
@@ -264,9 +259,9 @@ note = "의존 명사 수와 때, 조사 밖에, 단위 명사 번의 띄어쓰�
 
 [[rule]]
 name = "spelling"
-sampled = 4
+sampled = 20
 default = "correct"
-note = "오랜동안, 오랫만, 부정 표현 지 안이 각각 오랫동안, 오랜만, 지 않으로 고쳐질 자리였다."
+note = "됬, 역활, 금새, 설겆이 와 1930년대 수필의 지 안습니다 는 지금 맞춤법으로 틀린 표기다 (2026-08-29)."
 
 [[rule]]
 name = "topicBreak"
