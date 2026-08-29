@@ -18,7 +18,7 @@ HEADING_LINE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 INDENTED_CODE_LINE = re.compile(r"^(?: {4}|\t)")
 QUOTE_LINE = re.compile(r"^\s*>")
 IMAGE_LINE = re.compile(r"^!\[")
-LIST_LINE = re.compile(r"^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+")
+LIST_LINE = re.compile(r"^(?P<indent>\s*)(?:[-*+]|[0-9]+[.)])\s+")
 TABLE_LINE = re.compile(r"^\s*\|")
 URL_LINE = re.compile(r"^\s*https?://\S+\s*$")
 # 링크 하나만 있는 줄. 본문이 아니라 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크) 이라 주소만 있는 줄과 같은 embed 다.

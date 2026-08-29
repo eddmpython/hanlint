@@ -113,10 +113,10 @@ export function configFromMapping(data) {
       config.disable = new Set(/** @type {string[]} */ (value));
     } else if (key === "analyzer") {
       // 0.0.7 까지의 키. hanlint init 이 surface 를 써 넣었으므로 그 값은 조용히 넘기고 다른 값은 빠졌다고 알린다.
-      if (value !== "surface") throw new Error(`analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: ${value}`);
+      if (value !== "surface") throw new Error(`analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: ${JSON.stringify(value)}`);
     } else if (key === "preset") {
       if (!(/** @type {string} */ (value) in PRESETS)) {
-        throw new Error(`preset 은 ${PRESET_NAMES.join(", ")} 가운데 하나다: ${value}`);
+        throw new Error(`preset 은 ${PRESET_NAMES.join(", ")} 가운데 하나다: ${JSON.stringify(value)}`);
       }
       config.preset = /** @type {string} */ (value);
     } else if (key === "dictionary") {

@@ -93,6 +93,9 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Fixed
 
+- **두 판이 갈리던 자리 셋.** 숫자 정규식이 파이썬에서는 전각 숫자 (２０１２) 도 받아 지문의 수 세기가 달랐다. 두 판 다
+  ASCII 숫자만 수로 본다. 설정 오류 문구의 값이 `True` 와 `true` 로 갈리던 것은 JSON 꼴로 맞췄다. `init`, `--output`,
+  `profile build` 가 윈도에서 CRLF 로 쓰던 것은 LF 로 고정했다
 - **npm 투영이 파이썬과 갈리던 자리 둘.** `platformApi` 의 지적문이 V8 의 `RegExp.source` 를 써서 `/proc/` 가
   `\/proc\/` 로 나왔고, 실수 반올림이 `Math.round` 라 정확히 절반인 값 (registerShare 13/16) 이 파이썬의 짝수
   반올림과 달리 위로 갔다. 정규식 원문을 적고 `roundHalfEven` 이 파이썬 `round` 와 같은 셈을 한다. 파리티 게이트가

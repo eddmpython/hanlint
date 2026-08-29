@@ -10,7 +10,7 @@ from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
 
 SEPARATOR = re.compile(r"^:?-{2,}:?$")
-MEASURE = re.compile(r"^([+-]?\d[\d,]*(?:\.\d+)?)\s*([^\s\d]{0,6})$")
+MEASURE = re.compile(r"^([+-]?[0-9][0-9,]*(?:\.[0-9]+)?)\s*([^\s0-9]{0,6})$")
 EMPTY = ("", "-", "--")
 
 

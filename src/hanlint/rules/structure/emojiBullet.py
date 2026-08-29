@@ -11,7 +11,7 @@ from ..registry import rule
 
 # 이모지 범위. 코드포인트로 만든다 (도구가 이스케이프를 건드리지 않게).
 EMOJI = "[" + chr(0x1F300) + "-" + chr(0x1FAFF) + chr(0x2600) + "-" + chr(0x27BF) + chr(0x2B50) + chr(0x2B06) + "]"
-BULLET_WITH_EMOJI = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+" + EMOJI)
+BULLET_WITH_EMOJI = re.compile(r"^\s*(?:[-*+]|[0-9]+[.)])\s+" + EMOJI)
 
 
 @rule("emojiBullet", mechanism="dictionary")

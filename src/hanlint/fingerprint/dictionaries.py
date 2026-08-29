@@ -20,7 +20,7 @@ DICTIONARY_FILES = {
     "confusable": "confusable.toml",
     "easyWords": "easyWords.toml",
 }
-GROUP_REF = re.compile(r"\$(\d)")
+GROUP_REF = re.compile(r"\$([0-9])")
 FINALS = {"ㄴ": 4, "ㄹ": 8}
 """받침 자리표시자. {ㄹ} 은 ㄹ 받침으로 끝나는 음절 399개의 문자 부류로 펼쳐진다. 관형형 뒤의 의존 명사를 잡는다."""
 JOSA_TAIL = "(?=(?:에서는|으로는|에서|에게|까지|부터|보다|처럼|으로|이나|은|는|이|가|을|를|의|에|로|와|과|도|만)?(?![가-힣]))"

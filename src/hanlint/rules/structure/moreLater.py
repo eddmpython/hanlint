@@ -10,7 +10,7 @@ from ...fingerprint import DocumentPrint
 from ..finding import NOTICE, SECTION, Finding
 from ..registry import rule
 
-BULLET = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
+BULLET = re.compile(r"^\s*(?:[-*+]|[0-9]+[.)])\s+")
 
 
 def itemsOf(text: str) -> list[tuple[int, str]]:

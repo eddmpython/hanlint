@@ -17,6 +17,7 @@ translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 
 PRESETS: dict[str, tuple[str, ...]] = {
@@ -44,6 +45,11 @@ docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기�
 PRESET_NAMES = tuple(PRESETS)
 DEFAULT_PRESET = PRESET_NAMES[0]
 """설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다."""
+
+
+def shown(value: object) -> str:
+    """오류 문구에 적는 설정 값. JSON 꼴이라 npm 판 (JSON.stringify) 과 글자가 같다. 검증에서 true 와 True 가 갈렸다."""
+    return json.dumps(value, ensure_ascii=False, default=str)
 
 
 @dataclass
@@ -132,16 +138,16 @@ class Config:
             elif key == "analyzer":
                 # 0.0.7 까지의 키. hanlint init 이 surface 를 써 넣었으므로 그 값은 조용히 넘기고 다른 값은 빠졌다고 알린다.
                 if value != "surface":
-                    raise ValueError(f"analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: {value}")
+                    raise ValueError(f"analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: {shown(value)}")
             elif key == "preset":
                 if value not in PRESETS:
-                    raise ValueError(f"preset 은 {', '.join(PRESET_NAMES)} 가운데 하나다: {value}")
+                    raise ValueError(f"preset 은 {', '.join(PRESET_NAMES)} 가운데 하나다: {shown(value)}")
                 config.preset = value
             elif key == "dictionary":
                 config.dictionary = dict(value)
             elif key in ("ignoreFences", "introFields", "endingFields"):
                 if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-                    raise ValueError(f"{key} 는 문자열 배열이다: {value!r}")
+                    raise ValueError(f"{key} 는 문자열 배열이다: {shown(value)}")
                 names = [item.strip() for item in value]
                 setattr(config, key, [name.lower() for name in names] if key == "ignoreFences" else names)
             elif key != "source" and hasattr(config, key):

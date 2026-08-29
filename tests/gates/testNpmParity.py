@@ -82,7 +82,12 @@ def testBothClisGiveTheSameOutput(tmp_path):
     # 0.813 으로 갈렸다 (실측: 말뭉치 essay/2f729a83442d66d6). 절반인 값이 지문에 하나는 있어야 이 게이트가 그것을 본다.
     share = tmp_path / "share.md"
     share.write_text("## 절\n\n" + "표를 만듭니다. " * 13 + "표를 만든다. " * 3 + "\n", encoding="utf-8")
-    for path in (ROOT / "README.md", share):
+    # 전각 숫자 ２０１２ 는 파이썬의 숫자 정규식에는 숫자였고 JS 에는 아니었다. 두 판 다 ASCII 만 수로 본다 (검증 실측).
+    digits = tmp_path / "digits.md"
+    digits.write_text(
+        "## 절\n\n２０１２ 대 서버 장비 점검 결과 보고를 합니다. ２０１２년 서버 점검 결과를 씁니다.\n", encoding="utf-8"
+    )
+    for path in (ROOT / "README.md", share, digits):
         for layer in ("all", "paragraphs", "document"):
             python, node = runBoth(["print", str(path), "--layer", layer])
             assert python.returncode == node.returncode == 0, node.stderr

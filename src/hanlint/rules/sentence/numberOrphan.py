@@ -10,7 +10,7 @@ from ...fingerprint.markers import matchedTexts, numeralsIn
 from ..finding import NOTICE, SENTENCE, Finding
 from ..registry import rule
 
-RANGE = re.compile(r"(\d[\d,]*(?:\.\d+)?)[^\s.!?]{0,4}\s?에서\s?(\d[\d,]*(?:\.\d+)?)[^\s.!?]{0,4}\s?(?:로|으로)")
+RANGE = re.compile(r"([0-9][0-9,]*(?:\.[0-9]+)?)[^\s.!?]{0,4}\s?에서\s?([0-9][0-9,]*(?:\.[0-9]+)?)[^\s.!?]{0,4}\s?(?:로|으로)")
 MIN_DIGITS = 2
 """한 자리 수는 재는 값이 아니라 세는 말이라 뺀다. 하나에서 둘로 는 측정이 아니다."""
 ANCHOR_WINDOW = 12

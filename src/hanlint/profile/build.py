@@ -43,7 +43,7 @@ def buildProfile(docs: list[DocumentPrint]) -> Profile:
 
 
 def saveProfile(profile: Profile, path: str | Path) -> None:
-    Path(path).write_text(json.dumps(profile.asDict(), ensure_ascii=False, indent=2), encoding="utf-8")
+    Path(path).write_text(json.dumps(profile.asDict(), ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def loadProfile(path: str | Path) -> Profile:

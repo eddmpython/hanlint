@@ -2,4 +2,3 @@
 # README 와 specs 는 참고 문서다. 독자를 부르지 않고, 절이 결과를 남기지 않고, 검증 사실을 남기고,
 # 폴더 나무를 text 펜스로 그린다. 그 종류에 맞는 규칙 묶음이 docs 프리셋이다.
 preset = "docs"
-analyzer = "surface"

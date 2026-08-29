@@ -11,8 +11,10 @@ from functools import cache
 from ..data import loadLines, loadPatterns
 
 TRAILING = re.compile(r"[\s.?!\"'”’)\]]+$")
-NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
-NUMERAL = re.compile(r"\d[\d,]*(?:\.\d+)?")
+# 숫자는 ASCII 만이다. 파이썬 \d 는 전각 숫자 (２０１２) 도 받고 JS \d 는 안 받아 두 판이 갈렸다 (검증 실측). [0-9] 로 맞춘다.
+ASCII_DIGITS = re.compile(r"^[0-9]+$")
+NUMBER = re.compile(r"[0-9]+(?:[.,][0-9]+)*")
+NUMERAL = re.compile(r"[0-9][0-9,]*(?:\.[0-9]+)?")
 """값으로 견주는 수. NUMBER 는 수의 개수를 세고 (countNumbers) 이것은 수의 정체를 센다 (numeralsIn).
 천 단위 쉼표까지 한 수로 읽고 numeralsIn 이 쉼표를 뗀다. 453MB 와 453 이 같은 값이어야 한다."""
 COMMA = re.compile(r",")
@@ -57,7 +59,7 @@ def countPromisePattern() -> re.Pattern[str]:
     units = "|".join(map(re.escape, loadLines("countUnits.txt")))
     numbers = "|".join(sorted(koreanNumbers(), key=len, reverse=True))
     # 단위 뒤에는 조사가 붙는 것이 정상이다 (여섯 가지를). 앞쪽만 경계를 본다.
-    return re.compile(rf"(?<![가-힣])({numbers}|\d+)\s?({units})")
+    return re.compile(rf"(?<![가-힣])({numbers}|[0-9]+)\s?({units})")
 
 
 def stripTrailing(text: str) -> str:
@@ -121,7 +123,7 @@ def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:
     found = []
     for match in countPromisePattern().finditer(text):
         raw, unit = match.group(1), match.group(2)
-        if raw.isdigit() and unit == "단계" and " " not in match.group(0):
+        if ASCII_DIGITS.match(raw) and unit == "단계" and " " not in match.group(0):
             # `3단계` 는 셋째 단계 (서수) 지 단계 셋의 약속이 아니다. 실측: 002 의 `여덟 단계` 와 `3단계` 가 충돌로 잡혔다.
             continue
         number = koreanNumbers().get(raw) or int(raw)

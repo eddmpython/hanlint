@@ -104,7 +104,7 @@ def render(preset: str = "blog") -> str:
 def run(args: argparse.Namespace) -> int:
     if args.output.exists() and not args.force:
         raise ValueError(f"{args.output} 가 이미 있다. 덮어쓰려면 --force")
-    args.output.write_text(render(args.preset), encoding="utf-8")
+    args.output.write_text(render(args.preset), encoding="utf-8", newline="\n")
     off = PRESETS[args.preset]
     tail = f"preset {args.preset} 이 {len(off)}개를 끈다" if off else f"preset {args.preset} 은 규칙을 전부 켠다"
     print(f"{args.output} 를 만들었다. {tail}. 더 끄려면 disable 에 이름을 넣는다")

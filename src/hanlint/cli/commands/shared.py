@@ -280,7 +280,7 @@ def emit(text: str, output: Path | None) -> None:
     if output is None:
         print(text)
         return
-    output.write_text(text + ("\n" if not text.endswith("\n") else ""), encoding="utf-8")
+    output.write_text(text + ("\n" if not text.endswith("\n") else ""), encoding="utf-8", newline="\n")
     print(f"{output} 에 썼다", file=sys.stderr)
 
 
