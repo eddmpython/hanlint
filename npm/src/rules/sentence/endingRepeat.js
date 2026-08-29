@@ -1,6 +1,6 @@
 // @ts-check
 import { NOTICE, SENTENCE, finding } from "../finding.js";
-import { runsOf } from "../shared/runs.js";
+import { runsOf } from "../shared/repeat.js";
 
 export const name = "endingRepeat";
 export const mechanism = "repeat";

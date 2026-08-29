@@ -12,7 +12,7 @@ from .candidates import (
 from .codeBlocks import CodeBlock, codeBlocksOf
 from .dictionaryRule import dictionaryFindings
 from .localAntecedent import hasLocalAntecedent
-from .runs import runsOf
+from .repeat import runsOf, shareOf
 
 __all__ = [
     "CodeBlock",
@@ -25,4 +25,5 @@ __all__ = [
     "longSentenceCandidates",
     "nounPileCandidates",
     "runsOf",
+    "shareOf",
 ]
