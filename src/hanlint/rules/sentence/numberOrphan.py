@@ -31,7 +31,7 @@ def isAnchored(text: str, start: int) -> bool:
     return bool(matchedTexts(text[max(0, start - ANCHOR_WINDOW) : start], "baselineAnchors.txt"))
 
 
-@rule("numberOrphan")
+@rule("numberOrphan", mechanism="contrast")
 def numberOrphan(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """A 에서 B 로 라고 견주는데 A 가 글 앞에 한 번도 나온 적 없는 자리.
 

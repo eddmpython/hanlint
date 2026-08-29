@@ -64,6 +64,25 @@ status: curated
 위에서만 돈다. 규칙이 늘어도 글을 다시 읽지 않는다. `hanlint audit` 은 같은 지문을 색 지도로 보여 주고,
 `hanlint profile` 은 승인된 글들의 지문 분포를 만들어 새 글이 벗어난 구간을 notice 로 짚는다.
 
+## 규칙은 쌓여도 기제는 넷이다
+
+규칙이 쌓이면 문서가 커지고 고침끼리 충돌한다는 걱정은 규칙의 수가 아니라 **세는 방법의 수**로 푼다. 원칙은
+하나 (독자에게 일을 떠넘기지 않는다), 세는 방법은 넷, 규칙은 그 위의 선언이다. 사람이 읽는 문서는 여기까지만
+자라고 규칙 목록은 `hanlint rules` 가 만든다. 2026-08-29 운영자와 정했다.
+
+| 기제 | 무엇을 세나 | 예 |
+|---|---|---|
+| dictionary | 낱말 목록과 정규식이 맞는 자리 | cliche, translationese, spelling, imperativePeriod |
+| repeat | 같은 모양이 창 안에서 N 번 | endingRepeat, headingUniform, bridgeRepeat, duplicateBlock |
+| threshold | 지문의 값이 임계를 넘거나 모양이 계약과 다른 자리 | nounPile, longSentence, introLong, noQuestion |
+| contrast | 두 자리를 맞대 어긋난 곳 | countMismatch, numberOrphan, deixis, inputFileSource |
+
+규칙마다 등록 인자로 기제를 적고 (`@rule("이름", mechanism="repeat")`) 등록부가 넷 밖을 거부한다. 새 규칙이 넷
+밖의 세는 방법을 요구하면 그 규칙을 쓰기 전에 멈춰서 운영자에게 묻는다. 기제는 규칙 하나 때문에 늘지 않는다.
+같은 원칙의 두 규칙이 부분집합 관계면 하나로 접는다. 본보기 게이트가 그것을 드러낸다. 본보기의 답 (`after`) 은
+어느 규칙에도 error 로 잡히지 않아야 한다. 그래서 한 규칙이 낸 답이 다른 규칙에 걸리는 충돌은 규칙을 더하는
+순간 빨갛다. 실측: 게이트를 넓히자 본보기 열 개가 걸렸고 readerAbsent 가 noQuestion 의 부분집합으로 드러나 접었다.
+
 ## 뜻을 고르지 않고 형태를 보장하는 법
 
 뜻은 사람과 LLM 이 정한다. 기계는 그 선택을 한국어 문장으로 옮길 때 형태를 망가뜨리지 않고 선택지를

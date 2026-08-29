@@ -8,7 +8,7 @@ from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
 
 
-@rule("promiseRecall")
+@rule("promiseRecall", mechanism="contrast")
 def promiseRecall(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """뒤에서 다루겠습니다 라고 미뤄 놓고 앞에서 미룬 것을 부르는 표지가 글 어디에도 없는 것.
 

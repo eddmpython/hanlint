@@ -22,7 +22,7 @@ FIXES = {
 }
 
 
-@rule("doubleNegative")
+@rule("doubleNegative", mechanism="dictionary")
 def doubleNegative(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """하지 않으면 안 된다, 하지 않을 수 없다 같은 이중 부정.
 

@@ -2,6 +2,7 @@
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "keywordMissing";
+export const mechanism = "contrast";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

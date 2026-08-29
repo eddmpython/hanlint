@@ -13,7 +13,6 @@ import * as keywordHeading from "./document/keywordHeading.js";
 import * as keywordMissing from "./document/keywordMissing.js";
 import * as noQuestion from "./document/noQuestion.js";
 import * as promiseRecall from "./document/promiseRecall.js";
-import * as readerAbsent from "./document/readerAbsent.js";
 import * as tableOddCell from "./document/tableOddCell.js";
 import * as duplicateBlock from "./code/duplicateBlock.js";
 import * as firstResultDistance from "./code/firstResultDistance.js";
@@ -64,6 +63,7 @@ import * as sectionResult from "./structure/sectionResult.js";
 /**
  * @typedef {object} Rule
  * @property {string} name
+ * @property {string} mechanism 세는 방법. MECHANISMS 의 키 하나
  * @property {(doc: import("../fingerprint/build.js").DocumentPrint, config: import("../config/settings.js").Config) => import("./finding.js").Finding[]} run
  */
 
@@ -114,7 +114,6 @@ export const RULES = [
   keywordMissing,
   noQuestion,
   promiseRecall,
-  readerAbsent,
   spelling,
   spacing,
   confusable,
@@ -124,6 +123,22 @@ export const RULES = [
   firstResultDistance,
   platformApi,
 ];
+
+/**
+ * 규칙이 세는 방법의 닫힌 집합. 파이썬 rules/registry.py 의 MECHANISMS 와 같은 값과 같은 순서다.
+ * @type {Record<string, string>}
+ */
+export const MECHANISMS = {
+  dictionary: "사전. 낱말 목록과 정규식이 맞는 자리",
+  repeat: "반복. 같은 모양이 창 안에서 N 번",
+  threshold: "셈. 지문의 값이 임계를 넘거나 모양이 계약과 다른 자리",
+  contrast: "대조. 두 자리를 맞대 어긋난 곳",
+};
+for (const rule of RULES) {
+  if (!(rule.mechanism in MECHANISMS)) {
+    throw new Error(`규칙 ${rule.name} 의 기제 ${rule.mechanism} 은 닫힌 집합 밖이다 (${Object.keys(MECHANISMS).join(", ")}). 새 기제는 규칙 하나 때문에 들어오지 않는다. 멈춰서 묻는다`);
+  }
+}
 
 const BY_NAME = new Map(RULES.map((rule) => [rule.name, rule]));
 
@@ -156,6 +171,13 @@ export const CATEGORY_TITLES = {
   orthography: "표기와 띄어쓰기",
   code: "코드 블록 사이를 대조하는 것",
 };
+
+/** 규칙이 세는 방법. @param {string} name */
+export function ruleMechanism(name) {
+  const rule = BY_NAME.get(name);
+  if (!rule) throw new Error(`모르는 규칙: ${name}. hanlint rules 로 목록을 본다`);
+  return rule.mechanism;
+}
 
 /** 규칙이 사는 부류. 정본은 파이썬 쪽 폴더이고 여기는 그 투영을 읽는다. @param {string} name */
 export function ruleCategory(name) {

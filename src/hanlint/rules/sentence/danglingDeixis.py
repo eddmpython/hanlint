@@ -11,7 +11,7 @@ from ..registry import rule
 from ..shared import danglingDeixisCandidates, hasLocalAntecedent
 
 
-@rule("danglingDeixis")
+@rule("danglingDeixis", mechanism="contrast")
 def danglingDeixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """지시어가 있는데 바로 앞 문장과 화제어가 하나도 겹치지 않는 자리.
 

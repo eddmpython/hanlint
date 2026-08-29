@@ -6,6 +6,7 @@ import { danglingDeixisCandidates } from "../shared/candidates.js";
 import { hasLocalAntecedent } from "../shared/localAntecedent.js";
 
 export const name = "danglingDeixis";
+export const mechanism = "contrast";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

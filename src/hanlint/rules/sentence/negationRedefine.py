@@ -21,7 +21,7 @@ def isDefinition(text: str) -> bool:
     return predicate is not None and predicate.kind == COPULA_KIND
 
 
-@rule("negationRedefine")
+@rule("negationRedefine", mechanism="repeat")
 def negationRedefine(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """단순한 X 가 아닙니다 뒤에 Y 입니다 로 다시 정의하는 두 문장 공식.
 

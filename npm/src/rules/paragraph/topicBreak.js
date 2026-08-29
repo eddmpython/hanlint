@@ -2,6 +2,7 @@
 import { NOTICE, PARAGRAPH, finding } from "../finding.js";
 
 export const name = "topicBreak";
+export const mechanism = "contrast";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

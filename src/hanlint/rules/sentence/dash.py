@@ -12,7 +12,7 @@ from ..registry import rule
 DASHES = re.compile("[" + chr(0x2013) + chr(0x2014) + "]")
 
 
-@rule("dash")
+@rule("dash", mechanism="dictionary")
 def dash(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """em 대시 (U+2014) 와 en 대시 (U+2013). 코드 블록까지 글 전체를 본다.
 

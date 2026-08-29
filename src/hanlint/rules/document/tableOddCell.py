@@ -34,7 +34,7 @@ def unitOf(cell: str) -> str | None:
     return match.group(2) if match else None
 
 
-@rule("tableOddCell")
+@rule("tableOddCell", mechanism="contrast")
 def tableOddCell(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """한 열이 전부 같은 단위로 잰 값인데 한 칸만 다른 것을 담은 표.
 

@@ -2,6 +2,7 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "connectorRepeat";
+export const mechanism = "repeat";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

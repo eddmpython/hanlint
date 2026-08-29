@@ -8,7 +8,7 @@ from ..finding import SENTENCE, Finding
 from ..registry import rule
 
 
-@rule("nounPile")
+@rule("nounPile", mechanism="threshold")
 def nounPile(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """명사가 조사 없이 nounPileMin 개 이상 이어진 자리.
 

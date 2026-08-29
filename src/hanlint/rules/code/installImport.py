@@ -75,7 +75,7 @@ def localModules(doc: DocumentPrint) -> set[str]:
     return names
 
 
-@rule("installImport")
+@rule("installImport", mechanism="contrast")
 def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """설치 줄에 없는 패키지를 import 하는 코드. 그리고 코드 한 줄이 조용히 요구하는 숨은 의존성.
 

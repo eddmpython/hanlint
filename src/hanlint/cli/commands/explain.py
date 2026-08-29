@@ -12,7 +12,7 @@ import json
 from ...analysis.grammar import HAPNIDA, REGISTERS
 from ...data import exemplarFor, patternsAvoiding
 from ...report import exemplarInRegister, patternInRegister
-from ...rules import CATEGORY_TITLES, ruleCategory, ruleDoc, ruleNames
+from ...rules import CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleDoc, ruleMechanism, ruleNames
 from .shared import addOutputOption, emit
 
 ISSUES = "github.com/eddmpython/hanlint/issues"
@@ -46,6 +46,7 @@ def asJson(rule: str, register: str = HAPNIDA) -> str:
         "version": 1,
         "rule": rule,
         "category": ruleCategory(rule),
+        "mechanism": ruleMechanism(rule),
         "doc": ruleDoc(rule),
     }
     if exemplar:
@@ -83,7 +84,9 @@ def run(args: argparse.Namespace) -> int:
         emit(asJson(args.rule, args.register), args.output)
         return 0
     category = ruleCategory(args.rule)
-    print(f"{args.rule}  ({CATEGORY_TITLES[category]})\n")
+    mechanism = ruleMechanism(args.rule)
+    print(f"{args.rule}  ({CATEGORY_TITLES[category]})")
+    print(f"기제: {mechanism}. {MECHANISMS[mechanism]}\n")
     print(ruleDoc(args.rule))
     exemplar = exemplarFor(args.rule)
     if exemplar:

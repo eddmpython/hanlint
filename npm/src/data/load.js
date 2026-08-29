@@ -62,6 +62,11 @@ export function loadRuleCategories() {
   return cached("ruleCategories", () => JSON.parse(readText("ruleCategories.json")));
 }
 
+/** @returns {Record<string, string>} 규칙 이름 → 기제 (파이썬 등록부의 투영) */
+export function loadRuleMechanisms() {
+  return cached("ruleMechanisms", () => JSON.parse(readText("ruleMechanisms.json")));
+}
+
 /** @returns {string} */
 export function loadVersion() {
   return cached("version", () => JSON.parse(readText("version.json")).version);

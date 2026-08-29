@@ -11,7 +11,7 @@ from ..registry import rule
 IMPERATIVE_PERIOD = re.compile(r"(세요|십시오|합시다|봅시다|하자|해라|라)\.(?=\s|$)")
 
 
-@rule("imperativePeriod")
+@rule("imperativePeriod", mechanism="dictionary")
 def imperativePeriod(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """명령형과 청유형 뒤의 마침표.
 

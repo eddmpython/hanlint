@@ -10,7 +10,7 @@ from ..registry import rule
 SENTENCE_ENDINGS = ("니다", "한다", "해요", "세요", "십시오", "합시다", ".")
 
 
-@rule("headingSentence")
+@rule("headingSentence", mechanism="threshold")
 def headingSentence(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """본문 문장을 그대로 복사한 절 제목.
 

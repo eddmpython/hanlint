@@ -21,8 +21,11 @@ status: curated
    `start.product` 의 `잡지 않는 것` 에 걸리면 멈춘다
 3. **표층으로 되는지, 형태소가 필요한지 정한다.** 표층 정규식으로 충분하면 분석기를 부르지 않는다.
    형태소가 필요하면 먼저 Kiwi 로 그 문장을 찍어 실제 태그열을 본다. 추측으로 태그를 적지 않는다
-4. **`rules/<부류>/<규칙이름>.py` 에 파일 하나로 쓴다.** `@rule("이름")` 으로 등록하고 docstring 에
-   네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 1번의 실측 사례를 적는다. 파일이 사는 폴더가 부류의 정본이라
+4. **`rules/<부류>/<규칙이름>.py` 에 파일 하나로 쓴다.** `@rule("이름", mechanism="repeat")` 으로 등록하고
+   docstring 에 네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 1번의 실측 사례를 적는다. 기제는 `registry.py` 의
+   `MECHANISMS` 넷 (dictionary, repeat, threshold, contrast) 가운데 하나이고 넷 밖이면 등록부가 거부한다. 넷 밖의
+   세는 방법이 정말 필요하면 규칙을 쓰기 전에 멈춰서 운영자에게 묻는다. 기제는 규칙 하나 때문에 늘지 않는다
+   (`start.product` 의 규칙은 쌓여도 기제는 넷이다). 파일이 사는 폴더가 부류의 정본이라
    `hanlint rules` 의 묶음과 `hanlint explain` 의 `같은 부류` 가 거기서 나온다. 임계가 필요하면
    `config/settings.py` 에 기본값을 두고 함수는 거기서 읽는다. 함수 안에 숫자를 박지 않는다
 5. **본보기를 쓴다.** `data/exemplars.toml` 에 그 규칙의 `before` 와 `after` 와 `moved` 를 둔다. before 는

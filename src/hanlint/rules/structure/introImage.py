@@ -9,7 +9,7 @@ from ..finding import SECTION, Finding
 from ..registry import rule
 
 
-@rule("introImage")
+@rule("introImage", mechanism="threshold")
 def introImage(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """도입에 그림이 introMaxImages 보다 많은 글.
 

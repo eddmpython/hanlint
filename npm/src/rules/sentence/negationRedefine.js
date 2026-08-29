@@ -3,6 +3,7 @@ import { SENTENCE, finding } from "../finding.js";
 import { COPULA as COPULA_KIND, lastWord, parsePredicate } from "../../analysis/grammar/index.js";
 
 export const name = "negationRedefine";
+export const mechanism = "repeat";
 const NEGATION = /단순(?:한|히)\s?.{0,15}?(?:이|가)\s?아(?:닙니다|니다|니에요|니죠|닌)/;
 const COPULA = /(입니다|이다|이에요|예요)[.!]?$/;
 

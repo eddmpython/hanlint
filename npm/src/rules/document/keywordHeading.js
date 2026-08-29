@@ -2,6 +2,7 @@
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
 
 export const name = "keywordHeading";
+export const mechanism = "contrast";
 /** 목차라고 부를 수 있는 최소 H2 수. 둘 이하는 훑을 목차가 아니다. */
 const MIN_HEADINGS = 3;
 /** 한 글자 낱말은 어느 제목에나 우연히 들어 있어 가르지 못한다. */

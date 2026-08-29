@@ -2,6 +2,7 @@
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "dash";
+export const mechanism = "dictionary";
 // 리터럴로 쓰면 이 파일이 자기 게이트에 걸린다. 코드포인트로 만든다.
 const DASHES = new RegExp(`[${String.fromCharCode(0x2013)}${String.fromCharCode(0x2014)}]`);
 

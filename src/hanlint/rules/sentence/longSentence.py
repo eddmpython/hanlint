@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import longSentenceCandidates
 
 
-@rule("longSentence")
+@rule("longSentence", mechanism="threshold")
 def longSentence(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """어절 수가 longSentenceMax 를 넘는 문장.
 

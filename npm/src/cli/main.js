@@ -28,7 +28,7 @@ import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
-import { CATEGORY_TITLES, ruleCategory, runAll } from "../rules/registry.js";
+import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleMechanism, runAll } from "../rules/registry.js";
 import { MARKDOWN, SKIPPED_FOLDERS, markdownUnder } from "./walk.js";
 import { welcome } from "./welcome.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -489,7 +489,7 @@ function runRules(args) {
     const rules = names.map((name) => {
       const exemplar = exemplarFor(name);
       /** @type {Record<string, unknown>} */
-      const entry = { name, category: ruleCategory(name), summary: ruleSummary(name), doc: ruleDoc(name), enabled: !off.has(name) };
+      const entry = { name, category: ruleCategory(name), mechanism: ruleMechanism(name), summary: ruleSummary(name), doc: ruleDoc(name), enabled: !off.has(name) };
       if (exemplar) entry.exemplar = { before: exemplar.before, after: exemplar.after, moved: exemplar.moved };
       return entry;
     });
@@ -562,7 +562,7 @@ function runExplain(args) {
   const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
   if (options["--format"] === "json") {
     /** @type {Record<string, unknown>} */
-    const data = { version: 1, rule: wanted, category, doc: ruleDoc(wanted) };
+    const data = { version: 1, rule: wanted, category, mechanism: ruleMechanism(wanted), doc: ruleDoc(wanted) };
     if (exemplarOf) {
       const adapted = exemplarInRegister(exemplarOf, register);
       data.exemplar = { before: adapted.before, after: adapted.after, moved: adapted.moved };
@@ -572,7 +572,8 @@ function runExplain(args) {
     emit(JSON.stringify(data, null, 2), /** @type {string | undefined} */ (options["--output"]));
     return 0;
   }
-  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n\n${ruleDoc(wanted)}\n`);
+  const mechanism = ruleMechanism(wanted);
+  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n기제: ${mechanism}. ${MECHANISMS[mechanism]}\n\n${ruleDoc(wanted)}\n`);
   const exemplar = exemplarOf ? exemplarInRegister(exemplarOf, register) : undefined;
   if (exemplar) {
     process.stdout.write("\n본보기\n");

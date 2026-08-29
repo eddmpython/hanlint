@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import doublePassiveCandidates
 
 
-@rule("doublePassive")
+@rule("doublePassive", mechanism="dictionary")
 def doublePassive(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """되어지다, 보여지다, 잊혀지다 처럼 피동에 어지다 를 또 붙인 이중 피동.
 

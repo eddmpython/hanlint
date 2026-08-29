@@ -8,6 +8,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- **기제 (mechanism).** 규칙마다 세는 방법을 등록 인자로 적는다 (`@rule("이름", mechanism="repeat")`).
+  닫힌 집합은 넷 (dictionary, repeat, threshold, contrast) 이고 등록부가 그 밖을 거부한다. 규칙은 쌓여도
+  기제는 늘지 않게 하려는 것이다. `hanlint explain` 이 기제를 보이고 `rules --format json` 과 npm 투영
+  `ruleMechanisms.json` 이 대응을 든다
+- **본보기 게이트가 충돌을 잡는다.** 본보기의 `after` 는 그 규칙만이 아니라 어느 규칙의 error 에도 잡히지
+  않아야 한다. 규칙 A 의 답이 규칙 B 의 문제가 되는 자리를 규칙을 더하는 순간 잡는다. 넓히자 본보기 열 개가
+  걸려 고쳤다
 - **`bridgeRepeat`.** 절을 닫는 문장이 `이번에는`, `이제`, `다음으로` 같은 이음 표지로 시작하는 절이 셋
   이상인 글을 집는다. 실측: eddmpython-course 강의 여섯 편에서 `앞에서 A 를 확인했습니다. 이번에는 B 를
   확인합니다` 가 53번 나왔고 (03 은 14절 중 12절이 그렇게 닫혔다) 기준 말뭉치 390편과 운영자 블로그 다섯 편에서는
@@ -68,6 +75,9 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Removed
 
+- **`readerAbsent`.** 물음도 독자 호출도 없는 글을 짚던 규칙. 물음이 없는 글을 짚는 `noQuestion` 의 부분집합이라
+  같은 글에 지적 둘이 붙었다 (본보기 게이트가 드러냈다). `noQuestion` 의 지적문이 독자 호출 여부까지 말한다.
+  `report` 와 `docs` 프리셋의 목록에서도 뺐다
 - **VS Code 확장 (`vscode/`).** 제품의 진입점은 셋이다 (`hanlint 글.md`, `lintText`,
   `skills/use-hanlint/SKILL.md`). 확장은 넷째였고 별도 발행 채널과 별도 버전과 LICENSE 사본을 들고
   있으면서 CI 가 돌지 않았다. 테스트가 0개였고 검증은 `vsce package` 를 손으로 한 번 돌린 것이

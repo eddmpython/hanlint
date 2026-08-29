@@ -3,6 +3,7 @@ import { TABLE } from "../../document/model.js";
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
 
 export const name = "tableOddCell";
+export const mechanism = "contrast";
 const SEPARATOR = /^:?-{2,}:?$/;
 const MEASURE = /^([+-]?\d[\d,]*(?:\.\d+)?)\s*([^\s\d]{0,6})$/;
 const EMPTY = ["", "-", "--"];

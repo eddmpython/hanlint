@@ -11,7 +11,7 @@ from ..shared import runsOf
 COUNTED_ENDINGS = frozenset({"니다", "다", "것이다", "요", "죠"})
 
 
-@rule("endingRepeat")
+@rule("endingRepeat", mechanism="repeat")
 def endingRepeat(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """같은 종결어미가 endingRun 개 이어지는데 그 사이에 인과도 질문도 독자를 부르는 말도 없는 자리.
 

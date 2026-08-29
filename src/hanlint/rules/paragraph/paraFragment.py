@@ -8,7 +8,7 @@ from ..finding import PARAGRAPH, Finding
 from ..registry import rule
 
 
-@rule("paraFragment")
+@rule("paraFragment", mechanism="repeat")
 def paraFragment(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """한두 문장짜리 산문 문단이 fragmentRun 개 이상 연달아 오는 자리.
 

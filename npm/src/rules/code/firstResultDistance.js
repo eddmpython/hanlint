@@ -3,6 +3,7 @@ import { CODE, IMAGE, TABLE } from "../../document/model.js";
 import { NOTICE, PARAGRAPH, finding } from "../finding.js";
 
 export const name = "firstResultDistance";
+export const mechanism = "threshold";
 const RESULT_KINDS = [CODE, IMAGE, TABLE];
 
 /**

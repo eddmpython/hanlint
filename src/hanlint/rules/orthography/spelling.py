@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("spelling")
+@rule("spelling", mechanism="dictionary")
 def spelling(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """됬, 돼고, 않 해, 왠일, 몇일, 금새, 오랫만, 어떻해, 할께, 바램 처럼 자주 틀리는 표기.
 

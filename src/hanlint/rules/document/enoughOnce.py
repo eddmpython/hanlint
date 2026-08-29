@@ -9,7 +9,7 @@ from ..finding import SENTENCE, Finding
 from ..registry import rule
 
 
-@rule("enoughOnce")
+@rule("enoughOnce", mechanism="repeat")
 def enoughOnce(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """여기까지면 충분합니다 로 끊는 문장이 한 글에 두 번 이상 나오는 것.
 

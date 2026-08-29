@@ -24,7 +24,7 @@ def comparable(doc: DocumentPrint, lineA: int, lineB: int) -> bool:
     return a == b or {a, b} == {0, last}
 
 
-@rule("countMismatch")
+@rule("countMismatch", mechanism="contrast")
 def countMismatch(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """같은 단위로 서로 다른 수를 약속하는 글. 여섯 가지를 소개한다고 열고 다섯 가지라고 닫는 것.
 

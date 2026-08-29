@@ -8,7 +8,7 @@ from ..finding import DOCUMENT, Finding
 from ..registry import rule
 
 
-@rule("headingQuestion")
+@rule("headingQuestion", mechanism="repeat")
 def headingQuestion(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """H2 셋 이상 가운데 headingQuestionRatio 넘게 물음표로 끝나는 목차.
 

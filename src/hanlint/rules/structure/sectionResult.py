@@ -24,7 +24,7 @@ def leavesResult(section, doc: DocumentPrint) -> bool:
     return False
 
 
-@rule("sectionResult")
+@rule("sectionResult", mechanism="threshold")
 def sectionResult(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """산문만 있고 눈으로 볼 결과 (코드, 표, 그림, 끼워 넣은 영상이나 실행 칸, 파일 이름, 출력 문장) 가 없는 본문 절.
 

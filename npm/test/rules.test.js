@@ -7,8 +7,8 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { configFromMapping, lintText, ruleNames } from "../src/index.js";
-import { loadRuleDocs } from "../src/data/load.js";
-import { RULES } from "../src/rules/registry.js";
+import { loadRuleDocs, loadRuleMechanisms } from "../src/data/load.js";
+import { MECHANISMS, RULES } from "../src/rules/registry.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(HERE, "..", "..", "tests", "fixtures", "rules");
@@ -49,4 +49,11 @@ test("every rule has a fixture, a doc, and a file", () => {
   const files = RULE_DIRS.flatMap((dir) => readdirSync(dir).filter((f) => f.endsWith(".js")).map((f) => f.replace(/\.js$/, ""))).sort();
   assert.deepEqual(names, files);
   for (const rule of RULES) assert.equal(typeof rule.run, "function", rule.name);
+});
+
+test("every rule names one of the closed mechanisms and matches the python projection", () => {
+  assert.deepEqual(Object.keys(MECHANISMS), ["dictionary", "repeat", "threshold", "contrast"]);
+  const mine = Object.fromEntries(RULES.map((rule) => [rule.name, rule.mechanism]).sort());
+  assert.deepEqual(mine, loadRuleMechanisms());
+  for (const mechanism of Object.values(mine)) assert.ok(mechanism in MECHANISMS, mechanism);
 });

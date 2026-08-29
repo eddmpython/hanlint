@@ -232,12 +232,6 @@ default = "correct"
 note = "뒤에서 설명한다고 미룬 네 곳 모두 나중에 같은 약속을 이름으로 회수하지 않았다."
 
 [[rule]]
-name = "readerAbsent"
-sampled = 20
-default = "correct"
-note = "문서 전체에 질문도 독자가 실행하거나 확인할 행동도 없어 저장소의 독자 접점 계약을 어겼다."
-
-[[rule]]
 name = "redundantPair"
 sampled = 3
 default = "correct"

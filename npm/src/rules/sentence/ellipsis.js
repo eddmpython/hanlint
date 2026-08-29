@@ -3,6 +3,7 @@ import { insideAny } from "../../fingerprint/markers.js";
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "ellipsis";
+export const mechanism = "dictionary";
 // 영숫자에 붙은 점 셋 (`v0.0.1...HEAD`, compare URL) 은 범위 표기라 말줄임표가 아니다.
 // 인라인 코드와 따옴표 안은 지문이 인용 구간으로 이미 표시해 두었으므로 여기서 다시 재지 않는다.
 const ELLIPSIS = /(?<![A-Za-z0-9])(…|\.{3,})(?![A-Za-z0-9])/g;

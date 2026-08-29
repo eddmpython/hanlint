@@ -12,10 +12,9 @@ export const ANALYZERS = ["surface", "kiwi"];
  */
 export const PRESETS = {
   blog: [],
-  report: ["noQuestion", "readerAbsent", "sectionResult", "firstResultDistance", "introImage", "moreLater"],
+  report: ["noQuestion", "sectionResult", "firstResultDistance", "introImage", "moreLater"],
   docs: [
     "noQuestion",
-    "readerAbsent",
     "sectionResult",
     "firstResultDistance",
     "introImage",

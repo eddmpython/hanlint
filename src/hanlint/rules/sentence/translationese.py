@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("translationese")
+@rule("translationese", mechanism="dictionary")
 def translationese(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """~에 있어서, ~에 의해, ~을 통해, ~로부터, ~에도 불구하고 같은 번역투.
 

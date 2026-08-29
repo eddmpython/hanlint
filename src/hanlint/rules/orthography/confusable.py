@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("confusable")
+@rule("confusable", mechanism="dictionary")
 def confusable(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """학생으로써, 정답을 맞추다, 나와 틀리다, 감기가 낳다 처럼 뜻이 다른 말을 바꿔 쓴 자리.
 

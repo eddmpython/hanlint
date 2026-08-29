@@ -2,6 +2,7 @@
 import { NOTICE, PARAGRAPH, finding } from "../finding.js";
 
 export const name = "factListParagraph";
+export const mechanism = "threshold";
 
 /** 문장 사이를 잇는 표지가 하나라도 있는가. @param {import("../../fingerprint/build.js").ParagraphPrint} paragraph */
 function isLinked(paragraph) {

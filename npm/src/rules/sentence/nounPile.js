@@ -2,6 +2,7 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "nounPile";
+export const mechanism = "threshold";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

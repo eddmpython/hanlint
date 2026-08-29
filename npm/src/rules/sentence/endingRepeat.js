@@ -3,6 +3,7 @@ import { NOTICE, SENTENCE, finding } from "../finding.js";
 import { runsOf } from "../shared/runs.js";
 
 export const name = "endingRepeat";
+export const mechanism = "repeat";
 const COUNTED_ENDINGS = new Set(["니다", "다", "것이다", "요", "죠"]);
 
 /**

@@ -21,7 +21,7 @@ def platformApis() -> tuple[tuple[re.Pattern[str], str, str], ...]:
     return tuple(found)
 
 
-@rule("platformApi")
+@rule("platformApi", mechanism="dictionary")
 def platformApi(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """한 운영체제에서만 도는 API 나 경로를 쓴 코드.
 

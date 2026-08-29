@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import codeBlocksOf
 
 
-@rule("blockUnread")
+@rule("blockUnread", mechanism="threshold")
 def blockUnread(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """코드 블록 바로 뒤에 붙인 출력을 읽어 주는 설명글이 없는 자리.
 

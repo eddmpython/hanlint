@@ -63,7 +63,7 @@ name = "독자"
 symbol = "A"
 ansi = 245
 hex = "#999999"
-rules = ["noQuestion", "readerAbsent"]
+rules = ["noQuestion"]
 
 [[kind]]
 id = "code"

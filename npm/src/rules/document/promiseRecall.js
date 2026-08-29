@@ -2,6 +2,7 @@
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
 
 export const name = "promiseRecall";
+export const mechanism = "contrast";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

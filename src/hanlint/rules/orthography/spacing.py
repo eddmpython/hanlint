@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("spacing")
+@rule("spacing", mechanism="dictionary")
 def spacing(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """할수 있다, 것같다, 떠난지 3년, 한번도, 두번, 수 밖에, 뿐만아니라 처럼 자주 틀리는 띄어쓰기.
 

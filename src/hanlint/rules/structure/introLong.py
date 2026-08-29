@@ -8,7 +8,7 @@ from ..finding import PARAGRAPH, Finding
 from ..registry import rule
 
 
-@rule("introLong")
+@rule("introLong", mechanism="threshold")
 def introLong(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """첫 H2 앞의 산문 문단이 introMaxParagraphs 를 넘는 도입.
 

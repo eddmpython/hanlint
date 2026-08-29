@@ -2,6 +2,7 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "doubleNegative";
+export const mechanism = "dictionary";
 const DOUBLE_NEGATIVE = /(하지 않으면 안 (?:된다|됩니다|돼요)|하지 않을 수 없(?:다|습니다|어요)|지 않으면 안 (?:된다|됩니다|돼요)|지 않을 수 없(?:다|습니다|어요))/;
 /** @type {Record<string, string>} */
 const FIXES = {

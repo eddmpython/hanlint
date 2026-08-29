@@ -2,6 +2,7 @@
 import { PARAGRAPH, finding } from "../finding.js";
 
 export const name = "paraFragment";
+export const mechanism = "repeat";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

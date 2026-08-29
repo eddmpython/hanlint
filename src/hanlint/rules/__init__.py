@@ -3,15 +3,29 @@
 from __future__ import annotations
 
 from .finding import Candidate, Finding
-from .registry import CATEGORY_TITLES, ruleCategories, ruleCategory, ruleDoc, ruleNames, ruleSummary, runAll
+from .registry import (
+    CATEGORY_TITLES,
+    MECHANISMS,
+    ruleCategories,
+    ruleCategory,
+    ruleDoc,
+    ruleMechanism,
+    ruleMechanisms,
+    ruleNames,
+    ruleSummary,
+    runAll,
+)
 
 __all__ = [
     "CATEGORY_TITLES",
+    "MECHANISMS",
     "Candidate",
     "Finding",
     "ruleCategories",
     "ruleCategory",
     "ruleDoc",
+    "ruleMechanism",
+    "ruleMechanisms",
     "ruleNames",
     "ruleSummary",
     "runAll",

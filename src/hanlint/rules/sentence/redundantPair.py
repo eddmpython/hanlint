@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("redundantPair")
+@rule("redundantPair", mechanism="dictionary")
 def redundantPair(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """역전 앞, 그때 당시, 매 시간마다 같은 겹말.
 

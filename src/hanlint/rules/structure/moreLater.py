@@ -25,7 +25,7 @@ def itemsOf(text: str) -> list[tuple[int, str]]:
     return items
 
 
-@rule("moreLater")
+@rule("moreLater", mechanism="threshold")
 def moreLater(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """마지막 절의 목록 항목이 moreLaterMaxChars 를 넘어 본문만큼 설명하는 것.
 

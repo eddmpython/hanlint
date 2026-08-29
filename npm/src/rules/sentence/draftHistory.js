@@ -3,6 +3,7 @@ import { insideAny, matchedSpans } from "../../fingerprint/markers.js";
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "draftHistory";
+export const mechanism = "dictionary";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

@@ -537,16 +537,6 @@
       "precision": 1.0
     },
     {
-      "rule": "readerAbsent",
-      "occurrences": 51,
-      "documents": 51,
-      "sampled": 20,
-      "reviewed": 20,
-      "correct": 20,
-      "falsePositive": 0,
-      "precision": 1.0
-    },
-    {
       "rule": "redundantPair",
       "occurrences": 3,
       "documents": 2,

@@ -2,6 +2,7 @@
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "headingSkip";
+export const mechanism = "threshold";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

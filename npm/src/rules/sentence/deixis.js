@@ -5,6 +5,7 @@ import { SENTENCE, finding } from "../finding.js";
 import { hasLocalAntecedent } from "../shared/localAntecedent.js";
 
 export const name = "deixis";
+export const mechanism = "contrast";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

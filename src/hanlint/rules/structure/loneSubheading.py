@@ -24,7 +24,7 @@ def onlyChild(headings: tuple[tuple[int, str, int], ...]) -> Iterator[tuple[str,
             yield text, children[0][0], children[0][1]
 
 
-@rule("loneSubheading")
+@rule("loneSubheading", mechanism="contrast")
 def loneSubheading(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """H2 아래 소제목이 하나뿐이고 그 제목이 절 제목의 말을 되풀이하는 자리.
 

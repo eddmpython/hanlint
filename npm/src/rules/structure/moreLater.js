@@ -4,6 +4,7 @@ import { plainText } from "../../document/plainText.js";
 import { NOTICE, SECTION, finding } from "../finding.js";
 
 export const name = "moreLater";
+export const mechanism = "threshold";
 const BULLET = /^\s*(?:[-*+]|\d+[.)])\s+/;
 
 /** (블록 안 줄 오프셋, 항목 전체). 이어지는 줄은 앞 항목에 붙인다. @param {string} text @returns {[number, string][]} */

@@ -9,7 +9,7 @@ from ..finding import SECTION, Finding
 from ..registry import rule
 
 
-@rule("sectionNoProse")
+@rule("sectionNoProse", mechanism="threshold")
 def sectionNoProse(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """설명글 없이 코드, 표, 이미지만 있는 절.
 

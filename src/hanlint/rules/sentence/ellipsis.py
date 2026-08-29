@@ -14,7 +14,7 @@ from ..registry import rule
 ELLIPSIS = re.compile(r"(?<![A-Za-z0-9])(…|\.{3,})(?![A-Za-z0-9])")
 
 
-@rule("ellipsis")
+@rule("ellipsis", mechanism="dictionary")
 def ellipsis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """말줄임표.
 

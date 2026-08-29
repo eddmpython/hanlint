@@ -9,7 +9,7 @@ from ..finding import DOCUMENT, Finding
 from ..registry import rule
 
 
-@rule("headingUniform")
+@rule("headingUniform", mechanism="repeat")
 def headingUniform(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """H2 셋 이상 가운데 headingUniformRatio 넘게 같은 글자로 끝나는 목차.
 

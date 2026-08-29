@@ -11,7 +11,7 @@ import json
 
 from ...config import PRESETS
 from ...data import exemplarFor
-from ...rules import CATEGORY_TITLES, ruleCategories, ruleDoc, ruleNames, ruleSummary
+from ...rules import CATEGORY_TITLES, ruleCategories, ruleDoc, ruleMechanism, ruleNames, ruleSummary
 from .shared import addCommonOptions, configFrom, emit
 
 HELP = "규칙 이름과 한 줄 설명을 부류별로 나열한다"
@@ -31,6 +31,7 @@ def asJson(names: list[str], off: set[str]) -> str:
         entry: dict = {
             "name": name,
             "category": categories[name],
+            "mechanism": ruleMechanism(name),
             "summary": ruleSummary(name),
             "doc": ruleDoc(name),
             "enabled": name not in off,

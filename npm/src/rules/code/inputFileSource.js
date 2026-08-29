@@ -3,6 +3,7 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "inputFileSource";
+export const mechanism = "contrast";
 
 const QUOTED = "\\(\\s*[\"']([^\"'\\n]+)[\"']";
 const READS = new RegExp(

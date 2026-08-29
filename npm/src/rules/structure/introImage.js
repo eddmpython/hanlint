@@ -3,6 +3,7 @@ import { IMAGE } from "../../document/model.js";
 import { SECTION, finding } from "../finding.js";
 
 export const name = "introImage";
+export const mechanism = "threshold";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

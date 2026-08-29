@@ -3,6 +3,7 @@ import { SENTENCE, finding } from "../finding.js";
 import { doublePassiveCandidates } from "../shared/candidates.js";
 
 export const name = "doublePassive";
+export const mechanism = "dictionary";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

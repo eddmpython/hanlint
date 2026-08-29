@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("cliche")
+@rule("cliche", mechanism="dictionary")
 def cliche(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """핵심은, 결국 중요한 것은, 단순히 A 를 넘어, 살펴보겠습니다 같은 상투어.
 

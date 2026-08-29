@@ -13,7 +13,7 @@ MIN_WORD = 2
 """한 글자 낱말은 어느 제목에나 우연히 들어 있어 가르지 못한다."""
 
 
-@rule("keywordHeading")
+@rule("keywordHeading", mechanism="contrast")
 def keywordHeading(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """제목이 약속한 대표 검색어의 말이 절 제목 어디에도 없는 글.
 

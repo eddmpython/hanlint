@@ -15,7 +15,7 @@ def isLinked(paragraph: ParagraphPrint) -> bool:
     return any(s.connectorStart or s.mood == "의문" or s.readerCall for s in paragraph.sentences)
 
 
-@rule("factListParagraph")
+@rule("factListParagraph", mechanism="threshold")
 def factListParagraph(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """짧은 평서문 셋 이상이 잇는 말 없이 이어지는 문단.
 

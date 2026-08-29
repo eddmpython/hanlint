@@ -9,7 +9,7 @@ from ..finding import DOCUMENT, Finding
 from ..registry import rule
 
 
-@rule("bridgeRepeat")
+@rule("bridgeRepeat", mechanism="repeat")
 def bridgeRepeat(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """절을 닫는 문장이 이음 표지 (이번에는, 이제, 다음으로) 로 시작하는 절이 bridgeRepeatMin 개 이상인 글.
 

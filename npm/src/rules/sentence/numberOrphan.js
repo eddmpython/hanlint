@@ -5,6 +5,7 @@ import { matchedTexts } from "../../fingerprint/markers.js";
 import { NOTICE, SENTENCE, finding } from "../finding.js";
 
 export const name = "numberOrphan";
+export const mechanism = "contrast";
 const NUMBER = /\d[\d,]*(?:\.\d+)?/g;
 const RANGE = /(\d[\d,]*(?:\.\d+)?)[^\s.!?]{0,4}\s?에서\s?(\d[\d,]*(?:\.\d+)?)[^\s.!?]{0,4}\s?(?:로|으로)/g;
 /** 한 자리 수는 재는 값이 아니라 세는 말이라 뺀다. */

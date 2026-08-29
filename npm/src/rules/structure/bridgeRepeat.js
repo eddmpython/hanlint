@@ -3,6 +3,7 @@ import { matchedTexts } from "../../fingerprint/markers.js";
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "bridgeRepeat";
+export const mechanism = "repeat";
 
 /**
  * 절을 닫는 문장이 이음 표지 (이번에는, 이제, 다음으로) 로 시작하는 절이 bridgeRepeatMin 개 이상인 글.

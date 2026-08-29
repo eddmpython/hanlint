@@ -8,7 +8,7 @@ from ..finding import DOCUMENT, Finding
 from ..registry import rule
 
 
-@rule("keywordMissing")
+@rule("keywordMissing", mechanism="contrast")
 def keywordMissing(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """대표 검색어가 제목에도 첫 문단에도 없는 글.
 

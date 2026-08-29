@@ -109,7 +109,7 @@ def testRulesAndExplain(capsys):
     assert "doublePassive" in out and "규칙 " in out
     assert main(["explain", "doublePassive"]) == 0
     doc = capsys.readouterr().out
-    assert "왜:" in doc and "고치기:" in doc
+    assert "왜:" in doc and "고치기:" in doc and "기제: dictionary." in doc
     assert main(["explain", "noSuchRule"]) == 2
     assert "모르는 규칙" in capsys.readouterr().err
 
@@ -373,11 +373,11 @@ def testPresetFlagWorksWithoutAConfigFile(tmp_path, capsys):
     doc = write(tmp_path, "문서.md", DOCLIKE)
     assert main([str(doc), "--format", "compact"]) == 1
     blog = capsys.readouterr().out
-    assert "[noQuestion]" in blog and "[readerAbsent]" in blog
+    assert "[noQuestion]" in blog
 
     assert main([str(doc), "--preset", "docs", "--format", "compact"]) == 0
     docs = capsys.readouterr().out
-    assert "[noQuestion]" not in docs and "[readerAbsent]" not in docs
+    assert "[noQuestion]" not in docs
     assert docs.startswith("설정: 기본값, 프리셋 docs\n")
 
 

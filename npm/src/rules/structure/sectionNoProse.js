@@ -3,6 +3,7 @@ import { LIST, PROSE } from "../../document/model.js";
 import { SECTION, finding } from "../finding.js";
 
 export const name = "sectionNoProse";
+export const mechanism = "threshold";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {

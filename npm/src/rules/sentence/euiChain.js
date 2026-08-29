@@ -2,6 +2,7 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "euiChain";
+export const mechanism = "threshold";
 const ADJACENT = /[가-힣]+의\s+[가-힣]+의(?=[\s,.)\]]|$)/;
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */

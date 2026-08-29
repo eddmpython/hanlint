@@ -2,6 +2,7 @@
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "fillerOpener";
+export const mechanism = "dictionary";
 const FILLER = /^(다음으로|이어서|마지막에는|마지막으로)(?=[\s,])/;
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */

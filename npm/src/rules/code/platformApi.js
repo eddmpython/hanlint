@@ -4,6 +4,7 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "platformApi";
+export const mechanism = "dictionary";
 
 /** @type {[RegExp, string, string][] | null} */
 let cache = null;

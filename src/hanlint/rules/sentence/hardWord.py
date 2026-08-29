@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("hardWord")
+@rule("hardWord", mechanism="dictionary")
 def hardWord(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """금일, 익월, 상기, 소정의, 노하우, 인프라, 피드백 처럼 쉬운 말이 있는 어려운 한자어와 외래어.
 

@@ -4,6 +4,7 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "installImport";
+export const mechanism = "contrast";
 
 const INSTALL = /(?:pip\s+install|uv\s+add|uv\s+pip\s+install|conda\s+install|poetry\s+add)\s+([^\n#|&;]+)/g;
 const IMPORT = /^\s*(?:import\s+([\w.]+(?:\s*,\s*[\w.]+)*)|from\s+([\w.]+)\s+import\b)/;

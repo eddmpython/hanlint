@@ -11,7 +11,7 @@ from ..registry import rule
 ADJACENT = re.compile(r"[가-힣]+의\s+[가-힣]+의(?=[\s,.)\]]|$)")
 
 
-@rule("euiChain")
+@rule("euiChain", mechanism="threshold")
 def euiChain(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """한 문장에 관형격 조사 의 가 셋 이상이거나, 의 로 끝나는 어절 둘이 붙어 있다 (회사의 팀의 결정).
 

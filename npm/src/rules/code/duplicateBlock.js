@@ -3,6 +3,7 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "duplicateBlock";
+export const mechanism = "repeat";
 const MIN_LINES = 4;
 
 /** 줄 다중집합의 겹침 비. 2 * 공통 / (a + b). @param {string[]} a @param {string[]} b */

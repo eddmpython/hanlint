@@ -11,7 +11,7 @@ from ..registry import rule
 FILLER = re.compile(r"^(다음으로|이어서|마지막에는|마지막으로)(?=[\s,])")
 
 
-@rule("fillerOpener")
+@rule("fillerOpener", mechanism="dictionary")
 def fillerOpener(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """다음으로, 이어서, 마지막에는 으로만 잇는 문장.
 

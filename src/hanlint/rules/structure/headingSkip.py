@@ -8,7 +8,7 @@ from ..finding import DOCUMENT, Finding
 from ..registry import rule
 
 
-@rule("headingSkip")
+@rule("headingSkip", mechanism="threshold")
 def headingSkip(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """제목 수준을 건너뛴 자리. H2 다음에 H4 가 오거나 글이 H3 으로 시작하는 것.
 

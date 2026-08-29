@@ -2,6 +2,7 @@
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "countMismatch";
+export const mechanism = "contrast";
 
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc @param {number} line */
 function sectionIndexAt(doc, line) {

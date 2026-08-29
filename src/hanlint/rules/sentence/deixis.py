@@ -11,7 +11,7 @@ from ..registry import rule
 from ..shared import hasLocalAntecedent
 
 
-@rule("deixis")
+@rule("deixis", mechanism="contrast")
 def deixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """이것, 해당 값, 위의 코드, 이러한 같은 지시어. 앞 문장에 가리킬 것이 있는 경우.
 

@@ -4,6 +4,7 @@ import { NOTICE, SECTION, finding } from "../finding.js";
 import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "blockUnread";
+export const mechanism = "threshold";
 const OUTPUT_LANGUAGES = ["", "text", "output", "console"];
 
 /**

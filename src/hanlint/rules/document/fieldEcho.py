@@ -37,7 +37,7 @@ def check(doc: DocumentPrint, sections: tuple[SectionPrint, ...], fields: list[s
         )
 
 
-@rule("fieldEcho")
+@rule("fieldEcho", mechanism="contrast")
 def fieldEcho(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """frontmatter 가 약속한 것을 도입이나 마지막 절이 하나도 부르지 않는 글.
 

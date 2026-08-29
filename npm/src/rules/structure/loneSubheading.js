@@ -3,6 +3,7 @@ import { topicsOf } from "../../fingerprint/topics.js";
 import { NOTICE, SECTION, finding } from "../finding.js";
 
 export const name = "loneSubheading";
+export const mechanism = "contrast";
 
 /** (부모 H2 제목, 외동 H3 제목, 그 줄). H2 하나 아래 H3 이 정확히 하나일 때만. @param {[number, string, number][]} headings */
 function onlyChild(headings) {

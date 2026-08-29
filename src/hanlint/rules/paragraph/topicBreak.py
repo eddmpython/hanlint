@@ -8,7 +8,7 @@ from ..finding import NOTICE, PARAGRAPH, Finding
 from ..registry import rule
 
 
-@rule("topicBreak")
+@rule("topicBreak", mechanism="contrast")
 def topicBreak(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """같은 절 안에서 앞 문단과 화제어가 하나도 겹치지 않는 문단.
 

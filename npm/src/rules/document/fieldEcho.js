@@ -3,6 +3,7 @@ import { topicsOf } from "../../fingerprint/topics.js";
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
 
 export const name = "fieldEcho";
+export const mechanism = "contrast";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

@@ -9,7 +9,7 @@ from ..finding import SENTENCE, Finding
 from ..registry import rule
 
 
-@rule("draftHistory")
+@rule("draftHistory", mechanism="dictionary")
 def draftHistory(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """글쓴이의 수정 이력과 자기 검증 기록. 처음에는 ~라고 썼습니다, ~것을 확인했습니다.
 

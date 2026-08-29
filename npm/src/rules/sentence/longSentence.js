@@ -3,6 +3,7 @@ import { NOTICE, SENTENCE, finding } from "../finding.js";
 import { longSentenceCandidates } from "../shared/candidates.js";
 
 export const name = "longSentence";
+export const mechanism = "threshold";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

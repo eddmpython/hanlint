@@ -2,6 +2,7 @@
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "headingSentence";
+export const mechanism = "threshold";
 const SENTENCE_ENDINGS = ["니다", "한다", "해요", "세요", "십시오", "합시다", "."];
 
 /**

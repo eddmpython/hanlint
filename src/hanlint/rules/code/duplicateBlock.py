@@ -25,7 +25,7 @@ def similarity(a: list[str], b: list[str]) -> float:
     return 2 * common / (len(a) + len(b))
 
 
-@rule("duplicateBlock")
+@rule("duplicateBlock", mechanism="repeat")
 def duplicateBlock(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """앞선 코드나 출력 블록과 거의 같은 블록.
 

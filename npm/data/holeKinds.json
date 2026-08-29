@@ -90,8 +90,7 @@
       "ansi": 245,
       "hex": "#999999",
       "rules": [
-        "noQuestion",
-        "readerAbsent"
+        "noQuestion"
       ]
     },
     {

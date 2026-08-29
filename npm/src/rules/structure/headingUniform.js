@@ -2,6 +2,7 @@
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "headingUniform";
+export const mechanism = "repeat";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

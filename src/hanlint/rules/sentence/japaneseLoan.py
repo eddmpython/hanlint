@@ -9,7 +9,7 @@ from ..registry import rule
 from ..shared import dictionaryFindings
 
 
-@rule("japaneseLoan")
+@rule("japaneseLoan", mechanism="dictionary")
 def japaneseLoan(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """구좌, 익일, 잔고, 고참, 망년회 같은 일본어투 낱말.
 

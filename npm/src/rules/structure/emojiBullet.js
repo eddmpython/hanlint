@@ -3,6 +3,7 @@ import { LIST } from "../../document/model.js";
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "emojiBullet";
+export const mechanism = "dictionary";
 // 이모지 범위. 코드포인트로 만든다 (도구가 이스케이프를 건드리지 않게). 아스트랄 범위라 u 플래그가 필요하다.
 const EMOJI =
   "[" +

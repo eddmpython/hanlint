@@ -3,6 +3,7 @@ import { matchedTexts } from "../../fingerprint/markers.js";
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "enoughOnce";
+export const mechanism = "repeat";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

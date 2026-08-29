@@ -48,7 +48,7 @@ def mentionedBefore(doc: DocumentPrint, name: str, line: int) -> bool:
     return any(s.line < line and name in s.text for s in doc.sentences)
 
 
-@rule("inputFileSource")
+@rule("inputFileSource", mechanism="contrast")
 def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """코드가 읽는 파일과 쓰는 폴더가 글 어디에서도 만들어지지 않은 자리.
 

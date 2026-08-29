@@ -8,7 +8,7 @@ from ..finding import SENTENCE, Finding
 from ..registry import rule
 
 
-@rule("connectorRepeat")
+@rule("connectorRepeat", mechanism="repeat")
 def connectorRepeat(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """같은 접속부사로 시작하는 문장이 한 문단 안에 연달아 오는 자리.
 

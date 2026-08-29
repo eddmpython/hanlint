@@ -14,7 +14,7 @@ EMOJI = "[" + chr(0x1F300) + "-" + chr(0x1FAFF) + chr(0x2600) + "-" + chr(0x27BF
 BULLET_WITH_EMOJI = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+" + EMOJI)
 
 
-@rule("emojiBullet")
+@rule("emojiBullet", mechanism="dictionary")
 def emojiBullet(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """이모지로 시작하는 목록 항목.
 

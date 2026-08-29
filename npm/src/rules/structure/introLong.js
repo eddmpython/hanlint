@@ -2,6 +2,7 @@
 import { PARAGRAPH, finding } from "../finding.js";
 
 export const name = "introLong";
+export const mechanism = "threshold";
 
 /**
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc

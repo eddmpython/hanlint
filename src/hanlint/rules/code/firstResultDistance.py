@@ -11,7 +11,7 @@ from ..registry import rule
 RESULT_KINDS = (CODE, IMAGE, TABLE)
 
 
-@rule("firstResultDistance")
+@rule("firstResultDistance", mechanism="threshold")
 def firstResultDistance(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """첫 코드나 표나 그림이 나오기 전의 산문 문단이 firstResultMaxParagraphs 를 넘는 글.
 
