@@ -1,25 +1,16 @@
-"""분석 층. 문장 분리와 형태 판정을 분석기 인터페이스 뒤에 둔다.
+"""분석 층. 문장 분리와 어절 판정을 표층 (어절과 꼬리 사전) 으로 한다. 형태소 분석기는 없다.
 
-`surface` 는 표준 라이브러리만 쓰는 기본이고 `kiwi` 는 `pip install hanlint[kiwi]` 가 있을 때 갈아 끼우는
-정밀 모드다. 규칙은 이 인터페이스만 보고 분석기가 무엇인지 모른다. 왜 이렇게 나눴는지는
-memory/architecture/analyzerChoice.md 와 PRD 3절이 설명한다.
+지문이 필요로 하는 것은 넷이다. 문장 분리 (splitSentences), 관형격 조사 의 의 자리 (euiCount, euiAdjacent), 조사
+없이 이어진 명사 어절의 최장 길이 (longestNounRun), 이중 피동의 표층형 (doublePassives). 그 아래의 `grammar` 는
+조사와 활용처럼 어절 판정과 무관하게 참인 한국어 형태 사실이다.
+
+2026-08-29 까지는 형태소 분석기 (Kiwi) 를 선택으로 갈아 끼울 수 있었다. 기준 말뭉치 390편에서 둘을 대 보니 문장
+분리는 표층이 낫고, 의 셈과 명사 나열은 표층이 못 세던 자리를 메워 같아졌다. 그래서 하나만 남겼다.
 """
 
 from __future__ import annotations
 
-from .analyzer import Analyzer, Sentence
-from .surface.surfaceAnalyzer import SurfaceAnalyzer
-from .surface.tokenize import euiAdjacent
+from .splitSentences import Sentence, splitSentences
+from .tokenize import doublePassives, euiAdjacent, euiCount, longestNounRun
 
-__all__ = ["Analyzer", "Sentence", "SurfaceAnalyzer", "euiAdjacent", "makeAnalyzer"]
-
-
-def makeAnalyzer(name: str = "surface") -> Analyzer:
-    """이름으로 분석기를 만든다. kiwi 가 설치되지 않았으면 다음 행동을 담은 오류를 낸다."""
-    if name == "surface":
-        return SurfaceAnalyzer()
-    if name == "kiwi":
-        from .kiwi.kiwiAnalyzer import KiwiAnalyzer
-
-        return KiwiAnalyzer()
-    raise ValueError(f"모르는 분석기: {name}. surface 또는 kiwi 를 쓴다")
+__all__ = ["Sentence", "doublePassives", "euiAdjacent", "euiCount", "longestNounRun", "splitSentences"]

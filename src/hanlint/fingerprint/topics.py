@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from functools import cache
 
-from ..analysis.surface.tokenize import stripJosa, tailOf, words
+from ..analysis.tokenize import stripJosa, tailOf, words
 from ..data import loadLines
 
 WORD = re.compile(r"^[가-힣A-Za-z][가-힣A-Za-z0-9]*$")

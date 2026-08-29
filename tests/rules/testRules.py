@@ -1,4 +1,4 @@
-"""모든 규칙 fixture 를 두 분석기에 돌린다. catch 는 잡히고 spare 는 안 잡혀야 한다.
+"""모든 규칙 fixture 를 돌린다. catch 는 잡히고 spare 는 안 잡혀야 한다.
 
 fixture 가 없는 규칙과 규칙이 없는 fixture 도 여기서 잡는다. 규칙과 fixture 는 항상 짝이다.
 """
@@ -12,7 +12,7 @@ import pytest
 
 from hanlint.config import Config
 from hanlint.rules import ruleNames
-from tests.conftest import ANALYZERS, expandTokens, findingsOf
+from tests.conftest import expandTokens, findingsOf
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "rules"
 
@@ -29,16 +29,15 @@ def loadFixture(path: Path) -> dict:
 
 
 @pytest.mark.parametrize("path", fixtureFiles(), ids=lambda p: p.stem)
-@pytest.mark.parametrize("analyzer", ANALYZERS, ids=lambda a: a.name)
-def testFixture(path: Path, analyzer):
+def testFixture(path: Path):
     data = loadFixture(path)
     config = Config.fromMapping(data.get("config", {}))
     for text in data["catch"]:
-        rules = [f.rule for f in findingsOf(expandTokens(text), config, analyzer)]
-        assert data["rule"] in rules, f"[{analyzer.name}] 잡아야 하는데 안 잡았다: {text!r} → {rules}"
+        rules = [f.rule for f in findingsOf(expandTokens(text), config)]
+        assert data["rule"] in rules, f"잡아야 하는데 안 잡았다: {text!r} → {rules}"
     for text in data["spare"]:
-        rules = [f.rule for f in findingsOf(expandTokens(text), config, analyzer)]
-        assert data["rule"] not in rules, f"[{analyzer.name}] 잡지 말아야 하는데 잡았다: {text!r}"
+        rules = [f.rule for f in findingsOf(expandTokens(text), config)]
+        assert data["rule"] not in rules, f"잡지 말아야 하는데 잡았다: {text!r}"
 
 
 def testEveryRuleHasAFixtureAndEveryFixtureARule():

@@ -138,8 +138,8 @@ def testSparesRuleImportingSharedAndRegistry():
 
 
 def testAbsoluteImportIsCheckedToo():
-    files = {f"{PACKAGE}/analysis/analyzer.py": "import hanlint.fingerprint.build\n"}
-    assert layerViolations(files) == ["hanlint/analysis/analyzer.py 가 위층 fingerprint 를 import 한다"]
+    files = {f"{PACKAGE}/analysis/tokenize.py": "import hanlint.fingerprint.build\n"}
+    assert layerViolations(files) == ["hanlint/analysis/tokenize.py 가 위층 fingerprint 를 import 한다"]
 
 
 def testIgnoresStandardLibraryAndUnknown():

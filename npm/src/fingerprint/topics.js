@@ -1,6 +1,6 @@
 // @ts-check
 /** 화제어 집합. 조사를 뗀 명사 어절의 근사. 파이썬 fingerprint/topics.py 와 같다. */
-import { stripJosa, tailOf, words } from "../analysis/surface/tokenize.js";
+import { stripJosa, tailOf, words } from "../analysis/tokenize.js";
 import { loadLines } from "../data/load.js";
 
 const WORD = /^[가-힣A-Za-z][가-힣A-Za-z0-9]*$/;

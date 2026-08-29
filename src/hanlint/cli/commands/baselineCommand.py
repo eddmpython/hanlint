@@ -12,7 +12,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ... import analyzerFor
 from ...baseline import DEFAULT_NAME, build, load, prune, render
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
@@ -29,11 +28,10 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 
 def findingsOf(files: list[str], config) -> dict[str, list[Finding]]:
-    analyzer = analyzerFor(config)
     results: dict[str, list[Finding]] = {}
     for path in files:
         name, text = readInput(path)
-        results[name] = runAll(buildFingerprint(parseMarkdown(text, path=name), analyzer, config), config)
+        results[name] = runAll(buildFingerprint(parseMarkdown(text, path=name), config), config)
     return results
 
 

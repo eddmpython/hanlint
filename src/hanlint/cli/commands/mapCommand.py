@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ... import analyzerFor
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
 from ...report import renderMap, renderMapHtml
@@ -22,7 +21,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 def run(args: argparse.Namespace) -> int:
     config = configFrom(args, start=args.file.resolve().parent)
-    doc = buildFingerprint(parseMarkdown(readFile(args.file), path=str(args.file)), analyzerFor(config), config)
+    doc = buildFingerprint(parseMarkdown(readFile(args.file), path=str(args.file)), config)
     findings = runAll(doc, config)
     if args.format == "html":
         emit(renderMapHtml(doc, findings), args.output)

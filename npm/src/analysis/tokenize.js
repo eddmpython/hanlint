@@ -1,10 +1,10 @@
 // @ts-check
 /**
- * 어절 단위 근사. 조사와 어미 꼬리 사전으로 명사 어절을 가려낸다. 파이썬 analysis/surface/tokenize.py 와 같은 판정이다.
+ * 어절 단위 근사. 조사와 어미 꼬리 사전으로 명사 어절을 가려낸다. 파이썬 analysis/tokenize.py 와 같은 판정이다.
  * 띄어 쓴 조사와 계사는 앞 어절에 붙은 것으로, 영문 어절 연속은 한 덩어리로, 수사와 바로 뒤 단위는 수량으로 본다.
  */
-import { loadLines } from "../../data/load.js";
-import { splitWords, stripChars } from "../../text.js";
+import { loadLines } from "../data/load.js";
+import { splitWords, stripChars } from "../text.js";
 
 const HANGUL = /[가-힣]/;
 const HANGUL_WORD = /^[가-힣]+$/;

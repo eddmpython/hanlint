@@ -8,11 +8,10 @@
  * ```
  *
  * 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이다.
- * 지문 지도 (audit, map), 프로파일, kiwi 정밀 모드는 파이썬 패키지에 있다.
+ * 지문 지도 (audit, map) 와 프로파일은 파이썬 패키지에 있다.
  */
 import { readFileSync } from "node:fs";
 
-import { makeAnalyzer } from "./analysis/index.js";
 import { loadConfig } from "./config/loadConfig.js";
 import { configFromMapping, defaultConfig } from "./config/settings.js";
 import { loadVersion } from "./data/load.js";
@@ -25,19 +24,6 @@ import { ruleDoc, ruleNames, ruleSummary, runAll } from "./rules/registry.js";
 export { applyFixes, configFromMapping, defaultConfig, fingerprintDict, loadConfig, ruleDoc, ruleNames, ruleSummary };
 export const version = loadVersion();
 
-/** @type {Map<string, import("./analysis/index.js").Analyzer>} */
-const analyzers = new Map();
-
-/** @param {import("./config/settings.js").Config} config */
-export function analyzerFor(config) {
-  let analyzer = analyzers.get(config.analyzer);
-  if (!analyzer) {
-    analyzer = makeAnalyzer(config.analyzer);
-    analyzers.set(config.analyzer, analyzer);
-  }
-  return analyzer;
-}
-
 /**
  * 글을 한 번 읽어 지문을 만든다.
  * @param {string} text
@@ -45,7 +31,7 @@ export function analyzerFor(config) {
  * @param {string | null} [path]
  */
 export function fingerprint(text, config = defaultConfig(), path = null) {
-  return buildFingerprint(parseMarkdown(text, path), analyzerFor(config), config);
+  return buildFingerprint(parseMarkdown(text, path), config);
 }
 
 /**

@@ -1,4 +1,3 @@
-from hanlint.analysis import SurfaceAnalyzer
 from hanlint.config import Config
 from hanlint.document import parseMarkdown
 from hanlint.fingerprint import buildFingerprint
@@ -29,7 +28,7 @@ print(1)
 
 
 def build(text: str = SAMPLE, config: Config | None = None):
-    return buildFingerprint(parseMarkdown(text), SurfaceAnalyzer(), config)
+    return buildFingerprint(parseMarkdown(text), config)
 
 
 def testSentencesCarryLinesAndIndexes():

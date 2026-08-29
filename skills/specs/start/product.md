@@ -150,7 +150,7 @@ introLong 2, sectionNoProse 2, danglingDeixis 1 로 전부 참이었다. 규칙�
 같은 규칙, 같은 fixture, 같은 출력을 세 표면이 낸다. 사람은 파이썬 패키지 (`pip install hanlint`) 나 npm
 (`npx hanlint 글.md`, 설치 없음) 을 쓰고, 프로그램은 `lintText` 를 부르고, AI 는 `skills/use-hanlint/SKILL.md`
 를 읽는다. 파이썬이 정본이고 npm 은 투영이며 문체를 맞춘 본보기와 후보까지 글자 단위로 견준다. 지문 지도,
-프로파일, 형태소 정밀 모드는 파이썬 쪽에만 있다.
+프로파일은 파이썬 쪽에만 있다.
 
 ## 잡지 않는 것
 

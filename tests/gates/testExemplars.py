@@ -18,7 +18,7 @@ from hanlint.config import Config
 from hanlint.data import exemplarFor, exemplars
 from hanlint.report import exemplarInRegister
 from hanlint.rules import ruleNames
-from tests.conftest import ANALYZERS, findingsOf
+from tests.conftest import findingsOf
 
 ALWAYS_ON = Config(preset="blog")
 """본보기는 프리셋과 무관하게 그 규칙이 켜진 상태로 잰다."""
@@ -43,20 +43,19 @@ def testEveryRuleHasAnExemplar():
 
 @pytest.mark.parametrize("name", ruleNames())
 @pytest.mark.parametrize("register", REGISTERS)
-@pytest.mark.parametrize("analyzer", ANALYZERS, ids=lambda a: a.name)
-def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, register: str, analyzer):
+def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, register: str):
     exemplar = exemplarFor(name)
     assert exemplar is not None
     exemplar = exemplarInRegister(exemplar, register)
     config = configFor(name)
-    before = [f.rule for f in findingsOf(exemplar.before, config, analyzer)]
-    assert name in before, f"[{analyzer.name}/{register}] {name} 의 before 가 안 잡힌다: {exemplar.before!r} -> {before}"
-    afterFindings = findingsOf(exemplar.after, config, analyzer)
+    before = [f.rule for f in findingsOf(exemplar.before, config)]
+    assert name in before, f"[{register}] {name} 의 before 가 안 잡힌다: {exemplar.before!r} -> {before}"
+    afterFindings = findingsOf(exemplar.after, config)
     after = [f.rule for f in afterFindings]
-    assert name not in after, f"[{analyzer.name}/{register}] {name} 의 after 가 잡힌다: {exemplar.after!r}"
+    assert name not in after, f"[{register}] {name} 의 after 가 잡힌다: {exemplar.after!r}"
     # 규칙 A 의 답이 규칙 B 의 문제가 되면 충돌이다. 본보기의 after 는 어느 규칙의 error 에도 안 잡혀야 한다.
     conflicts = sorted({f.rule for f in afterFindings if f.severity == "error"})
-    assert not conflicts, f"[{analyzer.name}/{register}] {name} 의 after 가 다른 규칙에 잡힌다 {conflicts}: {exemplar.after!r}"
+    assert not conflicts, f"[{register}] {name} 의 after 가 다른 규칙에 잡힌다 {conflicts}: {exemplar.after!r}"
 
 
 def testMovedSaysWhatChanged():

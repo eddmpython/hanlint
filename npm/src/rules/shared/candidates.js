@@ -3,7 +3,7 @@
 import { HAEYO, HANDA, HAPNIDA, REGISTERS, conjugate, fitJosa } from "../../analysis/grammar/index.js";
 import * as hangul from "../../analysis/grammar/hangul.js";
 import { decomposePassive } from "../../analysis/grammar/voice.js";
-import { stripJosa, words } from "../../analysis/surface/tokenize.js";
+import { stripJosa, words } from "../../analysis/tokenize.js";
 import { loadLines } from "../../data/load.js";
 
 const ENDING_CANDIDATES = {

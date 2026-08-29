@@ -2,6 +2,7 @@
 /** 문서 모델을 한 번 훑어 글 지문을 만든다. 텍스트를 읽는 유일한 자리다. 파이썬 fingerprint/build.py 와 같다. */
 import { defaultConfig } from "../config/settings.js";
 import { NONE as NO_REGISTER, documentRegister, lastWord, registerOfWord } from "../analysis/grammar/register.js";
+import { doublePassives, euiCount, longestNounRun, splitSentences } from "../analysis/index.js";
 import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/model.js";
 import { dropFences } from "../document/parseMarkdown.js";
 import { codeSpans, plainText } from "../document/plainText.js";
@@ -98,7 +99,7 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
 
 /**
  * 문장 안의 인용 구간. 블록의 인라인 코드 구간을 문장 좌표로 옮기고 따옴표 쌍을 더한다.
- * @param {import("../analysis/surface/splitSentences.js").Sentence} sentence
+ * @param {import("../analysis/splitSentences.js").Sentence} sentence
  * @param {[number, number][]} blockCodeSpans
  * @returns {[number, number][]}
  */
@@ -122,13 +123,12 @@ function quotedIn(sentence, blockCodeSpans) {
  * @param {import("../document/model.js").Block} block
  * @param {number} paragraphIndex
  * @param {number} sectionIndex
- * @param {import("../analysis/index.js").Analyzer} analyzer
  * @param {import("./dictionaries.js").Entry[]} entries
  * @param {[number, number][]} quoted
  * @returns {SentencePrint}
  */
 function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
-  const { analyzer, entries } = build;
+  const { entries } = build;
   const ending = markers.endingOf(text);
   const deixis = markers
     .matchedSpans(text, "deixis.txt")
@@ -151,9 +151,9 @@ function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
     connectorStart: markers.connectorStartOf(text),
     causal: markers.countMatches(text, "causalMarkers.txt"),
     deixis,
-    euiCount: analyzer.euiCount(text),
-    nounRun: analyzer.longestNounRun(text),
-    passives: analyzer.doublePassives(text),
+    euiCount: euiCount(text),
+    nounRun: longestNounRun(text),
+    passives: doublePassives(text),
     hedges: markers.countMatches(text, "hedges.txt"),
     numbers: markers.countNumbers(text),
     topics: topicsOf(text),
@@ -200,14 +200,13 @@ function makeParagraphPrint(build, sentences, block, sectionIndex, previous, fol
 /**
  * @param {import("../document/model.js").Section} section
  * @param {number} sectionIndex
- * @param {import("../analysis/index.js").Analyzer} analyzer
  * @param {import("./dictionaries.js").Entry[]} entries
  * @param {SentencePrint[]} sentences
  * @param {ParagraphPrint[]} paragraphs
  * @returns {SectionPrint}
  */
 function buildSection(build, section, sectionIndex) {
-  const { analyzer, sentences, paragraphs } = build;
+  const { sentences, paragraphs } = build;
   /** @type {ParagraphPrint[]} */
   const sectionParagraphs = [];
   /** @type {import("../document/model.js").Block | null} */
@@ -221,7 +220,7 @@ function buildSection(build, section, sectionIndex) {
     const blockCodeSpans = codeSpans(block.text, text);
     /** @type {SentencePrint[]} */
     const blockSentences = [];
-    for (const sentence of analyzer.sentences(text)) {
+    for (const sentence of splitSentences(text)) {
       const line = block.startLine + countIn(text, "\n", sentence.start);
       const quoted = quotedIn(sentence, blockCodeSpans);
       const made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted);
@@ -257,14 +256,13 @@ function buildSection(build, section, sectionIndex) {
 
 /**
  * @param {import("../document/model.js").Document} doc
- * @param {import("../analysis/index.js").Analyzer} analyzer
  * @param {import("../config/settings.js").Config} [config]
  * @returns {DocumentPrint}
  */
-export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
+export function buildFingerprint(doc, config = defaultConfig()) {
   // 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
   doc = dropFences(doc, config.ignoreFences);
-  const build = { analyzer, entries: entriesFor(config), sentences: /** @type {SentencePrint[]} */ ([]), paragraphs: /** @type {ParagraphPrint[]} */ ([]) };
+  const build = { entries: entriesFor(config), sentences: /** @type {SentencePrint[]} */ ([]), paragraphs: /** @type {ParagraphPrint[]} */ ([]) };
   const { sentences, paragraphs } = build;
   const sections = doc.sections.map((section, index) =>
     buildSection(build, section, index),

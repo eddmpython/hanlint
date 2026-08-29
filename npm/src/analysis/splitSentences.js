@@ -1,5 +1,5 @@
 // @ts-check
-/** 종결 부호 뒤 공백에서 문장을 나눈다. 파이썬 analysis/surface/splitSentences.py 와 같다. */
+/** 종결 부호 뒤 공백에서 문장을 나눈다. 파이썬 analysis/splitSentences.py 와 같다. */
 
 const TERMINAL = /[.?!]+\s+(?=\S)/g;
 const ABBREVIATION = /(?:^|[^A-Za-z])[A-Za-z]$/;

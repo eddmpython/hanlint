@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ... import analyzerFor
 from ...document import parseMarkdown
 from ...edit import applyFixes
 from ...fingerprint import buildFingerprint
@@ -38,11 +37,10 @@ def writeRaw(path: Path, text: str) -> None:
 def run(args: argparse.Namespace) -> int:
     files = collectFiles(args.files)
     config = configFrom(args, start=startFolder(files))
-    analyzer = analyzerFor(config)
     lines: list[str] = []
     for path in files:
         text = readRaw(Path(path))
-        doc = buildFingerprint(parseMarkdown(text, path=path), analyzer, config)
+        doc = buildFingerprint(parseMarkdown(text, path=path), config)
         # notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
         errors = [f for f in runAll(doc, config) if f.severity == "error"]
         result = applyFixes(text, errors)

@@ -33,7 +33,7 @@ status: curated
 | 테스트 파일 | `test` 접두 camelCase | `tests/rules/testDoublePassive.py` |
 | 테스트 함수 | `test` 접두 camelCase | `def testCatchesDoublePassive()` |
 
-snake_case 는 승인된 적 없다. 예외는 외부 명칭뿐이다. Kiwi 태그 (`NNG`), 서드파티 함수의 키워드 인자
+snake_case 는 승인된 적 없다. 예외는 외부 명칭뿐이다. 서드파티 함수의 키워드 인자
 (`ensure_ascii=False`), 프로토콜 키. 호출 측 키워드는 외부 계약이라 게이트가 보지 않고, 정의 측 (함수 정의,
 인자, 대입) 만 본다. `__init__.py` 와 `conftest.py` 는 파이썬이 정한 이름이라 예외다.
 
@@ -47,7 +47,7 @@ snake_case 는 승인된 적 없다. 예외는 외부 명칭뿐이다. Kiwi 태�
 - `dataclass(frozen=True)` 를 값 객체의 기본으로. 가변이 필요할 때만 푼다.
 - 공개 함수는 타입 힌트를 전부 붙인다. 내부 함수도 인자에는 붙인다.
 - `from __future__ import annotations` 를 모든 모듈 첫 줄에.
-- import 순서: 표준 라이브러리, 빈 줄, 패키지 내부 (아래층만). 서드파티는 kiwi 어댑터 안에서만 지연 import.
+- import 순서: 표준 라이브러리, 빈 줄, 패키지 내부 (아래층만). 런타임 서드파티 의존성은 없다.
 
 ## docstring
 

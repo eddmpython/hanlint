@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 
-from ... import analyzerFor
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
 from ...report import LAYERS, renderFingerprintJson
@@ -26,6 +25,6 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 def run(args: argparse.Namespace) -> int:
     config = configFrom(args, start=startFolder([args.file]))
     name, text = readInput(args.file, args.stdinPath)
-    doc = buildFingerprint(parseMarkdown(text, path=name), analyzerFor(config), config)
+    doc = buildFingerprint(parseMarkdown(text, path=name), config)
     emit(renderFingerprintJson(doc, args.layer), args.output)
     return 0

@@ -12,15 +12,15 @@
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
-hanlint doctor                설정, 분석기, 꺼진 규칙
+ * hanlint doctor                설정과 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
  * ```
- * audit, map, watch, profile 과 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.
+ * audit, map, watch, profile 은 파이썬 패키지 (pip install hanlint) 에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
-import { analyzerFor, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
+import { fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
 import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
 import { loadConfig } from "../config/loadConfig.js";
 import { DEFAULT_PRESET, defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
@@ -42,7 +42,6 @@ const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "basel
 const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
-const ANALYZER_CHOICES = ["surface", "kiwi"];
 /** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py 가 소유한다. */
 const ISSUES = "github.com/eddmpython/hanlint/issues";
 const STDIN = "-";
@@ -86,14 +85,13 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
 파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다 (점으로 시작하는 폴더와 node_modules 는 건너뛴다).
 인자가 없으면 첫 화면이 나온다.
 한국어 글에서 반복되는 결함을 결정적으로 잡는다. 종료 코드는 0 (지적 없음), 1 (error 지적), 2 (파일이나 설정 문제).
-${PYTHON_ONLY.join(", ")} 와 kiwi 정밀 모드는 파이썬 패키지 (pip install hanlint) 에 있다.`;
+${PYTHON_ONLY.join(", ")} 는 파이썬 패키지 (pip install hanlint) 에 있다.`;
 
 /** @type {Record<string, "value" | "list" | "flag">} */
 const OPTION_KINDS = {
   "--format": "value",
   "--config": "value",
   "--disable": "list",
-  "--analyzer": "value",
   "--output": "value",
   "--no-color": "flag",
   "--quiet": "flag",
@@ -216,7 +214,6 @@ function configFrom(options, paths) {
   const config = loadConfig(/** @type {string | undefined} */ (options["--config"]) ?? null, startFolder(paths));
   if (options["--preset"]) config.preset = choose(/** @type {string} */ (options["--preset"]), PRESET_NAMES, "--preset");
   for (const rule of /** @type {string[]} */ (options["--disable"] ?? [])) config.disable.add(rule);
-  if (options["--analyzer"]) config.analyzer = choose(/** @type {string} */ (options["--analyzer"]), ANALYZER_CHOICES, "--analyzer");
   checkDisabled(config);
   return config;
 }
@@ -352,7 +349,6 @@ function runBaseline(args) {
   if (!positionals.length) throw new UsageError("잠글 마크다운 파일이 필요하다");
   const files = collectFiles(positionals);
   const config = configFrom(options, files);
-  analyzerFor(config);
   const target = /** @type {string} */ (options["--output"] ?? config.baseline ?? DEFAULT_BASELINE);
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
   const results = new Map();
@@ -378,7 +374,6 @@ function runLint(args) {
   const format = choose(/** @type {string} */ (options["--format"] ?? "text"), FORMATS, "--format");
   const severity = options["--errors-only"] ? "error" : choose(/** @type {string} */ (options["--severity"] ?? "all"), SEVERITIES, "--severity");
   const config = configFrom(options, files);
-  analyzerFor(config);
   const baseline = openBaseline(options, config);
   const stdinName = /** @type {string} */ (options["--path"] ?? STDIN_NAME);
   /** @type {Map<string, import("../rules/finding.js").Finding[]>} */
@@ -439,8 +434,6 @@ function runFix(args) {
   if (!positionals.length) throw new UsageError("고칠 마크다운 파일이 필요하다");
   const files = collectFiles(positionals);
   const config = configFrom(options, files);
-  const analyzer = analyzerFor(config);
-  void analyzer;
   const lines = [];
   for (const path of files) {
     const text = readFileSync(path, "utf-8");
@@ -638,7 +631,6 @@ function runDoctor(args) {
     `node      ${process.version.replace(/^v/, "")}`,
     `설정      ${configLabel(config)}`,
     `프리셋    ${config.preset} (${PRESET_NAMES.join(", ")} 가운데)`,
-    `분석기    ${config.analyzer}. kiwi 정밀 모드는 파이썬 패키지에 있다 (pip install hanlint[kiwi])`,
     `규칙      ${names.length - off.length}개 켜짐, ${off.length}개 꺼짐`,
     `잠금      ${baselineState(config)}`,
     `폴더      점으로 시작하는 폴더와 ${SKIPPED_FOLDERS.join(", ")} 는 건너뛴다. 직접 주면 검사한다`,
@@ -668,9 +660,6 @@ export function renderInit(preset = "blog") {
   lines.push(
     "",
     "disable = []",
-    "",
-    "# surface 는 의존성 0 기본, kiwi 는 pip install hanlint[kiwi] 가 있을 때",
-    `analyzer = "${defaults.analyzer}"`,
     "",
     "# 대표 검색어를 읽을 frontmatter 필드. 없으면 keywordMissing 은 돌지 않는다",
     '# keywordField = "primaryKeyword"',

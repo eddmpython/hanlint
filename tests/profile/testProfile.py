@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from hanlint import Config, analyzerFor
+from hanlint import Config
 from hanlint.document import parseMarkdown
 from hanlint.fingerprint import buildFingerprint
 from hanlint.profile import buildProfile, compareToProfile, loadProfile, saveProfile
@@ -20,7 +20,7 @@ LONG = (
 
 def fingerprintOf(text: str):
     config = Config()
-    return buildFingerprint(parseMarkdown(text), analyzerFor(config), config)
+    return buildFingerprint(parseMarkdown(text), config)
 
 
 def referenceProfile():

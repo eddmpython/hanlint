@@ -79,6 +79,10 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Removed
 
+- **형태소 정밀 모드 (kiwi).** `pip install hanlint[kiwi]`, `--analyzer`, 설정 `analyzer` 가 사라졌다. 기준 말뭉치
+  390편에서 표층 분석기가 형태소 분석기와 같거나 낫게 세게 된 뒤 뺐다 (문장 분리는 표층이 낫고 의 셈과 명사 나열은
+  갈리던 자리를 메웠다). 옛 설정 파일의 `analyzer = "surface"` 는 조용히 넘기고 다른 값은 빠졌다고 알린다.
+  `buildFingerprint(doc, config)` 에서 분석기 인자가 빠졌다
 - **`readerAbsent`.** 물음도 독자 호출도 없는 글을 짚던 규칙. 물음이 없는 글을 짚는 `noQuestion` 의 부분집합이라
   같은 글에 지적 둘이 붙었다 (본보기 게이트가 드러냈다). `noQuestion` 의 지적문이 독자 호출 여부까지 말한다.
   `report` 와 `docs` 프리셋의 목록에서도 뺐다

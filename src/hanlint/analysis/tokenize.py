@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass
 from functools import cache
 
-from ...data import loadLines
+from ..data import loadLines
 
 HANGUL = re.compile(r"[가-힣]")
 HANGUL_WORD = re.compile(r"^[가-힣]+$")
@@ -192,5 +192,5 @@ def doublePassivePattern() -> re.Pattern[str]:
 
 
 def doublePassives(text: str) -> list[str]:
-    """이중 피동의 표층형을 `되어지` 꼴로 정규화해 준다. kiwi 분석기와 같은 모양이다."""
+    """이중 피동의 표층형을 `되어지` 꼴로 정규화해 준다."""
     return [stem + "지" for stem in doublePassivePattern().findall(text)]

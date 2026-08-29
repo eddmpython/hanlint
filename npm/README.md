@@ -29,7 +29,7 @@ for (const finding of lintFile("글.md")) console.log(finding.line, finding.rule
 ```
 
 파이썬 패키지 (`pip install hanlint`) 와 같은 규칙, 같은 fixture, 같은 출력이다. 지문 지도 (`audit`, `map`),
-문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`), 형태소 정밀 모드 (kiwi) 는 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는
+문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`) 은 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는
 [저장소의 product 문서](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/product.md) 에 있다.
 
 MIT.

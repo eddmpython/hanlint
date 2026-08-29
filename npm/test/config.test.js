@@ -50,7 +50,7 @@ test("parseToml refuses what it cannot read", () => {
 
 test("configFromMapping validates keys", () => {
   assert.throws(() => configFromMapping({ unknown: 1 }), /모르는 설정 키/);
-  assert.throws(() => configFromMapping({ analyzer: "mecab" }), /analyzer 는/);
+  assert.throws(() => configFromMapping({ analyzer: "kiwi" }), /빠졌다/);
   assert.throws(() => configFromMapping({ ignoreFences: "course-scene" }), /문자열 배열/);
   assert.throws(() => configFromMapping({ endingFields: "readerTakeaway" }), /문자열 배열/);
   const config = configFromMapping({ disable: ["dash"], nounPileMin: 7 });

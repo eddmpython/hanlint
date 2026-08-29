@@ -19,7 +19,7 @@ def euiChain(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     고치기: 동사로 편다. 회사의 팀의 결정 은 회사에서 팀이 정한 것.
     안 잡는 것: 낱말 안의 의 (의미, 의사) 와 의 로 끝나는 낱말 (정의, 회의. 목록은 data/euiNouns.txt). 떨어져 있는
         의 둘 (글쓰기 규칙의 정본은 사용자 저장소의 스킬이다) 은 자연스러운 한국어라 잡지 않는다. 실측: 문서에서
-        둘 기준이 오탐 4건을 냈다. surface 분석기는 의 뒤에 공백이 올 때만 세고 kiwi 는 JKG 태그를 센다.
+        둘 기준이 오탐 4건을 냈다. 의 가 붙은 자리의 정의는 analysis/tokenize.py 의 genitiveSpans 다.
     """
     for sentence in doc.sentences:
         if sentence.euiCount >= 3 or (sentence.euiCount >= 2 and euiAdjacent(sentence.text)):

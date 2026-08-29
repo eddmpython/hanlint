@@ -9,7 +9,6 @@ import argparse
 import json
 from pathlib import Path
 
-from ... import analyzerFor
 from ...coverage import coverageDict, coverageOf, loadReview, renderCoverage
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
@@ -28,7 +27,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 def run(args: argparse.Namespace) -> int:
     config = configFrom(args, start=startFolder([args.file]))
     text = readFile(Path(args.file))
-    doc = buildFingerprint(parseMarkdown(text, path=args.file), analyzerFor(config), config)
+    doc = buildFingerprint(parseMarkdown(text, path=args.file), config)
     coverage = coverageOf(text, runAll(doc, config), loadReview(args.review))
     if args.format == "json":
         emit(json.dumps(coverageDict(coverage), ensure_ascii=False, indent=2), args.output)

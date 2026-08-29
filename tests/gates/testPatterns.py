@@ -14,7 +14,7 @@ from hanlint.config import Config
 from hanlint.data import patterns, patternsAvoiding
 from hanlint.report import patternInRegister
 from hanlint.rules import ruleNames
-from tests.conftest import ANALYZERS, findingsOf
+from tests.conftest import findingsOf
 
 BLOG = Config(preset="blog")
 """문형은 프리셋과 무관하게 규칙이 전부 켜진 상태로 잰다."""
@@ -41,14 +41,13 @@ def testFormHasSlots():
 
 @pytest.mark.parametrize("pattern", patterns(), ids=lambda p: p.name)
 @pytest.mark.parametrize("register", REGISTERS)
-@pytest.mark.parametrize("analyzer", ANALYZERS, ids=lambda a: a.name)
-def testExamplePassesAndInsteadIsCaught(pattern, register: str, analyzer):
+def testExamplePassesAndInsteadIsCaught(pattern, register: str):
     pattern = patternInRegister(pattern, register)
-    found = [f.rule for f in findingsOf(pattern.example, BLOG, analyzer) if f.severity == "error"]
-    assert not found, f"[{analyzer.name}/{register}] {pattern.name} 의 example 이 잡힌다: {found}"
-    caught = {f.rule for f in findingsOf(pattern.instead, BLOG, analyzer)}
+    found = [f.rule for f in findingsOf(pattern.example, BLOG) if f.severity == "error"]
+    assert not found, f"[{register}] {pattern.name} 의 example 이 잡힌다: {found}"
+    caught = {f.rule for f in findingsOf(pattern.instead, BLOG)}
     missing = [rule for rule in pattern.avoids if rule not in caught]
-    assert not missing, f"[{analyzer.name}/{register}] {pattern.name} 의 instead 가 {missing} 에 안 잡힌다: {caught}"
+    assert not missing, f"[{register}] {pattern.name} 의 instead 가 {missing} 에 안 잡힌다: {caught}"
 
 
 def testLookupByRule():

@@ -6,7 +6,6 @@
 [tool.hanlint]
 preset = "blog"
 disable = ["nounPile"]
-analyzer = "surface"
 keywordField = "primaryKeyword"
 fragmentRun = 3
 
@@ -19,8 +18,6 @@ translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-
-ANALYZERS = ("surface", "kiwi")
 
 PRESETS: dict[str, tuple[str, ...]] = {
     "blog": (),
@@ -55,8 +52,6 @@ class Config:
     """글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다. disable 은 그 위에 더한다."""
     disable: set[str] = field(default_factory=set)
     """끌 규칙 이름."""
-    analyzer: str = "surface"
-    """분석기. surface 는 의존성 0, kiwi 는 `pip install hanlint[kiwi]` 가 필요하다."""
     keywordField: str | None = None
     """대표 검색어를 읽을 frontmatter 필드. 없으면 keywordMissing 은 돌지 않는다."""
     introFields: list[str] = field(default_factory=list)
@@ -135,9 +130,9 @@ class Config:
             if key == "disable":
                 config.disable = set(value)
             elif key == "analyzer":
-                if value not in ANALYZERS:
-                    raise ValueError(f"analyzer 는 {' 또는 '.join(ANALYZERS)} 다: {value}")
-                config.analyzer = value
+                # 0.0.7 까지의 키. hanlint init 이 surface 를 써 넣었으므로 그 값은 조용히 넘기고 다른 값은 빠졌다고 알린다.
+                if value != "surface":
+                    raise ValueError(f"analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: {value}")
             elif key == "preset":
                 if value not in PRESETS:
                     raise ValueError(f"preset 은 {', '.join(PRESET_NAMES)} 가운데 하나다: {value}")

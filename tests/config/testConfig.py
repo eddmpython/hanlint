@@ -7,7 +7,6 @@ from hanlint.config import Config, loadConfig
 
 def testDefaultsAreTheTruth():
     config = Config()
-    assert config.analyzer == "surface"
     assert config.nounPileMin == 5
     assert config.enabled("deixis")
 
@@ -23,11 +22,13 @@ def testFromMappingSetsKnownKeys():
     assert config.headingSentenceMaxLevel == 6 and config.bridgeRepeatMin == 3
 
 
-def testFromMappingRejectsUnknownKeyAndBadAnalyzer():
+def testFromMappingRejectsUnknownKeyAndRemovedAnalyzer():
     with pytest.raises(ValueError):
         Config.fromMapping({"nounPileMinimum": 3})
-    with pytest.raises(ValueError):
-        Config.fromMapping({"analyzer": "mecab"})
+    # 0.0.7 까지 hanlint init 이 써 넣던 키. surface 는 조용히 넘기고 다른 값은 빠졌다고 알린다
+    assert not hasattr(Config.fromMapping({"analyzer": "surface"}), "analyzer")
+    with pytest.raises(ValueError, match="빠졌다"):
+        Config.fromMapping({"analyzer": "kiwi"})
     # 배열 자리에 문자열을 주면 글자 단위로 쪼개져 조용히 무시된다. 실측: 검증에서 잡혔다
     with pytest.raises(ValueError):
         Config.fromMapping({"ignoreFences": "course-scene"})

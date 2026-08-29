@@ -7,7 +7,7 @@
     "설명.\n\n```course-scene\nannotate: visual.1 | A {em} B\n```\n"
   ],
   "config": { "ignoreFences": ["course-scene"] },
-  "analyzerNote": "마지막 catch 는 지문에서 뺀 펜스 안의 대시다. 렌더러가 지우는 펜스라도 파일에 있는 글자라 본다",
+  "note": "마지막 catch 는 지문에서 뺀 펜스 안의 대시다. 렌더러가 지우는 펜스라도 파일에 있는 글자라 본다",
   "spare": [
     "빠르다. 그리고 가볍다. 범위는 2020~2024 다. a-b 를 씁니다."
   ]

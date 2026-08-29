@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .analysis import Analyzer, makeAnalyzer
 from .audit import AuditResult, auditDocument
 from .config import Config, loadConfig
 from .document import parseMarkdown
@@ -42,20 +41,11 @@ __all__ = [
 ]
 __version__ = "0.0.7"
 
-# 분석기는 이름마다 한 번만 만든다. kiwi 는 올리는 데 몇 초가 든다.
-_analyzers: dict[str, Analyzer] = {}
-
-
-def analyzerFor(config: Config) -> Analyzer:
-    if config.analyzer not in _analyzers:
-        _analyzers[config.analyzer] = makeAnalyzer(config.analyzer)
-    return _analyzers[config.analyzer]
-
 
 def fingerprint(text: str, config: Config | None = None, path: str | None = None) -> DocumentPrint:
     """글을 한 번 읽어 지문을 만든다."""
     config = config or Config()
-    return buildFingerprint(parseMarkdown(text, path=path), analyzerFor(config), config)
+    return buildFingerprint(parseMarkdown(text, path=path), config)
 
 
 def lintText(text: str, config: Config | None = None, path: str | None = None) -> list[Finding]:

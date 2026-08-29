@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from statistics import mean, pstdev
 
-from ..analysis import Analyzer, Sentence
+from ..analysis import Sentence, doublePassives, euiCount, longestNounRun, splitSentences
 from ..analysis.grammar import NONE as NO_REGISTER
 from ..analysis.grammar import documentRegister, lastWord, registerOfWord
 from ..config import Config
@@ -35,13 +35,12 @@ def quotedIn(sentence: Sentence, blockCodeSpans: tuple[tuple[int, int], ...]) ->
 
 @dataclass
 class Build:
-    """지문을 쌓는 동안 들고 다니는 것. 분석기와 사전은 안 바뀌고 두 목록은 쌓인다.
+    """지문을 쌓는 동안 들고 다니는 것. 사전은 안 바뀌고 두 목록은 쌓인다.
 
     자리 (문장 index 와 문단 index) 는 넘겨받지 않고 쌓인 길이에서 얻는다. 넘겨받으면 부르는 쪽이 셈을
     맞춰야 하고 그 셈이 틀려도 아무도 모른다. 여기서 세면 틀릴 자리가 없다.
     """
 
-    analyzer: Analyzer
     entries: tuple[Entry, ...]
     sentences: list[SentencePrint] = field(default_factory=list)
     paragraphs: list[ParagraphPrint] = field(default_factory=list)
@@ -55,7 +54,6 @@ def makeSentencePrint(
     sectionIndex: int,
     quoted: tuple[tuple[int, int], ...],
 ) -> SentencePrint:
-    analyzer = build.analyzer
     ending = markers.endingOf(text)
     deixis = tuple(
         found for start, end, found in markers.matchedSpans(text, "deixis.txt") if not markers.insideAny(start, end, quoted)
@@ -76,9 +74,9 @@ def makeSentencePrint(
         connectorStart=markers.connectorStartOf(text),
         causal=markers.countMatches(text, "causalMarkers.txt"),
         deixis=deixis,
-        euiCount=analyzer.euiCount(text),
-        nounRun=analyzer.longestNounRun(text),
-        passives=tuple(analyzer.doublePassives(text)),
+        euiCount=euiCount(text),
+        nounRun=longestNounRun(text),
+        passives=tuple(doublePassives(text)),
         hedges=markers.countMatches(text, "hedges.txt"),
         numbers=markers.countNumbers(text),
         topics=topicsOf(text),
@@ -128,7 +126,7 @@ def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPr
         text = plainText(block.text)
         blockCodeSpans = codeSpans(block.text, text)
         blockSentences: list[SentencePrint] = []
-        for sentence in build.analyzer.sentences(text):
+        for sentence in splitSentences(text):
             line = block.startLine + text.count("\n", 0, sentence.start)
             quoted = quotedIn(sentence, blockCodeSpans)
             made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted)
@@ -159,11 +157,11 @@ def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPr
     )
 
 
-def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = None) -> DocumentPrint:
+def buildFingerprint(doc: Document, config: Config | None = None) -> DocumentPrint:
     config = config or Config()
     # 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
     doc = dropFences(doc, config.ignoreFences)
-    build = Build(analyzer, entriesFor(config))
+    build = Build(entriesFor(config))
     sections = [buildSection(build, section, index) for index, section in enumerate(doc.sections)]
     sentences, paragraphs = build.sentences, build.paragraphs
     headings = tuple((b.level, b.text, b.startLine) for b in doc.blocks if b.kind == HEADING)

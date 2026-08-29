@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ..analysis.surface.tokenize import stripJosa, words
+from ..analysis.tokenize import stripJosa, words
 from ..fingerprint import SentencePrint
 from .shape import Lexicon
 

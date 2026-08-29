@@ -4,8 +4,6 @@
  * 기본값을 바꾸면 양쪽을 같은 작업에서 바꾼다. tests/parity 가 두 구현의 결과를 견준다.
  */
 
-export const ANALYZERS = ["surface", "kiwi"];
-
 /**
  * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py 의 PRESETS 다.
  * @type {Record<string, string[]>}
@@ -32,7 +30,6 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @typedef {object} Config
  * @property {string} preset 글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다
  * @property {Set<string>} disable 끌 규칙 이름
- * @property {string} analyzer
  * @property {string | null} keywordField
  * @property {string[]} introFields
  * @property {string[]} endingFields
@@ -67,7 +64,6 @@ export function defaultConfig() {
   return {
     preset: DEFAULT_PRESET,
     disable: new Set(),
-    analyzer: "surface",
     keywordField: null,
     introFields: [],
     endingFields: [],
@@ -116,10 +112,8 @@ export function configFromMapping(data) {
     if (key === "disable") {
       config.disable = new Set(/** @type {string[]} */ (value));
     } else if (key === "analyzer") {
-      if (!ANALYZERS.includes(/** @type {string} */ (value))) {
-        throw new Error(`analyzer 는 ${ANALYZERS.join(" 또는 ")} 다: ${value}`);
-      }
-      config.analyzer = /** @type {string} */ (value);
+      // 0.0.7 까지의 키. hanlint init 이 surface 를 써 넣었으므로 그 값은 조용히 넘기고 다른 값은 빠졌다고 알린다.
+      if (value !== "surface") throw new Error(`analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: ${value}`);
     } else if (key === "preset") {
       if (!(/** @type {string} */ (value) in PRESETS)) {
         throw new Error(`preset 은 ${PRESET_NAMES.join(", ")} 가운데 하나다: ${value}`);

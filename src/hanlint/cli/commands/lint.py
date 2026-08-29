@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ... import analyzerFor
 from ...baseline import DEFAULT_NAME, Baseline, load
 from ...document import parseMarkdown
 from ...fingerprint import DocumentPrint, buildFingerprint
@@ -73,7 +72,6 @@ def profileFindings(doc: DocumentPrint, profile: Profile) -> list[Finding]:
 def run(args: argparse.Namespace) -> int:
     files = collectFiles(args.files)
     config = configFrom(args, start=startFolder(files))
-    analyzer = analyzerFor(config)
     profilePath = args.profile or (Path(config.profile) if config.profile else None)
     profile = loadProfile(profilePath) if profilePath else None
     baselinePath = args.baseline or (Path(config.baseline) if config.baseline else None)
@@ -84,7 +82,7 @@ def run(args: argparse.Namespace) -> int:
     for path in files:
         name, text = readInput(path, args.stdinPath)
         texts[name] = text
-        doc = buildFingerprint(parseMarkdown(text, path=name), analyzer, config)
+        doc = buildFingerprint(parseMarkdown(text, path=name), config)
         registers[name] = doc.register
         findings = runAll(doc, config)
         if profile:

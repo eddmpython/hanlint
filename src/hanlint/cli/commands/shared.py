@@ -75,7 +75,6 @@ def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] =
     parser.add_argument(
         "--disable", action="append", default=[], metavar="RULE", help="이번 실행에서 끌 규칙. 여러 번 줄 수 있다"
     )
-    parser.add_argument("--analyzer", choices=("surface", "kiwi"), help="분석기. 기본은 설정이나 surface")
     parser.add_argument("--format", choices=formats, default=formats[0], help=f"출력 꼴. 기본 {formats[0]}")
     if output:
         addOutputOption(parser)
@@ -123,7 +122,7 @@ def checkDisabled(config: Config) -> None:
 
     실측: `--disable 없는규칙` 이 조용히 지나갔고 `hanlint doctor` 는 그것을 꺼진 규칙으로 세어
     `꺼진 규칙 ..., 없는규칙` 이라고 확인해 줬다. 껐다고 믿은 규칙이 계속 잡히는데 도구는 껐다고 말한다.
-    `preset` 과 `analyzer` 는 이미 모르는 값을 거절한다. 규칙 이름만 예외일 이유가 없다.
+    `preset` 은 이미 모르는 값을 거절한다. 규칙 이름만 예외일 이유가 없다.
     """
     names = ruleNames()
     unknown = sorted(set(config.disable) - set(names))
@@ -139,8 +138,6 @@ def configFrom(args: argparse.Namespace, start: Path | None = None) -> Config:
     if getattr(args, "preset", None):
         config.preset = args.preset
     config.disable |= set(getattr(args, "disable", []) or [])
-    if getattr(args, "analyzer", None):
-        config.analyzer = args.analyzer
     checkDisabled(config)
     return config
 

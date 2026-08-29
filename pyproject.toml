@@ -29,11 +29,10 @@ classifiers = [
   "Topic :: Text Processing :: Linguistic",
   "Topic :: Text Processing :: Markup :: Markdown",
 ]
-# 런타임 의존성 0. 형태소 정밀 모드만 선택 extra 다.
+# 런타임 의존성 0. extra 는 개발 도구뿐이다.
 dependencies = []
 
 [project.optional-dependencies]
-kiwi = ["kiwipiepy>=0.20"]
 dev = ["pytest>=8", "ruff>=0.5"]
 
 [project.urls]

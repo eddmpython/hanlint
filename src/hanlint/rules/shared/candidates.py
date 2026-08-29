@@ -11,7 +11,7 @@ import re
 from ...analysis.grammar import HAEYO, HANDA, HAPNIDA, REGISTERS, fitJosa, hangul
 from ...analysis.grammar.predicate import conjugate, polite
 from ...analysis.grammar.voice import decomposePassive
-from ...analysis.surface.tokenize import stripJosa, words
+from ...analysis.tokenize import stripJosa, words
 from ...data import loadLines
 from ...fingerprint import SentencePrint
 from ..finding import Candidate

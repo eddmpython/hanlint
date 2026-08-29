@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ... import analyzerFor
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
 from ...report import renderDiff
@@ -23,8 +22,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 def run(args: argparse.Namespace) -> int:
     config = configFrom(args, start=startFolder([args.after]))
-    analyzer = analyzerFor(config)
-    beforeDoc = buildFingerprint(parseMarkdown(readFile(args.before), path=str(args.before)), analyzer, config)
-    afterDoc = buildFingerprint(parseMarkdown(readFile(args.after), path=str(args.after)), analyzer, config)
+    beforeDoc = buildFingerprint(parseMarkdown(readFile(args.before), path=str(args.before)), config)
+    afterDoc = buildFingerprint(parseMarkdown(readFile(args.after), path=str(args.after)), config)
     emit(renderDiff(beforeDoc, afterDoc, runAll(beforeDoc, config), runAll(afterDoc, config)), args.output)
     return 0

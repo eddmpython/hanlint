@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ... import analyzerFor
 from ...audit import auditDocument
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
@@ -23,7 +22,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 def run(args: argparse.Namespace) -> int:
     config = configFrom(args, start=args.file.resolve().parent)
-    doc = buildFingerprint(parseMarkdown(readFile(args.file), path=str(args.file)), analyzerFor(config), config)
+    doc = buildFingerprint(parseMarkdown(readFile(args.file), path=str(args.file)), config)
     findings = runAll(doc, config)
     audit = auditDocument(doc, config)
     if args.format == "json":
