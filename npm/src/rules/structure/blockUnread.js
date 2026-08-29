@@ -1,7 +1,6 @@
 // @ts-check
 import { PROSE } from "../../document/model.js";
 import { NOTICE, SECTION, finding } from "../finding.js";
-import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "blockUnread";
 export const mechanism = "threshold";
@@ -14,7 +13,7 @@ const OUTPUT_LANGUAGES = ["", "text", "output", "console"];
 export function run(doc, config) {
   void config;
   /** @type {Map<number, string>} */
-  const languages = new Map(codeBlocksOf(doc).map((block) => [block.index, block.language]));
+  const languages = new Map(doc.codeBlocks.map((block) => [block.index, block.language]));
   const outputs = new Set([...languages].filter(([, language]) => OUTPUT_LANGUAGES.includes(language)).map(([index]) => index));
   if (!outputs.size) return [];
   const blocks = [...doc.blocks].sort((a, b) => a.index - b.index);

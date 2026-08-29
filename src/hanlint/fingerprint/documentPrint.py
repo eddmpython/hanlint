@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..document import Block
+from .codeBlocks import CodeBlock
 from .paragraphPrint import ParagraphPrint
+from .readerState import ReaderTrail
 from .sectionPrint import SectionPrint
 from .sentencePrint import SentencePrint
 
@@ -26,9 +28,10 @@ class DocumentPrint:
     readerCallCount: int
     countPromises: tuple[tuple[int, str, int, str], ...]
     """(수, 단위, 줄, 원문)."""
-    promises: tuple[tuple[int, str], ...]
-    """(줄, 표지 원문)."""
-    recalls: tuple[tuple[int, str], ...]
+    codeBlocks: tuple[CodeBlock, ...]
+    """코드 펜스를 언어와 본문 줄로 푼 것. code 부류 규칙이 읽는다."""
+    reader: ReaderTrail
+    """자리마다의 독자 상태. reader 기제의 규칙이 읽는다. 약속과 회수 표지는 final 에 있다."""
     register: str = "없음"
     """글의 문체. 평서문 끝 서술어 가운데 가장 많은 것. 합니다, 한다, 해요, 섞임, 없음."""
     registerShare: float = 0.0

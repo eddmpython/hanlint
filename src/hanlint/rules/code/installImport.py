@@ -9,7 +9,6 @@ from ...data import loadLines
 from ...fingerprint import DocumentPrint
 from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
-from ..shared import codeBlocksOf
 
 INSTALL = re.compile(r"(?:pip\s+install|uv\s+add|uv\s+pip\s+install|conda\s+install|poetry\s+add)\s+([^\n#|&;]+)")
 IMPORT = re.compile(r"^\s*(?:import\s+([\w.]+(?:\s*,\s*[\w.]+)*)|from\s+([\w.]+)\s+import\b)")
@@ -45,7 +44,7 @@ def normalize(name: str) -> str:
 
 def installed(doc: DocumentPrint) -> dict[str, set[str]] | None:
     """설치 줄이 말한 패키지 → extras. 설치 줄이 하나도 없으면 None."""
-    texts = [line for block in codeBlocksOf(doc) for _, line in block.lines] + [s.text for s in doc.sentences]
+    texts = [line for block in doc.codeBlocks for _, line in block.lines] + [s.text for s in doc.sentences]
     packages: dict[str, set[str]] = {}
     seen = False
     for text in texts:
@@ -69,7 +68,7 @@ def localModules(doc: DocumentPrint) -> set[str]:
     names = set()
     for sentence in doc.sentences:
         names.update(m.group(1) for m in re.finditer(r"\b(\w+)\.py\b", sentence.text))
-    for block in codeBlocksOf(doc):
+    for block in doc.codeBlocks:
         for _, line in block.lines:
             names.update(m.group(1) for m in re.finditer(r"\b(\w+)\.py\b", line))
     return names
@@ -92,7 +91,7 @@ def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     if packages is None:
         return
     local = localModules(doc)
-    for block in codeBlocksOf(doc):
+    for block in doc.codeBlocks:
         if block.language not in ("python", "py"):
             continue
         for line, code in block.lines:

@@ -109,8 +109,8 @@ def documentDict(doc: DocumentPrint) -> dict:
         "register": doc.register,
         "registerShare": num(round(doc.registerShare, 3)),
         "countPromises": [[n, unit, line, text] for n, unit, line, text in doc.countPromises],
-        "promises": [[line, text] for line, text in doc.promises],
-        "recalls": [[line, text] for line, text in doc.recalls],
+        "promises": [[line, text] for line, text in doc.reader.final.promises],
+        "recalls": [[line, text] for line, text in doc.reader.final.recalls],
         "disabled": [[name, start, end] for name, start, end in doc.disabled],
     }
 

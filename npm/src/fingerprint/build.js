@@ -6,8 +6,10 @@ import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/mode
 import { dropFences } from "../document/parseMarkdown.js";
 import { codeSpans, plainText } from "../document/plainText.js";
 import { countIn, mean, pstdev, wordCount } from "../text.js";
+import { codeBlocksOf } from "./codeBlocks.js";
 import { entriesFor, matchesIn } from "./dictionaries.js";
 import * as markers from "./markers.js";
+import { buildReaderTrail } from "./readerState.js";
 import { overlap, topicsOf, unionOf } from "./topics.js";
 
 /**
@@ -84,8 +86,8 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {number} questionCount
  * @property {number} readerCallCount
  * @property {[number, string, number, string][]} countPromises (수, 단위, 줄, 원문)
- * @property {[number, string][]} promises
- * @property {[number, string][]} recalls
+ * @property {import("./codeBlocks.js").CodeBlock[]} codeBlocks 코드 펜스를 언어와 본문 줄로 푼 것
+ * @property {import("./readerState.js").ReaderTrail} reader 자리마다의 독자 상태. 약속과 회수 표지는 final 에 있다
  * @property {[string, number, number][]} disabled
  * @property {import("../document/model.js").Block[]} ignored 설정이 지문에서 뺀 펜스
  * @property {string} register
@@ -275,6 +277,7 @@ export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
     sentences.filter((sentence) => sentence.mood === "평서").map((sentence) => lastWord(sentence.text)),
     config.registerMinShare,
   );
+  const codeBlocks = codeBlocksOf(doc.blocks);
   return {
     path: doc.path,
     frontmatter: { ...doc.frontmatter },
@@ -287,8 +290,8 @@ export function buildFingerprint(doc, analyzer, config = defaultConfig()) {
     questionCount: sentences.filter((s) => s.mood === "의문").length + headingQuestions,
     readerCallCount: sentences.filter((s) => s.readerCall || s.mood === "명령").length,
     countPromises: sentences.flatMap((s) => s.countPromises.map(([n, unit, text]) => [n, unit, s.line, text])),
-    promises: sentences.flatMap((s) => s.promises.map((text) => [s.line, text])),
-    recalls: sentences.flatMap((s) => s.recalls.map((text) => [s.line, text])),
+    codeBlocks,
+    reader: buildReaderTrail(doc.blocks, codeBlocks, sentences),
     register,
     registerShare,
     disabled: doc.disabled,

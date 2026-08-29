@@ -133,6 +133,7 @@ export const MECHANISMS = {
   repeat: "반복. 같은 모양이 창 안에서 N 번",
   threshold: "셈. 지문의 값이 임계를 넘거나 모양이 계약과 다른 자리",
   contrast: "대조. 두 자리를 맞대 어긋난 곳",
+  reader: "독자 상태. 문장 순서대로 독자가 손에 든 것과 본 것에 그 자리가 요구하는 것을 맞댄다",
 };
 for (const rule of RULES) {
   if (!(rule.mechanism in MECHANISMS)) {

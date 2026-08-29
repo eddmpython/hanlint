@@ -65,8 +65,8 @@ def testMarkersAreCounted():
     assert doc.sentences[4].text.startswith("이것으로") and doc.sentences[4].deixis == ("이것으로",)
     assert doc.readerCallCount >= 1
     assert doc.countPromises[0][:2] == (6, "가지") and doc.countPromises[1][:2] == (5, "가지")
-    assert doc.promises and doc.promises[0][1].startswith("뒤에서")
-    assert doc.recalls == ()
+    assert doc.reader.final.promises and doc.reader.final.promises[0][1].startswith("뒤에서")
+    assert doc.reader.final.recalls == ()
 
 
 def testDictionaryMatchesLandInSentence():

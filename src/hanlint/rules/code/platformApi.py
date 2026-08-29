@@ -9,7 +9,6 @@ from ...data import loadLines
 from ...fingerprint import DocumentPrint
 from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
-from ..shared import codeBlocksOf
 
 
 @cache
@@ -31,7 +30,7 @@ def platformApi(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     고치기: 그 줄이 어느 운영체제 전용인지 적고 대안을 준다. 또는 이식 가능한 API 로 바꾼다.
     안 잡는 것: 목록에 없는 API. 산문 안의 언급. notice 로만 낸다.
     """
-    for block in codeBlocksOf(doc):
+    for block in doc.codeBlocks:
         if block.isOutput:
             continue
         for line, code in block.lines:

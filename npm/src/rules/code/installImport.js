@@ -1,7 +1,6 @@
 // @ts-check
 import { loadLines } from "../../data/load.js";
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
-import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "installImport";
 export const mechanism = "contrast";
@@ -50,7 +49,7 @@ function normalize(value) {
 
 /** 설치 줄이 말한 패키지 → extras. 설치 줄이 하나도 없으면 null. @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 function installed(doc) {
-  const texts = [...codeBlocksOf(doc).flatMap((b) => b.lines.map(([, line]) => line)), ...doc.sentences.map((s) => s.text)];
+  const texts = [...doc.codeBlocks.flatMap((b) => b.lines.map(([, line]) => line)), ...doc.sentences.map((s) => s.text)];
   /** @type {Map<string, Set<string>>} */
   const packages = new Map();
   let seen = false;
@@ -81,7 +80,7 @@ function localModules(doc) {
     PY_FILE.lastIndex = 0;
     for (const match of sentence.text.matchAll(PY_FILE)) names.add(match[1]);
   }
-  for (const block of codeBlocksOf(doc)) {
+  for (const block of doc.codeBlocks) {
     for (const [, line] of block.lines) {
       PY_FILE.lastIndex = 0;
       for (const match of line.matchAll(PY_FILE)) names.add(match[1]);
@@ -96,7 +95,7 @@ export function run(doc) {
   if (packages === null) return [];
   const local = localModules(doc);
   const findings = [];
-  for (const block of codeBlocksOf(doc)) {
+  for (const block of doc.codeBlocks) {
     if (!["python", "py"].includes(block.language)) continue;
     for (const [line, code] of block.lines) {
       const match = IMPORT.exec(code);

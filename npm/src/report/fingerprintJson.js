@@ -106,8 +106,8 @@ function documentDict(doc) {
     register: doc.register,
     registerShare: Math.round(doc.registerShare * 1000) / 1000,
     countPromises: doc.countPromises.map(([n, unit, line, text]) => [n, unit, line, text]),
-    promises: doc.promises.map(([line, text]) => [line, text]),
-    recalls: doc.recalls.map(([line, text]) => [line, text]),
+    promises: doc.reader.final.promises.map(([line, text]) => [line, text]),
+    recalls: doc.reader.final.recalls.map(([line, text]) => [line, text]),
     disabled: doc.disabled.map(([name, start, end]) => [name, start, end]),
   };
 }

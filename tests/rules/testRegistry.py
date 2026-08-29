@@ -41,14 +41,15 @@ def testEveryRegisteredRuleIsATechnicalNote():
 
 
 def testMechanismsAreAClosedSet():
-    """규칙은 쌓여도 기제는 늘지 않는다. 여기 적힌 넷을 바꾸는 것은 등록 인자가 아니라 운영자 결정이다."""
-    assert list(MECHANISMS) == ["dictionary", "repeat", "threshold", "contrast"]
+    """규칙은 쌓여도 기제는 늘지 않는다. 여기 적힌 다섯을 바꾸는 것은 등록 인자가 아니라 운영자 결정이다."""
+    assert list(MECHANISMS) == ["dictionary", "repeat", "threshold", "contrast", "reader"]
     tagged = ruleMechanisms()
     assert set(tagged) == set(ruleNames())
     assert set(tagged.values()) <= set(MECHANISMS)
     for mechanism in MECHANISMS:
         assert mechanism in tagged.values(), f"규칙이 하나도 없는 기제: {mechanism}"
     assert ruleMechanism("endingRepeat") == "repeat"
+    assert ruleMechanism("deixis") == "reader"
 
 
 def testRejectsAMechanismOutsideTheSet():

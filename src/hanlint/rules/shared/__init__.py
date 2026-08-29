@@ -9,14 +9,11 @@ from .candidates import (
     longSentenceCandidates,
     nounPileCandidates,
 )
-from .codeBlocks import CodeBlock, codeBlocksOf
 from .dictionaryRule import dictionaryFindings
 from .localAntecedent import hasLocalAntecedent
 from .repeat import runsOf, shareOf
 
 __all__ = [
-    "CodeBlock",
-    "codeBlocksOf",
     "danglingDeixisCandidates",
     "dictionaryFindings",
     "doublePassiveCandidates",

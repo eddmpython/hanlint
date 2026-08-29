@@ -6,7 +6,6 @@ from ...config import Config
 from ...fingerprint import DocumentPrint
 from ..finding import NOTICE, SECTION, Finding
 from ..registry import rule
-from ..shared import codeBlocksOf
 
 
 @rule("blockUnread", mechanism="threshold")
@@ -24,7 +23,7 @@ def blockUnread(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         출력이 아니라 그림이다. 실측: eddmpython 의 운영 문서가 폴더 나무를 text 펜스로 그렸고 그것을
         출력으로 보아 오탐이 났다. 출력 바로 뒤에 산문 문단이 오는 자리. 근사라 notice 로만 낸다.
     """
-    languages = {block.index: block.language for block in codeBlocksOf(doc)}
+    languages = {block.index: block.language for block in doc.codeBlocks}
     outputs = {index for index, language in languages.items() if language in ("", "text", "output", "console")}
     if not outputs:
         return

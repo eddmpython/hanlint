@@ -1,6 +1,5 @@
 // @ts-check
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
-import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "duplicateBlock";
 export const mechanism = "repeat";
@@ -29,7 +28,7 @@ function similarity(a, b) {
  */
 export function run(doc, config) {
   const findings = [];
-  const blocks = codeBlocksOf(doc).filter((b) => b.lines.filter(([, line]) => line.trim()).length >= MIN_LINES);
+  const blocks = doc.codeBlocks.filter((b) => b.lines.filter(([, line]) => line.trim()).length >= MIN_LINES);
   for (let later = 0; later < blocks.length; later++) {
     const current = blocks[later];
     const currentLines = current.lines.filter(([, line]) => line.trim()).map(([, line]) => line.trim());

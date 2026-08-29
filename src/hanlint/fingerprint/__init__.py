@@ -7,16 +7,22 @@
 from __future__ import annotations
 
 from .build import buildFingerprint
+from .codeBlocks import CodeBlock, codeBlocksOf
 from .documentPrint import DocumentPrint
 from .paragraphPrint import ParagraphPrint
+from .readerState import ReaderState, ReaderTrail
 from .sectionPrint import SectionPrint
 from .sentencePrint import DictionaryMatch, SentencePrint
 
 __all__ = [
+    "CodeBlock",
     "DictionaryMatch",
     "DocumentPrint",
     "ParagraphPrint",
+    "ReaderState",
+    "ReaderTrail",
     "SectionPrint",
     "SentencePrint",
     "buildFingerprint",
+    "codeBlocksOf",
 ]

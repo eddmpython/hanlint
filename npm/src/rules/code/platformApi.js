@@ -1,7 +1,6 @@
 // @ts-check
 import { loadLines } from "../../data/load.js";
 import { DOCUMENT, NOTICE, finding } from "../finding.js";
-import { codeBlocksOf } from "../shared/codeBlocks.js";
 
 export const name = "platformApi";
 export const mechanism = "dictionary";
@@ -21,7 +20,7 @@ function platformApis() {
 /** @param {import("../../fingerprint/build.js").DocumentPrint} doc */
 export function run(doc) {
   const findings = [];
-  for (const block of codeBlocksOf(doc)) {
+  for (const block of doc.codeBlocks) {
     if (block.isOutput) continue;
     for (const [line, code] of block.lines) {
       for (const [pattern, platform, alternative] of platformApis()) {

@@ -9,9 +9,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 ### Added
 
 - **기제 (mechanism).** 규칙마다 세는 방법을 등록 인자로 적는다 (`@rule("이름", mechanism="repeat")`).
-  닫힌 집합은 넷 (dictionary, repeat, threshold, contrast) 이고 등록부가 그 밖을 거부한다. 규칙은 쌓여도
+  닫힌 집합은 다섯 (dictionary, repeat, threshold, contrast, reader) 이고 등록부가 그 밖을 거부한다. 규칙은 쌓여도
   기제는 늘지 않게 하려는 것이다. `hanlint explain` 이 기제를 보이고 `rules --format json` 과 npm 투영
   `ruleMechanisms.json` 이 대응을 든다
+- **독자 상태 (reader 기제).** 지문이 블록과 문장 순서대로 독자가 손에 든 것 (바로 앞 문장의 화제어) 과 본 것 (수,
+  코드가 만든 파일, 미룬 표지와 회수 표지) 을 자리마다 적는다 (`DocumentPrint.reader`). deixis, danglingDeixis,
+  numberOrphan, inputFileSource, promiseRecall 이 글을 다시 읽는 대신 그 상태를 묻는다. 출력은 같다. 앞 문장에
+  나온 명사에 다시 붙은 이/가 를 잡는 규칙은 말뭉치 실측이 기각해 넣지 않았다 (`start.product` 의 잡지 않는 것)
 - **본보기 게이트가 충돌을 잡는다.** 본보기의 `after` 는 그 규칙만이 아니라 어느 규칙의 error 에도 잡히지
   않아야 한다. 규칙 A 의 답이 규칙 B 의 문제가 되는 자리를 규칙을 더하는 순간 잡는다. 넓히자 본보기 열 개가
   걸려 고쳤다

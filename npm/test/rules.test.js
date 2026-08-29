@@ -52,7 +52,7 @@ test("every rule has a fixture, a doc, and a file", () => {
 });
 
 test("every rule names one of the closed mechanisms and matches the python projection", () => {
-  assert.deepEqual(Object.keys(MECHANISMS), ["dictionary", "repeat", "threshold", "contrast"]);
+  assert.deepEqual(Object.keys(MECHANISMS), ["dictionary", "repeat", "threshold", "contrast", "reader"]);
   const mine = Object.fromEntries(RULES.map((rule) => [rule.name, rule.mechanism]).sort());
   assert.deepEqual(mine, loadRuleMechanisms());
   for (const mechanism of Object.values(mine)) assert.ok(mechanism in MECHANISMS, mechanism);

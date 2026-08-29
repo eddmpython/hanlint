@@ -8,6 +8,8 @@ import { compile, escape } from "../regex.js";
 
 const TRAILING = /[\s.?!"'”’)\]]+$/;
 const NUMBER = /\d+(?:[.,]\d+)*/g;
+/** 값으로 견주는 수. NUMBER 는 수의 개수를 세고 이것은 수의 정체를 센다. 천 단위 쉼표까지 한 수로 읽는다. */
+const NUMERAL = /\d[\d,]*(?:\.\d+)?/g;
 const COMMA = /,/g;
 // 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만.
 const QUOTE_PAIRS = [
@@ -165,6 +167,13 @@ export function countPromisesIn(text) {
 }
 
 /** @param {string} text */
+/** 글에 나온 수의 정체 (천 단위 쉼표를 뗀 꼴). 독자 상태가 쌓고 numberOrphan 이 견준다. @param {string} text @returns {Set<string>} */
+export function numeralsIn(text) {
+  const found = new Set();
+  for (const match of text.matchAll(NUMERAL)) found.add(match[0].replaceAll(",", ""));
+  return found;
+}
+
 export function countNumbers(text) {
   return [...text.matchAll(NUMBER)].length;
 }

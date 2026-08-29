@@ -12,9 +12,11 @@ from ..config import Config
 from ..document import Block, Document, Section, codeSpans, dropFences, plainText
 from ..document.model import HEADING, PROSE
 from . import markers
+from .codeBlocks import codeBlocksOf
 from .dictionaries import Entry, entriesFor, matchesIn
 from .documentPrint import DocumentPrint
 from .paragraphPrint import ParagraphPrint
+from .readerState import buildReaderTrail
 from .sectionPrint import SectionPrint
 from .sentencePrint import SentencePrint
 from .topics import overlap, topicsOf
@@ -167,6 +169,7 @@ def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = 
     headings = tuple((b.level, b.text, b.startLine) for b in doc.blocks if b.kind == HEADING)
     headingQuestions = sum(1 for b in doc.blocks if b.kind == HEADING and "?" in b.text)
     register, registerShare = documentRegister([lastWord(s.text) for s in sentences if s.mood == "평서"], config.registerMinShare)
+    codeBlocks = codeBlocksOf(doc.blocks)
     return DocumentPrint(
         path=doc.path,
         frontmatter=dict(doc.frontmatter),
@@ -179,8 +182,8 @@ def buildFingerprint(doc: Document, analyzer: Analyzer, config: Config | None = 
         questionCount=sum(1 for s in sentences if s.mood == "의문") + headingQuestions,
         readerCallCount=sum(1 for s in sentences if s.readerCall or s.mood == "명령"),
         countPromises=tuple((n, unit, s.line, text) for s in sentences for n, unit, text in s.countPromises),
-        promises=tuple((s.line, text) for s in sentences for text in s.promises),
-        recalls=tuple((s.line, text) for s in sentences for text in s.recalls),
+        codeBlocks=codeBlocks,
+        reader=buildReaderTrail(doc.blocks, codeBlocks, sentences),
         register=register,
         registerShare=registerShare,
         disabled=tuple(doc.disabled),

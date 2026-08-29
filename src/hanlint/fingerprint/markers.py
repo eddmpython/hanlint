@@ -1,4 +1,4 @@
-"""문장에서 표지를 센다. 종결어미 부류, 서법, 접속부사, 인과, 지시어, 헤지, 약속과 회수, 독자 호출, 수 약속.
+"""문장에서 표지를 센다. 종결어미 부류, 서법, 접속부사, 인과, 지시어, 헤지, 약속과 회수, 독자 호출, 수 약속, 수의 정체.
 
 낱말 목록은 전부 data/ 가 정본이다. 여기는 그것을 읽어 세는 함수뿐이다.
 """
@@ -12,6 +12,9 @@ from ..data import loadLines, loadPatterns
 
 TRAILING = re.compile(r"[\s.?!\"'”’)\]]+$")
 NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
+NUMERAL = re.compile(r"\d[\d,]*(?:\.\d+)?")
+"""값으로 견주는 수. NUMBER 는 수의 개수를 세고 (countNumbers) 이것은 수의 정체를 센다 (numeralsIn).
+천 단위 쉼표까지 한 수로 읽고 numeralsIn 이 쉼표를 뗀다. 453MB 와 453 이 같은 값이어야 한다."""
 COMMA = re.compile(r",")
 # 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만 (Python's 의 ' 는 아니다).
 QUOTE_PAIRS = (
@@ -124,6 +127,11 @@ def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:
         number = koreanNumbers().get(raw) or int(raw)
         found.append((number, unit, match.group(0)))
     return tuple(found)
+
+
+def numeralsIn(text: str) -> frozenset[str]:
+    """글에 나온 수의 정체 (천 단위 쉼표를 뗀 꼴). 독자 상태가 쌓고 numberOrphan 이 견준다."""
+    return frozenset(match.group(0).replace(",", "") for match in NUMERAL.finditer(text))
 
 
 def countNumbers(text: str) -> int:

@@ -7,7 +7,6 @@ from ...config import Config
 from ...fingerprint import DocumentPrint
 from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
-from ..shared import codeBlocksOf
 
 MIN_LINES = 4
 
@@ -36,7 +35,7 @@ def duplicateBlock(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     고치기: 다른 줄만 남기고 나머지는 앞 블록을 가리킨다. 정말 둘 다 필요하면 무엇이 다른지 산문에서 먼저 말한다.
     안 잡는 것: 넉 줄 미만 블록. 종류가 다른 블록 (코드와 출력). 임계 아래. notice 로만 낸다.
     """
-    blocks = [b for b in codeBlocksOf(doc) if len([line for _, line in b.lines if line.strip()]) >= MIN_LINES]
+    blocks = [b for b in doc.codeBlocks if len([line for _, line in b.lines if line.strip()]) >= MIN_LINES]
     for later in range(len(blocks)):
         current = blocks[later]
         currentLines = [line.strip() for _, line in current.lines if line.strip()]
