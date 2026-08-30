@@ -8,7 +8,12 @@
   "properties": {
     "version": { "const": 1 },
     "id": { "type": "string", "minLength": 1 },
-    "brief": { "$ref": "writingBrief.schema.json" },
+    "brief": {
+      "oneOf": [
+        { "$ref": "writingBrief.schema.json" },
+        { "$ref": "writingBriefV2.schema.json" }
+      ]
+    },
     "baseline": { "$ref": "#/$defs/generation" },
     "candidate": { "$ref": "#/$defs/generation" }
   },

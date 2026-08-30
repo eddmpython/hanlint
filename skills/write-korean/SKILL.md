@@ -38,10 +38,14 @@ JSON의 `contract`, `input`, `findings`, `guidance` 순서로 읽고 초안을 �
 
 ## 처음부터 쓸 때
 
-1. 사실과 수치가 있는 글은 `src/hanlint/data/writingBrief.schema.json`에 맞는 `brief.json`을 먼저 만든다. `reader`,
+1. 사실과 수치가 있는 글은 `src/hanlint/data/writingBrief.schema.json`에 맞는 v1 `brief.json`을 먼저 만든다. `reader`,
    `task`, `preset`, 한 문장에 한 관계만 둔 `facts`, 세 필드 안의 `mustInclude`, reader·task·facts의 모든
    숫자를 천 단위 쉼표 없이 적은 `allowedNumbers`, 쓰지 않을 `forbidden`, `length`를 채운다. 정보가 없으면 사실을 추측해
    채우지 않고 사용자에게 확인할 항목으로 남긴다.
+   출처가 있는 사실을 추적해야 하면 `writingBriefV2.schema.json`의 v2를 쓴다. 각 fact를 하나 이상의
+   `evidence`에 연결하고 출처 URL, 고정 revision 또는 UTC 확인 시각, locator, 1,000자 이하 인용 조각과
+   SHA-256, 라이선스, `unreviewed|humanVerified`를 적는다. 움직이는 `latest`, `main`, `master`, `HEAD`는
+   revision으로 쓰지 않는다. `hanlint evidence brief.json`을 먼저 통과시킨다.
 2. 프리셋을 고른다. 블로그 `blog`, 보고문 `report`, 기술 문서 `docs`, 단계별 안내 `guide`, 수필 `essay`,
    소설 `fiction`, 백과 `encyclopedia` 가운데 실제 결과물과 같은 것을 쓴다.
 3. 구조화 brief를 draft 패킷으로 만든다.
@@ -97,6 +101,8 @@ hanlint packet 글.md --purpose revise --preset docs
 - `contract`: 작문 모델이 반드시 지킬 작업과 보존 조건이다.
 - `input`: 원문, 프리셋, 감지한 문체, frontmatter다.
 - 구조화 draft의 `input.brief`: 독자, 과업, 원자 사실, 보호 표면, 숫자, 금지 표면과 길이의 유일한 사실 재료다.
+- v2의 `input.brief.evidence`: fact와 출처 판의 검토 가능한 연결이다. `excerpt`는 연결된 fact를 확인하는
+  조각일 뿐 문체 본보기나 다른 fact의 재료가 아니다. `humanVerified`도 진실 판정이 아니다.
 - opt-in `strategy`: 원문 없는 종류별 절·문단·문장 수와 도입·본문·마무리의 위치 예산이다. `reference`의
   수치, 해시와 출처 ID를 결과의 사실이나 문장 재료로 옮기지 않는다.
 - `comparison.current`: 현재 글의 리듬, 어휘, 절, 문단 분포다.
@@ -156,6 +162,7 @@ hanlint learn 전.md 승인본.md --format toml
   사실 원장 재작성도 안전 승이 없었다.
 - error 0을 좋은 글의 합격 판정으로 부르지 않는다.
 - guard의 `contractSatisfied`를 사실 관계와 진실의 합격 판정으로 부르거나 위반 결과를 자동 재작성하지 않는다.
+- evidence의 `ledgerValid`를 URL 존재, 인용 조각의 진위, fact의 함의나 진실 판정으로 부르지 않는다.
 - 사람이 승인하지 않은 `learn` 후보를 `[[patches]]`나 `[[operations]]`로 저장하지 않는다.
 
 ## 되돌리기

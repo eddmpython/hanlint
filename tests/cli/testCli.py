@@ -203,6 +203,23 @@ def testBlueprintCommandAndOptInPacketShareOneStrategy(tmp_path, capsys):
     assert "구조화 writing brief JSON" in capsys.readouterr().err
 
 
+def testEvidenceCommandReportsValidAndTamperedLedgers(tmp_path, capsys):
+    from tests.evidence.testEvidence import evidenceBrief
+
+    data = evidenceBrief()
+    brief = write(tmp_path, "evidence.json", json.dumps(data, ensure_ascii=False))
+    assert main(["evidence", str(brief), "--format", "json"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["ledgerValid"] and result["factEvidence"] == {"F1": ["E1"], "F2": ["E2"]}
+    assert "진실" in result["meaning"] and "보장하지 않는다" in result["meaning"]
+
+    data["evidence"][0]["excerpt"] = "변조한 조각"
+    brief.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    assert main(["evidence", str(brief)]) == 1
+    output = capsys.readouterr().out
+    assert "근거 원장 위반" in output and "excerptSha256" in output
+
+
 def testStructuredPacketCarriesItsGuardConfiguration(tmp_path, capsys):
     briefData = {
         "version": 1,

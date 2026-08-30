@@ -49,7 +49,7 @@ def testLoadsUtf8JsonAndDigestDoesNotDependOnObjectKeyOrder(tmp_path):
 @pytest.mark.parametrize(
     ("change", "message"),
     [
-        (lambda data: data.update(version=2), "version"),
+        (lambda data: data.update(version=3), "version"),
         (lambda data: data.update(version=1.0), "version"),
         (lambda data: data.update(extra=True), "모르는 키"),
         (lambda data: data["facts"].append({"id": "F1", "statement": "다른 사실이다."}), "id 가 겹친다"),

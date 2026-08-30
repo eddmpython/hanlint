@@ -176,6 +176,23 @@ hanlint guard brief.json 초안.md
 최종 구조화 패킷으로 일곱 종류를 한 번씩 생성한 탐침에서는 사실 표면 6/7, 길이 1/7, error 0은 3/7,
 전체 자동 계약은 1/7이었다. guard는 나머지 여섯 결과를 막았지만 생성 품질 향상을 입증하지는 않았다.
 
+출처가 있는 사실은 기존 v1 대신 [근거 원장 brief v2](src/hanlint/data/writingBriefV2.schema.json)를 쓸 수
+있다. facts의 모양은 그대로 두고 `evidence`가 각 fact ID를 고정 출처 판과 짧은 인용 조각에 연결한다.
+각 기록은 `E1` ID, `factIds`, 사용자 정보가 없는 HTTP(S) `sourceUrl`, 고정 `revision` 또는 UTC
+`checkedAt`, `locator`, 1,000자 이하 `excerpt`와 그 SHA-256, `license`, `reviewStatus`를 갖는다.
+
+```console
+hanlint evidence brief-v2.json
+hanlint evidence brief-v2.json --format json
+hanlint packet brief-v2.json --purpose draft --output packet.json
+```
+
+`evidence`는 근거 없는 fact, 없는 fact를 가리키는 기록, 움직이는 revision, 조각 변조, 라이선스 누락을
+결정적으로 거부한다. `humanVerified`는 사람이 그 연결을 검토했다는 상태일 뿐이다. URL이 실제로 열리는지,
+조각이 진짜인지, 조각이 fact를 함의하는지와 fact가 참인지는 판정하지 않는다. v2 draft 패킷에서도
+`facts.statement`만 주장 재료이며 excerpt의 다른 이름·수치·문장을 결과로 확산하지 않는다. 기존 v1
+schema, 로딩, guard와 기본 draft packet 해시는 그대로다.
+
 구조가 필요하면 고정 말뭉치 1,600편의 종류별 절·문단·문장·글자 수 백분위로 원문 없는 청사진을 만든다.
 배포 데이터에는 원문, 제목, URL과 문장이 없고 허가된 출처 ID, 고정 판의 해시와 숫자 분포만 있다.
 `blueprint`은 마크다운 절 수와 도입·본문·마무리의 위치별 글자·문단·문장 예산을 따로 내며 사실이나
@@ -529,6 +546,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
 | `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다. Python 판 전용 |
+| `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 판·인용 조각 해시·라이선스를 검증한다. Python 판 전용 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
 | `hanlint arena blind ...` | 기준과 후보의 자동 안전 계약을 가른 뒤 안전한 쌍만 블라인드 선호 평가한다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |

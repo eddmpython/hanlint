@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/writingBriefV2.schema.json",
+  "title": "hanlint evidence writing brief",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "preset",
+    "reader",
+    "task",
+    "facts",
+    "mustInclude",
+    "allowedNumbers",
+    "forbidden",
+    "length",
+    "evidence"
+  ],
+  "properties": {
+    "version": { "const": 2 },
+    "preset": {
+      "enum": ["blog", "report", "docs", "guide", "essay", "fiction", "encyclopedia"]
+    },
+    "reader": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "facts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^F[1-9][0-9]*$" },
+          "statement": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "mustInclude": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "allowedNumbers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[0-9]+(?:[.][0-9]+)*$" }
+    },
+    "forbidden": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "length": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer", "minimum": 1 },
+        "max": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "factIds",
+          "sourceUrl",
+          "revision",
+          "checkedAt",
+          "locator",
+          "excerpt",
+          "excerptSha256",
+          "license",
+          "reviewStatus"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^E[1-9][0-9]*$" },
+          "factIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^F[1-9][0-9]*$" }
+          },
+          "sourceUrl": { "type": "string", "format": "uri", "pattern": "^https?://" },
+          "revision": {
+            "type": ["string", "null"],
+            "minLength": 1,
+            "not": {
+              "pattern": "^(?:[Hh][Ee][Aa][Dd]|[Ll][Aa][Tt][Ee][Ss][Tt]|[Mm][Aa][Ii][Nn]|[Mm][Aa][Ss][Tt][Ee][Rr])$"
+            }
+          },
+          "checkedAt": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          },
+          "locator": { "type": "string", "minLength": 1 },
+          "excerpt": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "excerptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "license": { "type": "string", "minLength": 1 },
+          "reviewStatus": { "enum": ["unreviewed", "humanVerified"] }
+        },
+        "anyOf": [
+          { "properties": { "revision": { "type": "string", "minLength": 1 } } },
+          { "properties": { "checkedAt": { "type": "string" } } }
+        ]
+      }
+    }
+  }
+}

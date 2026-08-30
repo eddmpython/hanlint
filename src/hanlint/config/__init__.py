@@ -4,17 +4,29 @@ from __future__ import annotations
 
 from .loadConfig import loadConfig
 from .settings import DEFAULT_PRESET, PRESET_NAMES, PRESETS, PROFILE_OF, Config
-from .writingBrief import BRIEF_VERSION, AtomicFact, WritingBrief, loadWritingBrief, numberValues
+from .writingBrief import (
+    BRIEF_VERSION,
+    EVIDENCE_BRIEF_VERSION,
+    REVIEW_STATUSES,
+    AtomicFact,
+    EvidenceRecord,
+    WritingBrief,
+    loadWritingBrief,
+    numberValues,
+)
 
 __all__ = [
     "BRIEF_VERSION",
     "DEFAULT_PRESET",
+    "EVIDENCE_BRIEF_VERSION",
     "PRESETS",
     "PRESET_NAMES",
     "PROFILE_OF",
     "AtomicFact",
+    "EvidenceRecord",
     "Config",
     "WritingBrief",
+    "REVIEW_STATUSES",
     "loadConfig",
     "loadWritingBrief",
     "numberValues",

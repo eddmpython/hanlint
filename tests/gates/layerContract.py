@@ -17,6 +17,7 @@ LAYERS: dict[str, int] = {
     "config": 1,
     "document": 2,
     "blueprint": 2,
+    "evidence": 2,
     "analysis": 3,
     "fingerprint": 4,
     "rules": 5,

@@ -8,6 +8,10 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- **사실별 근거 원장.** 기존 `writingBrief` v1과 기본 draft packet 해시를 보존하면서 v2만 원자 사실을
+  고정 출처 판, locator, 짧은 근거 조각과 SHA256, 라이선스, 사람 검토 상태에 연결한다. `hanlint evidence`
+  와 `evidenceLedger` API는 누락·고아·변조·움직이는 revision을 결정적으로 보고한다. 형식 충족을 URL
+  존재, 근거 진위, 사실의 진실이나 함의 판정으로 부르지 않는다
 - **원문 없는 수사 구조 청사진.** 고정·허가된 말뭉치 1,600편에서 일곱 종류의 절·문단·문장·글자 수와
   도입·마무리 위치 백분위만 배포한다. `hanlint blueprint brief.json`과 `rhetoricalBlueprint` API가
   brief 길이에 맞는 결정적 예산을 내며 원문·제목·URL·문장·표현·품질 점수는 싣지 않는다. 구조화

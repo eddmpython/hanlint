@@ -3,7 +3,7 @@
 공개 표면은 이 파일 한 곳이다.
 
 ```python
-from hanlint import auditText, fingerprint, guardText, lintFile, lintText, rhetoricalBlueprint, writingPacket
+from hanlint import auditText, evidenceLedger, fingerprint, guardText, lintFile, lintText, rhetoricalBlueprint, writingPacket
 
 findings = lintFile("글.md")       # list[Finding]
 shape = auditText(text)            # AuditResult. 점수 없이 분포와 자리
@@ -11,6 +11,7 @@ prints = fingerprint(text)         # DocumentPrint. 지문 그대로
 packet = writingPacket(text)       # 초안과 대조 자료와 고침 근거
 guard = guardText(brief, text)     # 구조화 요구와 결과의 결정적 표면 계약
 blueprint = rhetoricalBlueprint(brief)  # 원문 없는 종류별 구조 예산
+evidence = evidenceLedger(brief)    # 사실별 고정 근거 연결과 해시 검증
 ```
 
 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이지 좋은
@@ -32,8 +33,9 @@ from .arena import (
 )
 from .audit import AuditResult, auditDocument
 from .blueprint import STRATEGIES, STRATEGY_ID, blueprintFor, rhetoricalBlueprint
-from .config import AtomicFact, Config, WritingBrief, loadConfig, loadWritingBrief
+from .config import AtomicFact, Config, EvidenceRecord, WritingBrief, loadConfig, loadWritingBrief
 from .document import parseMarkdown
+from .evidence import EvidenceLedgerResult, evidenceLedger
 from .fingerprint import DocumentPrint, buildFingerprint
 from .guard import GuardResult, guardFile, guardText
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
@@ -46,6 +48,8 @@ __all__ = [
     "BlindEvaluation",
     "Config",
     "DocumentPrint",
+    "EvidenceLedgerResult",
+    "EvidenceRecord",
     "Finding",
     "GuardResult",
     "GenerationRecord",
@@ -59,6 +63,7 @@ __all__ = [
     "auditFile",
     "auditText",
     "blueprintFor",
+    "evidenceLedger",
     "fingerprint",
     "guardFile",
     "guardText",

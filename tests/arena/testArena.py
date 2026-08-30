@@ -155,7 +155,8 @@ def testPublishedSchemasNameTheClosedTrialAndEvaluationSurfaces():
     trialSchema = json.loads((data / "writingTrial.schema.json").read_text(encoding="utf-8"))
     evaluationSchema = json.loads((data / "blindEvaluation.schema.json").read_text(encoding="utf-8"))
     assert set(trialSchema["required"]) == {"version", "id", "brief", "baseline", "candidate"}
-    assert trialSchema["properties"]["brief"]["$ref"] == "writingBrief.schema.json"
+    refs = [item["$ref"] for item in trialSchema["properties"]["brief"]["oneOf"]]
+    assert refs == ["writingBrief.schema.json", "writingBriefV2.schema.json"]
     assert evaluationSchema["properties"]["evaluatorKind"]["enum"] == ["human", "llm"]
     assert set(evaluationSchema["properties"]["decisions"]["required"]) == {
         "naturalness",

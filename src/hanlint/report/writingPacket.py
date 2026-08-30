@@ -228,6 +228,15 @@ def buildBriefWritingPacket(
                 "strategy.reference의 수치, 해시와 sourceIds를 결과 글의 사실이나 문장 재료로 옮기지 않는다",
             )
         )
+    if brief.version == 2:
+        packet["contract"]["constraints"].extend(
+            (
+                "input.brief.evidence의 excerpt는 factIds로 연결된 facts.statement를 확인하는 근거 조각일 뿐이다",
+                "excerpt의 다른 이름·수치·관계·문장을 결과로 옮기거나 다른 fact의 재료로 확산하지 않는다",
+                "sourceUrl, revision, checkedAt, locator, license와 reviewStatus를 결과 본문에 쓰지 않는다",
+                "humanVerified는 사람이 연결을 검토했다는 상태이며 출처나 사실이 참이라는 판정이 아니다",
+            )
+        )
     return packet
 
 

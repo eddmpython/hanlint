@@ -22,6 +22,7 @@ hanlint packet 글.md              초안과 대조 자료와 고침 근거를 A
 hanlint guard brief.json 글.md    구조화 요구와 결과의 사실 표면 계약
 hanlint arena blind trial.json   기준과 후보의 안전 계약과 블라인드 선호 평가
 hanlint blueprint brief.json     원문 없는 종류별 수사 구조 예산
+hanlint evidence brief.json      사실별 고정 근거 원장 검증
 hanlint terms 글.md               한국어 학습자에게 처음 풀어 쓸 낱말 후보
 ```
 
@@ -44,6 +45,7 @@ from .commands import (
     coverage,
     diff,
     doctor,
+    evidence,
     explain,
     fix,
     guard,
@@ -65,6 +67,7 @@ from .welcome import welcome
 COMMANDS = {
     "arena": arena,
     "blueprint": blueprint,
+    "evidence": evidence,
     "lint": lint,
     "fix": fix,
     "guard": guard,
