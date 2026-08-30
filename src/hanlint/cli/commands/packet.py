@@ -1,0 +1,33 @@
+"""`hanlint packet 글.md`. AI가 같은 근거로 쓰고 고치게 하는 작문 패킷."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from ...audit import auditDocument
+from ...document import parseMarkdown
+from ...fingerprint import buildFingerprint
+from ...report import PURPOSES, buildWritingPacket, renderWritingPacket
+from ...rules import runAll
+from .shared import addCommonOptions, configFrom, emit, readFile
+
+HELP = "초안과 대조 자료와 고침 근거를 AI용 JSON 한 덩어리로 만든다"
+
+
+def addParser(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("file", type=Path, help="요구사항이나 고칠 마크다운 파일")
+    parser.add_argument("--purpose", choices=PURPOSES, default="revise", help="draft는 요구사항에서 초안, revise는 초안 고침")
+    parser.add_argument("--no-source", dest="includeSource", action="store_false", help="JSON에서 원문 전문을 뺀다")
+    addCommonOptions(parser, ("json",))
+
+
+def run(args: argparse.Namespace) -> int:
+    config = configFrom(args, start=args.file.resolve().parent)
+    text = readFile(args.file)
+    doc = buildFingerprint(parseMarkdown(text, path=str(args.file)), config)
+    findings = runAll(doc, config)
+    audit = auditDocument(doc, config)
+    packet = buildWritingPacket(text, doc, findings, audit, config, args.purpose, args.includeSource)
+    emit(renderWritingPacket(packet), args.output)
+    return 0

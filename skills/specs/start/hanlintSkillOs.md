@@ -44,6 +44,7 @@ status: curated
 | 커밋 전에 돌릴 것 | `operation.verify` |
 | 배포 절차 | `operation.release` |
 | 규칙 목록 | `hanlint rules` |
+| AI 에게 글을 쓰게 하는 법 | `skills/write-korean/SKILL.md` |
 | AI 에게 검사를 시키는 법 | `skills/use-hanlint/SKILL.md` |
 | 바깥을 향한 소개 | 루트 `README.md` |
 | 지금 진행 중인 기획 | `mainPlan/` |

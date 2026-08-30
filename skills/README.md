@@ -49,6 +49,9 @@ status: curated
 | [`operation.codeStyle`](specs/operation/codeStyle.md) | 이름, 크기, 타입, docstring, 예외, 상수, 테스트, 도구 |
 | [`operation.sourceControl`](specs/operation/sourceControl.md) | 브랜치, 커밋 메시지, 커밋 단위, 릴리즈, 훅 |
 
+사용 스킬은 둘이다. `write-korean`은 요구사항과 초안을 `writingPacket`으로 컴파일해 글을 쓰고 고친다.
+`use-hanlint`는 이미 쓴 글의 결정적 지적을 없애고 평가 단계로 넘긴다.
+
 검증 절차 (`operation.verify`) 와 배포 (`operation.release`) 는 코어가 생기면서 같은 커밋에 만든다.
 
 ## 스킬 추가

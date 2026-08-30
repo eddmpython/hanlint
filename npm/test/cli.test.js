@@ -98,6 +98,9 @@ test("missing file, python-only commands, unknown option are 2", () => {
   const audit = run(["audit", bad]);
   assert.equal(audit.code, 2);
   assert.ok(audit.err.includes("파이썬 패키지"));
+  const packet = run(["packet", bad]);
+  assert.equal(packet.code, 2);
+  assert.ok(packet.err.includes("파이썬 패키지"));
   assert.equal(run([bad, "--severity", "bogus"]).code, 2);
   assert.equal(run([bad, "--bogus"]).code, 2);
 });

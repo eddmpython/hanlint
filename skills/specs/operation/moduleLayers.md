@@ -37,8 +37,8 @@ npm 구현 (`npm/src/`) 은 같은 폴더와 같은 순위를 거울처럼 따�
 `data` 보다도 아래다. `index.js` 는 `__init__.py` 처럼 층이 아니라 공개 표면이다.
 
 `src/hanlint/__init__.py` 는 층이 아니라 공개 표면이다. report 와 rules 와 fingerprint 를 모아 `lintText`,
-`lintFile`, `auditText`, `auditFile`, `fingerprint`, `Finding`, `Config`, `ruleNames` 를 낸다. 패키지 밖에서
-deep-path 를 import 하게 두지 않는다.
+`lintFile`, `auditText`, `auditFile`, `fingerprint`, `learnText`, `writingPacket`, `Finding`, `Config`,
+`ruleNames` 를 낸다. 패키지 밖에서 deep-path 를 import 하게 두지 않는다.
 
 ## 규칙 파일의 격리
 

@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 기계가 읽는 꼴. 평가 루프의 0층 입력이다. 파이썬 json.dumps(indent=2, ensure_ascii=False) 와 같은 글자다.
- * 지적마다 `exemplar` 를 붙인다. AI 는 규칙 이름과 이유만으로 고칠 때보다 본떠서 고칠 때 결과가 낫다.
+ * 지적마다 `exemplar` 를 붙인다. 실제 수정 차이는 파이썬의 exemplarLift 탐침에서 따로 잰다.
  */
 import { exemplarFor } from "../data/exemplars.js";
 import { findingAsDict } from "../rules/finding.js";

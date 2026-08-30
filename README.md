@@ -110,6 +110,21 @@ hanlint learn 전.md 후.md
 hanlint learn 전.md 후.md --format toml
 ```
 
+### AI에 작문 근거를 한 번에 건넨다
+
+`hanlint packet 글.md`는 원문, 현재 지문, 독자 상태, 같은 종류의 편집 글 분포, 실제 지적, 선택된 본보기,
+검증된 문형을 `hanlint.writingPacket` JSON 하나로 묶는다. 생성 모델이 바뀌어도 근거는 같다. 처음부터
+쓸 때는 `--purpose draft`, 초안을 고칠 때는 `--purpose revise`를 쓴다. 말뭉치 문장을 검색해 복사하지 않고
+분포와 전후 변환만 전달하므로 공통 AI 문체로 평준화하는 위험도 줄인다.
+
+```console
+hanlint packet 요구.md --purpose draft --preset docs
+hanlint packet 초안.md --purpose revise --output packet.json
+```
+
+실행 절차는 [write-korean 스킬](skills/write-korean/SKILL.md)에 있다. 원문 전문을 JSON에 넣지 않으려면
+`--no-source`를 붙인다.
+
 이 변환은 형태소 분석기를 넣지 않은 작은 형태 층이 맡는다. 조사 맞추기, 종결 어미의 어간과 시제와 서법,
 피동과 사동을 따로 다룬다. 기준 말뭉치 390편, 17,420문장에서 합니다체 1,992개는 전부, 한다체 12,255개는
 12,209개를 원문 그대로 다시 만들었다. 그렇게 확인한 활용형 14,201개는 세 문체를 모두 만든다. 해요체
@@ -350,7 +365,8 @@ hanlint 글.md --format json
 ```
 
 지적마다 `rule`, `line`, `quote`, `why` 가 오고 그 뒤에 `exemplar` 가 붙는다. `before` 와 `after` 와
-`moved` 셋이다. AI 는 규칙 이름과 금지 사유만 받을 때보다 전후 짝을 본떠 고칠 때 결과가 낫다.
+`moved` 셋이다. AI 는 규칙 이름과 금지 사유뿐 아니라 검증된 변환 한 쌍을 받는다. 실제 수정 성공률이
+높아지는지는 [exemplarLift 탐침](tests/_attempts/exemplarLift/)의 짝실험으로 따로 잰다.
 
 에이전트에 붙일 때는 [skills/use-hanlint/SKILL.md](skills/use-hanlint/SKILL.md) 를 스킬 폴더에 둔다.
 글을 쓴 직후 스스로 검사하고 error 가 0 이 될 때까지 고친 뒤에 사람에게 넘긴다.
@@ -400,6 +416,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 지문을 JSON 으로 |
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 |
 | `hanlint learn 전.md 후.md` | 사라진 문장 지적에서 사람이 승인할 프로젝트 본보기 후보 |
+| `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 |
 | `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 |

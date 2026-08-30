@@ -12,9 +12,12 @@ from .mapHtml import renderMapHtml
 from .mapText import renderMap
 from .registerMatch import exemplarInRegister, patternInRegister, targetRegister
 from .textReport import renderText
+from .writingPacket import PURPOSES, buildWritingPacket, renderWritingPacket
 
 __all__ = [
     "LAYERS",
+    "PURPOSES",
+    "buildWritingPacket",
     "fingerprintDict",
     "renderAudit",
     "renderCompact",
@@ -25,6 +28,7 @@ __all__ = [
     "renderMap",
     "renderMapHtml",
     "renderText",
+    "renderWritingPacket",
     "exemplarInRegister",
     "patternInRegister",
     "targetRegister",

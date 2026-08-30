@@ -3,11 +3,12 @@
 공개 표면은 이 파일 한 곳이다.
 
 ```python
-from hanlint import lintText, lintFile, auditText, fingerprint
+from hanlint import auditText, fingerprint, lintFile, lintText, writingPacket
 
 findings = lintFile("글.md")       # list[Finding]
 shape = auditText(text)            # AuditResult. 점수 없이 분포와 자리
 prints = fingerprint(text)         # DocumentPrint. 지문 그대로
+packet = writingPacket(text)       # 초안과 대조 자료와 고침 근거
 ```
 
 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이지 좋은
@@ -23,6 +24,7 @@ from .config import Config, loadConfig
 from .document import parseMarkdown
 from .fingerprint import DocumentPrint, buildFingerprint
 from .learn import LearnedExemplar, learnExemplars
+from .report import buildWritingPacket
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
@@ -41,6 +43,7 @@ __all__ = [
     "ruleDoc",
     "ruleNames",
     "ruleSummary",
+    "writingPacket",
 ]
 __version__ = "0.0.7"
 
@@ -69,6 +72,21 @@ def learnText(before: str, after: str, config: Config | None = None) -> tuple[Le
     beforeDoc = fingerprint(before, config)
     afterDoc = fingerprint(after, config)
     return learnExemplars(beforeDoc, afterDoc, runAll(beforeDoc, config), runAll(afterDoc, config), config.preset)
+
+
+def writingPacket(
+    text: str,
+    config: Config | None = None,
+    path: str | None = None,
+    purpose: str = "revise",
+    includeSource: bool = True,
+) -> dict:
+    """초안과 지문과 대조 자료와 고침 근거를 AI용 결정적 계약으로 묶는다."""
+    config = config or Config()
+    doc = fingerprint(text, config, path)
+    findings = runAll(doc, config)
+    audit = auditDocument(doc, config)
+    return buildWritingPacket(text, doc, findings, audit, config, purpose, includeSource)
 
 
 def auditText(text: str, config: Config | None = None, path: str | None = None) -> AuditResult:

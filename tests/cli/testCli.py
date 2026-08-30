@@ -96,6 +96,16 @@ def testProjectExemplarReachesLintRulesAndExplain(tmp_path, capsys):
     assert explainData["exemplar"]["before"] == "조직 전입니다."
 
 
+def testPacketWritesDeterministicAiContract(tmp_path, capsys):
+    brief = write(tmp_path, "요구.md", "독자는 개발자입니다. 설치 절차를 씁니다.\n")
+    assert main(["packet", str(brief), "--purpose", "draft", "--no-source"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["kind"] == "hanlint.writingPacket" and data["purpose"] == "draft"
+    assert "text" not in data["input"]
+    assert data["comparison"]["referenceProfile"]["documents"] > 0
+    assert data["patterns"] and data["verify"]["argv"][0] == "hanlint"
+
+
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     mixed = write(tmp_path, "mixed.md", MIXED)
     assert main([str(mixed), "--format", "compact", "--quiet"]) == 1
