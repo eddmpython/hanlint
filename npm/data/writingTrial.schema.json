@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/writingTrial.schema.json",
+  "title": "hanlint writing trial",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "id", "brief", "baseline", "candidate"],
+  "properties": {
+    "version": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "brief": { "$ref": "writingBrief.schema.json" },
+    "baseline": { "$ref": "#/$defs/generation" },
+    "candidate": { "$ref": "#/$defs/generation" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategyId", "modelId", "modelSha256", "promptSha256", "outputSha256", "text"],
+      "properties": {
+        "strategyId": { "type": "string", "minLength": 1 },
+        "modelId": { "type": "string", "minLength": 1 },
+        "modelSha256": { "$ref": "#/$defs/sha256" },
+        "promptSha256": { "$ref": "#/$defs/sha256" },
+        "outputSha256": { "$ref": "#/$defs/sha256" },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

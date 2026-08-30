@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+from hashlib import sha256
 from pathlib import Path
 
 from hanlint.cli.main import main, normalizeArgv
@@ -222,6 +223,60 @@ def testGuardExitCodesJsonAndPresetConflict(tmp_path, capsys):
     assert "표면 계약 위반" in output and "요구 밖 숫자: 9" in output
     assert main(["guard", str(brief), str(good), "--preset", "blog"]) == 2
     assert "brief preset report" in capsys.readouterr().err
+
+
+def testArenaBlindRecordRevealAndAggregate(tmp_path, capsys):
+    baselineText = "# 결정\n\n해솔 계획은 2026년 8월 31일 시작하며 예산은 380,000원이다. 운영자는 다음 확인 순서를 정한다.\n"
+    candidateText = "# 결정\n\n운영자는 해솔 계획의 2026년 8월 31일 시작과 380,000원 예산을 확인하고 다음 순서를 정한다.\n"
+
+    def generated(strategyId, text):
+        return {
+            "strategyId": strategyId,
+            "modelId": "model",
+            "modelSha256": "a" * 64,
+            "promptSha256": "b" * 64,
+            "outputSha256": sha256(text.encode()).hexdigest(),
+            "text": text,
+        }
+
+    trialData = {
+        "version": 1,
+        "id": "arena-cli-1",
+        "brief": {
+            "version": 1,
+            "preset": "report",
+            "reader": "결정할 운영자",
+            "task": "관찰값으로 다음 순서를 정한다",
+            "facts": [
+                {"id": "F1", "statement": "해솔 계획은 2026년 8월 31일 시작한다."},
+                {"id": "F2", "statement": "예산은 380,000원이다."},
+            ],
+            "mustInclude": ["해솔 계획", "2026년 8월 31일", "380,000원"],
+            "allowedNumbers": ["2026", "8", "31", "380000"],
+            "forbidden": [],
+            "length": {"min": 60, "max": 250},
+        },
+        "baseline": generated("plainBrief", baselineText),
+        "candidate": generated("outlineV1", candidateText),
+    }
+    trial = write(tmp_path, "trial.json", json.dumps(trialData, ensure_ascii=False))
+    blindPath = tmp_path / "blind.json"
+    assert main(["arena", "blind", str(trial), "--seed", "42", "--output", str(blindPath)]) == 0
+    blind = json.loads(blindPath.read_text(encoding="utf-8"))
+    assert blind["eligibleForPreference"] and "plainBrief" not in blindPath.read_text(encoding="utf-8")
+    evaluationData = blind["evaluationTemplate"]
+    evaluationData["evaluatorId"] = "person-1"
+    evaluationData["note"] = "두 결과와 brief를 나란히 읽었다."
+    evaluation = write(tmp_path, "evaluation.json", json.dumps(evaluationData, ensure_ascii=False))
+    recordedPath = tmp_path / "recorded.json"
+    assert main(["arena", "record", str(blindPath), str(evaluation), "--output", str(recordedPath)]) == 0
+    resultPath = tmp_path / "result.json"
+    assert main(["arena", "reveal", str(trial), str(blindPath), str(recordedPath), "--output", str(resultPath)]) == 0
+    result = json.loads(resultPath.read_text(encoding="utf-8"))
+    assert result["safetyOutcome"] == "bothSafe" and result["preference"]["evaluatorKind"] == "human"
+    assert main(["arena", "aggregate", str(resultPath), "--format", "text"]) == 0
+    output = capsys.readouterr().out
+    assert "human 평가 1개" in output and "30개 미만" in output
 
 
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):

@@ -27,7 +27,8 @@ LAYERS: dict[str, int] = {
     "baseline": 6,
     "learn": 6,
     "guard": 6,
-    "cli": 7,
+    "arena": 7,
+    "cli": 8,
 }
 
 RULE_LAYER = "rules"

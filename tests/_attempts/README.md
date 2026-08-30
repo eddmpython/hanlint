@@ -32,3 +32,4 @@ dartlab 의 `tests/_attempts/` 에서 가져온 꼴이다. 주제 하나가 폴�
 | `operationMemory/` | 공개 Git 고침에서 뽑은 작은 표면 연산이 다른 원문에서도 사실과 뜻을 지키며 향상되는지 |
 | `writingLift/` | 일곱 종류 완성 글에서 writingPacket, 반복 수정, 사실 가드가 실제로 사실과 자연스러움을 높이는지 |
 | `factContract/` | 구조화 brief로 쓴 일곱 종류 결과에서 guard가 사실 표면 실패를 결정적으로 드러내는지 |
+| `blindWritingArena/` | 일곱 종류가 안전 검사, 익명화, 평가 기록과 집계의 같은 계약을 지나는지 |

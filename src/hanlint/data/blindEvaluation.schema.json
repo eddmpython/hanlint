@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/blindEvaluation.schema.json",
+  "title": "hanlint blind evaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "blindSha256", "evaluatorId", "evaluatorKind", "decisions", "note"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.blindEvaluation" },
+    "blindSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "evaluatorId": { "type": "string", "minLength": 1 },
+    "evaluatorKind": { "enum": ["human", "llm"] },
+    "decisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["naturalness", "taskUtility", "voice"],
+      "properties": {
+        "naturalness": { "enum": ["left", "right", "tie"] },
+        "taskUtility": { "enum": ["left", "right", "tie"] },
+        "voice": { "enum": ["left", "right", "tie"] }
+      }
+    },
+    "note": { "type": "string", "minLength": 1 }
+  }
+}

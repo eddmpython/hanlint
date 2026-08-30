@@ -176,6 +176,22 @@ hanlint guard brief.json 초안.md
 최종 구조화 패킷으로 일곱 종류를 한 번씩 생성한 탐침에서는 사실 표면 6/7, 길이 1/7, error 0은 3/7,
 전체 자동 계약은 1/7이었다. guard는 나머지 여섯 결과를 막았지만 생성 품질 향상을 입증하지는 않았다.
 
+새 작법 전략이나 잘 쓴 글 DB 검색은 [writing trial 스키마](src/hanlint/data/writingTrial.schema.json)로 일반
+`plainBrief` 결과와 후보 결과를 같은 brief에 묶어 검증한다. 모델, 프롬프트와 출력 SHA256을 고정한 뒤
+다음 네 단계로 안전과 선호를 분리한다.
+
+```console
+hanlint arena blind trial.json --seed 42 --output blind.json
+hanlint arena record blind.json evaluation.json --output recorded.json
+hanlint arena reveal trial.json blind.json recorded.json --output result.json
+hanlint arena aggregate result.json 다른-result.json --format text
+```
+
+`blind`는 두 결과를 먼저 guard로 검사한다. 한쪽만 자동 계약을 통과하면 안전 승패만 기록하고 글 비교를
+내지 않는다. 둘 다 통과할 때만 전략명, 모델명과 좌우 원래 이름을 숨긴 글을 낸다. 평가는 자연스러움,
+독자 과업 완수와 목소리를 각각 left, right, tie로 기록한다. `evaluatorKind`는 `human` 또는 `llm`이며 LLM
+평가는 사람 선호나 진실로 합치지 않는다. 사람 평가 30개 미만은 탐색 표본으로만 보고한다.
+
 실행 절차는 [write-korean 스킬](skills/write-korean/SKILL.md)에 있다. 원문 전문을 JSON에 넣지 않으려면
 `--no-source`를 붙인다.
 
@@ -496,6 +512,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
+| `hanlint arena blind ...` | 기준과 후보의 자동 안전 계약을 가른 뒤 안전한 쌍만 블라인드 선호 평가한다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 |
 | `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 |

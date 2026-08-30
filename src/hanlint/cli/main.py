@@ -20,6 +20,7 @@ hanlint diff 전.md 후.md           두 초안의 지문 차이
 hanlint learn 전.md 후.md          실제 고침에서 승인할 정확 패치와 표면 치환 후보
 hanlint packet 글.md              초안과 대조 자료와 고침 근거를 AI용 JSON으로
 hanlint guard brief.json 글.md    구조화 요구와 결과의 사실 표면 계약
+hanlint arena blind trial.json   기준과 후보의 안전 계약과 블라인드 선호 평가
 hanlint terms 글.md               한국어 학습자에게 처음 풀어 쓸 낱말 후보
 ```
 
@@ -35,6 +36,7 @@ from pathlib import Path
 
 from .. import __version__
 from .commands import (
+    arena,
     audit,
     baselineCommand,
     coverage,
@@ -59,6 +61,7 @@ from .commands.shared import nearNames
 from .welcome import welcome
 
 COMMANDS = {
+    "arena": arena,
     "lint": lint,
     "fix": fix,
     "guard": guard,

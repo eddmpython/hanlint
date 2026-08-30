@@ -8,6 +8,10 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- **블라인드 작문 아레나.** `writingTrial`이 같은 brief의 `plainBrief` 기준과 후보 전략에 모델·프롬프트·출력
+  SHA256을 묶는다. `hanlint arena`는 두 결과를 guard로 먼저 가르고, 함께 통과한 쌍만 전략과 모델을 숨긴
+  좌우 비교로 만든다. 자연스러움, 독자 과업과 목소리의 사람·LLM 평가를 분리해 기록하고 reveal과
+  aggregate에서 안전 승패와 선호를 따로 센다. 사람 평가 30개 미만과 LLM 평가는 향상 근거로 부르지 않는다
 - **생성 전후 사실 계약.** 버전 고정 `writingBrief`가 독자, 과업, 원자 사실, 필수 표면, 허용 숫자, 금지
   표면과 길이를 한 JSON으로 잠근다. 구조화 draft `writingPacket`은 비교 프로파일과 본보기를 빼고 brief만
   사실 재료로 싣는다. Python의 `hanlint guard brief.json 글.md`는 글을 바꾸지 않고 빠진 표면, 요구 밖

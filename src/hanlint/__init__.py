@@ -20,6 +20,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .arena import (
+    BlindEvaluation,
+    GenerationRecord,
+    WritingTrial,
+    aggregateResults,
+    prepareBlind,
+    recordEvaluation,
+    revealTrial,
+)
 from .audit import AuditResult, auditDocument
 from .config import AtomicFact, Config, WritingBrief, loadConfig, loadWritingBrief
 from .document import parseMarkdown
@@ -32,13 +41,17 @@ from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 __all__ = [
     "AuditResult",
     "AtomicFact",
+    "BlindEvaluation",
     "Config",
     "DocumentPrint",
     "Finding",
     "GuardResult",
+    "GenerationRecord",
     "LearnedExemplar",
     "LearnedOperation",
     "WritingBrief",
+    "WritingTrial",
+    "aggregateResults",
     "auditFile",
     "auditText",
     "fingerprint",
@@ -50,6 +63,9 @@ __all__ = [
     "learnOperationText",
     "loadConfig",
     "loadWritingBrief",
+    "prepareBlind",
+    "recordEvaluation",
+    "revealTrial",
     "ruleDoc",
     "ruleNames",
     "ruleSummary",
