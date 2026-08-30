@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/panelReviewBatch.schema.json",
+  "title": "hanlint writing arena human review batch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "suiteSha256", "rubricSha256", "evaluator", "reviews"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.panelReviewBatch" },
+    "suiteSha256": { "$ref": "#/$defs/sha256" },
+    "rubricSha256": { "$ref": "#/$defs/sha256" },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "group", "protocolRevision"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "group": {
+          "enum": ["targetReader", "professionalEditor", "koreanExpert", "generalReader"]
+        },
+        "protocolRevision": { "const": "hanlint.writingArena.panel.v1" }
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["caseId", "caseSha256", "contentChecks", "preferences", "reasons"],
+        "properties": {
+          "caseId": { "type": "string", "minLength": 1 },
+          "caseSha256": { "$ref": "#/$defs/sha256" },
+          "contentChecks": { "$ref": "#/$defs/contentChecks" },
+          "preferences": { "$ref": "#/$defs/preferences" },
+          "reasons": { "$ref": "#/$defs/reasons" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "contentChoice": { "enum": ["pass", "fail", "cannotJudge"] },
+    "preferenceChoice": { "enum": ["left", "right", "tie", "cannotJudge"] },
+    "contentChecks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["left", "right"],
+      "properties": {
+        "left": { "$ref": "#/$defs/contentChoice" },
+        "right": { "$ref": "#/$defs/contentChoice" }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["naturalness", "clarity", "taskUtility", "voice"],
+      "properties": {
+        "naturalness": { "$ref": "#/$defs/preferenceChoice" },
+        "clarity": { "$ref": "#/$defs/preferenceChoice" },
+        "taskUtility": { "$ref": "#/$defs/preferenceChoice" },
+        "voice": { "$ref": "#/$defs/preferenceChoice" }
+      }
+    },
+    "reasons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content", "naturalness", "clarity", "taskUtility", "voice"],
+      "properties": {
+        "content": { "type": "string", "minLength": 1 },
+        "naturalness": { "type": "string", "minLength": 1 },
+        "clarity": { "type": "string", "minLength": 1 },
+        "taskUtility": { "type": "string", "minLength": 1 },
+        "voice": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -15,7 +15,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src" / "hanlint" / "data"
 TARGET = ROOT / "npm" / "data"
-PYTHON_ONLY_DATA = {"blueprints.json", "evidenceEntailmentV1.json", "learningVocabularySource.toml"}
+PYTHON_ONLY_DATA = {
+    "blueprints.json",
+    "evidenceEntailmentV1.json",
+    "learningVocabularySource.toml",
+    "writingArenaPilotV1.json",
+}
 """npm 명령이 쓰지 않는 파이썬 전용 자료. TSV 는 투영 대상 확장자에 처음부터 들지 않는다."""
 
 

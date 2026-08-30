@@ -18,6 +18,9 @@ guard는 위반 여섯 결과를 막는 장치이지 생성 품질 향상의 증
 고정 말뭉치 1,600편의 원문 없는 구조 백분위는 `rhetoricalBlueprintV1`으로 opt-in할 수 있다. 같은 일곱
 brief의 짝 실측에서 길이는 후보 1/7, 기준 0/7, 사실 표면은 후보 6/7, 기준 5/7, error 0은 두 조건 모두
 4/7이었다. 전체 계약은 둘 다 0/7이라 사람 선호를 재지 못했으므로 기본 전략으로 쓰지 않는다.
+새 `readerTaskDraftV1` 절차를 `qwen3:8b`로 한 번씩 생성한 별도 일곱 장르 탐침에서는 사실 표면이 두
+조건 모두 7/7이었고 전체 자동 계약은 일반 brief 3/7, 후보 7/7이었다. 네 건은 후보 안전 승, 세 건은
+둘 다 안전이었다. 이 결과는 아래 초안 절차를 채택할 자동 안전 근거지만 자연스러움 향상 근거는 아니다.
 
 ## 결과
 
@@ -77,9 +80,12 @@ hanlint entailment evaluate predictions.json --format json
 4. `contract.operation`과 `constraints`를 지킨다. 구조화 패킷에서는 `input.brief`만 사실 재료다. 자유 형식
    패킷에서는 `input`만 사실 재료로 쓰고 `referenceProfile`과 `comparison.current`의 수치는 결과에
    옮기지 않는다.
-5. 초안을 실제 결과 파일에 쓴다. 도입에서 독자의 질문과 얻을 결과를 세우고, 본문은 한 절에 한 가지 일을
-   진행하며, 마지막은 독자가 지금 할 행동이나 확인할 결과로 닫는다. 사용자 저장소의 글쓰기 규칙이 있으면
-   그것이 이 일반 절차보다 우선한다.
+5. 초안을 실제 결과 파일에 쓴다. 먼저 독자가 글을 읽은 뒤 알아야 하거나 느끼거나 해야 할 한 가지를
+   내부 작업 목표로 둔다. 각 원자 사실은 그 목표에 필요한 자리에서 한 번씩 쓰고, brief에 든 사실 목록을
+   같은 순서로 되풀이하지 않는다. 문장 사이에 원인, 시간, 행동이나 장면이 어떻게 이어지는지 드러낸다. 도입은 독자
+   질문이나 장면을 열고, 본문은 한 절에 한 가지 일을 진행하며, 마지막은 독자가 이어서 할 행동, 확인할 결과나
+   달라진 장면으로 닫는다. 안내서와 기술 문서가 아니면 불필요한 점검표를 만들지 않는다. 길고 짧은 문장은
+   내용에 따라 배치한다. 사용자 저장소의 글쓰기 규칙이 있으면 그것이 이 일반 절차보다 우선한다.
 6. 구조화 brief와 초안을 guard로 대조한다.
 
 ```powershell
@@ -148,13 +154,40 @@ hanlint learn 전.md 승인본.md --format toml
 ## 새 작법 전략을 승격하기
 
 잘 쓴 글 DB 검색, 새 문형, 개요 생성이나 재작성 루프를 기본 작법에 넣기 전에 같은 `brief.json`으로
-`plainBrief` 기준과 후보를 각각 한 번 만든다. `src/hanlint/data/writingTrial.schema.json`에 모델,
-프롬프트와 출력 SHA256을 기록하고 `hanlint arena blind trial.json --seed 42`를 실행한다. 한쪽이 guard를
-어기면 자연스러움 선호와 섞지 않고 안전 승패로 끝낸다. 둘 다 통과한 경우에만 전략과 모델을 모르는
-평가자가 자연스러움, 독자 과업과 목소리를 각각 고른다. `evaluatorKind=llm` 결과는 별도 진단이며 사람
-선호나 진실로 부르지 않는다. 사람 평가 30개 미만에서 이겼다는 이유로 기본 패킷에 전략을 넣지 않는다.
-현재 `rhetoricalBlueprintV1`도 이 절차에서 일곱 쌍이 모두 자동 계약에 실패했다. opt-in 상태를 유지하고
-새 과제에서 두 결과가 함께 guard를 통과할 때만 사람 평가를 받는다.
+`plainBrief` 기준과 후보를 각각 한 번 만든다. `writingTrial.schema.json`으로 모델, 프롬프트와 출력
+SHA256을 고정하고 같은 후보 전략 trial을 `panelTrialSet.schema.json`으로 묶는다. 자체 fixture인지 외부
+자료인지, 라이선스, 외부 참조 원문 포함 여부와 사람 품질 label 포함 여부를 provenance에 명시한다.
+
+```powershell
+hanlint arena panel trial-set.json --seed 42 --output suite.json
+hanlint arena panel-record suite.json reviewer-1.json --output recorded-1.json
+hanlint arena panel-record suite.json reviewer-2.json --output recorded-2.json
+hanlint arena panel-record suite.json reviewer-3.json --output recorded-3.json
+hanlint arena panel-adjudicate suite.json recorded-1.json recorded-2.json recorded-3.json --output adjudication.json
+hanlint arena panel-reveal trial-set.json suite.json adjudication.json --output result.json
+```
+
+한쪽이 guard를 어기면 자연스러움 선호와 섞지 않고 자동 안전 결과로 끝낸다. 둘 다 충족한 경우에만
+전략과 모델을 모르는 평가자 최소 세 명이 content를 먼저 확인한 뒤 자연스러움, 명료성, 독자 과업과
+목소리를 각각 고른다. 다른 평가자의 선택을 보기 전에 독립 batch를 끝내고 각 선택의 구체적인 근거를
+쓴다. 목소리 표본이 없으면 voice는 `cannotJudge`다. 엄격 다수뿐 아니라 차원별 Krippendorff alpha와
+장르별 결과, 무승부를 0.5로 센 후보 선호 비율의 5,000회 bootstrap 구간을 함께 읽는다. 합성 품질 점수를
+만들지 않는다. 최소 세 명은 사례 합의 조건일 뿐 일반화 조건이 아니다. 30개 미만 사례와 낮은 alpha에서
+이겼다는 이유로 기본 작법에 전략을 넣지 않는다.
+
+자동 심사기는 사람 batch로 넣지 않는다. 같은 suite를 두 좌우 순서로 평가하고 순서가 일치하지 않으면
+기권한다.
+
+```powershell
+hanlint arena judge-cases suite.json --output judge-cases.json
+hanlint arena judge-consistency suite.json judge-cases.json predictions.json
+hanlint arena judge-evaluate suite.json adjudication.json judge-cases.json predictions.json
+```
+
+사람 합의 전에는 `judge-consistency`의 위치 일관성과 사용 가능 범위만 보고, 합의 뒤에만 선호 정확도,
+macro F1, coverage, confusion과 calibration을 읽는다. `qwen3:8b` 일곱 쌍 탐침은 독자 과업에서 순서
+일관성 0.5000, 사용 가능 범위 0.4286이었고 계약 위반 응답도 1/14였다. 이 모델을 사람 선호의 대리자로
+쓰지 않는다. 현재 `rhetoricalBlueprintV1`도 일곱 쌍이 모두 자동 계약에 실패했으므로 opt-in을 유지한다.
 
 ## 하지 않을 것
 

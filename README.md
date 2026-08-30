@@ -235,20 +235,42 @@ hanlint packet brief.json --purpose draft --strategy rhetoricalBlueprintV1 --out
 기본 작법이 아니다.
 
 새 작법 전략이나 잘 쓴 글 DB 검색은 [writing trial 스키마](src/hanlint/data/writingTrial.schema.json)로 일반
-`plainBrief` 결과와 후보 결과를 같은 brief에 묶어 검증한다. 모델, 프롬프트와 출력 SHA256을 고정한 뒤
-다음 네 단계로 안전과 선호를 분리한다.
+`plainBrief` 결과와 후보 결과를 같은 brief에 묶어 검증한다. 여러 장르를
+[`panelTrialSet`](src/hanlint/data/panelTrialSet.schema.json)으로 묶을 때 자료의 출처 성격, 라이선스,
+외부 참조 원문과 사람 품질 label 포함 여부까지 해시로 고정한다. 모델, 프롬프트와 출력 SHA256을 고정한
+뒤 사람 패널과 자동 심사기를 분리한다.
 
 ```console
-hanlint arena blind trial.json --seed 42 --output blind.json
-hanlint arena record blind.json evaluation.json --output recorded.json
-hanlint arena reveal trial.json blind.json recorded.json --output result.json
-hanlint arena aggregate result.json 다른-result.json --format text
+hanlint arena panel trial-set.json --seed 42 --output suite.json
+hanlint arena panel-record suite.json reviewer-1.json --output recorded-1.json
+hanlint arena panel-adjudicate suite.json recorded-1.json recorded-2.json recorded-3.json --output adjudication.json
+hanlint arena panel-reveal trial-set.json suite.json adjudication.json --output result.json
+hanlint arena judge-cases suite.json --output judge-cases.json
+hanlint arena judge-consistency suite.json judge-cases.json predictions.json
+hanlint arena judge-evaluate suite.json adjudication.json judge-cases.json predictions.json
 ```
 
-`blind`는 두 결과를 먼저 guard로 검사한다. 한쪽만 자동 계약을 통과하면 안전 승패만 기록하고 글 비교를
-내지 않는다. 둘 다 통과할 때만 전략명, 모델명과 좌우 원래 이름을 숨긴 글을 낸다. 평가는 자연스러움,
-독자 과업 완수와 목소리를 각각 left, right, tie로 기록한다. `evaluatorKind`는 `human` 또는 `llm`이며 LLM
-평가는 사람 선호나 진실로 합치지 않는다. 사람 평가 30개 미만은 탐색 표본으로만 보고한다.
+`panel`은 두 결과를 먼저 guard로 검사한다. 한쪽만 자동 계약을 충족하면 안전 결과만 기록하고 본문 비교를
+내지 않는다. 둘 다 충족할 때만 전략명, 모델명과 작성자를 숨기고 독자, 과업, 원자 사실과 제약을 함께
+보인다. 평가자는 좌우 content를 먼저 확인하고 자연스러움, 명료성, 독자 과업과 목소리를 따로 고른다.
+목소리 표본이 없으면 기권한다. 최소 세 명의 독립 batch에서 엄격 다수, 차원별 Krippendorff alpha,
+장르별 결과와 5,000회 bootstrap 구간을 낸다. 합성 품질 점수는 없다.
+
+자동 심사기는 같은 쌍을 두 좌우 순서로 받고, 선택이 일치하지 않으면 기권한다. 사람 합의가 없을 때는
+위치 일관성과 사용 가능 범위만 계산한다. 합의가 생긴 뒤에만 정확도, macro F1, coverage, confusion,
+Brier와 calibration을 낸다. 일곱 쌍 `qwen3:8b` 실제 탐침에서 독자 과업의 순서 일관성은 0.5000,
+사용 가능 범위는 0.4286이었고 14개 응답 중 1개는 content 실패 뒤에도 선호를 내 계약에서 거부됐다.
+따라서 LLM 평가는 사람 선호나 진실로 합치지 않는다. 최소 세 명은 합의 계산 조건일 뿐 일반화 조건이
+아니며 30개 미만 사례와 낮은 alpha는 탐색 결과로만 보고한다.
+
+`readerTaskDraftV1` 절차도 같은 일곱 장르에서 실제로 한 번씩 생성했다. 사실 표면은 기준과 후보 모두
+7/7이었고 전체 자동 계약은 기준 3/7, 후보 7/7이었다. 후보 안전 승 네 쌍과 둘 다 안전 세 쌍을 얻었지만,
+사람 패널은 아직 없으므로 자연스러움 향상으로 부르지 않는다. 재현 절차와 해시는
+[`writingArena` 탐침 기록](tests/_attempts/writingArena/probeWritingArena_log.md)에 있다. 조사 근거와 자료
+사용 경계는 [`writingArena v1 조사`](tests/_attempts/writingArena/writingArenaV1_research.md)에 정리했다.
+
+기존 `arena blind`, `record`, `reveal`, `aggregate` 단일 평가 흐름도 호환하려고 남겨 두었다. 새 전략을
+승격할 때는 독자와 사실 맥락, 다중 사람 합의와 위치 편향 측정이 있는 panel 흐름을 쓴다.
 
 실행 절차는 [write-korean 스킬](skills/write-korean/SKILL.md)에 있다. 원문 전문을 JSON에 넣지 않으려면
 `--no-source`를 붙인다.
@@ -573,7 +595,8 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 판·인용 조각 해시·라이선스를 검증한다. Python 판 전용 |
 | `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류·기권 지표를 집계한다. Python 판 전용 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
-| `hanlint arena blind ...` | 기준과 후보의 자동 안전 계약을 가른 뒤 안전한 쌍만 블라인드 선호 평가한다. Python 판 전용 |
+| `hanlint arena panel ...` | 같은 사실의 기준과 후보를 다중 사람 패널로 눈가림 평가하고 합의·불일치·구간을 낸다. Python 판 전용 |
+| `hanlint arena judge-cases / judge-consistency / judge-evaluate` | 자동 심사기의 좌우 위치 편향을 먼저 재고 사람 합의가 있을 때만 정확도와 calibration을 낸다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 |
 | `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 |

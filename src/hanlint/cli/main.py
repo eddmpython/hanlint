@@ -21,6 +21,8 @@ hanlint learn 전.md 후.md          실제 고침에서 승인할 정확 패치
 hanlint packet 글.md              초안과 대조 자료와 고침 근거를 AI용 JSON으로
 hanlint guard brief.json 글.md    구조화 요구와 결과의 사실 표면 계약
 hanlint arena blind trial.json   기준과 후보의 안전 계약과 블라인드 선호 평가
+hanlint arena panel trials.json  독자·사실 맥락과 다중 사람 합의가 있는 블라인드 평가
+hanlint arena judge-cases ...    자동 심사기의 좌우 위치 편향과 사람 합의 보정
 hanlint blueprint brief.json     원문 없는 종류별 수사 구조 예산
 hanlint evidence brief.json      사실별 고정 근거 원장 검증
 hanlint entailment cases         gold 없는 한국어 근거 함의 평가 사례

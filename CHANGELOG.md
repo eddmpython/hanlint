@@ -8,6 +8,15 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- **writingArena v1 다중 사람 패널과 심사기 보정.** 같은 후보 전략의 여러 장르 trial을 자료 출처 성격과
+  라이선스 경계까지 고정해 묶고, 독자·과업·원자 사실을 보이는 눈가림 suite에서 content, 자연스러움,
+  명료성, 독자 과업과 목소리를 최소 세 명이 독립 평가한다. 엄격 다수, 차원별 Krippendorff alpha,
+  장르별 후보 선호 비율과 5,000회 bootstrap 구간을 내되 합성 품질 점수는 만들지 않는다. 자동 심사기는
+  모든 쌍을 두 좌우 순서로 받아 일치하지 않으면 기권하고, 사람 합의가 있을 때만 confusion, macro F1,
+  coverage, 선택 정확도와 calibration을 계산한다. 외부 원문과 품질 label이 없는 일곱 장르 fixture,
+  JSON schema, Python API와 CLI를 함께 제공한다. `qwen3:8b` 실제 생성에서 독자 과업 절차는 자동 계약
+  7/7로 일반 brief 3/7보다 안전했지만, 자동 심사기는 독자 과업 순서 일관성 0.5000에 그쳐 사람 선호나
+  자연스러움 향상으로 부르지 않는다
 - **사람 합의 근거 함의 벤치마크.** CC BY-SA 4.0 KLUE-NLI의 고정 dev 판에서 여섯 source와 세 label을
   균형 있게 뽑은 36개를 배포한다. `hanlint entailment cases`는 gold 없는 평가 입력을 내고 `evaluate`와
   Python API는 외부 평가기의 혼동행렬, macro F1, coverage, 선택 정확도, selective risk와

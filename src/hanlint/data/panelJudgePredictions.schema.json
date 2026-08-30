@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/panelJudgePredictions.schema.json",
+  "title": "hanlint writing arena automatic judge predictions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "kind",
+    "judgeCasesSha256",
+    "evaluatorId",
+    "evaluatorRevision",
+    "promptSha256",
+    "predictions"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.panelJudgePredictions" },
+    "judgeCasesSha256": { "$ref": "#/$defs/sha256" },
+    "evaluatorId": { "type": "string", "minLength": 1 },
+    "evaluatorRevision": { "$ref": "#/$defs/sha256" },
+    "promptSha256": { "$ref": "#/$defs/sha256" },
+    "predictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["presentationId", "presentationSha256", "contentChecks", "preferences"],
+        "properties": {
+          "presentationId": { "type": "string", "minLength": 1 },
+          "presentationSha256": { "$ref": "#/$defs/sha256" },
+          "contentChecks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["left", "right"],
+            "properties": {
+              "left": { "$ref": "#/$defs/contentDecision" },
+              "right": { "$ref": "#/$defs/contentDecision" }
+            }
+          },
+          "preferences": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["naturalness", "clarity", "taskUtility", "voice"],
+            "properties": {
+              "naturalness": { "$ref": "#/$defs/preferenceDecision" },
+              "clarity": { "$ref": "#/$defs/preferenceDecision" },
+              "taskUtility": { "$ref": "#/$defs/preferenceDecision" },
+              "voice": { "$ref": "#/$defs/preferenceDecision" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "contentDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["choice", "confidence"],
+      "properties": {
+        "choice": { "enum": ["pass", "fail", "abstain"] },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "preferenceDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["choice", "confidence"],
+      "properties": {
+        "choice": { "enum": ["left", "right", "tie", "abstain"] },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    }
+  }
+}

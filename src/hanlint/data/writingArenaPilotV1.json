@@ -1,0 +1,379 @@
+{
+  "version": 1,
+  "kind": "hanlint.panelTrialSet",
+  "studyId": "hanlint-writing-arena-pilot-v1",
+  "candidateStrategyId": "contextFirstV1",
+  "provenance": {
+    "origin": "syntheticProtocolFixture",
+    "license": "MIT",
+    "containsExternalReferenceText": false,
+    "qualityLabels": false
+  },
+  "trials": [
+    {
+      "version": 1,
+      "id": "blog-basil-01",
+      "brief": {
+        "version": 1,
+        "preset": "blog",
+        "reader": "베란다에서 바질을 처음 기르는 사람",
+        "task": "바질에 물을 줄 시점과 확인할 흙 깊이를 이해한다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "바질은 오전 7시에 물을 준다."
+          },
+          {
+            "id": "F2",
+            "statement": "흙 윗부분 2cm가 마르면 물을 준다."
+          }
+        ],
+        "mustInclude": [
+          "바질",
+          "오전 7시",
+          "2cm"
+        ],
+        "allowedNumbers": [
+          "2",
+          "7"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "8f826821fa91b71cdd175542d03b45aae996b31eafa5873e35803e86ba948c93",
+        "outputSha256": "19483132a24d542d5e929b089a0e365c31c8adeae8df50836349cba62109d2d6",
+        "text": "# 바질 물주기\n\n바질은 오전 7시에 물을 준다. 흙 윗부분 2cm가 마른 상태인지 확인한 후 물을 준다. 처음 기르는 사람은 이 두 조건을 확인한다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "537cb4206c3db36b3a23bfb876238b2601b91ad969546c9200807eeab4e53984",
+        "outputSha256": "7c862240c33bb210c7037b5f111f9ffc95d21a7cc9867caadd5628f8e0eaa1e8",
+        "text": "# 바질은 언제 물을 마실까\n\n오전 7시, 먼저 손가락으로 흙 윗부분 2cm를 살핀다. 그곳이 말랐다면 바질에 물을 줄 때다. 시각보다 흙의 상태를 함께 보면 판단이 한결 쉽다.\n"
+      }
+    },
+    {
+      "version": 1,
+      "id": "report-haesol-01",
+      "brief": {
+        "version": 1,
+        "preset": "report",
+        "reader": "해솔 계획의 다음 확인 순서를 정할 운영자",
+        "task": "해솔 계획의 시작일과 예산을 확인한다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "해솔 계획은 2026년 8월 31일 시작한다."
+          },
+          {
+            "id": "F2",
+            "statement": "해솔 계획의 예산은 380,000원이다."
+          }
+        ],
+        "mustInclude": [
+          "해솔 계획",
+          "2026년 8월 31일",
+          "380,000원"
+        ],
+        "allowedNumbers": [
+          "2026",
+          "31",
+          "380000",
+          "8"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "9456f18397dd747a4114f80a65f321d16db8989951b9bd44b69ef4f72c06fb1f",
+        "outputSha256": "5f3771ba5cc441cceec381e622c7fc7d488f6ae4e31b95a3e37664e7a5d16d64",
+        "text": "# 해솔 계획\n\n해솔 계획은 2026년 8월 31일 시작하며 예산은 380,000원이다. 운영자는 시작일과 예산을 확인하고 다음 순서를 정한다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "bf7d812cfeab7b4b6bf4c3dd2d5032db22763cf06958aa05e477e31d9d606953",
+        "outputSha256": "c15c28df00e78b241077bdd5981d33241bfe34f1ae4f528847444be90f221dba",
+        "text": "# 해솔 계획 확인 사항\n\n해솔 계획의 시작일은 2026년 8월 31일이고 예산은 380,000원이다. 운영자는 두 값을 확인한 뒤 다음 점검 순서를 정한다.\n"
+      }
+    },
+    {
+      "version": 1,
+      "id": "docs-retry-01",
+      "brief": {
+        "version": 1,
+        "preset": "docs",
+        "reader": "호출 제한 오류를 처리하는 API 개발자",
+        "task": "HTTP 429 응답에서 재시도 횟수를 설정한다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "HTTP 429 응답은 호출 제한을 뜻한다."
+          },
+          {
+            "id": "F2",
+            "statement": "재시도는 최대 3회 수행한다."
+          }
+        ],
+        "mustInclude": [
+          "HTTP 429",
+          "최대 3회"
+        ],
+        "allowedNumbers": [
+          "3",
+          "429"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "7809c28bba80c478061b3795aef368baba227a6b68ef37bfe8d40994ecf0ba92",
+        "outputSha256": "6fda74b75b74b8ba39d3d8ef5a6ac646fdbac8730981f377782537da76593777",
+        "text": "# 재시도 설정\n\nHTTP 429 응답은 호출 제한을 뜻한다. 이 응답을 받으면 재시도를 최대 3회 수행한다. 개발자는 이 횟수를 넘기지 않도록 처리한다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "4d0170ca3e9a555eb83fe36ac24d4cb02dee73a63d56e2b7a5ef191ac538f514",
+        "outputSha256": "ee27deffc498d50e67455f491b8435bda44b80b16eff3d88789f58bdbcb3f4ae",
+        "text": "# 호출 제한 재시도\n\n서버가 HTTP 429를 반환하면 호출 제한에 걸린 것이다. 재시도는 최대 3회로 제한한다. 그 뒤에도 같은 응답이 오면 호출을 멈추고 오류를 기록한다.\n"
+      }
+    },
+    {
+      "version": 1,
+      "id": "guide-drill-01",
+      "brief": {
+        "version": 1,
+        "preset": "guide",
+        "reader": "새로 입사해 대피 훈련에 참여하는 직원",
+        "task": "오후 2시에 동쪽 계단으로 대피한다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "대피 훈련은 오후 2시에 시작한다."
+          },
+          {
+            "id": "F2",
+            "statement": "참가자는 동쪽 계단을 이용한다."
+          }
+        ],
+        "mustInclude": [
+          "오후 2시",
+          "동쪽 계단"
+        ],
+        "allowedNumbers": [
+          "2"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "d70a7444e38e357a53c9d486a00275254ca15c2ac157907ac0b08f18a648d2f7",
+        "outputSha256": "f48d43c0ce0f671f72aabfbe283f9f4e83566d69bcc6018709761d189ea9632c",
+        "text": "# 대피 훈련 안내\n\n대피 훈련은 오후 2시에 시작한다. 참가자는 동쪽 계단을 이용한다. 시작 시각과 이동 경로를 미리 확인한다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "e559a52ff4780a742a9d4ba502df0211b202ddb2b892e09621578341fa6a6209",
+        "outputSha256": "8a7e94c05b2d603de37894e29fa80df1b84df2b7fe715a2ab87bff08ed2883f5",
+        "text": "# 대피 훈련 순서\n\n오후 2시에 안내가 나오면 업무를 멈춘다. 가까운 통로를 따라 동쪽 계단으로 이동한다. 출발하기 전에 시각과 계단 위치를 한 번 확인한다.\n"
+      }
+    },
+    {
+      "version": 1,
+      "id": "essay-library-01",
+      "brief": {
+        "version": 1,
+        "preset": "essay",
+        "reader": "동네 변화에 관한 짧은 수필을 읽는 주민",
+        "task": "도서관 이전이 만든 등굣길의 변화를 떠올린다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "동네 도서관은 2024년에 이전했다."
+          },
+          {
+            "id": "F2",
+            "statement": "새 도서관은 학교에서 600m 떨어져 있다."
+          }
+        ],
+        "mustInclude": [
+          "동네 도서관",
+          "2024년",
+          "600m"
+        ],
+        "allowedNumbers": [
+          "2024",
+          "600"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "ae10a7882e13477012ca05ec06f6b5c7c70592ad4549cec952bc8144cfd47e23",
+        "outputSha256": "302d418286eed4ba091986326e4ea691bc8525302e4815a6fc6d2ee85d62e98f",
+        "text": "# 옮겨 간 도서관\n\n동네 도서관은 2024년에 이전했다. 새 도서관은 학교에서 600m 떨어져 있다. 나는 달라진 등굣길을 걸으며 이전의 의미를 생각했다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "f3c97b8be54101709bf5e74580351441bb3f68822d8e51b3e8c2431002d4444b",
+        "outputSha256": "d7878f050c664dd193eecae5ea5e80eb0c35ebae6175e467a1a691904e245e0d",
+        "text": "# 길 끝의 도서관\n\n2024년, 동네 도서관이 자리를 옮겼다. 학교에서 600m 떨어진 새 건물까지 걷자 익숙했던 등굣길이 조금 길어졌다. 늘 지나치던 길도 목적지가 바뀌면 새롭게 보였다.\n"
+      }
+    },
+    {
+      "version": 1,
+      "id": "fiction-umbrella-01",
+      "brief": {
+        "version": 1,
+        "preset": "fiction",
+        "reader": "짧은 장면 소설을 읽는 독자",
+        "task": "민아가 밤 9시에 역 앞에서 파란 우산을 펴는 장면을 본다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "민아는 밤 9시에 역 앞에 도착한다."
+          },
+          {
+            "id": "F2",
+            "statement": "민아는 파란 우산을 편다."
+          }
+        ],
+        "mustInclude": [
+          "민아",
+          "밤 9시",
+          "역 앞",
+          "파란 우산"
+        ],
+        "allowedNumbers": [
+          "9"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "63b91c6b0af9768381559ef3c5efcf252fbb1ada59e4f18dfcef66be84925632",
+        "outputSha256": "72bd827ba431e8edc2a0926d72950b5fe0c7b5eaafdc8d1cf34540d465ed99a1",
+        "text": "# 역 앞\n\n민아는 밤 9시에 역 앞에 도착했다. 비가 내리고 있었다. 민아는 파란 우산을 폈다. 그는 우산 아래에서 길 건너편을 바라보았다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "9634c4dafbc4bb83ba4c2e62fae0464ac6d8f54e9bc8eaaed68cba0d5080e2db",
+        "outputSha256": "b56295e445c6871a38dced1d3b79a2b31143a7e39bd0b66db6358739d3d16a13",
+        "text": "# 파란 우산\n\n밤 9시, 민아가 역 앞에 닿자 빗방울이 간판 불빛을 잘게 흔들었다. 민아는 파란 우산을 펴고 길 건너편을 바라보았다. 기다리던 사람은 아직 보이지 않았다.\n"
+      }
+    },
+    {
+      "version": 1,
+      "id": "encyclopedia-wetland-01",
+      "brief": {
+        "version": 1,
+        "preset": "encyclopedia",
+        "reader": "지역 습지의 기본 정보를 찾는 학생",
+        "task": "해오름 습지의 지정 연도와 면적을 확인한다",
+        "facts": [
+          {
+            "id": "F1",
+            "statement": "해오름 습지는 1998년에 보호 구역으로 지정됐다."
+          },
+          {
+            "id": "F2",
+            "statement": "해오름 습지의 면적은 42ha다."
+          }
+        ],
+        "mustInclude": [
+          "해오름 습지",
+          "1998년",
+          "42ha"
+        ],
+        "allowedNumbers": [
+          "1998",
+          "42"
+        ],
+        "forbidden": [
+          "효과가 입증됐다"
+        ],
+        "length": {
+          "min": 65,
+          "max": 420
+        }
+      },
+      "baseline": {
+        "strategyId": "plainBrief",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "d73dff4cabf9e8117fefb70b3aa3e9e7909bfb09ce31ad233ce00d620d46ab04",
+        "outputSha256": "7f7dc8c3e9e5e434dbd5f7dbba59fb415fd19c8d48529c2c705b71f5313c8c02",
+        "text": "# 해오름 습지\n\n해오름 습지는 1998년에 보호 구역으로 지정됐다. 면적은 42ha다. 이 두 수치는 습지의 기본 현황을 나타낸다.\n"
+      },
+      "candidate": {
+        "strategyId": "contextFirstV1",
+        "modelId": "hanlint.protocolFixture",
+        "modelSha256": "cc80789c27611d81b5940a9de5a515f799cba944c93d4847e9cdba2e561ef12c",
+        "promptSha256": "048dfc0f7898595d21230657e0feacd4af486eea5defb6765a4f905a7ae8c8ef",
+        "outputSha256": "4623e5bbc7413e8ef3d7fe692280c428b1f052ee6cbbf8795b68ed8424c4b881",
+        "text": "# 해오름 습지\n\n해오름 습지는 면적 42ha의 보호 구역이다. 1998년에 보호 구역으로 지정됐으며, 지역 습지의 지정 현황을 설명할 때 이 연도와 면적을 함께 쓴다.\n"
+      }
+    }
+  ],
+  "claimBoundary": "이 파일은 평가할 글 쌍과 자료 경계를 고정한다. qualityLabels가 false면 사람 선호나 향상 정답을 담지 않는다",
+  "trialSetSha256": "763e75627cf513b41c0788ea6c7cc4ec87a8138d8b9a7741683d87e530b9b571"
+}

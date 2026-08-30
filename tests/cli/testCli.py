@@ -344,6 +344,147 @@ def testArenaBlindRecordRevealAndAggregate(tmp_path, capsys):
     assert "human 평가 1개" in output and "30개 미만" in output
 
 
+def testWritingArenaPanelAndJudgeWorkflow(tmp_path):
+    root = Path(__file__).resolve().parents[2]
+    trialSet = root / "src" / "hanlint" / "data" / "writingArenaPilotV1.json"
+    suitePath = tmp_path / "suite.json"
+    assert main(["arena", "panel", str(trialSet), "--seed", "20260831", "--output", str(suitePath)]) == 0
+    suite = json.loads(suitePath.read_text(encoding="utf-8"))
+    assert suite["source"]["eligibleCases"] == 7 and suite["source"]["excludedCases"] == 0
+
+    recordedPaths = []
+    for reviewer in range(1, 4):
+        raw = {
+            "version": 1,
+            "kind": "hanlint.panelReviewBatch",
+            "suiteSha256": suite["suiteSha256"],
+            "rubricSha256": suite["rubricSha256"],
+            "evaluator": {
+                "id": f"reviewer-{reviewer}",
+                "group": "targetReader",
+                "protocolRevision": suite["protocol"]["revision"],
+            },
+            "reviews": [
+                {
+                    "caseId": case["caseId"],
+                    "caseSha256": case["caseSha256"],
+                    "contentChecks": {"left": "pass", "right": "pass"},
+                    "preferences": {
+                        "naturalness": "tie",
+                        "clarity": "tie",
+                        "taskUtility": "tie",
+                        "voice": "cannotJudge",
+                    },
+                    "reasons": {
+                        "content": "원자 사실과 두 글의 숫자를 각각 대조했다.",
+                        "naturalness": "막힘의 차이를 구체적인 문장 단위로 비교했다.",
+                        "clarity": "대상과 행동의 관계를 문장 단위로 비교했다.",
+                        "taskUtility": "명시된 독자가 과업을 끝낼 수 있는지 비교했다.",
+                        "voice": "목소리 표본이 없어서 판단하지 않았다.",
+                    },
+                }
+                for case in suite["cases"]
+            ],
+        }
+        rawPath = write(tmp_path, f"raw-{reviewer}.json", json.dumps(raw, ensure_ascii=False))
+        recordedPath = tmp_path / f"recorded-{reviewer}.json"
+        assert main(["arena", "panel-record", str(suitePath), str(rawPath), "--output", str(recordedPath)]) == 0
+        recordedPaths.append(recordedPath)
+
+    adjudicationPath = tmp_path / "adjudication.json"
+    command = [
+        "arena",
+        "panel-adjudicate",
+        str(suitePath),
+        *(str(path) for path in recordedPaths),
+        "--output",
+        str(adjudicationPath),
+    ]
+    assert main(command) == 0
+    resultPath = tmp_path / "panel-result.json"
+    assert (
+        main(
+            [
+                "arena",
+                "panel-reveal",
+                str(trialSet),
+                str(suitePath),
+                str(adjudicationPath),
+                "--output",
+                str(resultPath),
+            ]
+        )
+        == 0
+    )
+    result = json.loads(resultPath.read_text(encoding="utf-8"))
+    assert result["dimensions"]["naturalness"]["tie"] == 7
+
+    judgeCasesPath = tmp_path / "judge-cases.json"
+    assert main(["arena", "judge-cases", str(suitePath), "--output", str(judgeCasesPath)]) == 0
+    judgeCases = json.loads(judgeCasesPath.read_text(encoding="utf-8"))
+    predictions = {
+        "version": 1,
+        "kind": "hanlint.panelJudgePredictions",
+        "judgeCasesSha256": judgeCases["judgeCasesSha256"],
+        "evaluatorId": "fixed-cli-judge",
+        "evaluatorRevision": "c" * 64,
+        "promptSha256": "d" * 64,
+        "predictions": [
+            {
+                "presentationId": item["presentationId"],
+                "presentationSha256": item["presentationSha256"],
+                "contentChecks": {
+                    "left": {"choice": "pass", "confidence": 0.8},
+                    "right": {"choice": "pass", "confidence": 0.8},
+                },
+                "preferences": {
+                    "naturalness": {"choice": "tie", "confidence": 0.7},
+                    "clarity": {"choice": "tie", "confidence": 0.7},
+                    "taskUtility": {"choice": "tie", "confidence": 0.7},
+                    "voice": {"choice": "abstain", "confidence": 0.0},
+                },
+            }
+            for item in judgeCases["presentations"]
+        ],
+    }
+    predictionsPath = write(tmp_path, "predictions.json", json.dumps(predictions, ensure_ascii=False))
+    consistencyPath = tmp_path / "consistency.json"
+    assert (
+        main(
+            [
+                "arena",
+                "judge-consistency",
+                str(suitePath),
+                str(judgeCasesPath),
+                str(predictionsPath),
+                "--output",
+                str(consistencyPath),
+            ]
+        )
+        == 0
+    )
+    consistency = json.loads(consistencyPath.read_text(encoding="utf-8"))
+    assert consistency["positionConsistency"]["preferences"]["naturalness"]["usableCoverage"] == 1.0
+    evaluationPath = tmp_path / "judge-evaluation.json"
+    assert (
+        main(
+            [
+                "arena",
+                "judge-evaluate",
+                str(suitePath),
+                str(adjudicationPath),
+                str(judgeCasesPath),
+                str(predictionsPath),
+                "--output",
+                str(evaluationPath),
+            ]
+        )
+        == 0
+    )
+    evaluation = json.loads(evaluationPath.read_text(encoding="utf-8"))
+    assert evaluation["preferences"]["naturalness"]["selectedAccuracy"] == 1.0
+
+
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     mixed = write(tmp_path, "mixed.md", MIXED)
     assert main([str(mixed), "--format", "compact", "--quiet"]) == 1

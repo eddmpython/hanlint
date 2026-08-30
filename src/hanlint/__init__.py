@@ -6,6 +6,7 @@
 from hanlint import (
     auditText, entailmentCases, evaluateEntailment, evidenceLedger, fingerprint,
     guardText, lintFile, lintText, rhetoricalBlueprint, writingPacket,
+    loadPanelTrialSet, preparePanelSuite, summarizePanelJudgeConsistency,
 )
 
 findings = lintFile("글.md")       # list[Finding]
@@ -17,6 +18,8 @@ blueprint = rhetoricalBlueprint(brief)  # 원문 없는 종류별 구조 예산
 evidence = evidenceLedger(brief)    # 사실별 고정 근거 연결과 해시 검증
 cases = entailmentCases()           # gold를 뺀 사람 합의 한국어 근거 쌍
 metrics = evaluateEntailment(predictions)  # 외부 평가기 예측과 기권 집계
+trialSet = loadPanelTrialSet("trial-set.json")
+suite = preparePanelSuite(trialSet["trials"], trialSet["studyId"], 42)
 ```
 
 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이지 좋은
@@ -28,13 +31,33 @@ from __future__ import annotations
 from pathlib import Path
 
 from .arena import (
+    CONTENT_CHOICES,
+    EVALUATOR_GROUPS,
+    PANEL_DIMENSIONS,
+    PANEL_PROTOCOL_REVISION,
+    PANEL_RUBRIC,
+    PANEL_RUBRIC_SHA256,
+    PANEL_VERSION,
     BlindEvaluation,
     GenerationRecord,
     WritingTrial,
+    adjudicatePanel,
     aggregateResults,
+    checkedAdjudication,
+    checkedJudgePredictions,
+    checkedPanelSuite,
+    checkedPanelTrialSet,
+    evaluatePanelJudge,
+    loadPanelTrialSet,
     prepareBlind,
+    preparePanelJudgeCases,
+    preparePanelSuite,
+    preparePanelTrialSet,
     recordEvaluation,
+    recordPanelReviewBatch,
+    revealPanel,
     revealTrial,
+    summarizePanelJudgeConsistency,
 )
 from .audit import AuditResult, auditDocument
 from .blueprint import STRATEGIES, STRATEGY_ID, blueprintFor, rhetoricalBlueprint
@@ -58,6 +81,7 @@ __all__ = [
     "AuditResult",
     "AtomicFact",
     "BlindEvaluation",
+    "CONTENT_CHOICES",
     "Config",
     "DocumentPrint",
     "EvidenceLedgerResult",
@@ -68,19 +92,31 @@ __all__ = [
     "Finding",
     "GuardResult",
     "GenerationRecord",
+    "EVALUATOR_GROUPS",
     "LearnedExemplar",
     "LearnedOperation",
     "WritingBrief",
     "WritingTrial",
+    "PANEL_DIMENSIONS",
+    "PANEL_PROTOCOL_REVISION",
+    "PANEL_RUBRIC",
+    "PANEL_RUBRIC_SHA256",
+    "PANEL_VERSION",
     "STRATEGIES",
     "STRATEGY_ID",
     "aggregateResults",
+    "adjudicatePanel",
     "auditFile",
     "auditText",
     "blueprintFor",
+    "checkedAdjudication",
+    "checkedJudgePredictions",
+    "checkedPanelSuite",
+    "checkedPanelTrialSet",
     "evidenceLedger",
     "entailmentCases",
     "evaluateEntailment",
+    "evaluatePanelJudge",
     "fingerprint",
     "guardFile",
     "guardText",
@@ -89,9 +125,16 @@ __all__ = [
     "learnText",
     "learnOperationText",
     "loadConfig",
+    "loadPanelTrialSet",
     "loadWritingBrief",
     "prepareBlind",
+    "preparePanelJudgeCases",
+    "preparePanelSuite",
+    "preparePanelTrialSet",
     "recordEvaluation",
+    "recordPanelReviewBatch",
+    "revealPanel",
+    "summarizePanelJudgeConsistency",
     "rhetoricalBlueprint",
     "revealTrial",
     "ruleDoc",
