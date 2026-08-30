@@ -15,6 +15,9 @@ hanlint는 글을 생성하는 모델이 아니다. 이 스킬은 요구사항�
 통과를 0/7로 낮췄으므로 v2 실행 패킷에서 빠졌다.
 최종 구조화 패킷을 별도로 한 번씩 생성했을 때 사실 표면은 6/7이었지만 전체 자동 계약은 1/7뿐이었다.
 guard는 위반 여섯 결과를 막는 장치이지 생성 품질 향상의 증거가 아니다.
+고정 말뭉치 1,600편의 원문 없는 구조 백분위는 `rhetoricalBlueprintV1`으로 opt-in할 수 있다. 같은 일곱
+brief의 짝 실측에서 길이는 후보 1/7, 기준 0/7, 사실 표면은 후보 6/7, 기준 5/7, error 0은 두 조건 모두
+4/7이었다. 전체 계약은 둘 다 0/7이라 사람 선호를 재지 못했으므로 기본 전략으로 쓰지 않는다.
 
 ## 결과
 
@@ -49,6 +52,12 @@ hanlint packet brief.json --purpose draft --output packet.json
 
    사실 계약이 필요 없는 자유 형식 글은 기존 `hanlint packet 요구.md --purpose draft --preset docs`도
    쓸 수 있다.
+   절·문단·문장 예산을 시험할 때만 먼저 `hanlint blueprint brief.json`으로 사람이 읽고 다음처럼 명시적으로
+   넣는다. 이 전략은 brief의 사실이나 말뭉치 문장을 늘리지 않으며 기본 패킷에는 들어가지 않는다.
+
+```powershell
+hanlint packet brief.json --purpose draft --strategy rhetoricalBlueprintV1 --output packet.json
+```
 4. `contract.operation`과 `constraints`를 지킨다. 구조화 패킷에서는 `input.brief`만 사실 재료다. 자유 형식
    패킷에서는 `input`만 사실 재료로 쓰고 `referenceProfile`과 `comparison.current`의 수치는 결과에
    옮기지 않는다.
@@ -88,6 +97,8 @@ hanlint packet 글.md --purpose revise --preset docs
 - `contract`: 작문 모델이 반드시 지킬 작업과 보존 조건이다.
 - `input`: 원문, 프리셋, 감지한 문체, frontmatter다.
 - 구조화 draft의 `input.brief`: 독자, 과업, 원자 사실, 보호 표면, 숫자, 금지 표면과 길이의 유일한 사실 재료다.
+- opt-in `strategy`: 원문 없는 종류별 절·문단·문장 수와 도입·본문·마무리의 위치 예산이다. `reference`의
+  수치, 해시와 출처 ID를 결과의 사실이나 문장 재료로 옮기지 않는다.
 - `comparison.current`: 현재 글의 리듬, 어휘, 절, 문단 분포다.
 - `comparison.referenceProfile`: 같은 종류의 편집 글에서 나온 백분위다. 평균 문체를 복제하지 않는다.
 - `comparison.readerState`: 독자가 이미 본 화제, 수치, 생성된 파일, 아직 회수할 약속이다.
@@ -124,10 +135,14 @@ hanlint learn 전.md 승인본.md --format toml
 어기면 자연스러움 선호와 섞지 않고 안전 승패로 끝낸다. 둘 다 통과한 경우에만 전략과 모델을 모르는
 평가자가 자연스러움, 독자 과업과 목소리를 각각 고른다. `evaluatorKind=llm` 결과는 별도 진단이며 사람
 선호나 진실로 부르지 않는다. 사람 평가 30개 미만에서 이겼다는 이유로 기본 패킷에 전략을 넣지 않는다.
+현재 `rhetoricalBlueprintV1`도 이 절차에서 일곱 쌍이 모두 자동 계약에 실패했다. opt-in 상태를 유지하고
+새 과제에서 두 결과가 함께 guard를 통과할 때만 사람 평가를 받는다.
 
 ## 하지 않을 것
 
 - 말뭉치의 문장을 복사하거나 출처가 다른 글을 한 문체로 평준화하지 않는다.
+- 청사진의 문단·문장·글자 수를 품질 점수나 반드시 맞출 정답으로 다루지 않는다. brief.length와 사실
+  계약이 늘 우선이다.
 - `referenceProfile`의 중앙값에 맞추려고 정상 문장을 바꾸지 않는다.
 - 본보기가 있다는 이유만으로 AI 수정이 더 낫다고 주장하지 않는다. `qwen3:8b` 30쌍 실측에서는 안전한
   성공이 본보기 유무 모두 12/30이었다. 원문 완전 일치 재생은 별도 9과제에서 이유만 2/9, 일반 본보기

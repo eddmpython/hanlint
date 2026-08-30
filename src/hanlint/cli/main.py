@@ -21,6 +21,7 @@ hanlint learn 전.md 후.md          실제 고침에서 승인할 정확 패치
 hanlint packet 글.md              초안과 대조 자료와 고침 근거를 AI용 JSON으로
 hanlint guard brief.json 글.md    구조화 요구와 결과의 사실 표면 계약
 hanlint arena blind trial.json   기준과 후보의 안전 계약과 블라인드 선호 평가
+hanlint blueprint brief.json     원문 없는 종류별 수사 구조 예산
 hanlint terms 글.md               한국어 학습자에게 처음 풀어 쓸 낱말 후보
 ```
 
@@ -39,6 +40,7 @@ from .commands import (
     arena,
     audit,
     baselineCommand,
+    blueprint,
     coverage,
     diff,
     doctor,
@@ -62,6 +64,7 @@ from .welcome import welcome
 
 COMMANDS = {
     "arena": arena,
+    "blueprint": blueprint,
     "lint": lint,
     "fix": fix,
     "guard": guard,

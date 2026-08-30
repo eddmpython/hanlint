@@ -30,6 +30,16 @@
 `corpus`). 탐침이 글을 다시 세지 않고 이것을 묻는다. `scripts/buildProfiles.py` 는 종류마다 문장 지표의 히스토그램과
 백분위를 세어 `src/hanlint/data/profiles.json` 에 쓴다. 제품이 싣는 것은 이 파일뿐이고 규칙 outsideProfile 이 읽는다.
 
+`scripts/buildBlueprints.py`는 같은 1,600편에서 절 수, 절별 문단·문장·산문 글자 수, 문단과 문장 길이,
+인접 문장의 글자 수 차이, 첫 절과 마지막 절의 위치 비율만 집계해 `src/hanlint/data/blueprints.json`에 쓴다. 빌더는 카탈로그의
+라이선스, manifest, 외부 metadata와 실제 원문 해시가 모두 같아야 돈다. 배포 파일에는 원문·제목·URL을
+싣지 않고 허가된 출처 ID, 고정 판 해시와 숫자 백분위만 둔다.
+
+```powershell
+.venv/Scripts/python.exe -X utf8 -B scripts/buildBlueprints.py
+.venv/Scripts/python.exe -X utf8 -B scripts/buildBlueprints.py --check
+```
+
 ## 측정
 
 규칙별 발화 수와 사람이 읽은 정탐률, 활용형 범위, 후보 채택률은

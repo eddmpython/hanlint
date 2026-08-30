@@ -12,6 +12,7 @@ import json
 from hashlib import sha256
 
 from ..audit import AuditResult
+from ..blueprint import blueprintFor
 from ..config import PROFILE_OF, Config, WritingBrief
 from ..data.profiles import Histogram, Profile, profileOf, userProfile
 from ..fingerprint import DocumentPrint
@@ -194,6 +195,7 @@ def buildBriefWritingPacket(
     brief: WritingBrief,
     path: str | None = None,
     includeSource: bool = True,
+    strategy: str | None = None,
 ) -> dict:
     """구조화 brief만 사실 재료로 둔 draft 실행 패킷."""
     inputData: dict = {
@@ -204,7 +206,7 @@ def buildBriefWritingPacket(
     }
     if includeSource:
         inputData["brief"] = brief.asDict()
-    return {
+    packet = {
         "version": 2,
         "kind": "hanlint.writingPacket",
         "purpose": "draft",
@@ -218,6 +220,15 @@ def buildBriefWritingPacket(
             "자연스러움은 원문 대조와 별도 평가가 필요하다",
         },
     }
+    if strategy is not None:
+        packet["strategy"] = blueprintFor(brief, strategy)
+        packet["contract"]["constraints"].extend(
+            (
+                "strategy.budget은 원문 없는 구조 예산이다. brief.length를 우선하며 절, 문단과 문장 수의 개요로만 쓴다",
+                "strategy.reference의 수치, 해시와 sourceIds를 결과 글의 사실이나 문장 재료로 옮기지 않는다",
+            )
+        )
+    return packet
 
 
 def renderWritingPacket(packet: dict) -> str:

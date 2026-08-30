@@ -1,4 +1,5 @@
 import json
+from hashlib import sha256
 
 from hanlint import Config, WritingBrief, writingPacket
 from hanlint.report import renderWritingPacket
@@ -104,6 +105,17 @@ def testStructuredBriefBecomesAnIsolatedDraftPacket():
     assert "보장하지 않는다" in packet["contract"]["completion"][-1]
     assert writingPacket(brief.asDict(), purpose="draft", includeSource=False)["input"].get("brief") is None
 
+    defaultPacket = writingPacket(brief, purpose="draft")
+    strategyPacket = writingPacket(brief, purpose="draft", strategy="rhetoricalBlueprintV1")
+    assert "strategy" not in defaultPacket
+    assert strategyPacket["strategy"]["input"]["briefSha256"] == brief.digest
+    assert strategyPacket["strategy"]["reference"]["corpus"]["containsSourceText"] is False
+    assert len(strategyPacket["contract"]["constraints"]) == len(defaultPacket["contract"]["constraints"]) + 2
+    encoded = json.dumps(
+        writingPacket(brief, path="brief.json", purpose="draft"), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    assert sha256(encoded.encode()).hexdigest() == "eafc7ab19dd86582f7b1614670e2a4adf1384023be157ef9c49e50cf68d79b9c"
+
 
 def testStructuredBriefRejectsRevisionPurpose():
     brief = {
@@ -121,6 +133,9 @@ def testStructuredBriefRejectsRevisionPurpose():
 
     with pytest.raises(ValueError, match="purpose draft"):
         writingPacket(brief)
+
+    with pytest.raises(ValueError, match="구조화 writing brief"):
+        writingPacket("자유 형식 요구", purpose="draft", strategy="rhetoricalBlueprintV1")
 
 
 def testWritingPacketCarriesOnlyOneSafeSurfaceOperation():

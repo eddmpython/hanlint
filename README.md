@@ -176,6 +176,23 @@ hanlint guard brief.json 초안.md
 최종 구조화 패킷으로 일곱 종류를 한 번씩 생성한 탐침에서는 사실 표면 6/7, 길이 1/7, error 0은 3/7,
 전체 자동 계약은 1/7이었다. guard는 나머지 여섯 결과를 막았지만 생성 품질 향상을 입증하지는 않았다.
 
+구조가 필요하면 고정 말뭉치 1,600편의 종류별 절·문단·문장·글자 수 백분위로 원문 없는 청사진을 만든다.
+배포 데이터에는 원문, 제목, URL과 문장이 없고 허가된 출처 ID, 고정 판의 해시와 숫자 분포만 있다.
+`blueprint`은 마크다운 절 수와 도입·본문·마무리의 위치별 글자·문단·문장 예산을 따로 내며 사실이나
+표현을 공급하지 않는다.
+
+```console
+hanlint blueprint brief.json
+hanlint blueprint brief.json --format json --output blueprint.json
+hanlint packet brief.json --purpose draft --strategy rhetoricalBlueprintV1 --output packet.json
+```
+
+`--strategy`는 구조화 brief에서만 쓰는 opt-in이다. 기본 draft 패킷은 바뀌지 않는다. `qwen3:8b`로 같은
+일곱 brief를 한 번씩 짝 생성한 결과, 청사진 후보는 길이를 1/7에서 지켰고 기준은 0/7이었다. 사실 표면은
+후보 6/7, 기준 5/7, error 0은 두 조건 모두 4/7이었다. 전체 자동 계약은 두 조건 모두 0/7이라 일곱 쌍
+모두 블라인드 선호 평가 전에 막혔다. 따라서 이 전략은 구조 실험 도구이지 자연스러움 향상이 입증된
+기본 작법이 아니다.
+
 새 작법 전략이나 잘 쓴 글 DB 검색은 [writing trial 스키마](src/hanlint/data/writingTrial.schema.json)로 일반
 `plainBrief` 결과와 후보 결과를 같은 brief에 묶어 검증한다. 모델, 프롬프트와 출력 SHA256을 고정한 뒤
 다음 네 단계로 안전과 선호를 분리한다.
@@ -511,6 +528,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 |
 | `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
+| `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다. Python 판 전용 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
 | `hanlint arena blind ...` | 기준과 후보의 자동 안전 계약을 가른 뒤 안전한 쌍만 블라인드 선호 평가한다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |

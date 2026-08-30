@@ -8,6 +8,12 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- **원문 없는 수사 구조 청사진.** 고정·허가된 말뭉치 1,600편에서 일곱 종류의 절·문단·문장·글자 수와
+  도입·마무리 위치 백분위만 배포한다. `hanlint blueprint brief.json`과 `rhetoricalBlueprint` API가
+  brief 길이에 맞는 결정적 예산을 내며 원문·제목·URL·문장·표현·품질 점수는 싣지 않는다. 구조화
+  `writingPacket --strategy rhetoricalBlueprintV1`에서만 opt-in이고 기본 draft 계약은 바뀌지 않는다.
+  같은 일곱 brief의 고정 모델 짝 실측은 두 조건 모두 전체 계약 0/7, 둘 다 안전 0이어서 자연스러움
+  향상을 주장하거나 기본 전략으로 승격하지 않는다
 - **블라인드 작문 아레나.** `writingTrial`이 같은 brief의 `plainBrief` 기준과 후보 전략에 모델·프롬프트·출력
   SHA256을 묶는다. `hanlint arena`는 두 결과를 guard로 먼저 가르고, 함께 통과한 쌍만 전략과 모델을 숨긴
   좌우 비교로 만든다. 자연스러움, 독자 과업과 목소리의 사람·LLM 평가를 분리해 기록하고 reveal과

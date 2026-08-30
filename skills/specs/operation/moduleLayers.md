@@ -25,7 +25,7 @@ status: curated
 | `util` (npm 만) | 루트의 `text.js`, `regex.js`. 파이썬 `str` 과 `re` 의 뜻 | 아무것도 |
 | `data` | 사전과 표지 목록. 코드 없음 | 아무것도 (npm 은 util) |
 | `config` | 설정과 임계 기본값 | 아무것도 |
-| `document` | 마크다운 → 문서 모델. 순수 파싱 | config |
+| `document`, `blueprint` | 마크다운 → 문서 모델. 순수 파싱 / 원문 없는 종류별 구조 예산 | config / config, data |
 | `analysis` | 표층 분석 (문장 분리, 어절 판정) 과 어절 판정과 무관한 한국어 형태 층 (grammar). 문서 모델을 모른다 | config, data |
 | `fingerprint` | 문장·문단·절·글 지문. 사전 매치 포함 | document, analysis, config, data |
 | `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint 와 그 아래 |

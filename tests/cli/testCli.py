@@ -174,6 +174,35 @@ def testPacketCompilesStructuredBriefWithoutDiagnosticEvidence(tmp_path, capsys)
     assert "모르는 규칙 이름" in capsys.readouterr().err
 
 
+def testBlueprintCommandAndOptInPacketShareOneStrategy(tmp_path, capsys):
+    briefData = {
+        "version": 1,
+        "preset": "docs",
+        "reader": "처음 쓰는 작성자",
+        "task": "명령을 실행한다",
+        "facts": [{"id": "F1", "statement": "명령은 `mora check`이고 종료 코드는 0이다."}],
+        "mustInclude": ["`mora check`", "종료 코드는 0"],
+        "allowedNumbers": ["0"],
+        "forbidden": [],
+        "length": {"min": 100, "max": 300},
+    }
+    brief = write(tmp_path, "brief.json", json.dumps(briefData, ensure_ascii=False))
+    assert main(["blueprint", str(brief), "--format", "json"]) == 0
+    blueprint = json.loads(capsys.readouterr().out)
+    assert blueprint["strategyId"] == "rhetoricalBlueprintV1"
+    assert blueprint["reference"]["corpus"]["containsSourceText"] is False
+    assert main(["blueprint", str(brief)]) == 0
+    assert "docs 구조 청사진" in capsys.readouterr().out
+
+    assert main(["packet", str(brief), "--purpose", "draft", "--strategy", "rhetoricalBlueprintV1"]) == 0
+    packet = json.loads(capsys.readouterr().out)
+    assert packet["strategy"] == blueprint
+
+    markdown = write(tmp_path, "요구.md", "명령을 설명한다.\n")
+    assert main(["packet", str(markdown), "--purpose", "draft", "--strategy", "rhetoricalBlueprintV1"]) == 2
+    assert "구조화 writing brief JSON" in capsys.readouterr().err
+
+
 def testStructuredPacketCarriesItsGuardConfiguration(tmp_path, capsys):
     briefData = {
         "version": 1,
