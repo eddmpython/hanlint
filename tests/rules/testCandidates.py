@@ -38,10 +38,9 @@ def testDoublePassiveKeepsInflectionAndPromotesTheApprovedEdit():
         assert finding.candidates == ()
 
 
-def testDoublePassiveDoesNotPromoteAnEditInsideAQuotation():
-    finding = one("doublePassive", '문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.')
-    assert finding.replacement is None
-    assert [candidate.text for candidate in finding.candidates] == ['문서에는 "결과가 저장됩니다."라고 적혀 있습니다.']
+def testDoublePassiveDoesNotTreatAQuotationAsTheWritersUsage():
+    findings = lintText('문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.')
+    assert all(finding.rule != "doublePassive" for finding in findings)
 
 
 def testLowSelectionCandidatesAreNotPublished():

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from statistics import mean, pstdev
 
-from ..analysis import Sentence, doublePassives, euiCount, longestNounRun, splitSentences
+from ..analysis import Sentence, doublePassiveSpans, euiCount, longestNounRun, splitSentences
 from ..analysis.grammar import NONE as NO_REGISTER
 from ..analysis.grammar import documentRegister, lastWord, registerOfWord
 from ..config import Config
@@ -76,7 +76,11 @@ def makeSentencePrint(
         deixis=deixis,
         euiCount=euiCount(text),
         nounRun=longestNounRun(text),
-        passives=tuple(doublePassives(text)),
+        passives=tuple(
+            surface
+            for start, end, surface in doublePassiveSpans(text)
+            if not markers.insideAny(start, end, quoted)
+        ),
         hedges=markers.countMatches(text, "hedges.txt"),
         numbers=markers.countNumbers(text),
         topics=topicsOf(text),

@@ -4,4 +4,4 @@
  * 지문이 필요로 하는 것은 넷이다. splitSentences, euiCount 와 euiAdjacent, longestNounRun, doublePassives.
  */
 export { splitSentences } from "./splitSentences.js";
-export { doublePassives, euiAdjacent, euiCount, longestNounRun } from "./tokenize.js";
+export { doublePassives, doublePassiveSpans, euiAdjacent, euiCount, longestNounRun } from "./tokenize.js";

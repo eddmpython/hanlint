@@ -45,7 +45,8 @@ def doublePassive(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         data/passiveStems.txt.
     고치기: 하나만 남긴다. 되어진다 는 된다, 보여진다 는 보인다, 잊혀진 은 잊힌. 활용 후보가 하나이고
         바뀌는 조각이 인용 밖에 한 번만 있을 때는 검토를 마친 확정 치환으로 고친다.
-    안 잡는 것: 만들어진다 같은 단순 피동. 어간이 피동사가 아니면 지적하지 않는다.
+    안 잡는 것: 만들어진다 같은 단순 피동. 어간이 피동사가 아니면 지적하지 않는다. 따옴표와 인라인 코드
+        안은 글쓴이의 사용이 아니라 인용이므로 지적하지 않는다.
     """
     for sentence in doc.sentences:
         if sentence.passives:

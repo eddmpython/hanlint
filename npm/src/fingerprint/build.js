@@ -2,7 +2,7 @@
 /** 문서 모델을 한 번 훑어 글 지문을 만든다. 텍스트를 읽는 유일한 자리다. 파이썬 fingerprint/build.py 와 같다. */
 import { defaultConfig } from "../config/settings.js";
 import { NONE as NO_REGISTER, documentRegister, lastWord, registerOfWord } from "../analysis/grammar/register.js";
-import { doublePassives, euiCount, longestNounRun, splitSentences } from "../analysis/index.js";
+import { doublePassiveSpans, euiCount, longestNounRun, splitSentences } from "../analysis/index.js";
 import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/model.js";
 import { dropFences } from "../document/parseMarkdown.js";
 import { codeSpans, plainText } from "../document/plainText.js";
@@ -153,7 +153,9 @@ function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
     deixis,
     euiCount: euiCount(text),
     nounRun: longestNounRun(text),
-    passives: doublePassives(text),
+    passives: doublePassiveSpans(text)
+      .filter(([start, end]) => !markers.insideAny(start, end, quoted))
+      .map(([, , surface]) => surface),
     hedges: markers.countMatches(text, "hedges.txt"),
     numbers: markers.countNumbers(text),
     topics: topicsOf(text),

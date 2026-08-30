@@ -37,9 +37,9 @@ def testAppliesEveryMachineFixAndFindingsVanish():
 
 def testDoesNotChangeAQuotedDoublePassive():
     text = '## 절\n\n문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.\n'
-    finding = next(finding for finding in lintText(text) if finding.rule == "doublePassive")
-    assert finding.replacement is None and finding.candidates
-    result = applyFixes(text, [finding])
+    findings = lintText(text)
+    assert all(finding.rule != "doublePassive" for finding in findings)
+    result = applyFixes(text, findings)
     assert result.text == text and result.applied == ()
 
 

@@ -76,7 +76,8 @@ def contractFor(purpose: str) -> dict:
         "constraints": [
             preservation,
             findingUse,
-            "guidance.exemplar.after는 변환 방법만 본뜨며 문구를 복사하지 않는다",
+            "guidance.exemplar는 목표 지적과 같은 국소 변환을 할 수 있을 때만 쓰고 맞지 않으면 원문을 둔다",
+            "guidance.exemplar의 이름과 수치와 사실을 input에 복사하거나 없는 정보를 만들어 채우지 않는다",
             "patterns에서는 form과 example만 쓰고 instead는 피한다",
             "referenceProfile은 같은 종류 글의 분포이며 품질 점수나 평균을 흉내 내라는 명령이 아니다",
             "설명 없이 완성된 한국어 마크다운만 결과로 낸다",

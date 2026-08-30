@@ -32,9 +32,8 @@ test("candidate rules publish useful choices and low-selection trials stay out",
   assert.deepEqual([passive.fragment, passive.replacement], ["져", ""]);
   assert.deepEqual(passive.candidates, []);
 
-  const quotation = one("doublePassive", '문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.');
-  assert.equal(quotation.replacement, null);
-  assert.deepEqual(quotation.candidates.map((candidate) => candidate.text), ['문서에는 "결과가 저장됩니다."라고 적혀 있습니다.']);
+  const quotation = lintText('문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.');
+  assert.ok(quotation.every((finding) => finding.rule !== "doublePassive"));
 
   assert.deepEqual(one("nounPile", "가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.").candidates, []);
   assert.deepEqual(one("endingRepeat", "파일을 엽니다. 값을 넣습니다. 표를 만듭니다. 화면을 봅니다.").candidates, []);

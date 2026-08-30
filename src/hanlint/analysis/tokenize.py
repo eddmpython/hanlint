@@ -191,6 +191,11 @@ def doublePassivePattern() -> re.Pattern[str]:
     return re.compile("(" + alternatives + ")" + PASSIVE_TAIL)
 
 
+def doublePassiveSpans(text: str) -> list[tuple[int, int, str]]:
+    """이중 피동의 (시작, 끝, `되어지` 꼴 표층형). 인용 여부를 지문 한 자리에서 거를 때 쓴다."""
+    return [(match.start(), match.end(), match.group(1) + "지") for match in doublePassivePattern().finditer(text)]
+
+
 def doublePassives(text: str) -> list[str]:
     """이중 피동의 표층형을 `되어지` 꼴로 정규화해 준다."""
-    return [stem + "지" for stem in doublePassivePattern().findall(text)]
+    return [surface for _, _, surface in doublePassiveSpans(text)]

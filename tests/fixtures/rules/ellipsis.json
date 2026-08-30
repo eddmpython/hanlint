@@ -13,6 +13,7 @@
     "DuckDB 에게는 `EXTRACT(month FROM ...)` 으로 갑니다.",
     "달라진 것은 https://github.com/eddmpython/hanlint/compare/v0.0.1...HEAD 에서 봅니다.",
     "메모장에서 `make_qr(\"...\")` 안의 주소를 고칩니다.",
-    "코드 `x = [...]` 를 넣습니다."
+    "코드 `x = [...]` 를 넣습니다.",
+    "명령은 괄호 안에 적습니다 (kubectl get -o yaml …)."
   ]
 }

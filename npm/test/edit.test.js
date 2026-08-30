@@ -30,9 +30,9 @@ test("applies every machine fix and the findings vanish", () => {
 
 test("does not change a quoted double passive", () => {
   const text = '## 절\n\n문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.\n';
-  const finding = lintText(text).find((item) => item.rule === "doublePassive");
-  assert.ok(finding && finding.replacement === null && finding.candidates.length);
-  const result = applyFixes(text, [finding]);
+  const findings = lintText(text);
+  assert.ok(findings.every((finding) => finding.rule !== "doublePassive"));
+  const result = applyFixes(text, findings);
   assert.equal(result.text, text);
   assert.deepEqual(result.applied, []);
 });

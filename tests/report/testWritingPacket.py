@@ -25,6 +25,9 @@ def testWritingPacketCarriesEvidenceWithoutDuplicatingExemplars():
     names = [entry["rule"] for entry in packet["guidance"]]
     assert names == sorted(set(names)) and "cliche" in names and "translationese" in names
     assert all("exemplar" not in finding for finding in packet["findings"]["items"])
+    constraints = packet["contract"]["constraints"]
+    assert any("맞지 않으면 원문을 둔다" in item for item in constraints)
+    assert any("없는 정보를 만들어" in item for item in constraints)
     assert len(packet["patterns"]) >= 10
     assert packet == writingPacket(SAMPLE, path="글.md")
 

@@ -205,7 +205,15 @@ export function doublePassivePattern() {
   return passivePattern;
 }
 
+/** 이중 피동의 [시작, 끝, `되어지` 꼴 표층형]. @param {string} text @returns {[number, number, string][]} */
+export function doublePassiveSpans(text) {
+  return [...text.matchAll(doublePassivePattern())].map((match) => {
+    const start = /** @type {number} */ (match.index);
+    return [start, start + match[0].length, `${match[1]}지`];
+  });
+}
+
 /** 이중 피동의 표층형을 `되어지` 꼴로. @param {string} text */
 export function doublePassives(text) {
-  return [...text.matchAll(doublePassivePattern())].map((match) => `${match[1]}지`);
+  return doublePassiveSpans(text).map(([, , surface]) => surface);
 }
