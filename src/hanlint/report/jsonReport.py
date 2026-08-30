@@ -14,9 +14,9 @@ from ..rules import Finding
 from .registerMatch import exemplarInRegister
 
 
-def findingWithExemplar(finding: Finding, register: str | None = None) -> dict:
+def findingWithExemplar(finding: Finding, register: str | None = None, preset: str | None = None) -> dict:
     data = finding.asDict()
-    exemplar = exemplarFor(finding.rule)
+    exemplar = exemplarFor(finding.rule, preset)
     if exemplar:
         data["exemplar"] = exemplarInRegister(exemplar, register).asDict()
     return data
@@ -27,11 +27,12 @@ def renderJson(
     audits: dict[str, AuditResult] | None = None,
     configLabel: str | None = None,
     registers: dict[str, str] | None = None,
+    preset: str | None = None,
 ) -> str:
     files = []
     for path, findings in results.items():
         register = registers.get(path) if registers else None
-        entry: dict = {"path": path, "findings": [findingWithExemplar(f, register) for f in findings]}
+        entry: dict = {"path": path, "findings": [findingWithExemplar(f, register, preset) for f in findings]}
         if audits and path in audits:
             entry["audit"] = audits[path].asDict()
         files.append(entry)

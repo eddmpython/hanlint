@@ -15,7 +15,7 @@
  * hanlint doctor                설정과 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
  * ```
- * audit, map, watch, profile 은 파이썬 패키지 (pip install hanlint) 에 있다.
+ * audit, map, watch, profile, terms 는 파이썬 패키지 (pip install hanlint) 에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
@@ -39,7 +39,7 @@ import { renderText } from "../report/textReport.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init"];
-const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff"];
+const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff", "terms"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 /** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py 가 소유한다. */
@@ -399,7 +399,7 @@ function runLint(args) {
 
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (format === "json") {
-    emit(renderJson(shown, configLabel(config), registers), output);
+    emit(renderJson(shown, configLabel(config), registers, config.preset), output);
   } else if (format === "github") {
     emit([...shown].map(([name, findings]) => renderGithub(name, findings)).join("\n"), output);
   } else {
@@ -418,7 +418,7 @@ function runLint(args) {
       }
       emit(parts.join("\n"), output);
     } else {
-      parts.push([...shown].map(([name, findings]) => renderText(name, findings, registers.get(name))).join("\n\n"));
+      parts.push([...shown].map(([name, findings]) => renderText(name, findings, registers.get(name), config.preset)).join("\n\n"));
       if (shown.size > 1) parts.push(summary(results));
       if (!options["--quiet"]) {
         if (baseline.count) parts.push(lockedNote(baseline));
@@ -482,7 +482,7 @@ function runRules(args) {
   const off = new Set(offRules(config));
   if (options["--format"] === "json") {
     const rules = names.map((name) => {
-      const exemplar = exemplarFor(name);
+      const exemplar = exemplarFor(name, config.preset);
       /** @type {Record<string, unknown>} */
       const entry = { name, category: ruleCategory(name), mechanism: ruleMechanism(name), summary: ruleSummary(name), doc: ruleDoc(name), enabled: !off.has(name) };
       if (exemplar) entry.exemplar = { before: exemplar.before, after: exemplar.after, moved: exemplar.moved };
@@ -553,7 +553,8 @@ function runExplain(args) {
     throw new Error(`모르는 규칙: ${wanted}.${hint}`);
   }
   const category = ruleCategory(wanted);
-  const exemplarOf = exemplarFor(wanted);
+  const preset = choose(/** @type {string} */ (options["--preset"] ?? DEFAULT_PRESET), PRESET_NAMES, "--preset");
+  const exemplarOf = exemplarFor(wanted, preset);
   const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
   if (options["--format"] === "json") {
     /** @type {Record<string, unknown>} */

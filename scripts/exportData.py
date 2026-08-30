@@ -15,12 +15,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src" / "hanlint" / "data"
 TARGET = ROOT / "npm" / "data"
+PYTHON_ONLY_DATA = {"learningVocabularySource.toml"}
+"""npm 명령이 쓰지 않는 파이썬 전용 자료. TSV 는 투영 대상 확장자에 처음부터 들지 않는다."""
 
 
 def render() -> dict[str, str]:
     """파일 이름 → 내용. 결정적이라 같은 정본이면 같은 결과다."""
     files: dict[str, str] = {}
     for path in sorted(SOURCE.iterdir()):
+        if path.name in PYTHON_ONLY_DATA:
+            continue
         if path.suffix in (".txt", ".json"):
             files[path.name] = path.read_text(encoding="utf-8")
         elif path.suffix == ".toml":

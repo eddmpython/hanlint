@@ -1,0 +1,62 @@
+[dataset]
+id = "niklKoreanLearningVocabulary2003"
+title = "국립국어원 한국어 학습용 어휘 목록"
+origin = "국립국어원"
+sourceUrl = "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=70&mn_id=46&pageIndex=9"
+downloadUrl = "https://www.korean.go.kr/common/download.do?c_file_name=b73a8438-4713-4436-8481-ec26fd0dce2a_0.txt&file_path=etcData&o_file_name=%ED%95%9C%EA%B5%AD%EC%96%B4+%ED%95%99%EC%8A%B5%EC%9A%A9+%EC%96%B4%ED%9C%98+%EB%AA%A9%EB%A1%9D.txt"
+access = "공개 페이지의 직접 내려받기"
+retrieved = "2026-08-30"
+license = "공공누리 제1유형"
+licenseUrl = "https://www.kogl.or.kr/info/licenseType1.do"
+personalData = false
+purpose = "한국어 학습자를 위한 글에서 처음 설명할 어휘 후보를 사실 수준으로 찾는다"
+
+[sourceFormat]
+encoding = "cp949"
+delimiter = "tab"
+columns = ["순위", "단어", "품사", "풀이", "등급"]
+rows = 5965
+
+[projection]
+path = "learningVocabulary.tsv"
+encoding = "utf-8"
+columns = ["rank", "word", "lexeme", "partOfSpeech", "grade"]
+normalization = "단어 끝의 동형어 번호만 lexeme 에서 뺀다. 원문 word 는 보존한다"
+
+[fields.rank]
+type = "integer or null"
+meaning = "원 자료가 부여한 빈도 순위"
+unit = "순위"
+
+[fields.word]
+type = "string"
+meaning = "동형어 번호를 포함한 원 자료의 표제어"
+unit = "없음"
+
+[fields.lexeme]
+type = "string"
+meaning = "표층 대조에 쓰도록 동형어 번호를 뺀 표제어"
+unit = "없음"
+
+[fields.partOfSpeech]
+type = "string"
+meaning = "원 자료의 품사 약호"
+unit = "없음"
+
+[fields.grade]
+type = "enum(A, B, C)"
+meaning = "원 자료가 정한 한국어 학습 단계"
+unit = "등급"
+
+[validation]
+gradeA = 982
+gradeB = 2111
+gradeC = 2872
+uniqueLexemes = 5543
+
+[traps]
+audience = "한국어 학습자용 등급이다. 한국어 모어 화자의 난도나 좋은 글 여부로 해석하지 않는다"
+homonyms = "같은 lexeme 에 서로 다른 품사와 등급이 있을 수 있다. 문맥으로 뜻을 가르지 않는다"
+coverage = "2003년 목록이라 최신 전문어와 고유명사는 목록 밖일 수 있다"
+matching = "형태소 분석이 아니라 지문이 뽑은 화제어의 표층형을 대조한다"
+rank = "고유명사와 일부 항목은 원 자료의 순위가 비어 있다"

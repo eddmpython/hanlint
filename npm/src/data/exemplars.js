@@ -21,6 +21,7 @@ const WIDE = /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF
  * @property {string} before 그 규칙에 실제로 잡히는 글
  * @property {string} after 같은 뜻이면서 잡히지 않는 글
  * @property {string} moved 무엇이 달라졌는지 한 마디
+ * @property {string[]} presets 비어 있으면 기본, 값이 있으면 그 프리셋의 문맥 본보기
  */
 
 /** @param {string} text */
@@ -55,29 +56,59 @@ export function isShortened(text) {
   return displayWidth(text.split(/\s+/).filter(Boolean).join(" ")) > ONE_LINE_LIMIT;
 }
 
+/** @type {Exemplar[] | null} */
+let allCache = null;
 /** @type {Map<string, Exemplar> | null} */
-let cache = null;
+let defaultCache = null;
 
-/** 규칙 이름 → 본보기. @returns {Map<string, Exemplar>} */
-export function exemplars() {
-  if (!cache) {
-    cache = new Map();
+/** 기본과 문맥 본보기를 모두 읽는다. @returns {Exemplar[]} */
+export function allExemplars() {
+  if (!allCache) {
+    allCache = [];
+    const defaults = new Set();
+    /** @type {Map<string, Set<string>>} */
+    const contexts = new Map();
     for (const entry of loadEntries("exemplars.json")) {
       const rule = /** @type {string} */ (entry.rule);
-      if (cache.has(rule)) throw new Error(`본보기가 겹친다: ${rule}. 규칙 하나에 하나다`);
-      cache.set(rule, {
+      const presets = /** @type {string[]} */ (entry.presets ?? []);
+      if (!presets.length) {
+        if (defaults.has(rule)) throw new Error(`기본 본보기가 겹친다: ${rule}`);
+        defaults.add(rule);
+      } else {
+        const used = contexts.get(rule) ?? new Set();
+        const overlap = presets.filter((preset) => used.has(preset)).sort();
+        if (overlap.length) throw new Error(`문맥 본보기의 프리셋이 겹친다: ${rule} ${overlap.join(", ")}`);
+        for (const preset of presets) used.add(preset);
+        contexts.set(rule, used);
+      }
+      allCache.push({
         rule,
         before: expand(/** @type {string} */ (entry.before)),
         after: expand(/** @type {string} */ (entry.after)),
         moved: /** @type {string} */ (entry.moved),
+        presets,
       });
     }
   }
-  return cache;
+  return allCache;
 }
 
-/** @param {string} rule @returns {Exemplar | undefined} */
-export function exemplarFor(rule) {
+/** 규칙 이름 → 본보기. @returns {Map<string, Exemplar>} */
+export function exemplars() {
+  if (!defaultCache) {
+    defaultCache = new Map(
+      allExemplars().filter((exemplar) => !exemplar.presets.length).map((exemplar) => [exemplar.rule, exemplar]),
+    );
+  }
+  return defaultCache;
+}
+
+/** @param {string} rule @param {string | null | undefined} [preset] @returns {Exemplar | undefined} */
+export function exemplarFor(rule, preset = null) {
+  if (preset) {
+    const contextual = allExemplars().find((exemplar) => exemplar.rule === rule && exemplar.presets.includes(preset));
+    if (contextual) return contextual;
+  }
   return exemplars().get(rule);
 }
 

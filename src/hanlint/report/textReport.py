@@ -14,12 +14,12 @@ from ..rules import Finding
 from .registerMatch import exemplarInRegister
 
 
-def exemplarLines(findings: list[Finding], register: str | None = None) -> list[str]:
+def exemplarLines(findings: list[Finding], register: str | None = None, preset: str | None = None) -> list[str]:
     """그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다."""
     lines: list[str] = []
     cut = False
     for name in sorted({f.rule for f in findings}):
-        exemplar = exemplarFor(name)
+        exemplar = exemplarFor(name, preset)
         if not exemplar:
             continue
         exemplar = exemplarInRegister(exemplar, register)
@@ -45,7 +45,7 @@ def candidateLines(findings: list[Finding]) -> list[str]:
     return lines
 
 
-def renderText(path: str, findings: list[Finding], register: str | None = None) -> str:
+def renderText(path: str, findings: list[Finding], register: str | None = None, preset: str | None = None) -> str:
     if not findings:
         return f"{path}  집은 자리 없음"
     errors = sum(1 for f in findings if f.severity == "error")
@@ -60,7 +60,7 @@ def renderText(path: str, findings: list[Finding], register: str | None = None) 
         if finding.fix:
             lines.append(f"  고친 뒤: {finding.fix}")
         lines.append("")
-    lines.extend(exemplarLines(findings, register))
+    lines.extend(exemplarLines(findings, register, preset))
     candidates = candidateLines(findings)
     if candidates:
         lines.extend(["", *candidates])

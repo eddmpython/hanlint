@@ -22,12 +22,12 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     addCommonOptions(parser, ("text", "json"))
 
 
-def asJson(names: list[str], off: set[str]) -> str:
+def asJson(names: list[str], off: set[str], preset: str) -> str:
     """규칙 전부를 기계가 읽는 꼴로. 기술서와 본보기까지 든다. 에이전트가 규칙을 훑을 때 쓴다."""
     categories = ruleCategories()
     rules = []
     for name in names:
-        exemplar = exemplarFor(name)
+        exemplar = exemplarFor(name, preset)
         entry: dict = {
             "name": name,
             "category": categories[name],
@@ -49,7 +49,7 @@ def run(args: argparse.Namespace) -> int:
         return 0
     config = configFrom(args)
     if args.format == "json":
-        emit(asJson(names, set(config.offRules())), args.output)
+        emit(asJson(names, set(config.offRules()), config.preset), args.output)
         return 0
     off = set(config.offRules())
     categories = ruleCategories()

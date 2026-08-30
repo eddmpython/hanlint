@@ -7,10 +7,10 @@ import { exemplarFor } from "../data/exemplars.js";
 import { findingAsDict } from "../rules/finding.js";
 import { exemplarInRegister } from "./registerMatch.js";
 
-/** @param {import("../rules/finding.js").Finding} finding @param {string | null | undefined} register */
-function findingWithExemplar(finding, register) {
+/** @param {import("../rules/finding.js").Finding} finding @param {string | null | undefined} register @param {string | null | undefined} preset */
+function findingWithExemplar(finding, register, preset) {
   const data = findingAsDict(finding);
-  const exemplar = exemplarFor(finding.rule);
+  const exemplar = exemplarFor(finding.rule, preset);
   if (exemplar) {
     const adapted = exemplarInRegister(exemplar, register);
     data.exemplar = { before: adapted.before, after: adapted.after, moved: adapted.moved };
@@ -22,11 +22,12 @@ function findingWithExemplar(finding, register) {
  * @param {Map<string, import("../rules/finding.js").Finding[]>} results
  * @param {string | null} [configLabel]
  * @param {Map<string, string> | null} [registers]
+ * @param {string | null} [preset]
  */
-export function renderJson(results, configLabel = null, registers = null) {
+export function renderJson(results, configLabel = null, registers = null, preset = null) {
   const files = [...results].map(([path, findings]) => ({
     path,
-    findings: findings.map((finding) => findingWithExemplar(finding, registers?.get(path))),
+    findings: findings.map((finding) => findingWithExemplar(finding, registers?.get(path), preset)),
   }));
   /** @type {Record<string, unknown>} */
   const data = { version: 1 };

@@ -71,7 +71,7 @@ def report(paths: list[str], args: argparse.Namespace, config: Config) -> str:
         parts = [body] if body else []
         parts.append(summary(results))
     else:
-        parts = ["\n\n".join(renderText(name, found, registers[name]) for name, found in shown.items())]
+        parts = ["\n\n".join(renderText(name, found, registers[name], config.preset) for name, found in shown.items())]
         if len(shown) > 1:
             parts.append(summary(results))
     parts.append(nextStep(results, fixableCount(texts, results)))

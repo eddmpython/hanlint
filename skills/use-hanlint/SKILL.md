@@ -21,7 +21,7 @@ hanlint doctor
 
 판 번호, 어느 설정을 읽는지, 어느 규칙이 꺼져 있는지가 한 화면에 나온다. 명령이
 없으면 사용자에게 설치 명령을 보인다. `pip install hanlint`. 의존성은 없다. 파이썬이 없고 Node 가 있으면 설치 없이 `npx hanlint 글.md` 로 같은 검사를 한다
-(지문 지도와 프로파일은 파이썬 쪽에만 있다).
+(지문 지도, 프로파일, 학습 어휘 대조는 파이썬 쪽에만 있다).
 
 글이 블로그가 아니면 종류를 먼저 정한다. **검사할 때 `--preset` 을 붙이면 된다.**
 
@@ -34,6 +34,25 @@ hanlint 보고서.md --preset report
 검사하려고 할 일이 아니다. 종류가 고정된 저장소라면 `hanlint init --preset docs` 로 설정을 만들지를
 사용자에게 묻는다. 참고 문서에 `noQuestion` 이 도는 것 같은 지적은 규칙이 틀린 것이 아니라 종류가
 안 맞는 것이다. 한 폴더에 종류가 섞여 있으면 종류마다 나눠 돌린다.
+
+## 자료 대조를 고르는 법
+
+프리셋을 고르면 같은 종류의 편집된 글에서 만든 프로파일도 자동으로 따라온다. 기준 자료는 재사용 조건과
+판본을 고정한 글 1,600편, 문장 144,214개다. `outsideProfile` 은 문장 길이, 쉼표 수, 새 화제 수, 유보
+표현 수가 그 종류의 99% 밖인 자리만 notice 로 짚는다. 평균적인 글을 흉내 내라는 명령이 아니다. 유난히
+다른 자리를 사람이 다시 읽게 하는 사실이다.
+
+- 블로그, 보고문, 기술 문서, 단계별 안내, 수필, 소설, 백과 가운데 실제 글 종류와 같은 프리셋을 고른다.
+- 한 폴더에 종류가 섞였으면 나눠 검사한다. 다른 종류의 분포와 견준 결과는 쓰지 않는다.
+- 조직의 승인된 글 여러 편이 있고 그 문체가 더 중요하면 `hanlint profile build 승인된글들/ --output
+  우리문체.json` 으로 자체 프로파일을 만든다. 새 글은 `hanlint 새글.md --profile 우리문체.json` 으로 견준다.
+- `outsideProfile` 만 없애려고 문장을 평균에 맞추지 않는다. 독자와 목적에 맞는 예외면 그대로 둔다.
+
+독자가 한국어 학습자일 때만 `hanlint terms 글.md` 를 더 돌린다. 국립국어원의 한국어 학습용 어휘
+5,965개 가운데 모든 동형어 뜻이 C에 속하는 화제어의 첫 자리가 나온다. 처음 나올 때 짧게 풀어 쓰거나
+필요한 전문어로 그대로 둘지 문맥으로 정한다. `--outside` 는 목록 밖 한글 화제어도 보이지만 전문어와
+고유명사를 가르지 못하므로 탐색할 때만 쓴다. 이 등급을 한국어 모어 화자의 난도나 글의 품질 점수로 쓰지
+않는다.
 
 글의 종류가 아니라 형식이 달라서 규칙 하나가 줄줄이 나는 자리도 끄지 말고 설정으로 말한다. 절 제목 아래에 문장형 부제를 두는 교안은
 `headingSentenceMaxLevel = 2`, 장면 계약이나 도표 원문처럼 코드도 산문도 아닌 펜스는 `ignoreFences` 다. 둘 다
@@ -63,7 +82,8 @@ hanlint 보고서.md --preset report
    `hanlint explain <rule>` 을 읽는다. 네 절 (왜, 어디서, 고치기, 안 잡는 것) 과 본보기가 있다. 어떻게
    다시 쓸지 막히면 `hanlint patterns --rule <rule>` 이 그 규칙을 피하는 문장 틀을 준다. 틀의 예시는
    error 0 이 게이트로 보장된다. lint 와 watch 는 글의 종결을 세어 본보기와 문형을 합니다체, 한다체,
-   해요체 가운데 그 글의 문체로 보여 준다. 명령만 따로 볼 때는 `hanlint explain <rule> --register 한다` 나
+   해요체 가운데 그 글의 문체로 보여 준다. `nounPile` 은 프리셋도 보고 절차문, 보고서, 기술 문서와 백과에
+   맞는 짝을 고른다. 명령만 따로 볼 때는 `hanlint explain <rule> --preset docs --register 한다` 나
    `hanlint patterns --register 해요` 처럼 정한다.
 5. 마지막에 한 번 `--severity all` 로 `notice` 를 읽고 판단한다. **읽는 순서가 있다.** 실측에서 사람
    평가자와 실제로 같은 자리를 짚은 notice 는 `endingRepeat`, `topicBreak`, `factListParagraph` 셋이었다
@@ -101,9 +121,10 @@ hanlint 보고서.md --preset report
 
 - 규칙 목록: `hanlint rules`. 부류로 묶여 나오고 꺼진 것에 표시가 붙는다
 - 문장 틀: `hanlint patterns`. 빈칸이 있는 틀 열 개. `--rule` 로 그 규칙을 피하는 것만
-- 설정 만들기: `hanlint init --preset blog|report|docs`
+- 설정 만들기: `hanlint init --preset blog|report|docs|guide|essay|fiction|encyclopedia`
 - 지금 상태: `hanlint doctor`. 설정 출처, 분석기, 꺼진 규칙
 - 지문 계층 JSON: `hanlint print 글.md`. 다른 도구가 지문 위에 무엇을 얹을 때
 - 문체 프로파일: `hanlint profile build 승인된글들/` 뒤 `hanlint 글.md --profile profile.json`
+- 학습 어휘: `hanlint terms 글.md`. 한국어 학습자가 독자일 때만 C 전용 화제어의 첫 자리를 본다
 - 초안 비교: `hanlint diff 전.md 후.md`. 고친 뒤 짜임과 지적 수가 어떻게 변했는지 숫자로 본다
 - 이미 있는 지적 잠그기: `hanlint baseline 글들/` 뒤 `hanlint 글들/ --baseline`. 죽은 잠금은 `--prune`

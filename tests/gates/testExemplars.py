@@ -14,8 +14,8 @@ from __future__ import annotations
 import pytest
 
 from hanlint.analysis.grammar import REGISTERS
-from hanlint.config import Config
-from hanlint.data import exemplarFor, exemplars
+from hanlint.config import PRESET_NAMES, Config
+from hanlint.data import allExemplars, exemplarFor, exemplars
 from hanlint.report import exemplarInRegister
 from hanlint.rules import ruleNames
 from tests.conftest import findingsOf
@@ -41,11 +41,14 @@ def testEveryRuleHasAnExemplar():
     assert given - rules == set(), f"규칙이 없는 본보기: {sorted(given - rules)}"
 
 
-@pytest.mark.parametrize("name", ruleNames())
+@pytest.mark.parametrize(
+    "exemplar",
+    allExemplars(),
+    ids=lambda exemplar: exemplar.rule + (":" + ",".join(exemplar.presets) if exemplar.presets else ""),
+)
 @pytest.mark.parametrize("register", REGISTERS)
-def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, register: str):
-    exemplar = exemplarFor(name)
-    assert exemplar is not None
+def testExemplarBeforeIsCaughtAndAfterIsNot(exemplar, register: str):
+    name = exemplar.rule
     exemplar = exemplarInRegister(exemplar, register)
     config = configFor(name)
     before = [f.rule for f in findingsOf(exemplar.before, config)]
@@ -59,7 +62,8 @@ def testExemplarBeforeIsCaughtAndAfterIsNot(name: str, register: str):
 
 
 def testMovedSaysWhatChanged():
-    for name, exemplar in exemplars().items():
+    for exemplar in allExemplars():
+        name = exemplar.rule
         assert exemplar.moved.strip(), f"{name} 의 moved 가 비었다"
         assert name not in exemplar.moved, f"{name} 의 moved 가 규칙 이름을 되풀이한다. 손이 한 일을 적는다"
         assert exemplar.before != exemplar.after, f"{name} 의 before 와 after 가 같다"
@@ -89,9 +93,36 @@ def testEveryExemplarFitsOrSaysItIsCut():
     """답인 `후` 가 소리 없이 잘리면 안 된다. 잘렸으면 shortened 가 참이라 머리줄이 알린다."""
     from hanlint.data.exemplars import ONE_LINE_LIMIT, displayWidth
 
-    for name, exemplar in exemplars().items():
+    for exemplar in allExemplars():
+        name = exemplar.rule
         before, after = exemplar.twoLines
         assert displayWidth(before) <= ONE_LINE_LIMIT, name
         assert displayWidth(after) <= ONE_LINE_LIMIT, name
         wasCut = before.endswith(chr(0x2026)) or after.endswith(chr(0x2026))
         assert wasCut == exemplar.shortened, name
+
+
+def testContextPresetsAreKnownAndSelectExactly():
+    for exemplar in allExemplars():
+        assert set(exemplar.presets) <= set(PRESET_NAMES)
+    assert exemplarFor("nounPile", "report").before.startswith("지역 경제")
+    assert exemplarFor("nounPile", "docs").before.startswith("사용자 인증")
+    assert exemplarFor("nounPile", "blog") == exemplarFor("nounPile")
+
+
+def testOverlappingContextPresetsAreRejected(monkeypatch):
+    from importlib import import_module
+
+    exemplarModule = import_module("hanlint.data.exemplars")
+
+    entries = (
+        {"rule": "nounPile", "before": "전입니다.", "after": "후입니다.", "moved": "고쳤다", "presets": ["docs"]},
+        {"rule": "nounPile", "before": "전입니다.", "after": "후입니다.", "moved": "고쳤다", "presets": ["docs"]},
+    )
+    exemplarModule.allExemplars.cache_clear()
+    monkeypatch.setattr(exemplarModule, "loadToml", lambda name: entries)
+    try:
+        with pytest.raises(ValueError, match="프리셋이 겹친다"):
+            exemplarModule.allExemplars()
+    finally:
+        exemplarModule.allExemplars.cache_clear()

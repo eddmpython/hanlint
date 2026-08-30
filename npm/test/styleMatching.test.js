@@ -4,7 +4,7 @@ import test from "node:test";
 
 import { REGISTERS } from "../src/analysis/grammar/index.js";
 import { defaultConfig } from "../src/config/settings.js";
-import { exemplars } from "../src/data/exemplars.js";
+import { allExemplars } from "../src/data/exemplars.js";
 import { patterns } from "../src/data/patterns.js";
 import { lintText } from "../src/index.js";
 import { exemplarInRegister, patternInRegister } from "../src/report/registerMatch.js";
@@ -18,7 +18,8 @@ function configFor(name) {
 }
 
 test("every exemplar still points both ways in three registers", () => {
-  for (const [name, exemplar] of exemplars()) {
+  for (const exemplar of allExemplars()) {
+    const name = exemplar.rule;
     for (const register of REGISTERS) {
       const adapted = exemplarInRegister(exemplar, register);
       const config = configFor(name);

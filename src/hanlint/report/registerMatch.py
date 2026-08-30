@@ -17,7 +17,7 @@ def exemplarInRegister(exemplar: Exemplar, register: str | None) -> Exemplar:
     after = convertTemplate(exemplar.after, target)
     if before.skipped or after.skipped:
         raise ValueError(f"{exemplar.rule} 본보기의 서술어를 못 풀었다: {before.skipped + after.skipped}")
-    return Exemplar(exemplar.rule, before.text, after.text, exemplar.moved)
+    return Exemplar(exemplar.rule, before.text, after.text, exemplar.moved, exemplar.presets)
 
 
 def patternInRegister(pattern: Pattern, register: str | None) -> Pattern:

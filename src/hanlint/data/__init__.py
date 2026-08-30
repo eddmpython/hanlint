@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
-from .exemplars import Exemplar, exemplarFor, exemplars
+from .exemplars import Exemplar, allExemplars, exemplarFor, exemplars
+from .learningVocabulary import Term, VocabularyEntry, gradesByLexeme, termsIn, vocabularyEntries, vocabularyMetadata
 from .load import loadLines, loadPatterns, loadToml
 from .patterns import Pattern, patterns, patternsAvoiding
 
 __all__ = [
     "Exemplar",
     "Pattern",
+    "Term",
+    "VocabularyEntry",
+    "allExemplars",
     "exemplarFor",
     "exemplars",
+    "gradesByLexeme",
     "loadLines",
     "loadPatterns",
     "loadToml",
     "patterns",
     "patternsAvoiding",
+    "termsIn",
+    "vocabularyEntries",
+    "vocabularyMetadata",
 ]

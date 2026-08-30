@@ -38,6 +38,8 @@ class Exemplar:
     """같은 뜻이면서 잡히지 않는 글."""
     moved: str
     """무엇이 달라졌는지 한 마디."""
+    presets: tuple[str, ...] = ()
+    """비어 있으면 기본 본보기, 값이 있으면 그 프리셋에서 고르는 문맥 본보기."""
 
     @property
     def twoLines(self) -> tuple[str, str]:
@@ -83,16 +85,36 @@ def isShortened(text: str) -> bool:
 
 
 @cache
-def exemplars() -> dict[str, Exemplar]:
-    """규칙 이름 → 본보기. 규칙 하나에 본보기 하나다."""
-    found: dict[str, Exemplar] = {}
+def allExemplars() -> tuple[Exemplar, ...]:
+    """기본과 문맥 본보기를 모두 읽는다. 같은 규칙에서 프리셋 조건이 겹치면 거부한다."""
+    found: list[Exemplar] = []
+    defaults: set[str] = set()
+    contexts: dict[str, set[str]] = {}
     for entry in loadToml("exemplars.toml"):
         name = entry["rule"]
-        if name in found:
-            raise ValueError(f"본보기가 겹친다: {name}. 규칙 하나에 하나다")
-        found[name] = Exemplar(name, expand(entry["before"]), expand(entry["after"]), entry["moved"])
-    return found
+        presets = tuple(entry.get("presets", ()))
+        if not presets:
+            if name in defaults:
+                raise ValueError(f"기본 본보기가 겹친다: {name}")
+            defaults.add(name)
+        else:
+            overlap = contexts.setdefault(name, set()) & set(presets)
+            if overlap:
+                raise ValueError(f"문맥 본보기의 프리셋이 겹친다: {name} {', '.join(sorted(overlap))}")
+            contexts[name].update(presets)
+        found.append(Exemplar(name, expand(entry["before"]), expand(entry["after"]), entry["moved"], presets))
+    return tuple(found)
 
 
-def exemplarFor(rule: str) -> Exemplar | None:
+@cache
+def exemplars() -> dict[str, Exemplar]:
+    """규칙 이름 → 기본 본보기. 기존 호출자가 규칙마다 한 개를 훑을 때 쓴다."""
+    return {exemplar.rule: exemplar for exemplar in allExemplars() if not exemplar.presets}
+
+
+def exemplarFor(rule: str, preset: str | None = None) -> Exemplar | None:
+    if preset:
+        for exemplar in allExemplars():
+            if exemplar.rule == rule and preset in exemplar.presets:
+                return exemplar
     return exemplars().get(rule)

@@ -17,7 +17,7 @@ export function exemplarInRegister(exemplar, register) {
       exemplar.rule + " 본보기의 서술어를 못 풀었다: " + (before.skipped + after.skipped),
     );
   }
-  return { rule: exemplar.rule, before: before.text, after: after.text, moved: exemplar.moved };
+  return { rule: exemplar.rule, before: before.text, after: after.text, moved: exemplar.moved, presets: exemplar.presets };
 }
 
 /** @param {import("../data/patterns.js").Pattern} pattern @param {string | null | undefined} register */

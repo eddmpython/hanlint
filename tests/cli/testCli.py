@@ -172,6 +172,36 @@ def testProfileBuildAndCompare(tmp_path, capsys):
     assert main(["profile", "build", str(empty)]) == 2
 
 
+def testTermsShowsLearningGradeAndOptionalOutsideWord(tmp_path, capsys):
+    draft = tmp_path / "학습자.md"
+    draft.write_text("학교에 갑니다. 갈등을 줄입니다. 새기능을 설명합니다.\n", encoding="utf-8")
+
+    assert main(["terms", str(draft)]) == 0
+    output = capsys.readouterr().out
+    assert "[C] 갈등" in output
+    assert "새기능" not in output
+    assert "한국어 학습용 어휘 목록" in output
+
+    assert main(["terms", str(draft), "--outside", "--format", "json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    terms = data["files"][0]["terms"]
+    assert {term["word"] for term in terms} >= {"갈등", "새기능"}
+    assert next(term for term in terms if term["word"] == "새기능")["outside"] is True
+
+
+def testPresetSelectsContextualExemplar(tmp_path, capsys):
+    draft = tmp_path / "보고서.md"
+    draft.write_text("지역 경제 활성화 지원 사업 추진 계획을 발표했습니다.\n", encoding="utf-8")
+    assert main([str(draft), "--preset", "report", "--format", "json"]) == 1
+    findings = json.loads(capsys.readouterr().out)["files"][0]["findings"]
+    nounPile = next(finding for finding in findings if finding["rule"] == "nounPile")
+    assert nounPile["exemplar"]["before"].startswith("지역 경제")
+
+    assert main(["explain", "nounPile", "--preset", "docs", "--format", "json"]) == 0
+    explained = json.loads(capsys.readouterr().out)
+    assert explained["exemplar"]["before"].startswith("사용자 인증")
+
+
 def testInitWritesConfigAndRefusesToOverwrite(tmp_path, capsys):
     target = tmp_path / "hanlint.toml"
     assert main(["init", "--output", str(target)]) == 0

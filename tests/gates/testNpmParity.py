@@ -129,6 +129,8 @@ def testRuleListsAgree():
         ["explain", "nounPile", "--format", "json", "--register", "합니다"],
         ["explain", "nounPile", "--format", "json", "--register", "한다"],
         ["explain", "nounPile", "--format", "json", "--register", "해요"],
+        ["explain", "nounPile", "--format", "json", "--preset", "report"],
+        ["rules", "--format", "json", "--preset", "docs"],
     ):
         python, node = runBoth(args)
         assert python.returncode == node.returncode == 0, node.stderr

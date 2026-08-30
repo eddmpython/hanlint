@@ -10,6 +10,7 @@ import argparse
 import json
 
 from ...analysis.grammar import HAPNIDA, REGISTERS
+from ...config import DEFAULT_PRESET, PRESET_NAMES
 from ...data import exemplarFor, patternsAvoiding
 from ...report import exemplarInRegister, patternInRegister
 from ...rules import CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleDoc, ruleMechanism, ruleNames
@@ -36,12 +37,13 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("rule", nargs="?", help="규칙 이름. hanlint rules 로 목록을 본다")
     parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
     parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="본보기 문체. 기본 합니다체")
+    parser.add_argument("--preset", choices=PRESET_NAMES, default=DEFAULT_PRESET, help="본보기의 글 종류. 기본 blog")
     addOutputOption(parser)
 
 
-def asJson(rule: str, register: str = HAPNIDA) -> str:
+def asJson(rule: str, register: str = HAPNIDA, preset: str = DEFAULT_PRESET) -> str:
     """규칙 하나를 기계가 읽는 꼴로. 기술서와 본보기와 다시 쓸 틀을 한 덩어리로 준다."""
-    exemplar = exemplarFor(rule)
+    exemplar = exemplarFor(rule, preset)
     data: dict = {
         "version": 1,
         "rule": rule,
@@ -81,14 +83,14 @@ def run(args: argparse.Namespace) -> int:
         hint = f" 이것을 찾았나: {', '.join(near)}" if near else " hanlint rules 로 목록을 본다"
         raise KeyError(f"모르는 규칙: {args.rule}.{hint}")
     if args.format == "json":
-        emit(asJson(args.rule, args.register), args.output)
+        emit(asJson(args.rule, args.register, args.preset), args.output)
         return 0
     category = ruleCategory(args.rule)
     mechanism = ruleMechanism(args.rule)
     print(f"{args.rule}  ({CATEGORY_TITLES[category]})")
     print(f"기제: {mechanism}. {MECHANISMS[mechanism]}\n")
     print(ruleDoc(args.rule))
-    exemplar = exemplarFor(args.rule)
+    exemplar = exemplarFor(args.rule, args.preset)
     if exemplar:
         exemplar = exemplarInRegister(exemplar, args.register)
         print("\n본보기")
