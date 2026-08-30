@@ -7,6 +7,7 @@
 import { exemplarFor } from "../data/exemplars.js";
 import { findingAsDict } from "../rules/finding.js";
 import { exemplarInRegister } from "./registerMatch.js";
+import { operationGuidance } from "./operationMatch.js";
 import { patchData } from "./patchMatch.js";
 
 /** @param {import("../rules/finding.js").Finding} finding @param {string | null | undefined} register @param {string | null | undefined} preset @param {import("../data/exemplars.js").Exemplar[]} customExemplars */
@@ -30,12 +31,30 @@ function findingWithExemplar(finding, document, register, preset, customExemplar
  * @param {import("../data/exemplars.js").Exemplar[]} [customExemplars]
  * @param {Map<string, import("../fingerprint/build.js").DocumentPrint> | null} [documents]
  * @param {import("../data/patches.js").Patch[]} [patches]
+ * @param {import("../data/operations.js").SurfaceOperation[]} [operations]
+ * @param {string[]} [protectedTerms]
  */
-export function renderJson(results, configLabel = null, registers = null, preset = null, customExemplars = [], documents = null, patches = []) {
-  const files = [...results].map(([path, findings]) => ({
-    path,
-    findings: findings.map((finding) => findingWithExemplar(finding, documents?.get(path), registers?.get(path), preset, customExemplars, patches)),
-  }));
+export function renderJson(
+  results,
+  configLabel = null,
+  registers = null,
+  preset = null,
+  customExemplars = [],
+  documents = null,
+  patches = [],
+  operations = [],
+  protectedTerms = [],
+) {
+  const files = [...results].map(([path, findings]) => {
+    const document = documents?.get(path);
+    const entry = {
+      path,
+      findings: findings.map((finding) => findingWithExemplar(finding, document, registers?.get(path), preset, customExemplars, patches)),
+    };
+    const selectedOperations = operationGuidance(document, findings, preset, operations, patches, protectedTerms);
+    if (selectedOperations.length) entry.operations = selectedOperations;
+    return entry;
+  });
   /** @type {Record<string, unknown>} */
   const data = { version: 1 };
   if (configLabel !== null) data.config = configLabel;

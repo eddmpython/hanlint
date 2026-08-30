@@ -87,6 +87,9 @@ hanlint 보고서.md --preset report
    해요체 가운데 그 글의 문체로 보여 준다. `nounPile` 은 프리셋도 보고 절차문, 보고서, 기술 문서와 백과에
    맞는 짝을 고른다. 명령만 따로 볼 때는 `hanlint explain <rule> --preset docs --register 한다` 나
    `hanlint patterns --register 해요` 처럼 정한다.
+   파일 JSON의 `operations`에 항목이 있으면 `sourceText`가 현재 문장과 같은지 확인하고 계산된 `result`를
+   쓴다. 이 결과는 승인한 32자 이하 표면 치환이 단어 경계 한 자리에만 있고 숫자, URL, 식별자, 경로,
+   코드, 링크 목적지와 설정의 `protectedTerms`를 보존할 때만 나온다. 새 치환을 추측하지 않는다.
 5. 마지막에 한 번 `--severity all` 로 `notice` 를 읽고 판단한다. **읽는 순서가 있다.** 실측에서 사람
    평가자와 실제로 같은 자리를 짚은 notice 는 `endingRepeat`, `topicBreak`, `factListParagraph` 셋이었다
    (글 셋, 평가자 지적 435건 기준). 그 셋을 먼저 보고 나머지는 그다음이다. 사실 나열과 흐름 끊김은 이유
@@ -102,9 +105,11 @@ hanlint 보고서.md --preset report
    것은 라운드마다 다시 돌렸기 때문이다.
 10. 라운드 사이에 `hanlint diff 앞라운드.md 이번.md` 를 찍으면 고친 것이 짜임과 리듬을 어떻게 바꿨는지
     숫자로 남는다. 고친 자리가 다음 라운드의 새 지적을 낳는지도 거기서 먼저 보인다.
-11. 사람이 최종 고침을 승인한 뒤에는 `hanlint learn 앞라운드.md 승인본.md --format toml`로 사라진 문장
-    지적의 짝을 본다. 문장 대응이 맞고 뜻을 보존한 후보만 `hanlint.toml`의 `[[patches]]`에 넣는다. 같은
+11. 사람이 최종 고침을 승인한 뒤에는 `hanlint learn 앞라운드.md 승인본.md --format toml`로 정확 패치와
+    표면 치환 후보를 본다. 문장 대응이 맞고 뜻을 보존한 문장 고침만 `[[patches]]`에 넣는다. 같은
     규칙이라도 승인 원문이 다르면 함께 둘 수 있지만, 같은 원문과 나머지 선택 조건이 겹치면 거부된다.
+    `[[operations]]` 후보는 같은 뜻이며 다른 원문의 그 낱말에도 적용해도 되는지까지 확인한 것만 넣는다.
+    한국어 고유명사와 프로젝트 용어는 `protectedTerms`에 적는다.
 
 ## 지킬 것
 
@@ -132,5 +137,5 @@ hanlint 보고서.md --preset report
 - 문체 프로파일: `hanlint profile build 승인된글들/` 뒤 `hanlint 글.md --profile profile.json`
 - 학습 어휘: `hanlint terms 글.md`. 한국어 학습자가 독자일 때만 C 전용 화제어의 첫 자리를 본다
 - 초안 비교: `hanlint diff 전.md 후.md`. 고친 뒤 짜임과 지적 수가 어떻게 변했는지 숫자로 본다
-- 고침 학습: `hanlint learn 전.md 승인본.md`. 사람이 승인할 정확 재생 패치 후보를 낸다
+- 고침 학습: `hanlint learn 전.md 승인본.md`. 사람이 승인할 정확 패치와 안전한 표면 치환 후보를 낸다
 - 이미 있는 지적 잠그기: `hanlint baseline 글들/` 뒤 `hanlint 글들/ --baseline`. 죽은 잠금은 `--prune`

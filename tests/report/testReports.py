@@ -125,3 +125,19 @@ def testAuditReportHasNumbersAndNoScore():
     assert "어휘        어절" in text and "자주 쓴 말" in text
     assert audit.lexicon.tokens > audit.lexicon.types > 0 and 0 < audit.lexicon.typeTokenRatio <= 1
     assert "점수" not in text and "등급" not in text
+
+
+def testJsonReportCarriesSafeOperationOutsideFindings():
+    text = "첫 렌더 결과입니다."
+    config = Config.fromMapping({"operations": [{"before": "렌더", "after": "렌더링", "presets": ["blog"]}]})
+    doc = fingerprint(text, config, path="글.md")
+    data = json.loads(
+        renderJson(
+            {"글.md": lintText(text, config, path="글.md")},
+            preset=config.preset,
+            documents={"글.md": doc},
+            operations=config.operations,
+        )
+    )
+    operation = data["files"][0]["operations"][0]["operation"]
+    assert operation["result"] == "첫 렌더링 결과입니다."

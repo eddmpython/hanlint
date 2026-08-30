@@ -1,8 +1,8 @@
 """AI 작문기가 같은 근거로 초안을 쓰고 고치게 하는 결정적 JSON 계약.
 
 잘 쓴 글을 복사하지 않는다. 현재 글의 지문과 같은 종류의 편집 글 분포, 독자 상태, 실제 지적, 승인 패치와
-검증된 문형을 분리해 싣는다. 분포는 품질 점수가 아니다. 승인 패치는 원문 완전 일치에서만 재생하며 유사
-문장에는 주지 않는다.
+검증된 문형을 분리해 싣는다. 분포는 품질 점수가 아니다. 의미 고침은 원문 완전 일치에서만 재생하고, 승인
+표면 치환은 단어 경계와 보호 원자가 맞는 다른 원문 한 자리까지 쓴다.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ from ..data import patterns
 from ..data.profiles import Histogram, Profile, profileOf, userProfile
 from ..fingerprint import DocumentPrint
 from ..rules import Finding
+from .operationMatch import operationGuidance
 from .patchMatch import patchData
 from .registerMatch import patternInRegister
 
@@ -82,6 +83,9 @@ def contractFor(purpose: str) -> dict:
             "guidance.patch가 있으면 현재 문장 전체를 patch.after로 바꾸고 비슷한 다른 문장에는 일반화하지 않는다",
             "guidance.patch가 없는 지적에는 다른 본보기를 끌어오지 말고 확실하지 않으면 원문을 둔다",
             "guidance.patch.after의 이름과 수치와 사실을 다른 문장으로 확산하거나 없는 정보를 만들어 채우지 않는다",
+            "guidance.operation은 승인 전후의 32자 이하 표면 치환이다. "
+            "sourceText 한 자리와 단어 경계와 보호 원자가 맞을 때만 result를 쓴다",
+            "guidance.operation이 없으면 비슷한 단어나 의미를 추측해 치환하지 않는다",
             "patterns에서는 form과 example만 쓰고 instead는 피한다",
             "referenceProfile은 같은 종류 글의 분포이며 품질 점수나 평균을 흉내 내라는 명령이 아니다",
             "설명 없이 완성된 한국어 마크다운만 결과로 낸다",
@@ -112,7 +116,8 @@ def guidanceFor(doc: DocumentPrint, findings: list[Finding], config: Config) -> 
         selected = patchData(doc, finding, config.preset, config.patches)
         if selected:
             guidance.append({"rule": finding.rule, "line": finding.line, "patch": selected})
-    return guidance
+    guidance.extend(operationGuidance(doc, findings, config.preset, config.operations, config.patches, config.protectedTerms))
+    return sorted(guidance, key=lambda item: (item["line"], "operation" in item))
 
 
 def buildWritingPacket(

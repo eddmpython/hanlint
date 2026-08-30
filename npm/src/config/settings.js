@@ -5,6 +5,7 @@
  */
 
 import { projectExemplars } from "../data/exemplars.js";
+import { projectOperations } from "../data/operations.js";
 import { projectPatches } from "../data/patches.js";
 
 /**
@@ -59,6 +60,8 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {Record<string, unknown[]>} dictionary
  * @property {import("../data/exemplars.js").Exemplar[]} exemplars 사람이 승인한 프로젝트 본보기
  * @property {import("../data/patches.js").Patch[]} patches 사람이 승인한 국소 고침
+ * @property {import("../data/operations.js").SurfaceOperation[]} operations 사람이 승인한 표면 치환
+ * @property {string[]} protectedTerms 표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어
  * @property {string[]} ignoreFences 지문에서 뺄 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록이 아니다
  * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
  * @property {number} fragmentRun
@@ -97,6 +100,8 @@ export function defaultConfig() {
     dictionary: {},
     exemplars: [],
     patches: [],
+    operations: [],
+    protectedTerms: [],
     ignoreFences: [],
     source: null,
     fragmentRun: 3,
@@ -152,8 +157,10 @@ export function configFromMapping(data) {
       config.exemplars = projectExemplars(value, PRESET_NAMES);
     } else if (key === "patches") {
       config.patches = projectPatches(value, PRESET_NAMES);
-    } else if (key === "ignoreFences" || key === "introFields" || key === "endingFields") {
-      if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) {
+    } else if (key === "operations") {
+      config.operations = projectOperations(value, PRESET_NAMES);
+    } else if (key === "ignoreFences" || key === "introFields" || key === "endingFields" || key === "protectedTerms") {
+      if (!Array.isArray(value) || !value.every((item) => typeof item === "string" && item.trim())) {
         throw new Error(`${key} 는 문자열 배열이다: ${JSON.stringify(value)}`);
       }
       const names = value.map((item) => item.trim());

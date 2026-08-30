@@ -79,6 +79,20 @@ def testLearnEmitsReviewableTextJsonAndToml(tmp_path, capsys):
     assert 'cue = "에 대한"' in toml and 'reader = "new"' in toml
 
 
+def testLearnEmitsReviewableSurfaceOperation(tmp_path, capsys):
+    before = write(tmp_path, "전.md", "첫 렌더 결과입니다.\n")
+    after = write(tmp_path, "후.md", "첫 렌더링 결과입니다.\n")
+    assert main(["learn", str(before), str(after), "--format", "json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["operations"][0]["before"] == "렌더"
+    assert data["operations"][0]["guards"]["protectedFacts"] is True
+
+    assert main(["learn", str(before), str(after), "--format", "toml"]) == 0
+    toml = capsys.readouterr().out
+    assert "[[operations]]" in toml
+    assert 'before = "렌더"' in toml and 'after = "렌더링"' in toml and 'presets = ["blog"]' in toml
+
+
 def testProjectExemplarReachesLintRulesAndExplain(tmp_path, capsys):
     config = write(
         tmp_path,

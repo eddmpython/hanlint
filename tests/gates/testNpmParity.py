@@ -201,6 +201,33 @@ def testPatchSelectionAgrees(tmp_path):
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testSurfaceOperationSelectionAgrees(tmp_path):
+    config = tmp_path / "hanlint.toml"
+    config.write_text(
+        '[[operations]]\nbefore = "렌더"\nafter = "렌더링"\npresets = ["blog"]\n',
+        encoding="utf-8",
+    )
+    matched = tmp_path / "matched.md"
+    matched.write_text("첫 렌더 결과입니다.\n", encoding="utf-8")
+    blocked = tmp_path / "blocked.md"
+    blocked.write_text("렌더 뒤 렌더 결과입니다.\n", encoding="utf-8")
+    python, node = runBoth([str(matched), str(blocked), "--config", str(config), "--format", "json"])
+    assert python.returncode == node.returncode, node.stderr
+    assert python.stdout == node.stdout
+    files = json.loads(python.stdout)["files"]
+    assert files[0]["operations"][0]["operation"]["result"] == "첫 렌더링 결과입니다."
+    assert "operations" not in files[1]
+
+    config.write_text(
+        'protectedTerms = ["렌더"]\n\n[[operations]]\nbefore = "렌더"\nafter = "렌더링"\npresets = ["blog"]\n',
+        encoding="utf-8",
+    )
+    python, node = runBoth([str(matched), "--config", str(config), "--format", "json"])
+    assert python.returncode == node.returncode and python.stdout == node.stdout
+    assert "operations" not in json.loads(python.stdout)["files"][0]
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testInitPresetsAgree(tmp_path):
     # 같은 경로에 두 판을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
     for preset in ("blog", "report", "docs"):

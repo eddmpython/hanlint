@@ -23,6 +23,11 @@ npx hanlint 글.md --format compact --errors-only
 `hanlint.toml`에 두면 npm 판도 같은 패치를 읽는다. 정규화한 원문, 규칙, 프리셋, 국소 표지, 독자 상태가
 모두 같은 유일한 패치만 JSON 지적의 `patch`로 내고, 원문이 다르면 유사 문장이라도 기권한다.
 
+같은 `learn` 출력에서 뜻과 적용 범위를 확인한 `[[operations]]`도 두 판이 함께 읽는다. 승인 조각이 현재
+문장의 단어 경계 한 자리에만 있고 숫자, URL, 식별자, 경로, 코드, 링크 목적지가 그대로일 때 파일 JSON의
+`operations[].operation.result`를 낸다. 한국어 고유명사와 프로젝트 용어는 `protectedTerms`에 적어 잠근다.
+지시어와 의미 고침, 여러 자리 일치는 기권하며 원문 완전 일치 패치와 확정 fix가 먼저다.
+
 글의 종류가 블로그가 아니면 프리셋을 먼저 고른다. `npx hanlint init --preset docs` 가 참고 문서에 맞지 않는
 규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs` 셋이다.
 

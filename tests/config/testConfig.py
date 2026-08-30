@@ -4,7 +4,7 @@ from unicodedata import normalize
 import pytest
 
 from hanlint.config import Config, loadConfig
-from hanlint.data import Patch, exemplarFor, patchFor
+from hanlint.data import Patch, applyOperation, exemplarFor, patchFor
 
 
 def testDefaultsAreTheTruth():
@@ -195,3 +195,23 @@ def testLoadReadsProjectPatchArrayTable(tmp_path: Path):
         encoding="utf-8",
     )
     assert loadConfig(start=tmp_path).patches[0].cue == "에 대한"
+
+
+def testLoadReadsProjectOperationArrayTable(tmp_path: Path):
+    (tmp_path / "hanlint.toml").write_text(
+        'protectedTerms = ["한린트"]\n\n[[operations]]\nbefore = "여러가지"\nafter = "여러 가지"\npresets = ["blog"]\n',
+        encoding="utf-8",
+    )
+    config = loadConfig(start=tmp_path)
+    operation = config.operations[0]
+    assert config.protectedTerms == ["한린트"]
+    assert applyOperation("여러가지 방법입니다.", operation) == "여러 가지 방법입니다."
+
+
+def testProtectedTermsAreExplicitAndNonempty():
+    config = Config.fromMapping({"protectedTerms": [" 한린트 "]})
+    assert config.protectedTerms == ["한린트"]
+    with pytest.raises(ValueError, match="문자열 배열"):
+        Config.fromMapping({"protectedTerms": [""]})
+    with pytest.raises(ValueError, match="비지 않은 문자열"):
+        Config(protectedTerms=[""])

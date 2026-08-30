@@ -9,6 +9,7 @@ import test from "node:test";
 import { loadConfig } from "../src/config/loadConfig.js";
 import { configFromMapping } from "../src/config/settings.js";
 import { exemplarFor } from "../src/data/exemplars.js";
+import { applyOperation } from "../src/data/operations.js";
 import { patchFor } from "../src/data/patches.js";
 import { parseToml } from "../src/config/toml.js";
 
@@ -149,4 +150,24 @@ test("loadConfig reads project patch array tables", () => {
     "utf-8",
   );
   assert.equal(loadConfig(null, root).patches[0].cue, "에 대한");
+});
+
+test("loadConfig reads project operation array tables", () => {
+  const root = mkdtempSync(join(tmpdir(), "hanlintOperations-"));
+  writeFileSync(
+    join(root, "hanlint.toml"),
+    'protectedTerms = ["한린트"]\n\n[[operations]]\n' +
+      'before = "여러가지"\nafter = "여러 가지"\npresets = ["blog"]\n',
+    "utf-8",
+  );
+  const config = loadConfig(null, root);
+  const operation = config.operations[0];
+  assert.deepEqual(config.protectedTerms, ["한린트"]);
+  assert.equal(applyOperation("여러가지 방법입니다.", operation), "여러 가지 방법입니다.");
+});
+
+test("protectedTerms are explicit and nonempty", () => {
+  const config = configFromMapping({ protectedTerms: [" 한린트 "] });
+  assert.deepEqual(config.protectedTerms, ["한린트"]);
+  assert.throws(() => configFromMapping({ protectedTerms: [""] }), /문자열 배열/);
 });

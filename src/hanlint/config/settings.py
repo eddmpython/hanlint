@@ -21,6 +21,7 @@ import json
 from dataclasses import dataclass, field
 
 from ..data.exemplars import Exemplar, projectExemplars
+from ..data.operations import SurfaceOperation, projectOperations
 from ..data.patches import Patch, projectPatches
 
 PRESETS: dict[str, tuple[str, ...]] = {
@@ -102,6 +103,10 @@ class Config:
     """사람이 승인해 `[[exemplars]]` 로 넣은 프로젝트 본보기."""
     patches: tuple[Patch, ...] = ()
     """사람이 승인해 `[[patches]]` 로 넣은 국소 고침. 원문을 포함한 모든 조건이 맞을 때만 재생한다."""
+    operations: tuple[SurfaceOperation, ...] = ()
+    """사람이 승인한 32자 이하 표면 치환. 단어 경계와 보호 원자가 맞는 다른 원문 한 자리에도 쓴다."""
+    protectedTerms: list[str] = field(default_factory=list)
+    """표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어. 라틴 식별자와 수치는 자동으로 보호한다."""
     ignoreFences: list[str] = field(default_factory=list)
     """지문에서 뺄 펜스의 언어 표기. 코드도 산문도 아닌 펜스 (강의 장면 계약, 도표 원문) 가 코드 블록으로 세어지면
     거의 같은 블록, 읽어 주지 않은 출력, 절의 결과로 잘못 잡힌다. 실측: eddmpython-course 의 `course-scene` 펜스가
@@ -155,6 +160,11 @@ class Config:
     그 기사를 섞임으로 가르면서 일관된 발행문을 보존한다 (2026-08-28)."""
 
     def __post_init__(self) -> None:
+        if not isinstance(self.protectedTerms, list) or not all(
+            isinstance(item, str) and item.strip() for item in self.protectedTerms
+        ):
+            raise ValueError(f"protectedTerms 는 비지 않은 문자열의 배열이다: {shown(self.protectedTerms)}")
+        self.protectedTerms = [item.strip() for item in self.protectedTerms]
         if self.exemplars:
             if all(isinstance(exemplar, Exemplar) for exemplar in self.exemplars):
                 self.exemplars = tuple(self.exemplars)
@@ -165,6 +175,11 @@ class Config:
                 self.patches = tuple(self.patches)
             else:
                 self.patches = projectPatches(self.patches, PRESET_NAMES)
+        if self.operations:
+            if all(isinstance(operation, SurfaceOperation) for operation in self.operations):
+                self.operations = tuple(self.operations)
+            else:
+                self.operations = projectOperations(self.operations, PRESET_NAMES)
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable and ruleName not in PRESETS[self.preset]
@@ -193,8 +208,10 @@ class Config:
                 config.exemplars = projectExemplars(value, PRESET_NAMES)
             elif key == "patches":
                 config.patches = projectPatches(value, PRESET_NAMES)
-            elif key in ("ignoreFences", "introFields", "endingFields"):
-                if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            elif key == "operations":
+                config.operations = projectOperations(value, PRESET_NAMES)
+            elif key in ("ignoreFences", "introFields", "endingFields", "protectedTerms"):
+                if not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value):
                     raise ValueError(f"{key} 는 문자열 배열이다: {shown(value)}")
                 names = [item.strip() for item in value]
                 setattr(config, key, [name.lower() for name in names] if key == "ignoreFences" else names)

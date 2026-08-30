@@ -1,4 +1,4 @@
-from hanlint import learnText
+from hanlint import Config, learnOperationText, learnText
 
 
 def candidateFor(rule: str, before: str, after: str):
@@ -61,3 +61,19 @@ def testKeepsApprovedInlineMarkdownSeparateFromMatchSentence():
     assert candidates[0].before == "핵심은 `make_qr`입니다."
     assert candidates[0].after == "`make_qr`가 QR코드를 만듭니다."
     assert candidates[0].sentence == "핵심은 make_qr입니다."
+
+
+def testLearnsOneSurfaceOperationWithoutAExistingRule():
+    operations = learnOperationText("첫 렌더 결과입니다.", "첫 렌더링 결과입니다.")
+    assert len(operations) == 1
+    operation = operations[0]
+    assert (operation.before, operation.after, operation.presets) == ("렌더", "렌더링", ("blog",))
+    assert operation.evidence[0].sourceBefore == "첫 렌더 결과입니다."
+
+
+def testSurfaceOperationLearningAbstainsFromMeaningFactsAndSplits():
+    assert learnOperationText("이것은 결과입니다.", "이는 결과입니다.") == ()
+    assert learnOperationText("2개가 있습니다.", "3개가 있습니다.") == ()
+    assert learnOperationText("`run`을 씁니다.", "`runs`를 씁니다.") == ()
+    assert learnOperationText("첫 렌더 결과입니다.", "첫 렌더링 결과입니다. 다음 결과입니다.") == ()
+    assert learnOperationText("서울 지점입니다.", "서을 지점입니다.", Config(protectedTerms=["서울"])) == ()

@@ -11,9 +11,10 @@ import json
 from collections.abc import Iterable
 
 from ..audit import AuditResult
-from ..data import Exemplar, Patch, exemplarFor
+from ..data import Exemplar, Patch, SurfaceOperation, exemplarFor
 from ..fingerprint import DocumentPrint
 from ..rules import Finding
+from .operationMatch import operationGuidance
 from .patchMatch import patchData
 from .registerMatch import exemplarInRegister
 
@@ -45,6 +46,8 @@ def renderJson(
     customExemplars: Iterable[Exemplar] = (),
     documents: dict[str, DocumentPrint] | None = None,
     patches: Iterable[Patch] = (),
+    operations: Iterable[SurfaceOperation] = (),
+    protectedTerms: Iterable[str] = (),
 ) -> str:
     files = []
     for path, findings in results.items():
@@ -56,6 +59,9 @@ def renderJson(
         }
         if audits and path in audits:
             entry["audit"] = audits[path].asDict()
+        selectedOperations = operationGuidance(doc, findings, preset, operations, patches, protectedTerms)
+        if selectedOperations:
+            entry["operations"] = selectedOperations
         files.append(entry)
     data: dict = {"version": 1}
     if configLabel is not None:

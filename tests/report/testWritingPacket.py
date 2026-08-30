@@ -78,3 +78,52 @@ def testWritingPacketRejectsUnknownPurpose():
 
     with pytest.raises(ValueError, match="purpose"):
         writingPacket(SAMPLE, purpose="judge")
+
+
+def testWritingPacketCarriesOnlyOneSafeSurfaceOperation():
+    config = Config.fromMapping({"operations": [{"before": "렌더", "after": "렌더링", "presets": ["blog"]}]})
+    packet = writingPacket("첫 렌더 결과입니다.", config)
+    assert packet["guidance"] == [
+        {
+            "line": 1,
+            "operation": {
+                "kind": "surfaceSubstitution",
+                "before": "렌더",
+                "after": "렌더링",
+                "sourceText": "첫 렌더 결과입니다.",
+                "result": "첫 렌더링 결과입니다.",
+                "match": {"preset": "blog", "unique": True, "wordBoundary": True, "protectedFacts": True},
+            },
+        }
+    ]
+    assert writingPacket("렌더 뒤 렌더 결과입니다.", config)["guidance"] == []
+    assert writingPacket("첫 렌더 결과입니다.", config, purpose="draft")["guidance"] == []
+    protected = Config.fromMapping(
+        {
+            "operations": [{"before": "렌더", "after": "렌더링", "presets": ["blog"]}],
+            "protectedTerms": ["렌더"],
+        }
+    )
+    assert writingPacket("첫 렌더 결과입니다.", protected)["guidance"] == []
+
+
+def testExactPatchKeepsPriorityOverSurfaceOperation():
+    source = "핵심은 렌더입니다."
+    config = Config.fromMapping(
+        {
+            "patches": [
+                {
+                    "rule": "cliche",
+                    "before": source,
+                    "after": "렌더링에는 3초가 걸립니다.",
+                    "moved": "결과를 직접 씀",
+                    "cue": "핵심은",
+                    "reader": "new",
+                    "presets": ["blog"],
+                }
+            ],
+            "operations": [{"before": "렌더", "after": "렌더링", "presets": ["blog"]}],
+        }
+    )
+    guidance = writingPacket(source, config)["guidance"]
+    assert len(guidance) == 1 and "patch" in guidance[0]

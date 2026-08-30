@@ -35,6 +35,8 @@ def run(args: argparse.Namespace) -> int:
                 customExemplars=config.exemplars,
                 documents={str(args.file): doc},
                 patches=config.patches,
+                operations=config.operations,
+                protectedTerms=config.protectedTerms,
             ),
             args.output,
         )

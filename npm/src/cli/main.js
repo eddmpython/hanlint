@@ -402,7 +402,20 @@ function runLint(args) {
 
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (format === "json") {
-    emit(renderJson(shown, configLabel(config), registers, config.preset, config.exemplars, documents, config.patches), output);
+    emit(
+      renderJson(
+        shown,
+        configLabel(config),
+        registers,
+        config.preset,
+        config.exemplars,
+        documents,
+        config.patches,
+        config.operations,
+        config.protectedTerms,
+      ),
+      output,
+    );
   } else if (format === "github") {
     emit([...shown].map(([name, findings]) => renderGithub(name, findings)).join("\n"), output);
   } else {
@@ -701,6 +714,9 @@ export function renderInit(preset = "blog") {
     '# cliches = ["우리의 여정"]',
     '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',
     "",
+    "# 표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어. 수치와 라틴 식별자는 자동으로 보호한다",
+    '# protectedTerms = ["한린트", "김민지"]',
+    "",
     "# 사람이 승인한 프로젝트 본보기. 같은 규칙과 프리셋의 내장 본보기를 덮어쓴다",
     "# [[exemplars]]",
     '# rule = "translationese"',
@@ -719,6 +735,12 @@ export function renderInit(preset = "blog") {
     '# sentence = "설계에 대한 이해가 필요합니다."  # before에서 마크다운 표식을 걷은 선택용 원문',
     '# cue = "에 대한"',
     '# reader = "new"',
+    '# presets = ["blog"]',
+    "",
+    "# 사람이 적용 범위까지 승인한 표면 치환. 단어 경계 한 자리와 보호 원자가 맞을 때만 결과를 낸다",
+    "# [[operations]]",
+    '# before = "여러가지"',
+    '# after = "여러 가지"',
     '# presets = ["blog"]',
     "",
   );
