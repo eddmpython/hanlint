@@ -49,6 +49,13 @@ test("extraction rejects meaning and protected fact changes", () => {
   assert.ok(protectedAtoms("v2의 `run`은 https://a.example/x.py를 씁니다.").length);
 });
 
+test("protected URLs stop before markdown and sentence punctuation", () => {
+  const linked = protectedAtoms("[https://a.example/x](https://a.example/x)");
+  assert.equal(linked.filter((atom) => atom === "url:https://a.example/x").length, 2);
+  assert.ok(linked.includes("link:https://a.example/x"));
+  assert.ok(protectedAtoms("주소는 https://a.example.").includes("url:https://a.example"));
+});
+
 test("selection and configuration require one safe operation", () => {
   const first = renderOperation();
   const second = { before: "결과입니다", after: "결괏값입니다", presets: ["docs"] };

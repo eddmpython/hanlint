@@ -6,9 +6,10 @@ import argparse
 from pathlib import Path
 
 from ...audit import auditDocument
+from ...config import loadWritingBrief
 from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
-from ...report import PURPOSES, buildWritingPacket, renderWritingPacket
+from ...report import PURPOSES, buildBriefWritingPacket, buildWritingPacket, renderWritingPacket
 from ...rules import runAll
 from .shared import addCommonOptions, configFrom, emit, readFile
 
@@ -23,6 +24,20 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 
 def run(args: argparse.Namespace) -> int:
+    if args.file.suffix.lower() == ".json":
+        if args.purpose != "draft":
+            raise ValueError("writing brief JSON은 --purpose draft 에서만 쓴다")
+        brief = loadWritingBrief(args.file)
+        if args.preset and args.preset != brief.preset:
+            raise ValueError(f"--preset {args.preset} 과 brief preset {brief.preset} 이 다르다")
+        config = configFrom(args, start=args.file.resolve().parent)
+        packet = buildBriefWritingPacket(brief, str(args.file), args.includeSource)
+        if config.source:
+            packet["verify"]["argv"].extend(("--config", config.source))
+        for ruleName in sorted(args.disable):
+            packet["verify"]["argv"].extend(("--disable", ruleName))
+        emit(renderWritingPacket(packet), args.output)
+        return 0
     config = configFrom(args, start=args.file.resolve().parent)
     text = readFile(args.file)
     doc = buildFingerprint(parseMarkdown(text, path=str(args.file)), config)

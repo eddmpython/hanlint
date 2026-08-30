@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/writingBrief.schema.json",
+  "title": "hanlint writing brief",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "preset",
+    "reader",
+    "task",
+    "facts",
+    "mustInclude",
+    "allowedNumbers",
+    "forbidden",
+    "length"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "preset": {
+      "enum": ["blog", "report", "docs", "guide", "essay", "fiction", "encyclopedia"]
+    },
+    "reader": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "facts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^F[1-9][0-9]*$" },
+          "statement": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "mustInclude": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "allowedNumbers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[0-9]+(?:[.][0-9]+)*$" }
+    },
+    "forbidden": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "length": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer", "minimum": 1 },
+        "max": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

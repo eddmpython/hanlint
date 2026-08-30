@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from unicodedata import normalize
 
 KOREAN = re.compile(r"[가-힣]")
-URL = re.compile(r"https?://[^\s)>]+")
+URL = re.compile(r"https?://[^\s)>\]]*[\w/#=%&+~-]")
 NUMBER = re.compile(r"(?<![A-Za-z가-힣])[-+]?\d+(?:[.,:]\d+)*(?:%|[가-힣]+)?")
 LATIN_ATOM = re.compile(r"(?<![A-Za-z0-9_])(?:[A-Za-z_][A-Za-z0-9_.:/<>-]*)(?![A-Za-z0-9_])")
 PATH_ATOM = re.compile(r"(?<!\w)(?:[\w.-]+/)+[\w.-]+|(?<!\w)[\w-]+\.[A-Za-z0-9]{1,8}(?!\w)")

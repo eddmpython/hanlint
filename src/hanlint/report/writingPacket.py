@@ -12,7 +12,7 @@ import json
 from hashlib import sha256
 
 from ..audit import AuditResult
-from ..config import PROFILE_OF, Config
+from ..config import PROFILE_OF, Config, WritingBrief
 from ..data.profiles import Histogram, Profile, profileOf, userProfile
 from ..fingerprint import DocumentPrint
 from ..rules import Finding
@@ -96,6 +96,25 @@ def contractFor(purpose: str) -> dict:
     }
 
 
+def briefContractFor() -> dict:
+    return {
+        "operation": "input.brief의 원자 사실만 사용해 독자의 과업을 끝내는 한국어 마크다운 초안을 쓴다",
+        "constraints": [
+            "input.brief 밖의 사실, 수치, 이름, URL, 코드, 인과와 배경을 만들지 않는다",
+            "facts의 id는 대조용 표지다. 결과 글에는 id나 사실 원장이라는 말을 쓰지 않는다",
+            "mustInclude의 표면과 allowedNumbers의 숫자를 모두 보존한다",
+            "forbidden의 문자열 표면을 쓰지 않는다",
+            "length의 min과 max 사이에서 완결된 글을 쓴다",
+            "설명, 자기평가와 작성 과정 없이 완성된 한국어 마크다운만 결과로 낸다",
+        ],
+        "completion": [
+            "결과를 verify.argv의 hanlint guard로 검사한다",
+            "guard 위반을 자동 재작성하지 말고 원문과 대조해 한 자리씩 고친다",
+            "guard 충족은 원자 사실의 관계와 진실, 금지 주장의 바꿔 말하기, 독자 효용과 자연스러움을 보장하지 않는다",
+        ],
+    }
+
+
 def readerState(doc: DocumentPrint, audit: AuditResult) -> dict:
     final = doc.reader.final
     return {
@@ -167,6 +186,36 @@ def buildWritingPacket(
             ],
             "meaning": "error 0은 자동 결함이 없다는 뜻뿐이다. writingPacket은 자연스러움과 사실 보존과 "
             "유용성의 향상을 보장하지 않으므로 원문 대조와 별도 평가가 필요하다",
+        },
+    }
+
+
+def buildBriefWritingPacket(
+    brief: WritingBrief,
+    path: str | None = None,
+    includeSource: bool = True,
+) -> dict:
+    """구조화 brief만 사실 재료로 둔 draft 실행 패킷."""
+    inputData: dict = {
+        "kind": "hanlint.writingBrief",
+        "path": path,
+        "preset": brief.preset,
+        "briefSha256": brief.digest,
+    }
+    if includeSource:
+        inputData["brief"] = brief.asDict()
+    return {
+        "version": 2,
+        "kind": "hanlint.writingPacket",
+        "purpose": "draft",
+        "contract": briefContractFor(),
+        "input": inputData,
+        "findings": {"errorCount": 0, "noticeCount": 0, "items": []},
+        "guidance": [],
+        "verify": {
+            "argv": ["hanlint", "guard", path or "<brief.json>", "<output.md>", "--format", "json"],
+            "meaning": "guard는 명시한 표면과 자동 error만 확인한다. 사실 관계와 진실, 유용성과 "
+            "자연스러움은 원문 대조와 별도 평가가 필요하다",
         },
     }
 

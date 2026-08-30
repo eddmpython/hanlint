@@ -13,6 +13,8 @@ hanlint는 글을 생성하는 모델이 아니다. 이 스킬은 요구사항�
 `writingPacket`은 글 생성기도 품질 판정기도 아니다. 일곱 프리셋의 사실 고정 완성 글 실측에서 일반 brief를
 안전하게 이기지 못했다. 공통 문형 예시는 모델이 다른 글의 수치와 문장을 결과에 옮겨 v1 패킷의 사실 표면
 통과를 0/7로 낮췄으므로 v2 실행 패킷에서 빠졌다.
+최종 구조화 패킷을 별도로 한 번씩 생성했을 때 사실 표면은 6/7이었지만 전체 자동 계약은 1/7뿐이었다.
+guard는 위반 여섯 결과를 막는 장치이지 생성 품질 향상의 증거가 아니다.
 
 ## 결과
 
@@ -33,29 +35,42 @@ JSON의 `contract`, `input`, `findings`, `guidance` 순서로 읽고 초안을 �
 
 ## 처음부터 쓸 때
 
-1. 결과물, 독자, 독자가 하려는 일, 반드시 보존할 사실과 수치, 글의 종류를 짧은 요구사항으로 정리한다.
-   정보가 없고 결과를 크게 바꾸지 않는 항목은 합리적으로 가정하고 최종 전달에서 밝힌다. 사실은 추측해
-   채우지 않는다.
+1. 사실과 수치가 있는 글은 `src/hanlint/data/writingBrief.schema.json`에 맞는 `brief.json`을 먼저 만든다. `reader`,
+   `task`, `preset`, 한 문장에 한 관계만 둔 `facts`, 세 필드 안의 `mustInclude`, reader·task·facts의 모든
+   숫자를 천 단위 쉼표 없이 적은 `allowedNumbers`, 쓰지 않을 `forbidden`, `length`를 채운다. 정보가 없으면 사실을 추측해
+   채우지 않고 사용자에게 확인할 항목으로 남긴다.
 2. 프리셋을 고른다. 블로그 `blog`, 보고문 `report`, 기술 문서 `docs`, 단계별 안내 `guide`, 수필 `essay`,
    소설 `fiction`, 백과 `encyclopedia` 가운데 실제 결과물과 같은 것을 쓴다.
-3. 요구사항이나 뼈대가 든 마크다운을 대상으로 패킷을 만든다.
+3. 구조화 brief를 draft 패킷으로 만든다.
 
 ```powershell
-hanlint packet 요구.md --purpose draft --preset docs
+hanlint packet brief.json --purpose draft --output packet.json
 ```
 
-4. `contract.operation`과 `constraints`를 지킨다. `input`만 사실 재료로 쓰고 `referenceProfile`과
-   `comparison.current`의 수치는 결과에 옮기지 않는다. 둘은 같은 종류 글과 현재 글의 진단 분포다.
+   사실 계약이 필요 없는 자유 형식 글은 기존 `hanlint packet 요구.md --purpose draft --preset docs`도
+   쓸 수 있다.
+4. `contract.operation`과 `constraints`를 지킨다. 구조화 패킷에서는 `input.brief`만 사실 재료다. 자유 형식
+   패킷에서는 `input`만 사실 재료로 쓰고 `referenceProfile`과 `comparison.current`의 수치는 결과에
+   옮기지 않는다.
 5. 초안을 실제 결과 파일에 쓴다. 도입에서 독자의 질문과 얻을 결과를 세우고, 본문은 한 절에 한 가지 일을
    진행하며, 마지막은 독자가 지금 할 행동이나 확인할 결과로 닫는다. 사용자 저장소의 글쓰기 규칙이 있으면
    그것이 이 일반 절차보다 우선한다.
-6. 완성된 초안으로 수정 패킷을 다시 만든다.
+6. 구조화 brief와 초안을 guard로 대조한다.
+
+```powershell
+hanlint guard brief.json 글.md --format json
+```
+
+   `contractSatisfied`는 명시한 표면과 자동 error가 맞는다는 뜻뿐이다. 원자 사실의 관계와 진실, 빠진 의미,
+   금지 주장의 바꿔 말하기, 독자 효용과 자연스러움은 사람이 brief와 글을 나란히 읽어 확인한다. 위반을 모델에게 통째로 자동
+   재작성시키지 않는다. 빠진 사실이나 요구 밖 숫자의 정확한 자리 하나를 고치고 guard를 다시 실행한다.
+7. 사실 계약을 지킨 초안에서만 수정 패킷을 만든다.
 
 ```powershell
 hanlint packet 글.md --purpose revise --preset docs
 ```
 
-7. `guidance`에 `patch`가 있으면 `match.sourceText`와 현재 마크다운 원문, `match.sentence`와 표식을
+8. `guidance`에 `patch`가 있으면 `match.sourceText`와 현재 마크다운 원문, `match.sentence`와 표식을
    걷은 현재 문장이 같은지 확인하고 그 문장 전체를
    `patch.after`로 바꾼다. 이 패치는 글쓴이가 같은 원문에 승인한 결과다. `operation`이 있으면 새 치환을
    추측하지 말고 `sourceText`가 현재 문장과 같은지 확인한 뒤 이미 계산된 `result`를 쓴다. 이는 프리셋,
@@ -63,7 +78,7 @@ hanlint packet 글.md --purpose revise --preset docs
    `guidance`가 비면 다른 패치나 연산을
    검색하거나 내장 본보기를 끌어오지 않는다. `findings`의 인용과 이유로 필요한 자리만 고치되,
    사실을 더하거나 뜻을 확정해야 하면 원문을 두고 사람에게 확인한다.
-8. `hanlint 글.md --preset docs`를 실행한다. 확정 `fix`, 정확 패치, 안전한 표면 연산은 적용할 수 있지만,
+9. `hanlint 글.md --preset docs`를 실행한다. 확정 `fix`, 정확 패치, 안전한 표면 연산은 적용할 수 있지만,
    모델에게 전면 재작성을 자동 반복시키지 않는다. 이번 실측의 패킷 반복은 사실 표면 0/7, error 12건이었다.
    모델 수정은 한 번마다 멈춰 사실, 수치, 링크, 코드, 조건을 원문 요구사항과 대조한다. 사실을 보존한
    상태에서만 다음 error를 고친다.
@@ -72,6 +87,7 @@ hanlint packet 글.md --purpose revise --preset docs
 
 - `contract`: 작문 모델이 반드시 지킬 작업과 보존 조건이다.
 - `input`: 원문, 프리셋, 감지한 문체, frontmatter다.
+- 구조화 draft의 `input.brief`: 독자, 과업, 원자 사실, 보호 표면, 숫자, 금지 표면과 길이의 유일한 사실 재료다.
 - `comparison.current`: 현재 글의 리듬, 어휘, 절, 문단 분포다.
 - `comparison.referenceProfile`: 같은 종류의 편집 글에서 나온 백분위다. 평균 문체를 복제하지 않는다.
 - `comparison.readerState`: 독자가 이미 본 화제, 수치, 생성된 파일, 아직 회수할 약속이다.
@@ -115,6 +131,7 @@ hanlint learn 전.md 승인본.md --format toml
   한 번 수정 2/7·error 0건이었고 둘 다 일반 brief 대비 안전 승은 없었다. 일반 재시도, 빠진 사실 가드,
   사실 원장 재작성도 안전 승이 없었다.
 - error 0을 좋은 글의 합격 판정으로 부르지 않는다.
+- guard의 `contractSatisfied`를 사실 관계와 진실의 합격 판정으로 부르거나 위반 결과를 자동 재작성하지 않는다.
 - 사람이 승인하지 않은 `learn` 후보를 `[[patches]]`나 `[[operations]]`로 저장하지 않는다.
 
 ## 되돌리기

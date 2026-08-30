@@ -12,11 +12,12 @@ from .mapHtml import renderMapHtml
 from .mapText import renderMap
 from .registerMatch import exemplarInRegister, patternInRegister, targetRegister
 from .textReport import renderText
-from .writingPacket import PURPOSES, buildWritingPacket, renderWritingPacket
+from .writingPacket import PURPOSES, buildBriefWritingPacket, buildWritingPacket, renderWritingPacket
 
 __all__ = [
     "LAYERS",
     "PURPOSES",
+    "buildBriefWritingPacket",
     "buildWritingPacket",
     "fingerprintDict",
     "renderAudit",

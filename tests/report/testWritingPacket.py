@@ -1,6 +1,6 @@
 import json
 
-from hanlint import Config, writingPacket
+from hanlint import Config, WritingBrief, writingPacket
 from hanlint.report import renderWritingPacket
 
 SAMPLE = """# 속도 보고
@@ -80,6 +80,47 @@ def testWritingPacketRejectsUnknownPurpose():
 
     with pytest.raises(ValueError, match="purpose"):
         writingPacket(SAMPLE, purpose="judge")
+
+
+def testStructuredBriefBecomesAnIsolatedDraftPacket():
+    brief = WritingBrief.fromMapping(
+        {
+            "version": 1,
+            "preset": "docs",
+            "reader": "처음 쓰는 작성자",
+            "task": "명령을 실행한다",
+            "facts": [{"id": "F1", "statement": "명령은 `mora check`이고 종료 코드는 0이다."}],
+            "mustInclude": ["`mora check`", "종료 코드는 0"],
+            "allowedNumbers": ["0"],
+            "forbidden": [],
+            "length": {"min": 100, "max": 300},
+        }
+    )
+    packet = writingPacket(brief, path="brief.json", purpose="draft")
+    assert packet["input"]["brief"] == brief.asDict()
+    assert packet["input"]["briefSha256"] == brief.digest
+    assert "comparison" not in packet and packet["findings"]["items"] == []
+    assert packet["verify"]["argv"][:3] == ["hanlint", "guard", "brief.json"]
+    assert "보장하지 않는다" in packet["contract"]["completion"][-1]
+    assert writingPacket(brief.asDict(), purpose="draft", includeSource=False)["input"].get("brief") is None
+
+
+def testStructuredBriefRejectsRevisionPurpose():
+    brief = {
+        "version": 1,
+        "preset": "blog",
+        "reader": "독자",
+        "task": "결정한다",
+        "facts": [{"id": "F1", "statement": "값은 3이다."}],
+        "mustInclude": ["값은 3"],
+        "allowedNumbers": ["3"],
+        "forbidden": [],
+        "length": {"min": 10, "max": 100},
+    }
+    import pytest
+
+    with pytest.raises(ValueError, match="purpose draft"):
+        writingPacket(brief)
 
 
 def testWritingPacketCarriesOnlyOneSafeSurfaceOperation():

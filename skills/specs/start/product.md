@@ -134,6 +134,13 @@ v2 반복은 2/7과 error 0건이었다. 일반 brief도 2/7이고 v2의 안전 
 향상은 입증되지 않았다. `comparison`은 진단 자료이고 결과 글의 사실이나 문장 재료가 아니다. 필요한
 문형은 사람이 실제 error를 정한 뒤 `patterns --rule`로 별도 요청한다.
 
+사실과 수치가 중요한 draft는 version 1 `writing brief` JSON을 받는다. preset, reader, task, 원자 facts,
+reader·task·facts 안의 mustInclude, 세 필드의 모든 allowedNumbers, forbidden, length가 닫힌 스키마다. 구조화 draft 패킷은
+brief만 사실 재료로 싣고 comparison을 싣지 않는다. `guard brief.json 글.md`는 필수 표면, 숫자, URL,
+인라인 코드, 링크 목적지, 금지 표면, 길이와 hanlint error를 결정적으로 비교하며 글을 바꾸지 않는다.
+`contractSatisfied`는 이 표면 계약의 결과다. 원자 사실의 관계와 진실, 빠진 의미, 금지 주장의 바꿔 말하기,
+독자 효용과 자연스러움은 판정하지 않는다. guard 위반을 모델에게 자동 재작성시키지 않고 한 자리씩 원문과 대조한다.
+
 왜 이만큼만 고르는지는 `tests/_attempts/patchMemory`와 `tests/_attempts/operationMemory`가 소유한다. cue와 reader만 맞춘 첫 계약은 안전한
 성공이 일반 본보기 16/22, 선택 패치 14/22라 폐기했다. 원문 완전 일치 재생은 고정 9과제에서 일반 본보기
 3/9, 선택 패치 4/9였고 exact 세 건에서는 2승 0패 1무였다. 표본이 작으므로 유사 문장 전이는 제품 범위가

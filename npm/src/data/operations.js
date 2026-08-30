@@ -1,7 +1,7 @@
 // @ts-check
 /** 승인 고침에서 뜻을 추측하지 않고 재사용할 수 있는 표면 치환. 파이썬 data/operations.py와 같다. */
 
-const URL_PATTERN = /https?:\/\/[^\s)>]+/gu;
+const URL_PATTERN = /https?:\/\/[^\s)>\]]*[\p{L}\p{N}_/#=%&+~-]/gu;
 const NUMBER_PATTERN = /(?<![A-Za-z가-힣])[-+]?\d+(?:[.,:]\d+)*(?:%|[가-힣]+)?/gu;
 const LATIN_PATTERN = /(?<![A-Za-z0-9_])(?:[A-Za-z_][A-Za-z0-9_.:/<>-]*)(?![A-Za-z0-9_])/gu;
 const PATH_PATTERN = /(?<!\w)(?:[\w.-]+\/)+[\w.-]+|(?<!\w)[\w-]+\.[A-Za-z0-9]{1,8}(?!\w)/gu;

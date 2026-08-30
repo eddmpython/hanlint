@@ -40,6 +40,16 @@ def testExtractionRejectsMeaningAndProtectedFactChanges():
     assert protectedAtoms("v2의 `run`은 https://a.example/x.py를 씁니다.")
 
 
+def testProtectedUrlStopsBeforeAMarkdownLinkBoundary():
+    atoms = protectedAtoms("[https://a.example/x](https://a.example/x)")
+    assert atoms.count("url:https://a.example/x") == 2
+    assert "link:https://a.example/x" in atoms
+
+
+def testProtectedUrlDoesNotConsumeSentencePunctuation():
+    assert "url:https://a.example" in protectedAtoms("주소는 https://a.example.")
+
+
 def testSelectionRequiresOneApplicableConfiguredOperation():
     first = renderOperation()
     second = SurfaceOperation("결과입니다", "결괏값입니다", ("docs",))

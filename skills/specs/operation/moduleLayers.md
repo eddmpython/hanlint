@@ -29,7 +29,7 @@ status: curated
 | `analysis` | 표층 분석 (문장 분리, 어절 판정) 과 어절 판정과 무관한 한국어 형태 층 (grammar). 문서 모델을 모른다 | config, data |
 | `fingerprint` | 문장·문단·절·글 지문. 사전 매치 포함 | document, analysis, config, data |
 | `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint 와 그 아래 |
-| `report`, `edit`, `coverage`, `baseline`, `learn` | Finding 과 지문을 보고서, 파일, 고침 후보로 옮기는 다섯 층. 서로 import 하지 않는다 | rules, audit, profile 과 그 아래 |
+| `report`, `edit`, `coverage`, `baseline`, `learn`, `guard` | Finding 과 지문을 보고서, 파일, 고침 후보, 사실 계약 결과로 옮기는 여섯 층. 서로 import 하지 않는다 | rules, audit, profile 과 그 아래 |
 | `cli` | 명령 | 전부 |
 
 npm 구현 (`npm/src/`) 은 같은 폴더와 같은 순위를 거울처럼 따르고 같은 게이트가 import 방향을 본다. npm 에만
@@ -38,7 +38,7 @@ npm 구현 (`npm/src/`) 은 같은 폴더와 같은 순위를 거울처럼 따�
 
 `src/hanlint/__init__.py` 는 층이 아니라 공개 표면이다. report 와 rules 와 fingerprint 를 모아 `lintText`,
 `lintFile`, `auditText`, `auditFile`, `fingerprint`, `learnText`, `writingPacket`, `Finding`, `Config`,
-`ruleNames` 를 낸다. 패키지 밖에서 deep-path 를 import 하게 두지 않는다.
+`ruleNames`, `WritingBrief`, `guardText`, `guardFile` 을 낸다. 패키지 밖에서 deep-path 를 import 하게 두지 않는다.
 
 ## 규칙 파일의 격리
 

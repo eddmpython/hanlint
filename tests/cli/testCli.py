@@ -150,6 +150,80 @@ def testPacketWritesDeterministicAiContract(tmp_path, capsys):
     assert "보장하지 않" in data["verify"]["meaning"]
 
 
+def testPacketCompilesStructuredBriefWithoutDiagnosticEvidence(tmp_path, capsys):
+    briefData = {
+        "version": 1,
+        "preset": "docs",
+        "reader": "처음 쓰는 작성자",
+        "task": "명령을 실행한다",
+        "facts": [{"id": "F1", "statement": "명령은 `mora check`이고 종료 코드는 0이다."}],
+        "mustInclude": ["`mora check`", "종료 코드는 0"],
+        "allowedNumbers": ["0"],
+        "forbidden": [],
+        "length": {"min": 100, "max": 300},
+    }
+    brief = write(tmp_path, "brief.json", json.dumps(briefData, ensure_ascii=False))
+    assert main(["packet", str(brief), "--purpose", "draft"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["input"]["brief"] == briefData and "comparison" not in data
+    assert data["verify"]["argv"][:3] == ["hanlint", "guard", str(brief)]
+    assert main(["packet", str(brief), "--purpose", "revise"]) == 2
+    assert "purpose draft" in capsys.readouterr().err
+    assert main(["packet", str(brief), "--purpose", "draft", "--disable", "없는규칙"]) == 2
+    assert "모르는 규칙 이름" in capsys.readouterr().err
+
+
+def testStructuredPacketCarriesItsGuardConfiguration(tmp_path, capsys):
+    briefData = {
+        "version": 1,
+        "preset": "docs",
+        "reader": "처음 쓰는 작성자",
+        "task": "값을 설명한다",
+        "facts": [{"id": "F1", "statement": "값은 0이다."}],
+        "mustInclude": ["값은 0"],
+        "allowedNumbers": ["0"],
+        "forbidden": [],
+        "length": {"min": 30, "max": 100},
+    }
+    brief = write(tmp_path, "brief.json", json.dumps(briefData, ensure_ascii=False))
+    config = write(tmp_path, "custom.toml", 'disable = ["translationese"]\n')
+    assert main(["packet", str(brief), "--purpose", "draft", "--config", str(config), "--disable", "fillerOpener"]) == 0
+    argv = json.loads(capsys.readouterr().out)["verify"]["argv"]
+    assert argv[-4:] == ["--config", str(config), "--disable", "fillerOpener"]
+
+
+def testGuardExitCodesJsonAndPresetConflict(tmp_path, capsys):
+    briefData = {
+        "version": 1,
+        "preset": "report",
+        "reader": "결정할 운영자",
+        "task": "관찰값을 읽고 다음 조치를 고른다",
+        "facts": [
+            {"id": "F1", "statement": "해솔 계획은 2026년 8월 31일 시작한다."},
+            {"id": "F2", "statement": "예산은 380,000원이다."},
+        ],
+        "mustInclude": ["해솔 계획", "380,000원"],
+        "allowedNumbers": ["2026", "8", "31", "380000"],
+        "forbidden": ["효과가 입증됐다"],
+        "length": {"min": 50, "max": 300},
+    }
+    brief = write(tmp_path, "brief.json", json.dumps(briefData, ensure_ascii=False))
+    good = write(
+        tmp_path,
+        "good.md",
+        "# 운영 결정\n\n해솔 계획은 2026년 8월 31일 시작하며 예산은 380,000원이다. 이 자료로 다음 관찰을 결정한다.\n",
+    )
+    assert main(["guard", str(brief), str(good), "--format", "json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["contractSatisfied"] and "보장하지 않는다" in data["meaning"]
+    bad = write(tmp_path, "bad.md", "해솔 계획은 2026년 9월에 시작한다. 효과가 입증됐다.\n")
+    assert main(["guard", str(brief), str(bad)]) == 1
+    output = capsys.readouterr().out
+    assert "표면 계약 위반" in output and "요구 밖 숫자: 9" in output
+    assert main(["guard", str(brief), str(good), "--preset", "blog"]) == 2
+    assert "brief preset report" in capsys.readouterr().err
+
+
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     mixed = write(tmp_path, "mixed.md", MIXED)
     assert main([str(mixed), "--format", "compact", "--quiet"]) == 1

@@ -144,6 +144,38 @@ hanlint packet 요구.md --purpose draft --preset docs
 hanlint packet 초안.md --purpose revise --output packet.json
 ```
 
+사실과 수치가 중요한 새 글은 자유 형식 요구 대신 [writing brief 스키마](src/hanlint/data/writingBrief.schema.json)를
+쓴다. 원자 사실의 `id`는 대조용이고 글에는 나오지 않는다. `allowedNumbers`에는 reader, task, facts에
+있는 숫자를 천 단위 쉼표 없이 모두 적는다.
+
+```json
+{
+  "version": 1,
+  "preset": "docs",
+  "reader": "처음 쓰는 작성자",
+  "task": "명령을 실행하고 종료 코드를 해석한다",
+  "facts": [
+    { "id": "F1", "statement": "명령은 `mora check`이고 종료 코드는 0이다." }
+  ],
+  "mustInclude": ["`mora check`", "종료 코드는 0"],
+  "allowedNumbers": ["0"],
+  "forbidden": ["자동으로 고친다"],
+  "length": { "min": 100, "max": 300 }
+}
+```
+
+```console
+hanlint packet brief.json --purpose draft --output packet.json
+hanlint guard brief.json 초안.md
+```
+
+구조화 draft 패킷에는 `comparison`이 없다. brief만 사실 재료로 전달한다. `guard`는 빠진 필수 표면,
+요구 밖 숫자·URL·코드·링크 목적지, 금지 표면, 마크다운 원문의 글자 수와 hanlint error를 보고하고 글을 바꾸지 않는다.
+종료 코드 0은 이 표면 계약을 충족했다는 뜻이고 1은 위반이 있다는 뜻이다. 사실 관계와 진실, 빠진 의미,
+금지 주장의 바꿔 말하기, 독자 효용과 자연스러움은 여전히 사람이나 별도 평가가 확인한다.
+최종 구조화 패킷으로 일곱 종류를 한 번씩 생성한 탐침에서는 사실 표면 6/7, 길이 1/7, error 0은 3/7,
+전체 자동 계약은 1/7이었다. guard는 나머지 여섯 결과를 막았지만 생성 품질 향상을 입증하지는 않았다.
+
 실행 절차는 [write-korean 스킬](skills/write-korean/SKILL.md)에 있다. 원문 전문을 JSON에 넣지 않으려면
 `--no-source`를 붙인다.
 
@@ -463,6 +495,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 |
 | `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
+| `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 |
 | `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 |

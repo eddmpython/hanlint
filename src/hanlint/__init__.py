@@ -3,12 +3,13 @@
 공개 표면은 이 파일 한 곳이다.
 
 ```python
-from hanlint import auditText, fingerprint, lintFile, lintText, writingPacket
+from hanlint import auditText, fingerprint, guardText, lintFile, lintText, writingPacket
 
 findings = lintFile("글.md")       # list[Finding]
 shape = auditText(text)            # AuditResult. 점수 없이 분포와 자리
 prints = fingerprint(text)         # DocumentPrint. 지문 그대로
 packet = writingPacket(text)       # 초안과 대조 자료와 고침 근거
+guard = guardText(brief, text)     # 구조화 요구와 결과의 결정적 표면 계약
 ```
 
 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이지 좋은
@@ -20,28 +21,35 @@ from __future__ import annotations
 from pathlib import Path
 
 from .audit import AuditResult, auditDocument
-from .config import Config, loadConfig
+from .config import AtomicFact, Config, WritingBrief, loadConfig, loadWritingBrief
 from .document import parseMarkdown
 from .fingerprint import DocumentPrint, buildFingerprint
+from .guard import GuardResult, guardFile, guardText
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
-from .report import buildWritingPacket
+from .report import buildBriefWritingPacket, buildWritingPacket
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
     "AuditResult",
+    "AtomicFact",
     "Config",
     "DocumentPrint",
     "Finding",
+    "GuardResult",
     "LearnedExemplar",
     "LearnedOperation",
+    "WritingBrief",
     "auditFile",
     "auditText",
     "fingerprint",
+    "guardFile",
+    "guardText",
     "lintFile",
     "lintText",
     "learnText",
     "learnOperationText",
     "loadConfig",
+    "loadWritingBrief",
     "ruleDoc",
     "ruleNames",
     "ruleSummary",
@@ -83,13 +91,21 @@ def learnOperationText(before: str, after: str, config: Config | None = None) ->
 
 
 def writingPacket(
-    text: str,
+    text: str | WritingBrief | dict,
     config: Config | None = None,
     path: str | None = None,
     purpose: str = "revise",
     includeSource: bool = True,
 ) -> dict:
     """초안과 지문과 대조 자료와 고침 근거를 AI용 결정적 계약으로 묶는다."""
+    if isinstance(text, dict):
+        text = WritingBrief.fromMapping(text)
+    if isinstance(text, WritingBrief):
+        if purpose != "draft":
+            raise ValueError("구조화 writing brief 는 purpose draft 에서만 쓴다")
+        return buildBriefWritingPacket(text, path, includeSource)
+    if not isinstance(text, str):
+        raise ValueError("writingPacket 입력은 문자열, WritingBrief 또는 brief JSON 객체다")
     config = config or Config()
     doc = fingerprint(text, config, path)
     findings = runAll(doc, config)
