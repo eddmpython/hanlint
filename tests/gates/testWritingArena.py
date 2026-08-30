@@ -58,6 +58,7 @@ def testWritingArenaSchemasProjectButProtocolFixtureDoesNot():
     assert {
         "panelTrialSet.schema.json",
         "panelReviewBatch.schema.json",
+        "panelAssignmentReview.schema.json",
         "panelJudgePredictions.schema.json",
     } <= set(projected)
 

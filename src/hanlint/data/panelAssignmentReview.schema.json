@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/panelAssignmentReview.schema.json",
+  "title": "hanlint writing arena assigned human review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "assignmentSha256", "evaluator", "reviews"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.panelAssignmentReview" },
+    "assignmentSha256": { "$ref": "#/$defs/sha256" },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "group", "protocolRevision"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^\\S(?:.*\\S)?$",
+          "not": { "const": "<required>" }
+        },
+        "group": {
+          "enum": ["targetReader", "professionalEditor", "koreanExpert", "generalReader"]
+        },
+        "protocolRevision": { "const": "hanlint.writingArena.panel.v1" }
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["caseId", "assignmentCaseSha256", "contentChecks", "preferences", "reasons"],
+        "properties": {
+          "caseId": { "type": "string", "minLength": 1 },
+          "assignmentCaseSha256": { "$ref": "#/$defs/sha256" },
+          "contentChecks": { "$ref": "#/$defs/contentChecks" },
+          "preferences": { "$ref": "#/$defs/preferences" },
+          "reasons": { "$ref": "#/$defs/reasons" }
+        },
+        "allOf": [
+          {
+            "if": {
+              "not": {
+                "properties": {
+                  "contentChecks": {
+                    "properties": {
+                      "left": { "const": "pass" },
+                      "right": { "const": "pass" }
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "preferences": {
+                  "properties": {
+                    "naturalness": { "const": "cannotJudge" },
+                    "clarity": { "const": "cannotJudge" },
+                    "taskUtility": { "const": "cannotJudge" },
+                    "voice": { "const": "cannotJudge" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "contentChoice": { "enum": ["pass", "fail", "cannotJudge"] },
+    "preferenceChoice": { "enum": ["left", "right", "tie", "cannotJudge"] },
+    "contentChecks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["left", "right"],
+      "properties": {
+        "left": { "$ref": "#/$defs/contentChoice" },
+        "right": { "$ref": "#/$defs/contentChoice" }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["naturalness", "clarity", "taskUtility", "voice"],
+      "properties": {
+        "naturalness": { "$ref": "#/$defs/preferenceChoice" },
+        "clarity": { "$ref": "#/$defs/preferenceChoice" },
+        "taskUtility": { "$ref": "#/$defs/preferenceChoice" },
+        "voice": { "$ref": "#/$defs/preferenceChoice" }
+      }
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "not": { "const": "<required>" }
+    },
+    "reasons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content", "naturalness", "clarity", "taskUtility", "voice"],
+      "properties": {
+        "content": { "$ref": "#/$defs/reason" },
+        "naturalness": { "$ref": "#/$defs/reason" },
+        "clarity": { "$ref": "#/$defs/reason" },
+        "taskUtility": { "$ref": "#/$defs/reason" },
+        "voice": { "$ref": "#/$defs/reason" }
+      }
+    }
+  }
+}

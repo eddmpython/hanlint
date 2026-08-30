@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
 
@@ -483,6 +484,82 @@ def testWritingArenaPanelAndJudgeWorkflow(tmp_path):
     )
     evaluation = json.loads(evaluationPath.read_text(encoding="utf-8"))
     assert evaluation["preferences"]["naturalness"]["selectedAccuracy"] == 1.0
+
+
+def testWritingArenaOfflineReviewPageAndAssignmentImport(tmp_path):
+    root = Path(__file__).resolve().parents[2]
+    trialSet = root / "src" / "hanlint" / "data" / "writingArenaPilotV1.json"
+    suitePath = tmp_path / "suite.json"
+    assert main(["arena", "panel", str(trialSet), "--seed", "77", "--output", str(suitePath)]) == 0
+    assignmentPath = tmp_path / "assignment.json"
+    assert (
+        main(
+            [
+                "arena",
+                "assign",
+                str(suitePath),
+                "--evaluator-id",
+                "offline-reviewer-1",
+                "--group",
+                "targetReader",
+                "--output",
+                str(assignmentPath),
+            ]
+        )
+        == 0
+    )
+    assignment = json.loads(assignmentPath.read_text(encoding="utf-8"))
+    assert len(assignment["cases"]) == 7 and "candidate" not in assignmentPath.read_text(encoding="utf-8")
+    htmlPath = tmp_path / "review.html"
+    assert (
+        main(
+            [
+                "arena",
+                "review-page",
+                str(suitePath),
+                str(assignmentPath),
+                "--output",
+                str(htmlPath),
+            ]
+        )
+        == 0
+    )
+    html = htmlPath.read_text(encoding="utf-8")
+    assert html.startswith("<!doctype html>") and "브라우저 안에만 임시 저장" in html
+    raw = deepcopy(assignment["reviewTemplate"])
+    for review in raw["reviews"]:
+        review["contentChecks"] = {"left": "pass", "right": "pass"}
+        review["preferences"] = {
+            "naturalness": "tie",
+            "clarity": "tie",
+            "taskUtility": "tie",
+            "voice": "cannotJudge",
+        }
+        review["reasons"] = {
+            "content": "사실과 숫자를 좌우 글에 각각 대조했다.",
+            "naturalness": "두 글의 흐름 차이가 크지 않다고 보았다.",
+            "clarity": "대상과 행동이 두 글에서 모두 분명했다.",
+            "taskUtility": "독자가 두 글로 같은 과업을 끝낼 수 있다.",
+            "voice": "목소리 표본이 없어 판단하지 않았다.",
+        }
+    reviewPath = write(tmp_path, "assignment-review.json", json.dumps(raw, ensure_ascii=False))
+    recordedPath = tmp_path / "recorded.json"
+    assert (
+        main(
+            [
+                "arena",
+                "assignment-record",
+                str(suitePath),
+                str(assignmentPath),
+                str(reviewPath),
+                "--output",
+                str(recordedPath),
+            ]
+        )
+        == 0
+    )
+    recorded = json.loads(recordedPath.read_text(encoding="utf-8"))
+    assert recorded["evaluator"]["id"] == "offline-reviewer-1" and len(recorded["reviews"]) == 7
 
 
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):

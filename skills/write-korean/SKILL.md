@@ -160,12 +160,20 @@ SHA256을 고정하고 같은 후보 전략 trial을 `panelTrialSet.schema.json`
 
 ```powershell
 hanlint arena panel trial-set.json --seed 42 --output suite.json
-hanlint arena panel-record suite.json reviewer-1.json --output recorded-1.json
-hanlint arena panel-record suite.json reviewer-2.json --output recorded-2.json
-hanlint arena panel-record suite.json reviewer-3.json --output recorded-3.json
+hanlint arena assign suite.json --evaluator-id reviewer-a --group targetReader --output assignment-a.json
+hanlint arena review-page suite.json assignment-a.json --output review-a.html
+hanlint arena assignment-record suite.json assignment-a.json review-a.json --output recorded-a.json
 hanlint arena panel-adjudicate suite.json recorded-1.json recorded-2.json recorded-3.json --output adjudication.json
 hanlint arena panel-reveal trial-set.json suite.json adjudication.json --output result.json
 ```
+
+최소 세 평가자마다 다른 가명과 실제 역할에 맞는 group으로 `assign`과 `review-page`를 한 번씩 실행한다.
+운영자는 assignment를 보관하고 평가자에게는 해당 HTML만 보낸다. 가명에 이름, 이메일이나 조직 식별자를
+넣지 않는다. 평가자는 독자·과업·사실과 두 글만 보고 content를 먼저 고른다. 화면이 목소리 표본 없는
+voice를 기권으로 잠그고 모든 판정과 근거가 끝났을 때만 검토 JSON을 만든다. 검토 JSON을 회수하면 해당
+assignment와 함께 `assignment-record`에 넣는다. 세 평가가 모두 회수될 때까지 후보 정체성, 내부 좌우와
+다른 평가자의 선택을 공개하지 않는다. 브라우저 임시 저장은 전송되지 않지만 공용 기기에서는 JSON을
+내보낸 뒤 화면에서 지운다. HTML과 schema는 사람의 선택을 미리 채우거나 대신 만들지 않는다.
 
 한쪽이 guard를 어기면 자연스러움 선호와 섞지 않고 자동 안전 결과로 끝낸다. 둘 다 충족한 경우에만
 전략과 모델을 모르는 평가자 최소 세 명이 content를 먼저 확인한 뒤 자연스러움, 명료성, 독자 과업과

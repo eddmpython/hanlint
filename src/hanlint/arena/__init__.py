@@ -432,3 +432,23 @@ __all__ += [
     "revealPanel",
     "summarizePanelJudgeConsistency",
 ]
+
+from .review import (  # noqa: E402
+    ASSIGNMENT_KIND,
+    ASSIGNMENT_REVIEW_KIND,
+    checkedPanelAssignment,
+    preparePanelAssignment,
+    preparePanelReviewHtml,
+    recordPanelAssignmentReview,
+    renderPanelReviewHtml,
+)
+
+__all__ += [
+    "ASSIGNMENT_KIND",
+    "ASSIGNMENT_REVIEW_KIND",
+    "checkedPanelAssignment",
+    "preparePanelAssignment",
+    "preparePanelReviewHtml",
+    "recordPanelAssignmentReview",
+    "renderPanelReviewHtml",
+]

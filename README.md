@@ -242,7 +242,9 @@ hanlint packet brief.json --purpose draft --strategy rhetoricalBlueprintV1 --out
 
 ```console
 hanlint arena panel trial-set.json --seed 42 --output suite.json
-hanlint arena panel-record suite.json reviewer-1.json --output recorded-1.json
+hanlint arena assign suite.json --evaluator-id reviewer-a --group targetReader --output assignment-a.json
+hanlint arena review-page suite.json assignment-a.json --output review-a.html
+hanlint arena assignment-record suite.json assignment-a.json review-a.json --output recorded-a.json
 hanlint arena panel-adjudicate suite.json recorded-1.json recorded-2.json recorded-3.json --output adjudication.json
 hanlint arena panel-reveal trial-set.json suite.json adjudication.json --output result.json
 hanlint arena judge-cases suite.json --output judge-cases.json
@@ -255,6 +257,16 @@ hanlint arena judge-evaluate suite.json adjudication.json judge-cases.json predi
 보인다. 평가자는 좌우 content를 먼저 확인하고 자연스러움, 명료성, 독자 과업과 목소리를 따로 고른다.
 목소리 표본이 없으면 기권한다. 최소 세 명의 독립 batch에서 엄격 다수, 차원별 Krippendorff alpha,
 장르별 결과와 5,000회 bootstrap 구간을 낸다. 합성 품질 점수는 없다.
+
+`assign`은 평가자 가명과 suite 해시에서 사례별 좌우를 고정하되 어느 쪽을 바꿨는지 적지 않는다.
+운영자는 `assignment.json`을 검증 입력으로 삼아 `review.html`을 만들고 평가자에게는 HTML만 보낸다.
+HTML은 외부 스크립트와 네트워크 요청이 없는 단일 파일이다. 입력은 평가자가 연 브라우저에만 임시 저장되고,
+content를 끝내기 전에는 선호를 고를 수 없으며 목소리 표본이 없으면 voice가 `cannotJudge`로 잠긴다.
+평가자는 모든 판정과 근거를 채워 `review.json`을 저장한다. 이름이나 이메일 대신 연구 안에서만 쓰는 가명을
+사용하고 공용 기기에서는 내보낸 뒤 화면의 임시 저장 지우기를 누른다. 운영자는 `assignment-record`로
+배정 해시와 누락·변조를 검사하고 좌우를 원래 suite 방향으로 되돌린다. 세 평가가 모두 회수되기 전에는
+서로의 JSON이나 후보 정체성을 공개하지 않는다. [내보내기 schema](src/hanlint/data/panelAssignmentReview.schema.json)는
+파일 형식만 확인하며 사람의 판단을 대신 만들지 않는다.
 
 자동 심사기는 같은 쌍을 두 좌우 순서로 받고, 선택이 일치하지 않으면 기권한다. 사람 합의가 없을 때는
 위치 일관성과 사용 가능 범위만 계산한다. 합의가 생긴 뒤에만 정확도, macro F1, coverage, confusion,
@@ -595,7 +607,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 판·인용 조각 해시·라이선스를 검증한다. Python 판 전용 |
 | `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류·기권 지표를 집계한다. Python 판 전용 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
-| `hanlint arena panel ...` | 같은 사실의 기준과 후보를 다중 사람 패널로 눈가림 평가하고 합의·불일치·구간을 낸다. Python 판 전용 |
+| `hanlint arena panel / assign / review-page / assignment-record` | 같은 사실의 기준과 후보를 평가자별 단일 HTML로 눈가림하고, 회수한 독립 평가를 원래 방향으로 잠근다. Python 판 전용 |
 | `hanlint arena judge-cases / judge-consistency / judge-evaluate` | 자동 심사기의 좌우 위치 편향을 먼저 재고 사람 합의가 있을 때만 정확도와 calibration을 낸다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 |

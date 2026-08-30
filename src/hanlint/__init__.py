@@ -6,7 +6,8 @@
 from hanlint import (
     auditText, entailmentCases, evaluateEntailment, evidenceLedger, fingerprint,
     guardText, lintFile, lintText, rhetoricalBlueprint, writingPacket,
-    loadPanelTrialSet, preparePanelSuite, summarizePanelJudgeConsistency,
+    loadPanelTrialSet, preparePanelAssignment, preparePanelReviewHtml,
+    preparePanelSuite, recordPanelAssignmentReview, summarizePanelJudgeConsistency,
 )
 
 findings = lintFile("글.md")       # list[Finding]
@@ -20,6 +21,8 @@ cases = entailmentCases()           # gold를 뺀 사람 합의 한국어 근거
 metrics = evaluateEntailment(predictions)  # 외부 평가기 예측과 기권 집계
 trialSet = loadPanelTrialSet("trial-set.json")
 suite = preparePanelSuite(trialSet["trials"], trialSet["studyId"], 42)
+assignment = preparePanelAssignment(suite, "reviewer-a", "targetReader")
+page = preparePanelReviewHtml(suite, "reviewer-a", "targetReader")
 ```
 
 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이지 좋은
@@ -31,6 +34,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from .arena import (
+    ASSIGNMENT_KIND,
+    ASSIGNMENT_REVIEW_KIND,
     CONTENT_CHOICES,
     EVALUATOR_GROUPS,
     PANEL_DIMENSIONS,
@@ -45,16 +50,21 @@ from .arena import (
     aggregateResults,
     checkedAdjudication,
     checkedJudgePredictions,
+    checkedPanelAssignment,
     checkedPanelSuite,
     checkedPanelTrialSet,
     evaluatePanelJudge,
     loadPanelTrialSet,
     prepareBlind,
+    preparePanelAssignment,
     preparePanelJudgeCases,
+    preparePanelReviewHtml,
     preparePanelSuite,
     preparePanelTrialSet,
     recordEvaluation,
+    recordPanelAssignmentReview,
     recordPanelReviewBatch,
+    renderPanelReviewHtml,
     revealPanel,
     revealTrial,
     summarizePanelJudgeConsistency,
@@ -78,6 +88,8 @@ from .report import buildBriefWritingPacket, buildWritingPacket
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
+    "ASSIGNMENT_KIND",
+    "ASSIGNMENT_REVIEW_KIND",
     "AuditResult",
     "AtomicFact",
     "BlindEvaluation",
@@ -112,6 +124,7 @@ __all__ = [
     "checkedAdjudication",
     "checkedJudgePredictions",
     "checkedPanelSuite",
+    "checkedPanelAssignment",
     "checkedPanelTrialSet",
     "evidenceLedger",
     "entailmentCases",
@@ -129,11 +142,15 @@ __all__ = [
     "loadWritingBrief",
     "prepareBlind",
     "preparePanelJudgeCases",
+    "preparePanelAssignment",
+    "preparePanelReviewHtml",
     "preparePanelSuite",
     "preparePanelTrialSet",
     "recordEvaluation",
     "recordPanelReviewBatch",
+    "recordPanelAssignmentReview",
     "revealPanel",
+    "renderPanelReviewHtml",
     "summarizePanelJudgeConsistency",
     "rhetoricalBlueprint",
     "revealTrial",

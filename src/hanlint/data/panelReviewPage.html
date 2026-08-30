@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>hanlint 눈가림 글 평가</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #5b6774;
+      --paper: #ffffff;
+      --canvas: #f1f4f7;
+      --line: #cbd3dc;
+      --accent: #0a5c4b;
+      --accentDark: #06483b;
+      --accentSoft: #dff3ed;
+      --warning: #8a4b08;
+      --warningSoft: #fff2d8;
+      --focus: #9d4edd;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); line-height: 1.55; }
+    button, input, textarea, select { font: inherit; }
+    button, select { min-height: 44px; }
+    button { border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); padding: 8px 14px; cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    button.primary { background: var(--accent); border-color: var(--accent); color: white; font-weight: 700; }
+    button.primary:hover { background: var(--accentDark); }
+    button:disabled { cursor: not-allowed; opacity: 0.55; }
+    .skip { position: absolute; left: -9999px; top: 0; background: var(--ink); color: white; padding: 10px; z-index: 10; }
+    .skip:focus { left: 12px; top: 12px; }
+    header { background: #102a35; color: white; padding: 20px clamp(18px, 4vw, 52px); }
+    header h1 { margin: 0; font-size: clamp(22px, 4vw, 34px); letter-spacing: -0.03em; }
+    header p { margin: 8px 0 0; max-width: 860px; color: #d7e8ea; }
+    .topMeta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; font-size: 14px; }
+    .topMeta span { background: #1b404b; border-radius: 999px; padding: 5px 10px; }
+    .layout { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: 22px; max-width: 1500px; margin: 0 auto; padding: 22px; }
+    aside { align-self: start; position: sticky; top: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    aside h2 { font-size: 16px; margin: 0 0 10px; }
+    .progressTrack { height: 10px; border-radius: 999px; background: #e3e7eb; overflow: hidden; }
+    .progressBar { height: 100%; width: 0; background: var(--accent); transition: width 180ms ease; }
+    .progressText { margin: 8px 0 14px; color: var(--muted); font-size: 14px; }
+    .caseNav { display: grid; grid-template-columns: repeat(4, minmax(44px, 1fr)); gap: 7px; }
+    .caseNav button { padding: 6px; }
+    .caseNav button[aria-current="step"] { border: 2px solid var(--accent); background: var(--accentSoft); font-weight: 700; }
+    .caseNav button.complete::after { content: " ✓"; color: var(--accent); }
+    .privacy { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; color: var(--muted); font-size: 13px; }
+    main { min-width: 0; }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: clamp(18px, 3vw, 30px); margin-bottom: 18px; box-shadow: 0 5px 18px #21354710; }
+    .eyebrow { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
+    h2, h3 { letter-spacing: -0.02em; }
+    #caseHeading { margin: 4px 0 14px; }
+    .contextGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .contextItem { background: #f6f8fa; border-radius: 8px; padding: 12px; }
+    .contextItem strong { display: block; color: var(--muted); font-size: 13px; margin-bottom: 4px; }
+    .contextItem pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; }
+    .facts { grid-column: 1 / -1; }
+    .facts ol { margin: 6px 0 0; padding-left: 24px; }
+    .comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .draft { border: 2px solid #bcc7d1; border-radius: 10px; overflow: hidden; }
+    .draft h3 { margin: 0; padding: 10px 14px; background: #eef2f5; font-size: 16px; }
+    .draft pre { margin: 0; padding: 18px; white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; line-height: 1.75; min-height: 190px; }
+    .rubric { border-left: 5px solid var(--accent); }
+    .rubric details + details { margin-top: 8px; }
+    .rubric summary { cursor: pointer; font-weight: 700; }
+    fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 0 0 14px; }
+    fieldset:disabled { background: #f3f5f7; }
+    legend { font-weight: 700; padding: 0 6px; }
+    .choiceRow { display: flex; flex-wrap: wrap; gap: 9px; }
+    .choice { position: relative; }
+    .choice input { position: absolute; opacity: 0; pointer-events: none; }
+    .choice span { display: inline-flex; align-items: center; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 13px; background: white; }
+    .choice input:checked + span { background: var(--accentSoft); border: 2px solid var(--accent); color: var(--accentDark); font-weight: 700; }
+    .choice input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .choice input:disabled + span { background: #e7ebef; color: #66717c; }
+    .hint { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .contentWarning { display: none; background: var(--warningSoft); color: var(--warning); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+    .contentWarning.visible { display: block; }
+    .reasonGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .reasonGrid label { font-weight: 700; font-size: 14px; }
+    .reasonGrid textarea { display: block; width: 100%; min-height: 86px; resize: vertical; margin-top: 5px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: white; }
+    .wide { grid-column: 1 / -1; }
+    .actions { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .actionsGroup { display: flex; gap: 8px; flex-wrap: wrap; }
+    .status { min-height: 28px; margin: 0 0 10px; color: var(--warning); font-weight: 700; }
+    .exportPanel[hidden] { display: none; }
+    .exportPanel textarea { width: 100%; min-height: 260px; font-family: ui-monospace, monospace; font-size: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+    .download { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; border-radius: 8px; padding: 8px 14px; background: var(--accent); color: white; text-decoration: none; font-weight: 700; }
+    .noscript { margin: 20px; padding: 16px; background: #fff0f0; border: 2px solid #a40000; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; padding: 12px; }
+      aside { position: static; }
+      .comparison, .contextGrid, .reasonGrid { grid-template-columns: 1fr; }
+      .facts, .wide { grid-column: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#reviewMain">평가 본문으로 건너뛰기</a>
+  <header>
+    <h1>눈가림 글 평가</h1>
+    <p>작성자나 생성 방법을 추측하지 말고, 주어진 독자와 과업에서 두 글만 비교합니다. 다른 평가자의 선택은 보이지 않습니다.</p>
+    <div class="topMeta">
+      <span id="evaluatorMeta"></span>
+      <span id="suiteMeta"></span>
+      <span>브라우저 안에만 임시 저장</span>
+    </div>
+  </header>
+  <noscript><div class="noscript">이 평가 화면은 진행 저장과 JSON 내보내기에 JavaScript가 필요합니다.</div></noscript>
+  <div class="layout">
+    <aside aria-label="평가 진행">
+      <h2>진행</h2>
+      <div class="progressTrack" role="progressbar" aria-label="완료한 사례" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progressBar"></div>
+      </div>
+      <p class="progressText"></p>
+      <nav class="caseNav" aria-label="사례 이동"></nav>
+      <p class="privacy">입력은 서버로 전송되지 않습니다. 이 파일과 같은 브라우저에서만 진행 상태를 다시 불러옵니다. 공용 기기라면 내보낸 뒤 임시 저장을 지우세요.</p>
+    </aside>
+
+    <main id="reviewMain" tabindex="-1">
+      <section class="card" aria-labelledby="caseHeading">
+        <div class="eyebrow" id="casePosition"></div>
+        <h2 id="caseHeading" tabindex="-1"></h2>
+        <div class="contextGrid">
+          <div class="contextItem"><strong>독자</strong><span id="readerText"></span></div>
+          <div class="contextItem"><strong>과업</strong><span id="taskText"></span></div>
+          <div class="contextItem facts"><strong>확인할 원자 사실</strong><ol id="factList"></ol></div>
+          <div class="contextItem"><strong>반드시 들어갈 표면</strong><span id="mustText"></span></div>
+          <div class="contextItem"><strong>허용 수치</strong><span id="numberText"></span></div>
+          <div class="contextItem"><strong>금지 표면</strong><span id="forbiddenText"></span></div>
+          <div class="contextItem"><strong>길이 계약</strong><span id="lengthText"></span></div>
+          <div class="contextItem facts"><strong>목소리 표본</strong><pre id="voiceText"></pre></div>
+        </div>
+      </section>
+
+      <section class="card comparison" aria-label="두 글 비교">
+        <article class="draft" aria-labelledby="leftHeading"><h3 id="leftHeading">왼쪽 글</h3><pre id="leftText"></pre></article>
+        <article class="draft" aria-labelledby="rightHeading"><h3 id="rightHeading">오른쪽 글</h3><pre id="rightText"></pre></article>
+      </section>
+
+      <section class="card rubric" aria-labelledby="rubricHeading">
+        <h2 id="rubricHeading">판정 기준</h2>
+        <details open><summary>먼저 content를 확인합니다</summary><p id="contentRubric"></p></details>
+        <details><summary>네 선호 차원의 뜻</summary><div id="dimensionRubric"></div></details>
+      </section>
+
+      <section class="card" aria-labelledby="choiceHeading">
+        <h2 id="choiceHeading">이 사례 판정</h2>
+        <p class="contentWarning" role="note">content가 모두 pass가 아니므로 선호는 판단 불가로 기록됩니다.</p>
+        <div id="contentFields"></div>
+        <div id="preferenceFields"></div>
+        <h3>선택 근거</h3>
+        <p class="hint">각 근거는 어느 문장이나 관계를 보고 골랐는지 구체적으로 적습니다. 목소리 표본이 없으면 그 사실을 적습니다.</p>
+        <div class="reasonGrid" id="reasonFields"></div>
+      </section>
+
+      <section class="card" aria-label="이동과 내보내기">
+        <p class="status" role="status" aria-live="polite"></p>
+        <div class="actions">
+          <div class="actionsGroup">
+            <button type="button" id="previousButton">이전 사례</button>
+            <button type="button" id="nextButton">다음 사례</button>
+          </div>
+          <div class="actionsGroup">
+            <button type="button" id="clearButton">이 기기의 임시 저장 지우기</button>
+            <button type="button" class="primary" id="exportButton">검토 JSON 만들기</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card exportPanel" id="exportPanel" hidden aria-labelledby="exportHeading">
+        <h2 id="exportHeading" tabindex="-1">내보낼 JSON</h2>
+        <p>아래 내용을 파일로 저장한 뒤 평가 담당자에게 전달합니다. 글 생성 결과나 다른 사람의 평가는 들어 있지 않습니다.</p>
+        <textarea id="exportText" readonly aria-label="내보낼 panel assignment review JSON"></textarea>
+        <a class="download" id="downloadLink" download>JSON 파일 저장</a>
+      </section>
+    </main>
+  </div>
+
+  <script id="assignmentData" type="application/json">__HANLINT_ASSIGNMENT__</script>
+  <script>
+    "use strict";
+    const assignment = JSON.parse(document.getElementById("assignmentData").textContent);
+    const dimensionNames = {
+      naturalness: "자연스러움",
+      clarity: "명료성",
+      taskUtility: "독자 과업",
+      voice: "목소리 보존"
+    };
+    const genreNames = {
+      blog: "블로그",
+      report: "보고문",
+      docs: "기술 문서",
+      guide: "안내서",
+      essay: "수필",
+      fiction: "소설",
+      encyclopedia: "백과"
+    };
+    const groupNames = {
+      targetReader: "대상 독자",
+      professionalEditor: "전문 편집자",
+      koreanExpert: "한국어 전문가",
+      generalReader: "일반 독자"
+    };
+    const dimensions = Object.keys(dimensionNames);
+    const storageKey = `hanlint.panelReview.${assignment.assignmentSha256}`;
+    const emptyState = () => ({ currentIndex: 0, reviews: {} });
+    let state = emptyState();
+    let currentBlobUrl = null;
+
+    const byId = (id) => document.getElementById(id);
+    const status = byId("reviewMain").querySelector(".status");
+    const progressTrack = document.querySelector(".progressTrack");
+    const progressBar = document.querySelector(".progressBar");
+    const progressText = document.querySelector(".progressText");
+    const caseNav = document.querySelector(".caseNav");
+
+    function emptyReview(panelCase) {
+      return {
+        caseId: panelCase.caseId,
+        assignmentCaseSha256: panelCase.assignmentCaseSha256,
+        contentChecks: { left: "", right: "" },
+        preferences: { naturalness: "", clarity: "", taskUtility: "", voice: "" },
+        reasons: { content: "", naturalness: "", clarity: "", taskUtility: "", voice: "" }
+      };
+    }
+
+    function reviewFor(panelCase) {
+      if (!state.reviews[panelCase.caseId]) state.reviews[panelCase.caseId] = emptyReview(panelCase);
+      return state.reviews[panelCase.caseId];
+    }
+
+    function storedReviewValid(review, panelCase) {
+      const exactKeys = (value, keys) => value !== null
+        && typeof value === "object"
+        && !Array.isArray(value)
+        && Object.keys(value).length === keys.length
+        && keys.every((key) => Object.hasOwn(value, key));
+      return exactKeys(review, ["caseId", "assignmentCaseSha256", "contentChecks", "preferences", "reasons"])
+        && review.caseId === panelCase.caseId
+        && review.assignmentCaseSha256 === panelCase.assignmentCaseSha256
+        && exactKeys(review.contentChecks, ["left", "right"])
+        && dimensions.every((dimension) => Object.hasOwn(review.preferences || {}, dimension))
+        && Object.keys(review.preferences || {}).length === dimensions.length
+        && ["content", ...dimensions].every((name) => Object.hasOwn(review.reasons || {}, name))
+        && Object.keys(review.reasons || {}).length === dimensions.length + 1;
+    }
+
+    function loadState() {
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (!stored) return;
+        const parsed = JSON.parse(stored);
+        const casesById = Object.fromEntries(assignment.cases.map((panelCase) => [panelCase.caseId, panelCase]));
+        const reviewEntries = parsed.reviews !== null && typeof parsed.reviews === "object"
+          ? Object.entries(parsed.reviews)
+          : [];
+        const valid = Number.isInteger(parsed.currentIndex)
+          && reviewEntries.every(([caseId, review]) => casesById[caseId] && storedReviewValid(review, casesById[caseId]));
+        if (!valid) return;
+        state = parsed;
+      } catch (_error) {
+        state = emptyState();
+      }
+      state.currentIndex = Math.max(0, Math.min(assignment.cases.length - 1, state.currentIndex));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (_error) {
+        announce("브라우저 임시 저장을 사용할 수 없습니다. 내보내기 전에는 이 창을 닫지 마세요.");
+      }
+    }
+
+    function announce(message) {
+      status.textContent = message;
+    }
+
+    function makeChoice(groupName, value, labelText) {
+      const label = document.createElement("label");
+      label.className = "choice";
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = groupName;
+      input.value = value;
+      const span = document.createElement("span");
+      span.textContent = labelText;
+      label.append(input, span);
+      return label;
+    }
+
+    function buildFields() {
+      const contentFields = byId("contentFields");
+      for (const side of ["left", "right"]) {
+        const fieldset = document.createElement("fieldset");
+        fieldset.dataset.contentSide = side;
+        const legend = document.createElement("legend");
+        legend.textContent = `${side === "left" ? "왼쪽" : "오른쪽"} 글 content`;
+        const row = document.createElement("div");
+        row.className = "choiceRow";
+        row.append(
+          makeChoice(`content-${side}`, "pass", "pass"),
+          makeChoice(`content-${side}`, "fail", "fail"),
+          makeChoice(`content-${side}`, "cannotJudge", "판단 불가")
+        );
+        fieldset.append(legend, row);
+        contentFields.append(fieldset);
+      }
+
+      const preferenceFields = byId("preferenceFields");
+      for (const dimension of dimensions) {
+        const fieldset = document.createElement("fieldset");
+        fieldset.dataset.preferenceDimension = dimension;
+        const legend = document.createElement("legend");
+        legend.textContent = dimensionNames[dimension];
+        const row = document.createElement("div");
+        row.className = "choiceRow";
+        row.append(
+          makeChoice(`preference-${dimension}`, "left", "왼쪽"),
+          makeChoice(`preference-${dimension}`, "right", "오른쪽"),
+          makeChoice(`preference-${dimension}`, "tie", "무승부"),
+          makeChoice(`preference-${dimension}`, "cannotJudge", "판단 불가")
+        );
+        fieldset.append(legend, row);
+        if (dimension === "voice") {
+          const hint = document.createElement("p");
+          hint.className = "hint";
+          hint.id = "voiceChoiceHint";
+          fieldset.setAttribute("aria-describedby", hint.id);
+          fieldset.append(hint);
+        }
+        preferenceFields.append(fieldset);
+      }
+
+      const reasonFields = byId("reasonFields");
+      for (const name of ["content", ...dimensions]) {
+        const label = document.createElement("label");
+        if (name === "content") label.className = "wide";
+        label.textContent = name === "content" ? "content 근거" : `${dimensionNames[name]} 근거`;
+        const textarea = document.createElement("textarea");
+        textarea.dataset.reasonName = name;
+        textarea.required = true;
+        textarea.placeholder = "글의 구체적인 자리와 선택 이유를 적으세요";
+        label.append(textarea);
+        reasonFields.append(label);
+      }
+    }
+
+    function buildRubric() {
+      byId("contentRubric").textContent = assignment.rubric.contentCheck;
+      const holder = byId("dimensionRubric");
+      for (const dimension of dimensions) {
+        const paragraph = document.createElement("p");
+        const strong = document.createElement("strong");
+        strong.textContent = `${dimensionNames[dimension]}: `;
+        paragraph.append(strong, document.createTextNode(assignment.rubric.dimensions[dimension]));
+        holder.append(paragraph);
+      }
+    }
+
+    function buildNavigation() {
+      assignment.cases.forEach((panelCase, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = String(index + 1);
+        button.setAttribute("aria-label", `${index + 1}번째 사례`);
+        button.addEventListener("click", () => moveTo(index, false));
+        caseNav.append(button);
+        reviewFor(panelCase);
+      });
+    }
+
+    function setChecked(name, value) {
+      document.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
+        input.checked = input.value === value;
+      });
+    }
+
+    function setGroupDisabled(name, disabled) {
+      document.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
+        input.disabled = disabled;
+      });
+    }
+
+    function bothContentPass(review) {
+      return ["left", "right"].every((side) => review.contentChecks[side] === "pass");
+    }
+
+    function syncPreferenceRules(panelCase, review) {
+      const contentComplete = ["left", "right"].every((side) => review.contentChecks[side]);
+      const bothPass = contentComplete && bothContentPass(review);
+      document.querySelector(".contentWarning").classList.toggle("visible", contentComplete && !bothPass);
+      for (const dimension of dimensions) {
+        const voiceMissing = dimension === "voice" && panelCase.context.voiceReference === null;
+        if (dimension === "voice") {
+          byId("voiceChoiceHint").textContent = voiceMissing
+            ? "목소리 표본이 없어 판단 불가로 고정됩니다."
+            : "위에 제공된 목소리 표본과 두 글을 대조합니다.";
+        }
+        if (voiceMissing) {
+          review.preferences[dimension] = "cannotJudge";
+          setChecked(`preference-${dimension}`, "cannotJudge");
+          setGroupDisabled(`preference-${dimension}`, true);
+        } else if (!contentComplete) {
+          review.preferences[dimension] = "";
+          setChecked(`preference-${dimension}`, "");
+          setGroupDisabled(`preference-${dimension}`, true);
+        } else if (!bothPass) {
+          review.preferences[dimension] = "cannotJudge";
+          setChecked(`preference-${dimension}`, "cannotJudge");
+          setGroupDisabled(`preference-${dimension}`, true);
+        } else {
+          setChecked(`preference-${dimension}`, review.preferences[dimension]);
+          setGroupDisabled(`preference-${dimension}`, false);
+        }
+      }
+    }
+
+    function renderCase(focusHeading = false) {
+      const panelCase = assignment.cases[state.currentIndex];
+      const review = reviewFor(panelCase);
+      byId("casePosition").textContent = `${state.currentIndex + 1} / ${assignment.cases.length}`;
+      byId("caseHeading").textContent = `${genreNames[panelCase.context.genre] || panelCase.context.genre} 사례`;
+      byId("readerText").textContent = panelCase.context.reader;
+      byId("taskText").textContent = panelCase.context.task;
+      byId("mustText").textContent = panelCase.context.mustInclude.join(", ") || "없음";
+      byId("numberText").textContent = panelCase.context.allowedNumbers.join(", ") || "없음";
+      byId("forbiddenText").textContent = panelCase.context.forbidden.join(", ") || "없음";
+      byId("lengthText").textContent = `${panelCase.context.length.min}자 이상 ${panelCase.context.length.max}자 이하`;
+      byId("voiceText").textContent = panelCase.context.voiceReference
+        ? panelCase.context.voiceReference.text
+        : "제공되지 않음. 목소리 보존은 판단 불가로 기록됩니다.";
+      byId("leftText").textContent = panelCase.comparison.left;
+      byId("rightText").textContent = panelCase.comparison.right;
+      const factList = byId("factList");
+      factList.replaceChildren();
+      panelCase.context.facts.forEach((fact) => {
+        const item = document.createElement("li");
+        item.textContent = fact.statement;
+        factList.append(item);
+      });
+      for (const side of ["left", "right"]) setChecked(`content-${side}`, review.contentChecks[side]);
+      for (const dimension of dimensions) setChecked(`preference-${dimension}`, review.preferences[dimension]);
+      document.querySelectorAll("textarea[data-reason-name]").forEach((textarea) => {
+        textarea.value = review.reasons[textarea.dataset.reasonName] || "";
+      });
+      syncPreferenceRules(panelCase, review);
+      byId("previousButton").disabled = state.currentIndex === 0;
+      byId("nextButton").disabled = state.currentIndex === assignment.cases.length - 1;
+      updateProgress();
+      announce("");
+      if (focusHeading) byId("caseHeading").focus();
+    }
+
+    function reasonReady(value) {
+      return typeof value === "string" && value.trim().length > 0 && value.trim() !== "<required>";
+    }
+
+    function caseComplete(panelCase) {
+      const review = reviewFor(panelCase);
+      const contentComplete = ["left", "right"].every((side) => ["pass", "fail", "cannotJudge"].includes(review.contentChecks[side]));
+      if (!contentComplete) return false;
+      const bothPass = ["left", "right"].every((side) => review.contentChecks[side] === "pass");
+      const preferencesComplete = dimensions.every((dimension) => {
+        if (!bothPass) return review.preferences[dimension] === "cannotJudge";
+        if (dimension === "voice" && panelCase.context.voiceReference === null) return review.preferences[dimension] === "cannotJudge";
+        return ["left", "right", "tie", "cannotJudge"].includes(review.preferences[dimension]);
+      });
+      return preferencesComplete && ["content", ...dimensions].every((name) => reasonReady(review.reasons[name]));
+    }
+
+    function updateProgress() {
+      const complete = assignment.cases.filter(caseComplete).length;
+      const percent = assignment.cases.length ? Math.round(complete / assignment.cases.length * 100) : 0;
+      progressBar.style.width = `${percent}%`;
+      progressTrack.setAttribute("aria-valuenow", String(percent));
+      progressTrack.setAttribute("aria-valuetext", `${complete} / ${assignment.cases.length} 사례 완료`);
+      progressText.textContent = `${complete} / ${assignment.cases.length} 사례 완료`;
+      [...caseNav.children].forEach((button, index) => {
+        button.classList.toggle("complete", caseComplete(assignment.cases[index]));
+        if (index === state.currentIndex) button.setAttribute("aria-current", "step");
+        else button.removeAttribute("aria-current");
+      });
+    }
+
+    function moveTo(index, requireCurrent) {
+      const current = assignment.cases[state.currentIndex];
+      if (requireCurrent && !caseComplete(current)) {
+        announce("content, 네 선호와 다섯 근거를 모두 채운 뒤 다음 사례로 이동하세요.");
+        return;
+      }
+      state.currentIndex = Math.max(0, Math.min(assignment.cases.length - 1, index));
+      saveState();
+      renderCase(true);
+    }
+
+    function bindInputs() {
+      document.querySelectorAll("input[type=radio]").forEach((input) => {
+        input.addEventListener("change", () => {
+          const panelCase = assignment.cases[state.currentIndex];
+          const review = reviewFor(panelCase);
+          if (input.name.startsWith("content-")) {
+            const wasBothPass = bothContentPass(review);
+            review.contentChecks[input.name.slice(8)] = input.value;
+            if (!wasBothPass && bothContentPass(review)) {
+              for (const dimension of dimensions) review.preferences[dimension] = "";
+            }
+          }
+          if (input.name.startsWith("preference-")) review.preferences[input.name.slice(11)] = input.value;
+          syncPreferenceRules(panelCase, review);
+          saveState();
+          updateProgress();
+          announce("");
+        });
+      });
+      document.querySelectorAll("textarea[data-reason-name]").forEach((textarea) => {
+        textarea.addEventListener("input", () => {
+          const review = reviewFor(assignment.cases[state.currentIndex]);
+          review.reasons[textarea.dataset.reasonName] = textarea.value;
+          saveState();
+          updateProgress();
+        });
+      });
+    }
+
+    function exportPayload() {
+      return {
+        version: assignment.version,
+        kind: "hanlint.panelAssignmentReview",
+        assignmentSha256: assignment.assignmentSha256,
+        evaluator: assignment.evaluator,
+        reviews: assignment.cases.map((panelCase) => {
+          const review = reviewFor(panelCase);
+          return {
+            ...review,
+            reasons: Object.fromEntries(Object.entries(review.reasons).map(([name, value]) => [name, value.trim()]))
+          };
+        })
+      };
+    }
+
+    function showExport() {
+      const firstIncomplete = assignment.cases.findIndex((panelCase) => !caseComplete(panelCase));
+      if (firstIncomplete >= 0) {
+        moveTo(firstIncomplete, false);
+        announce(`${firstIncomplete + 1}번째 사례를 완성해야 JSON을 만들 수 있습니다.`);
+        return;
+      }
+      const rendered = JSON.stringify(exportPayload(), null, 2) + "\n";
+      byId("exportText").value = rendered;
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = URL.createObjectURL(new Blob([rendered], { type: "application/json;charset=utf-8" }));
+      const link = byId("downloadLink");
+      link.href = currentBlobUrl;
+      link.download = `hanlint-review-${assignment.assignmentSha256.slice(0, 12)}.json`;
+      byId("exportPanel").hidden = false;
+      byId("exportHeading").focus();
+      announce("모든 사례를 확인했습니다. JSON을 파일로 저장하세요.");
+    }
+
+    function clearSaved() {
+      if (!window.confirm("이 기기에 임시 저장한 모든 선택과 근거를 지울까요?")) return;
+      localStorage.removeItem(storageKey);
+      state = emptyState();
+      assignment.cases.forEach(reviewFor);
+      byId("exportPanel").hidden = true;
+      renderCase(true);
+      announce("이 기기의 임시 저장을 지웠습니다.");
+    }
+
+    function initialize() {
+      buildFields();
+      buildRubric();
+      buildNavigation();
+      bindInputs();
+      loadState();
+      assignment.cases.forEach(reviewFor);
+      byId("evaluatorMeta").textContent = `평가자 ${assignment.evaluator.id} · ${groupNames[assignment.evaluator.group]}`;
+      byId("suiteMeta").textContent = `${assignment.studyCode} · ${assignment.cases.length}개 사례`;
+      byId("previousButton").addEventListener("click", () => moveTo(state.currentIndex - 1, false));
+      byId("nextButton").addEventListener("click", () => moveTo(state.currentIndex + 1, true));
+      byId("exportButton").addEventListener("click", showExport);
+      byId("clearButton").addEventListener("click", clearSaved);
+      document.addEventListener("keydown", (event) => {
+        if (!event.altKey || (event.target instanceof Element && event.target.matches("textarea, input, select"))) return;
+        if (event.key === "ArrowLeft") moveTo(state.currentIndex - 1, false);
+        if (event.key === "ArrowRight") moveTo(state.currentIndex + 1, false);
+      });
+      window.addEventListener("beforeunload", () => {
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      });
+      renderCase(false);
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

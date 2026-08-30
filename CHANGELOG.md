@@ -16,7 +16,9 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   coverage, 선택 정확도와 calibration을 계산한다. 외부 원문과 품질 label이 없는 일곱 장르 fixture,
   JSON schema, Python API와 CLI를 함께 제공한다. `qwen3:8b` 실제 생성에서 독자 과업 절차는 자동 계약
   7/7로 일반 brief 3/7보다 안전했지만, 자동 심사기는 독자 과업 순서 일관성 0.5000에 그쳐 사람 선호나
-  자연스러움 향상으로 부르지 않는다
+  자연스러움 향상으로 부르지 않는다. 평가자별 결정적 assignment와 단일 오프라인 HTML은 후보 정체성,
+  내부 좌우 순서와 다른 평가를 숨기고 content 우선 판정, voice 기권, 브라우저 안 진행 저장과 검토 JSON
+  내보내기를 제공한다. 회수 단계는 배정 해시와 누락·변조를 거부하고 선택을 원래 suite 방향으로 복원한다
 - **사람 합의 근거 함의 벤치마크.** CC BY-SA 4.0 KLUE-NLI의 고정 dev 판에서 여섯 source와 세 label을
   균형 있게 뽑은 36개를 배포한다. `hanlint entailment cases`는 gold 없는 평가 입력을 내고 `evaluate`와
   Python API는 외부 평가기의 혼동행렬, macro F1, coverage, 선택 정확도, selective risk와

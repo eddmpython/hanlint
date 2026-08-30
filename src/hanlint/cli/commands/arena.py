@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from ...arena import (
+    EVALUATOR_GROUPS,
     adjudicatePanel,
     aggregateResults,
     evaluatePanelJudge,
@@ -14,10 +15,13 @@ from ...arena import (
     loadPanelTrialSet,
     loadWritingTrial,
     prepareBlind,
+    preparePanelAssignment,
     preparePanelJudgeCases,
     preparePanelSuite,
     recordEvaluation,
+    recordPanelAssignmentReview,
     recordPanelReviewBatch,
+    renderPanelReviewHtml,
     revealPanel,
     revealTrial,
     summarizePanelJudgeConsistency,
@@ -85,6 +89,20 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     judgeEvaluate.add_argument("judgeCases", type=Path)
     judgeEvaluate.add_argument("predictions", type=Path)
     outputOptions(judgeEvaluate)
+    assignment = commands.add_parser("assign", help="평가자 한 명에게 내부 순서를 숨긴 독립 case를 배정한다")
+    assignment.add_argument("suite", type=Path)
+    assignment.add_argument("--evaluator-id", dest="evaluatorId", required=True)
+    assignment.add_argument("--group", choices=EVALUATOR_GROUPS, required=True)
+    outputOptions(assignment)
+    reviewPage = commands.add_parser("review-page", help="평가자 배정을 네트워크 없는 단일 HTML 화면으로 만든다")
+    reviewPage.add_argument("suite", type=Path)
+    reviewPage.add_argument("assignment", type=Path)
+    reviewPage.add_argument("--output", type=Path, required=True)
+    assignmentRecord = commands.add_parser("assignment-record", help="배정 화면의 좌우 선택을 suite 방향으로 되돌려 잠근다")
+    assignmentRecord.add_argument("suite", type=Path)
+    assignmentRecord.add_argument("assignment", type=Path)
+    assignmentRecord.add_argument("review", type=Path)
+    outputOptions(assignmentRecord)
 
 
 def renderBlind(data: dict) -> str:
@@ -152,6 +170,17 @@ def renderPanelBatch(data: dict) -> str:
             f"독립 평가 {len(data['reviews'])}개",
             data["meaning"],
             f"batch SHA256: {data['batchSha256']}",
+        )
+    )
+
+
+def renderAssignment(data: dict) -> str:
+    return "\n".join(
+        (
+            f"평가자: {data['evaluator']['id']} ({data['evaluator']['group']})",
+            f"독립 배정 {len(data['cases'])}개",
+            data["claimBoundary"],
+            f"assignment SHA256: {data['assignmentSha256']}",
         )
     )
 
@@ -255,7 +284,7 @@ def run(args: argparse.Namespace) -> int:
             loadJson(args.predictions),
         )
         emitData(result, args.format, args.output, renderJudgeConsistency)
-    else:
+    elif args.arenaCommand == "judge-evaluate":
         result = evaluatePanelJudge(
             loadJson(args.suite),
             loadJson(args.adjudication),
@@ -263,4 +292,17 @@ def run(args: argparse.Namespace) -> int:
             loadJson(args.predictions),
         )
         emitData(result, args.format, args.output, renderJudgeEvaluation)
+    elif args.arenaCommand == "assign":
+        result = preparePanelAssignment(loadJson(args.suite), args.evaluatorId, args.group)
+        emitData(result, args.format, args.output, renderAssignment)
+    elif args.arenaCommand == "review-page":
+        suite = loadJson(args.suite)
+        emit(renderPanelReviewHtml(suite, loadJson(args.assignment)), args.output)
+    else:
+        result = recordPanelAssignmentReview(
+            loadJson(args.suite),
+            loadJson(args.assignment),
+            loadJson(args.review),
+        )
+        emitData(result, args.format, args.output, renderPanelBatch)
     return 0
