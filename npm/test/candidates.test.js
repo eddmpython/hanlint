@@ -28,18 +28,24 @@ test("candidate rules publish useful choices and low-selection trials stay out",
   assert.ok(deixis.candidates.some((candidate) => candidate.text === "표를 넣습니다."));
 
   const passive = one("doublePassive", "글이 쓰여져 있었다.");
-  assert.deepEqual(passive.candidates.map((candidate) => candidate.text), ["글이 쓰여 있었다."]);
+  assert.equal(passive.fix, "글이 쓰여 있었다.");
+  assert.deepEqual([passive.fragment, passive.replacement], ["져", ""]);
+  assert.deepEqual(passive.candidates, []);
+
+  const quotation = one("doublePassive", '문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.');
+  assert.equal(quotation.replacement, null);
+  assert.deepEqual(quotation.candidates.map((candidate) => candidate.text), ['문서에는 "결과가 저장됩니다."라고 적혀 있습니다.']);
 
   assert.deepEqual(one("nounPile", "가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.").candidates, []);
   assert.deepEqual(one("endingRepeat", "파일을 엽니다. 값을 넣습니다. 표를 만듭니다. 화면을 봅니다.").candidates, []);
 });
 
 test("json carries candidates and text puts them below exemplars", () => {
-  const finding = one("doublePassive", "결과가 저장되어집니다.");
+  const finding = one("danglingDeixis", "표를 만듭니다. 해당 값을 넣습니다.");
   const data = JSON.parse(renderJson(new Map([["글.md", [finding]]])));
   assert.deepEqual(data.files[0].findings[0].candidates[0], {
-    text: "결과가 저장됩니다.",
-    why: "`되어지`의 피동 겹을 하나로 줄인다",
+    text: "표를 넣습니다.",
+    why: "바로 앞 문장에 나온 명사 `표`",
   });
   const text = renderText("글.md", [finding]);
   assert.ok(text.indexOf("본보기") < text.indexOf("후보 (기계가 고르지 않음)"));

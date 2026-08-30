@@ -7,7 +7,9 @@ from hanlint.edit import applyFixes
 
 DOT = "."
 TEXT = (
-    "## 절\n\n모든 분야에 있어서 기준이 필요합니다. 파일을 확인하세요" + DOT + " 노력하지 않으면 안 됩니다.\n\n"
+    "## 절\n\n모든 분야에 있어서 기준이 필요합니다. 파일을 확인하세요"
+    + DOT
+    + " 노력하지 않으면 안 됩니다. 결과가 저장되어집니다.\n\n"
     "`에 있어서` 는 번역투라고 **설명**합니다.\n"
 )
 
@@ -22,14 +24,23 @@ def testAppliesEveryMachineFixAndFindingsVanish():
         (3, "에 있어서", "에서"),
         (3, "세요" + DOT, "세요"),
         (3, "하지 않으면 안 됩니다", "해야 합니다"),
+        (3, "되어집", "됩"),
     ]
     assert result.skipped == ()
-    assert "모든 분야에서 기준이 필요합니다. 파일을 확인하세요 노력해야 합니다." in result.text
+    assert "모든 분야에서 기준이 필요합니다. 파일을 확인하세요 노력해야 합니다. 결과가 저장됩니다." in result.text
     assert "`에 있어서` 는" in result.text
     before = rulesOf(TEXT)
     after = rulesOf(result.text)
-    assert {"translationese", "imperativePeriod", "doubleNegative"} <= before
-    assert not {"translationese", "imperativePeriod", "doubleNegative"} & after
+    assert {"translationese", "imperativePeriod", "doubleNegative", "doublePassive"} <= before
+    assert not {"translationese", "imperativePeriod", "doubleNegative", "doublePassive"} & after
+
+
+def testDoesNotChangeAQuotedDoublePassive():
+    text = '## 절\n\n문서에는 "결과가 저장되어집니다."라고 적혀 있습니다.\n'
+    finding = next(finding for finding in lintText(text) if finding.rule == "doublePassive")
+    assert finding.replacement is None and finding.candidates
+    result = applyFixes(text, [finding])
+    assert result.text == text and result.applied == ()
 
 
 def testSkipsWhenFragmentIsAmbiguous():
