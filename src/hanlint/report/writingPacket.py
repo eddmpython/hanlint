@@ -1,8 +1,9 @@
 """AI 작문기가 같은 근거로 초안을 쓰고 고치게 하는 결정적 JSON 계약.
 
-잘 쓴 글을 복사하지 않는다. 현재 글의 지문과 같은 종류의 편집 글 분포, 독자 상태, 실제 지적, 승인 패치와
-검증된 문형을 분리해 싣는다. 분포는 품질 점수가 아니다. 의미 고침은 원문 완전 일치에서만 재생하고, 승인
-표면 치환은 단어 경계와 보호 원자가 맞는 다른 원문 한 자리까지 쓴다.
+잘 쓴 글을 복사하지 않는다. 현재 글의 지문과 같은 종류의 편집 글 분포, 독자 상태, 실제 지적과 승인 고침을
+분리해 싣는다. 분포는 품질 점수가 아니다. 의미 고침은 원문 완전 일치에서만 재생하고, 승인 표면 치환은
+단어 경계와 보호 원자가 맞는 다른 원문 한 자리까지 쓴다. 일반 문형 예시는 여러 프리셋의 사실을 결과에
+흘린 완성 글 실측 때문에 실행 패킷에 싣지 않는다.
 """
 
 from __future__ import annotations
@@ -12,13 +13,11 @@ from hashlib import sha256
 
 from ..audit import AuditResult
 from ..config import PROFILE_OF, Config
-from ..data import patterns
 from ..data.profiles import Histogram, Profile, profileOf, userProfile
 from ..fingerprint import DocumentPrint
 from ..rules import Finding
 from .operationMatch import operationGuidance
 from .patchMatch import patchData
-from .registerMatch import patternInRegister
 
 PURPOSES = ("draft", "revise")
 
@@ -86,8 +85,8 @@ def contractFor(purpose: str) -> dict:
             "guidance.operation은 승인 전후의 32자 이하 표면 치환이다. "
             "sourceText 한 자리와 단어 경계와 보호 원자가 맞을 때만 result를 쓴다",
             "guidance.operation이 없으면 비슷한 단어나 의미를 추측해 치환하지 않는다",
-            "patterns에서는 form과 example만 쓰고 instead는 피한다",
             "referenceProfile은 같은 종류 글의 분포이며 품질 점수나 평균을 흉내 내라는 명령이 아니다",
+            "comparison의 수치와 문구는 진단 자료다. 결과 글의 사실이나 문장 재료로 옮기지 않는다",
             "설명 없이 완성된 한국어 마크다운만 결과로 낸다",
         ],
         "completion": [
@@ -141,7 +140,7 @@ def buildWritingPacket(
     errors = sum(finding.severity == "error" for finding in findings)
     notices = len(findings) - errors
     return {
-        "version": 1,
+        "version": 2,
         "kind": "hanlint.writingPacket",
         "purpose": purpose,
         "contract": contractFor(purpose),
@@ -157,7 +156,6 @@ def buildWritingPacket(
             "items": [finding.asDict() for finding in findings],
         },
         "guidance": guidanceFor(doc, findings, config) if purpose == "revise" else [],
-        "patterns": [patternInRegister(pattern, doc.register).asDict() for pattern in patterns()],
         "verify": {
             "argv": [
                 "hanlint",
@@ -167,7 +165,8 @@ def buildWritingPacket(
                 "--format",
                 "json",
             ],
-            "meaning": "error 0은 자동으로 확인할 수 있다. 좋은 글과 뜻 보존은 별도 평가다",
+            "meaning": "error 0은 자동 결함이 없다는 뜻뿐이다. writingPacket은 자연스러움과 사실 보존과 "
+            "유용성의 향상을 보장하지 않으므로 원문 대조와 별도 평가가 필요하다",
         },
     }
 

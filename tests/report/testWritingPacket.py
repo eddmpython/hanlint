@@ -13,9 +13,9 @@ SAMPLE = """# 속도 보고
 """
 
 
-def testWritingPacketCarriesEvidenceWithoutDuplicatingExemplars():
+def testWritingPacketCarriesEvidenceWithoutInjectingGeneralExamples():
     packet = writingPacket(SAMPLE, path="글.md")
-    assert packet["kind"] == "hanlint.writingPacket" and packet["purpose"] == "revise"
+    assert packet["version"] == 2 and packet["kind"] == "hanlint.writingPacket" and packet["purpose"] == "revise"
     assert packet["input"]["text"] == SAMPLE and packet["input"]["preset"] == "blog"
     assert len(packet["input"]["textSha256"]) == 64
     assert packet["comparison"]["referenceProfile"]["source"] == "bundled:blog"
@@ -27,7 +27,9 @@ def testWritingPacketCarriesEvidenceWithoutDuplicatingExemplars():
     constraints = packet["contract"]["constraints"]
     assert any("다른 본보기를 끌어오지 말고" in item for item in constraints)
     assert any("없는 정보를 만들어" in item for item in constraints)
-    assert len(packet["patterns"]) >= 10
+    assert any("결과 글의 사실이나 문장 재료로 옮기지 않는다" in item for item in constraints)
+    assert "patterns" not in packet
+    assert "자연스러움" in packet["verify"]["meaning"] and "보장하지 않" in packet["verify"]["meaning"]
     assert packet == writingPacket(SAMPLE, path="글.md")
 
 

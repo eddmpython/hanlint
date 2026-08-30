@@ -30,3 +30,4 @@ dartlab 의 `tests/_attempts/` 에서 가져온 꼴이다. 주제 하나가 폴�
 | `koreanStyleBooks/` | 한국 글쓰기 책들이 드는 자리가 실제 글에 얼마나 있나. 규칙이 될 만한지 |
 | `patchMemory/` | cue 기반 선택을 폐기하고 승인 원문 완전 일치 재생만 일반 본보기보다 안전한지 |
 | `operationMemory/` | 공개 Git 고침에서 뽑은 작은 표면 연산이 다른 원문에서도 사실과 뜻을 지키며 향상되는지 |
+| `writingLift/` | 일곱 종류 완성 글에서 writingPacket, 반복 수정, 사실 가드가 실제로 사실과 자연스러움을 높이는지 |

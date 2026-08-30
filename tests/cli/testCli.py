@@ -146,7 +146,8 @@ def testPacketWritesDeterministicAiContract(tmp_path, capsys):
     assert data["kind"] == "hanlint.writingPacket" and data["purpose"] == "draft"
     assert "text" not in data["input"]
     assert data["comparison"]["referenceProfile"]["documents"] > 0
-    assert data["patterns"] and data["verify"]["argv"][0] == "hanlint"
+    assert "patterns" not in data and data["verify"]["argv"][0] == "hanlint"
+    assert "보장하지 않" in data["verify"]["meaning"]
 
 
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
