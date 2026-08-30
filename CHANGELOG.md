@@ -8,6 +8,10 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- **사람 합의 근거 함의 벤치마크.** CC BY-SA 4.0 KLUE-NLI의 고정 dev 판에서 여섯 source와 세 label을
+  균형 있게 뽑은 36개를 배포한다. `hanlint entailment cases`는 gold 없는 평가 입력을 내고 `evaluate`와
+  Python API는 외부 평가기의 혼동행렬, macro F1, coverage, 선택 정확도, selective risk와
+  risk-coverage 곡선을 결정적으로 집계한다. 문맥상 관계를 출처나 fact의 진실 또는 일반 성능으로 부르지 않는다
 - **사실별 근거 원장.** 기존 `writingBrief` v1과 기본 draft packet 해시를 보존하면서 v2만 원자 사실을
   고정 출처 판, locator, 짧은 근거 조각과 SHA256, 라이선스, 사람 검토 상태에 연결한다. `hanlint evidence`
   와 `evidenceLedger` API는 누락·고아·변조·움직이는 revision을 결정적으로 보고한다. 형식 충족을 URL

@@ -35,3 +35,4 @@ dartlab 의 `tests/_attempts/` 에서 가져온 꼴이다. 주제 하나가 폴�
 | `blindWritingArena/` | 일곱 종류가 안전 검사, 익명화, 평가 기록과 집계의 같은 계약을 지나는지 |
 | `rhetoricalBlueprint/` | 원문 없는 종류별 구조 예산이 기본 brief보다 안전하게 쓸 수 있는 결과를 만드는지 |
 | `evidenceLedger/` | v2 근거 원장이 사실 연결·출처 판·조각 해시의 누락과 변조를 결정적으로 막는지 |
+| `evidenceEntailment/` | 사람 합의 한국어 근거 쌍에서 외부 평가기의 3분류와 기권 위험을 재는지 |

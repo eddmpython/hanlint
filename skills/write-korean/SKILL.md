@@ -62,6 +62,18 @@ hanlint packet brief.json --purpose draft --output packet.json
 ```powershell
 hanlint packet brief.json --purpose draft --strategy rhetoricalBlueprintV1 --output packet.json
 ```
+
+근거 관계를 판정할 외부 평가기를 쓰려면 제품 원장과 섞기 전에 고정 벤치마크로 잰다.
+
+```console
+hanlint entailment cases --output entailment-cases.json
+hanlint entailment evaluate predictions.json --format json
+```
+
+`cases`에 없는 gold를 프롬프트나 예측 파일에 덧붙이지 않는다. 평가기는 36개 `caseId`마다
+`supported|contradicted|insufficient|abstain`과 confidence를 하나씩 낸다. 결과에서는 macro F1만 보지
+말고 coverage, 선택 정확도, selective risk와 risk-coverage 곡선을 함께 읽는다. 전부 기권한 결과는 오류가
+없어 보이더라도 coverage 0과 macro F1 0이다.
 4. `contract.operation`과 `constraints`를 지킨다. 구조화 패킷에서는 `input.brief`만 사실 재료다. 자유 형식
    패킷에서는 `input`만 사실 재료로 쓰고 `referenceProfile`과 `comparison.current`의 수치는 결과에
    옮기지 않는다.
@@ -163,6 +175,8 @@ hanlint learn 전.md 승인본.md --format toml
 - error 0을 좋은 글의 합격 판정으로 부르지 않는다.
 - guard의 `contractSatisfied`를 사실 관계와 진실의 합격 판정으로 부르거나 위반 결과를 자동 재작성하지 않는다.
 - evidence의 `ledgerValid`를 URL 존재, 인용 조각의 진위, fact의 함의나 진실 판정으로 부르지 않는다.
+- entailment benchmark 결과를 출처나 fact의 진실, 글 품질 또는 다른 자료에서의 일반 성능으로 부르지
+  않는다. 공개 KLUE 사례의 학습 오염 가능성도 남는다.
 - 사람이 승인하지 않은 `learn` 후보를 `[[patches]]`나 `[[operations]]`로 저장하지 않는다.
 
 ## 되돌리기

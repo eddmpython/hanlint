@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/entailmentPredictions.schema.json",
+  "title": "hanlint entailment predictions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "benchmarkId", "benchmarkSha256", "evaluator", "predictions"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.entailmentPredictions" },
+    "benchmarkId": { "type": "string", "minLength": 1 },
+    "benchmarkSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "revision", "promptSha256"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["human", "llm", "rule"] },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "not": {
+            "pattern": "^(?:[Hh][Ee][Aa][Dd]|[Ll][Aa][Tt][Ee][Ss][Tt]|[Mm][Aa][Ii][Nn]|[Mm][Aa][Ss][Tt][Ee][Rr])$"
+          }
+        },
+        "promptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "predictions": {
+      "type": "array",
+      "minItems": 36,
+      "maxItems": 36,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["caseId", "label", "confidence"],
+        "properties": {
+          "caseId": { "type": "string", "pattern": "^KEN[0-9]{3}$" },
+          "label": { "enum": ["supported", "contradicted", "insufficient", "abstain"] },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "label": { "const": "abstain" } }, "required": ["label"] },
+            "then": { "properties": { "confidence": { "const": 0 } } }
+          }
+        ]
+      }
+    }
+  }
+}

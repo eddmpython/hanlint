@@ -15,7 +15,7 @@
  * hanlint doctor                설정과 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
  * ```
- * audit, map, watch, profile, learn, packet, terms 는 파이썬 패키지 (pip install hanlint) 에 있다.
+ * audit, guard, arena, blueprint, evidence, entailment 같은 확장 명령은 파이썬 패키지에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
@@ -39,7 +39,22 @@ import { renderText } from "../report/textReport.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init"];
-const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff", "learn", "packet", "terms"];
+const PYTHON_ONLY = [
+  "audit",
+  "map",
+  "watch",
+  "profile",
+  "coverage",
+  "diff",
+  "learn",
+  "packet",
+  "guard",
+  "arena",
+  "blueprint",
+  "evidence",
+  "entailment",
+  "terms",
+];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 /** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py 가 소유한다. */

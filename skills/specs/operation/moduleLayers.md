@@ -25,7 +25,7 @@ status: curated
 | `util` (npm 만) | 루트의 `text.js`, `regex.js`. 파이썬 `str` 과 `re` 의 뜻 | 아무것도 |
 | `data` | 사전과 표지 목록. 코드 없음 | 아무것도 (npm 은 util) |
 | `config` | 설정과 임계 기본값 | 아무것도 |
-| `document`, `blueprint`, `evidence` | 마크다운 → 문서 모델 / 원문 없는 구조 예산 / 사실별 근거 원장 검증 | config / config, data / config |
+| `document`, `blueprint`, `evidence`, `entailment` | 문서 모델 / 원문 없는 구조 예산 / 사실별 근거 원장 / 외부 함의 평가기 benchmark | config / config, data / config / data |
 | `analysis` | 표층 분석 (문장 분리, 어절 판정) 과 어절 판정과 무관한 한국어 형태 층 (grammar). 문서 모델을 모른다 | config, data |
 | `fingerprint` | 문장·문단·절·글 지문. 사전 매치 포함 | document, analysis, config, data |
 | `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint 와 그 아래 |
@@ -39,8 +39,8 @@ npm 구현 (`npm/src/`) 은 같은 폴더와 같은 순위를 거울처럼 따�
 
 `src/hanlint/__init__.py` 는 층이 아니라 공개 표면이다. report 와 rules 와 fingerprint 를 모아 `lintText`,
 `lintFile`, `auditText`, `auditFile`, `fingerprint`, `learnText`, `writingPacket`, `Finding`, `Config`,
-`ruleNames`, `WritingBrief`, `guardText`, `guardFile`, `blueprintFor`, `evidenceLedger`를 낸다. 패키지 밖에서
-deep-path를 import 하게 두지 않는다.
+`ruleNames`, `WritingBrief`, `guardText`, `guardFile`, `blueprintFor`, `evidenceLedger`, `entailmentCases`,
+`evaluateEntailment`를 낸다. 패키지 밖에서 deep-path를 import 하게 두지 않는다.
 
 ## 규칙 파일의 격리
 

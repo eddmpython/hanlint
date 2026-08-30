@@ -9,7 +9,7 @@ dynamic = ["version"]
 description = "한국어 글 검사기. Korean prose linter for Markdown: translationese, noun piles, double passives, weak structure"
 readme = "README.md"
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "src/hanlint/data/evidenceEntailmentV1.LICENSE.md"]
 requires-python = ">=3.11"
 keywords = ["korean", "korean-language", "hangul", "linter", "prose", "prose-linter", "writing", "readability", "markdown", "style-checker", "proofreading", "text-linter"]
 classifiers = [

@@ -1,0 +1,979 @@
+{
+  "version": 1,
+  "kind": "hanlint.evidenceEntailmentBenchmark",
+  "benchmarkId": "klue-nli-v1.1-dev-balanced-36",
+  "source": {
+    "name": "KLUE-NLI v1.1 dev",
+    "repositoryUrl": "https://github.com/KLUE-benchmark/KLUE",
+    "paperUrl": "https://arxiv.org/html/2105.09680v4",
+    "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+    "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+    "sourceSha256": "0699db82be17766b26e199864e6260443e17ec6e91d1870e876419e388f245b1",
+    "license": "CC-BY-SA-4.0",
+    "attribution": "KLUE Benchmark contributors"
+  },
+  "selection": {
+    "method": "source와 원본 label별 GUID SHA256 오름차순에서 합의·중복 조건을 만족한 앞의 두 사례",
+    "sources": [
+      "NSMC",
+      "airbnb",
+      "policy",
+      "wikinews",
+      "wikipedia",
+      "wikitree"
+    ],
+    "sourceLabels": [
+      "contradiction",
+      "entailment",
+      "neutral"
+    ],
+    "labelMap": {
+      "contradiction": "contradicted",
+      "entailment": "supported",
+      "neutral": "insufficient"
+    },
+    "casesPerSourceLabel": 2,
+    "minimumAgreement": 4,
+    "premiseDuplicates": 0,
+    "hypothesisDuplicates": 0
+  },
+  "cases": [
+    {
+      "id": "KEN001",
+      "sourceGuid": "klue-nli-v1_dev_01351",
+      "domain": "NSMC",
+      "evidenceExcerpt": "세익스피어가 이렇게 차별주의적인 사람이었다",
+      "atomicFact": "세익스피어는 평등한 대우를 하는 사람이었다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01351",
+      "excerptSha256": "607e45886ffa542ec6809961e64e500ab1484b9f24e0e685b534bac526039526",
+      "factSha256": "43947d9e5e05105a1a8d4c4793f637f26baf772a60144d5d0f6ae692d220e849",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "d23ca1b81e5e58b7f6a36d95ff159745477e6ea4d62f379f9e149cf3dd01870f"
+    },
+    {
+      "id": "KEN002",
+      "sourceGuid": "klue-nli-v1_dev_01564",
+      "domain": "NSMC",
+      "evidenceExcerpt": "어릴때 이거보고 심오한기분과 저 고양이가 무서웠다",
+      "atomicFact": "어릴 때는 이걸 보고 기분이 좋았다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "insufficient",
+          "contradicted"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01564",
+      "excerptSha256": "81a52362109456988f8f09692b5ef14203c2e5313141c338972683cd7a7d80e2",
+      "factSha256": "0488d13da4b4e2da915ddd08aa082546cd7ca28d3765063d29df17845cec85a8",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "e9c20a1fb605f3aa194d55ff5a1524dcbba5f78d1e1982049569fdbee78fd4cb"
+    },
+    {
+      "id": "KEN003",
+      "sourceGuid": "klue-nli-v1_dev_01707",
+      "domain": "NSMC",
+      "evidenceExcerpt": "영화학과 대학생이 만든 졸업작품을 본 듯한 느낌이었습니다",
+      "atomicFact": "마치 영화학과 대학생의 졸업작품 같았습니다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "insufficient",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01707",
+      "excerptSha256": "6dadab2f3b8771265f23e9fbc48df9ce715db6345cde8e06149de8ef82349fbf",
+      "factSha256": "6653ca2cecab2c1ee2897e0bbd448b7194a3082690610183cf6f0ff233c65e49",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "4c20e3fd22b059ea2b054760de910319d2304d898446ee306eeeb6cdc11abe39"
+    },
+    {
+      "id": "KEN004",
+      "sourceGuid": "klue-nli-v1_dev_00957",
+      "domain": "NSMC",
+      "evidenceExcerpt": "마틴 릭스는 더티해리만큼이나멋지다 혹은 그이상",
+      "atomicFact": "더티해리만큼 마틴릭스는 멋있었다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00957",
+      "excerptSha256": "5d4b2ee99178094bb785d535c79976cb8e81fa985af2635607692f97291b27bd",
+      "factSha256": "227e0f9f5d6a4c4b07b7536548c466ca1ec3168232b85293869d33db536c0565",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "80a16dfcf66d5dd50337d706471d7105c168c0bea896bb6af38dade6dc277243"
+    },
+    {
+      "id": "KEN005",
+      "sourceGuid": "klue-nli-v1_dev_01943",
+      "domain": "NSMC",
+      "evidenceExcerpt": "이 작품은 충분히 10점을 받을수 있다.",
+      "atomicFact": "가능하다면 10점 만점에 15점을 주고 싶은 작품이다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01943",
+      "excerptSha256": "4d6978c397a53cc89bc13ee7ae82c75febd61a6eafddb608f455449e4774ce31",
+      "factSha256": "7b3b2e13d2b43ddd55059a56fc97abec07d7b83024229e4d42554a4695ef62c0",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "54c3eb8e013b1791d97bcddc18733dcc5a0069e727b6b358463d4437245fa271"
+    },
+    {
+      "id": "KEN006",
+      "sourceGuid": "klue-nli-v1_dev_00260",
+      "domain": "NSMC",
+      "evidenceExcerpt": "결국 이 모든 일들이 여주의 상상이라는 걸로 끝나야 말이되지.",
+      "atomicFact": "결국 엔딩은 모든 일들이 실제 일어난 일이라는 것이었다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "contradicted",
+          "insufficient"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00260",
+      "excerptSha256": "fddf6ce62b7f4e578d2f3b835a594ecba75021ef65a46c27d1791ded9998f0c6",
+      "factSha256": "8887dc810f60946ccca355cc4fb56597e19b89308186239547863a1807c63d00",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "e412026c667f8db312951e7d43026aeff31620ddd494824cabe10f8921eea0ff"
+    },
+    {
+      "id": "KEN007",
+      "sourceGuid": "klue-nli-v1_dev_00424",
+      "domain": "airbnb",
+      "evidenceExcerpt": "그 덕에 불편함이 없이 여행을 할수 있었다.",
+      "atomicFact": "여행은 불편한 점 투성이었다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00424",
+      "excerptSha256": "d084050a1b7f7e69c93caaf2234fc34c8c092aa4a75e724287d79a85ac42825b",
+      "factSha256": "71f30489ee709af8aa1652a4270effe084379c91068bf2817a875c590d68652e",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "11ba6e90b6944f225db48ef358a7cf86feb14ba72e4edb96fdadd9c8114d23af"
+    },
+    {
+      "id": "KEN008",
+      "sourceGuid": "klue-nli-v1_dev_01381",
+      "domain": "airbnb",
+      "evidenceExcerpt": "수압쎈거랑 잘때 안추웠던게 넘 맘에들었어요",
+      "atomicFact": "잘 때 너무 추웠어요.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "supported",
+          "contradicted"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01381",
+      "excerptSha256": "4879c0d489246a70e2561f3ce926839bbff0f8efeb9eb8ae8140aabf94888e6e",
+      "factSha256": "87b90d30f2ac6206a5db8a54dc5d12af063f409954720dee0dde1b076b169eb6",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "a3a0090d83878d8e02cd9f65747b84d81ea48c869ab392e481ce82a729af2ac6"
+    },
+    {
+      "id": "KEN009",
+      "sourceGuid": "klue-nli-v1_dev_01022",
+      "domain": "airbnb",
+      "evidenceExcerpt": "뮌헨 우반은 베를린 보다 안전 한것 같습니다",
+      "atomicFact": "뮌헨 우반이 베를린보다도 안전한 것처럼 느껴집니다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01022",
+      "excerptSha256": "e42a03d40c3251f69774467648b1d19e141e745c9be350f1d9b192f6078585a3",
+      "factSha256": "6b1f0e3f27810cf37fbbfa95362008689b318513c2d500077791c92966533f25",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "25d5bfd899f0dcb948d17a316a0451ddd7a7fa621dc029e5f47e9033a9b88033"
+    },
+    {
+      "id": "KEN010",
+      "sourceGuid": "klue-nli-v1_dev_02627",
+      "domain": "airbnb",
+      "evidenceExcerpt": "침구도 화장실도 흠잡을 곳이 없었습니다.",
+      "atomicFact": "화장실과 침구에 흠잡을 곳이 없었습니다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02627",
+      "excerptSha256": "ff37cb3de55c3adbf7500cd511ae2bc8c4de79acf0864a56a7579233053f8c10",
+      "factSha256": "d64c860069fa1630f7a93ea01ac8c179dda6d50c42e318299459c42a3d338698",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "469e8ef89a5c251bf1aa86b590553cff58eb623e4197343f7f65514032c4577b"
+    },
+    {
+      "id": "KEN011",
+      "sourceGuid": "klue-nli-v1_dev_01337",
+      "domain": "airbnb",
+      "evidenceExcerpt": "세번째는 숙소로 가는 길이 매우 매우 으슥합니다",
+      "atomicFact": "단점이 세가지입니다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "contradicted",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01337",
+      "excerptSha256": "9ef377fa64edb46129dfe6b898038335b18e71e44427b5dea113f7a2a8c1c8c1",
+      "factSha256": "aaab4fc9d24eac92098b86c80db3ee272d8a143476f15ca9982d64051409c38f",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "d639b1c8b740d07f8171200b23428102b6878d86a414fff7e01e90c26e01a9ae"
+    },
+    {
+      "id": "KEN012",
+      "sourceGuid": "klue-nli-v1_dev_00473",
+      "domain": "airbnb",
+      "evidenceExcerpt": "그래도 다행히 숙소는 엘리베이터가 있었네요.",
+      "atomicFact": "숙소에 오래된 엘리베이터가 있었네요.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00473",
+      "excerptSha256": "4265d9cd847033489721573af1cd2be63170c6ab3be522cbf9b5d9bec8e1b348",
+      "factSha256": "808319ac1e8cc46213ea8759d635efb68604430575dcb0ebf5ed30d6b7d39ca9",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "baf69da664ba4041af6eeee0f480b4f389017030bbaa96f7a113be9dad4e4f9f"
+    },
+    {
+      "id": "KEN013",
+      "sourceGuid": "klue-nli-v1_dev_02847",
+      "domain": "policy",
+      "evidenceExcerpt": "한국도로공사는 올해 하반기부터 보유토지 임대계약 사용료율을 국유재산과 동일하게 인하한다.",
+      "atomicFact": "한국도로공사는 올해 상반기부터 보유토지 임대계약 사용료율을 사유재산과 동일하게 인하한다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02847",
+      "excerptSha256": "f14d2cc796faff3e41005b3389d54dfcb7b312896a647ab4c832d26fefcea9e6",
+      "factSha256": "fb7600e40b206e592a4de75252d0dcd7cf2d35e073d2874682d2a354cee6809a",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "0bb21dbe8bcd9610634901659c4a467714903659d3ee34292adb9342ca68e15e"
+    },
+    {
+      "id": "KEN014",
+      "sourceGuid": "klue-nli-v1_dev_01204",
+      "domain": "policy",
+      "evidenceExcerpt": "불편사항은 24시간 신고할 수 있다.",
+      "atomicFact": "불편사항은 낮에만 신고할 수 있다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01204",
+      "excerptSha256": "62845785916c2e46d7100c52ce4dadc56dab85a7886493251b2caf1f876d5653",
+      "factSha256": "c69391ec5bebc307f901926ed265fd75199ac6eff9b7f8337322e21c9233c3cf",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "09ecbba9538148f86973d6c348d01a31d681b0063e14c6d8b5bf58fe4a61980f"
+    },
+    {
+      "id": "KEN015",
+      "sourceGuid": "klue-nli-v1_dev_02318",
+      "domain": "policy",
+      "evidenceExcerpt": "정부는 적용대상과 기간, 지원 기준 등이 포함된 고시를 오는 31일 공고해 8월부터 시행할 예정이다.",
+      "atomicFact": "적용대상과 기간, 지원 기준 등이 포함된 고시는 오는 31일 정부가 공고할 예정이다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02318",
+      "excerptSha256": "1809d82be12099d2d25caef2a5fb322580b0fb2a70c0d68def4f84514b40895e",
+      "factSha256": "af195b12e7d4cc36dc1e6a3d92bc3c13fbc2590698bfa62f62b45082be13c534",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "7fe757424c1a8c6c0699c3ce82bbd38b2e76f714b7cf5e3ba74e79b74877195c"
+    },
+    {
+      "id": "KEN016",
+      "sourceGuid": "klue-nli-v1_dev_00134",
+      "domain": "policy",
+      "evidenceExcerpt": "3명이 시작해서 현재 연구원은 5명, 인턴은 3명으로 구성돼 있습니다.",
+      "atomicFact": "현재 연구원과 인턴은 총합 8명입니다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00134",
+      "excerptSha256": "f87b9fe59e110aa50fd1b5c8b55b8c3e16d20764daec29c094e2ac1e4f2bbb39",
+      "factSha256": "00df604ff46fca639f091464f63b5a87b351ced85e970b901d110fcc8f9fdf20",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "6807f352f2d75b3a954ec9ed320592e28dc2815e06fc650c2221821791d08b2d"
+    },
+    {
+      "id": "KEN017",
+      "sourceGuid": "klue-nli-v1_dev_02120",
+      "domain": "policy",
+      "evidenceExcerpt": "이에따라 총 급여 7000만 원 이하인 경우 현행 300만원에서 330만원으로 공제한도가 늘어난다.",
+      "atomicFact": "총 급여가 1000만원 이하이면 현행 200만원에서 100만원으로 공제한도가 줄어든다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "contradicted",
+          "insufficient"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02120",
+      "excerptSha256": "6b4c5bde3c1de8d2d3eb7315410a2f7f17e57cefda3460a9df6d370d22bb06a6",
+      "factSha256": "156a7a4bee9ff364be7e82d21185a8761db3ff5ea56c6541344183eba25a70be",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "6b3862aa0e90072b557794033c2f8e9d49450955afd83262deb9f91b3a124c9a"
+    },
+    {
+      "id": "KEN018",
+      "sourceGuid": "klue-nli-v1_dev_02404",
+      "domain": "policy",
+      "evidenceExcerpt": "중대본은 이러한 경향은 소규모 모임을 통한 확산 사례가 증가함에 따라 집단감염과 경로 미상 환자가 증가하기 때문인 것으로 분석했다.",
+      "atomicFact": "일부 전문가들은 중대본의 분석이 잘못되었다고 주장하고 있다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02404",
+      "excerptSha256": "a4082f4cd337aaa914438a2da456a88f33e6b1c28c76a651371ce1e9b5180954",
+      "factSha256": "6ebe2283eab3afdc0e175e9ca7fedfef010f6bdb1f5e1745dd8a752f531aef62",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "ea4982b15f40c4db98e1cd2ffe053c51b9cdadfda43547907e060aa51ad32e0a"
+    },
+    {
+      "id": "KEN019",
+      "sourceGuid": "klue-nli-v1_dev_01990",
+      "domain": "wikinews",
+      "evidenceExcerpt": "이는 1960년대에 일본 혼슈의 남부 해안을 따라 건설된, 꿈의 초특급으로 불렸던 도카이도 신칸센이 개통된 이후 50년만에 나온 계획이다.",
+      "atomicFact": "도카이도 신칸센은 30년 전에 개통됐다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01990",
+      "excerptSha256": "3f4e76360258f67e7f9cd0bc57a8b5cdb7a15c9f9fcec1863ccf3a1eab6a2529",
+      "factSha256": "34ebdba40b65e3c0e3b14e6b0ab7c2bf67344d67df96581289136ee1941c5c47",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "b1b5a191f29b01a705143de4d7080647802fe9335638f51f30fd9332e6461af0"
+    },
+    {
+      "id": "KEN020",
+      "sourceGuid": "klue-nli-v1_dev_01039",
+      "domain": "wikinews",
+      "evidenceExcerpt": "미래통합당은 2020년 4월 7일 대한민국 제 21대 국회의원 선거 관악 갑 후보 김대호를 제명했다.",
+      "atomicFact": "김대호 후보는 2020년 5월 9일 미래통합당에서 제명당했다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "insufficient",
+          "contradicted"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01039",
+      "excerptSha256": "9e29a442d50a37ce6147511b74f2c44bcc143c57ddc259345c597a02fcf81eed",
+      "factSha256": "77adfc59c2bdfdb25c8822ea8c4a4efa1eb875c2152279aae52003a11747f6bb",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "d2056f87db6b8338cbd77d1739665d250bbb20b0615da752c99c28b698260ab0"
+    },
+    {
+      "id": "KEN021",
+      "sourceGuid": "klue-nli-v1_dev_02062",
+      "domain": "wikinews",
+      "evidenceExcerpt": "이번 경기는 알파고가 학습한 중국룰로 진행되었으며 알파고의 수는 딥마인드 개발자인 아자황 아마추어 6단이 놓았다.",
+      "atomicFact": "아자황 아마추어 6단은 딥마인드 개발자이다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02062",
+      "excerptSha256": "d119814de537c87286a2190f012225dddc5b289435f63666749db612c02687f9",
+      "factSha256": "98820792d18833b7c48ee09e681c4f1452234be7e3a7e7b43c22aeb180de10d3",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "a38d8de11eca3bc4b0c2896bffe6267fa3c202c83f96ddb2951e6a52a15c1b86"
+    },
+    {
+      "id": "KEN022",
+      "sourceGuid": "klue-nli-v1_dev_01929",
+      "domain": "wikinews",
+      "evidenceExcerpt": "이 부회장은 대국민담화문에서 자기 자식들에게 경영권을 물려주지 않겠다고 하며 경영권과 소유권을 분리하겠다고 했다.",
+      "atomicFact": "이 부회장은 경영권과 소유권을 분리 계획을 가지고 있다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01929",
+      "excerptSha256": "854e9f1cbc10f80660abc5001d1954efdf0f3e7c688bf8bd5d85922f4b484ee3",
+      "factSha256": "69235668987d03fc0d3925c16054d82226f1188a298723fdfe7f150d4957963e",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "415835ec2defc7eaf2905c01c53781be68c2b3be40976b05184ebc054bd9a32b"
+    },
+    {
+      "id": "KEN023",
+      "sourceGuid": "klue-nli-v1_dev_02603",
+      "domain": "wikinews",
+      "evidenceExcerpt": "최근, 여동생의 상태가 이상한 것 같다만의 공식 홈페이지에서 방영 시간의 변경을 수요일에 알렸다고 아니메 뉴스 네트워크가 전했다.",
+      "atomicFact": "시청자들은 변경된 방영 시간대를 더 좋아하는 것으로 알려졌다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02603",
+      "excerptSha256": "80904606067564849e541a15b47cc35c757bf92593619184fa3beed35452d1dc",
+      "factSha256": "e17d241a1110fcef4b1575503813d641aa1e0b4ce23f938dc8c5c937c53d9b02",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "d3b39e3f8a1dad20634c115065de88bfa1444e2c41de30bc76bb5233e38ef191"
+    },
+    {
+      "id": "KEN024",
+      "sourceGuid": "klue-nli-v1_dev_00086",
+      "domain": "wikinews",
+      "evidenceExcerpt": "20일 새벽 0시 39분 경, 미국 콜로라도 주 오로라에 위치한 센추리 16 영화관에서 총기 난사로 12명이 사망하고, 58명이 부상을 당하는 일이 발생하였다.",
+      "atomicFact": "20일 새벽 0시 39분 경, 미국 콜로라도 주 오로라에 위치한 센추리 16 영화관에서 총기 난사는 미리 계획된 계획범죄였다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00086",
+      "excerptSha256": "63f08939bb2e56bb38adde018fafeb84805dd0d5fbec63f1f78b065e5ba87189",
+      "factSha256": "da79464daa0c4df738f5b6fd52deae191e8800ab2ad61ea2daa2fed07b8f53e3",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "db34caa1b600e8ae40ec8fde1446632810b1f81b88bc30797cd7246f80b7606f"
+    },
+    {
+      "id": "KEN025",
+      "sourceGuid": "klue-nli-v1_dev_01423",
+      "domain": "wikipedia",
+      "evidenceExcerpt": "승리밖에 모르는 변호사 시게모리는 자신을 해고한 공장 사장을 살해하여 사형이 확실시되고 있는 미스미의 변호를 맡게 된다.",
+      "atomicFact": "시게모리는 판사의 자격으로 재판에 참여한다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01423",
+      "excerptSha256": "a96160e327bac69c9dbfc3ac1adbbbf3d2491f9019fec022f3fc66605e2f98ed",
+      "factSha256": "df692be8bdc69c9ba3149aa1d9ddf7b5511ab510d6e433bcdc1a4cac0a108914",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "413c67661b91581a22b27e6b3b4b76836774ce8140f9c93897a5f2be97a207f0"
+    },
+    {
+      "id": "KEN026",
+      "sourceGuid": "klue-nli-v1_dev_02374",
+      "domain": "wikipedia",
+      "evidenceExcerpt": "종로경찰서 형사인 명근은 딸 수영을 낳던 중 아내가 죽자 어린 두 아이를 어렵게 키우며 산다.",
+      "atomicFact": "명근은 아내와 함께 두 딸을 키우며 산다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02374",
+      "excerptSha256": "3065acafc773a71e47579e3d1d40a9348ae32dfa88e8b367b8439462dc5deb9b",
+      "factSha256": "bde603a616f3e4b5f3891f974377cefc4d2d9289184655d91fc0e9473ccb947f",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "b8d2a097428eb317958f3311008f17f935cf525dcdc14b7398bf81d36b85bbc0"
+    },
+    {
+      "id": "KEN027",
+      "sourceGuid": "klue-nli-v1_dev_01038",
+      "domain": "wikipedia",
+      "evidenceExcerpt": "미다스가 당나귀 귀를 가지고 있다는 것은 아리스토파네스의 기원전 5세기 희극 개구리에 언급된다.",
+      "atomicFact": "미다스는 당나귀 귀를 가지고 있다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01038",
+      "excerptSha256": "c3f0cb61d860e8189e8976a3ffa5e7a0facef0e24130d6edd7a373421a980477",
+      "factSha256": "426af4207c9634d12be3b2824a79d3829c563ccbbfe6b4ff5031c2d7f95f5622",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "9fc4c08a1b15e915ce245ff52c8a0185c6313caca36ce9e286f5a04b5b6826b2"
+    },
+    {
+      "id": "KEN028",
+      "sourceGuid": "klue-nli-v1_dev_00257",
+      "domain": "wikipedia",
+      "evidenceExcerpt": "결국 아버지가 사령관의 허락을 받은 서류를 제시하여 도스는 무기 없이 의무병으로 전투에 참여하게 된다.",
+      "atomicFact": "도스는 전투에 의무병으로 참전하게 된다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00257",
+      "excerptSha256": "1d7fba6f0a18da8f5cea7dc2fcfa4b6a6b523aa65e9b83fd85e9b5b72266e815",
+      "factSha256": "3993c31656a04321d4b538edf137b8e5edf61fe505c553e08fdc6b81be46ba47",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "4b1bcebde6c72325a14788dceb76608f9f575eabe314ad10d741c632b14aedf2"
+    },
+    {
+      "id": "KEN029",
+      "sourceGuid": "klue-nli-v1_dev_01464",
+      "domain": "wikipedia",
+      "evidenceExcerpt": "신자유주의는 기업 입장에서 비용 최소화를 위해 노동시장 유연성을 도입하고 노동자를 해고하기 쉽게 한다.",
+      "atomicFact": "기업에서 신자유주의를 받아들였지만 오히려 비용이 늘어났다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "contradicted",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01464",
+      "excerptSha256": "82783e991621442561cd8e7ef10b1eb2187486fb692ce5b0b86b119919474e2f",
+      "factSha256": "c8c478ed12d7e545ff7fbd5858007520810323f3f169d70eee07ab87642a67a5",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "1e708c2abd0a27eaa14e3a4274f3bd8bb058ae1a208213651ff30fe2bdd3db41"
+    },
+    {
+      "id": "KEN030",
+      "sourceGuid": "klue-nli-v1_dev_00656",
+      "domain": "wikipedia",
+      "evidenceExcerpt": "노르웨이 배의 선장인 달란트는 심한 폭풍우에 휘말리게 되고, 표류를 한 끝에 노르웨이의 해안에 닿게 된다.",
+      "atomicFact": "달란트는 노르웨이의 해안에 고립된다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00656",
+      "excerptSha256": "706a9e2bf26a934174644962a0275f33aa2d2e5789f16851fa7f9ccb0cec95a3",
+      "factSha256": "79743933a9211d0b84ccacb83e93d72301a6cca0e7584bf9c6feb309c9b7b658",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "af5face1f871fca4de3a1c4a8082622bd084058e71f146a11106b8c5caa613a6"
+    },
+    {
+      "id": "KEN031",
+      "sourceGuid": "klue-nli-v1_dev_01666",
+      "domain": "wikitree",
+      "evidenceExcerpt": "열차 내에는 도서 500여권이 비치돼 있으며 문산에서 용문까지 정해진 시간에 왕복 운행한다.",
+      "atomicFact": "열차 내에는 도서 1000여권이 비치되어 있다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "contradicted",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01666",
+      "excerptSha256": "f34e491c802550279d212ddfd0ae3e4ed6df3bea82730afc28c82a08bddf934a",
+      "factSha256": "7cc625b0717ae323ace798d513bacc0473cf0779188f369106520ea00aae91ff",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "ea35decf5191f0b0d91e5e2fb9dbfa8c4f5369b6fd326b4fc440a2ee89cf6628"
+    },
+    {
+      "id": "KEN032",
+      "sourceGuid": "klue-nli-v1_dev_00304",
+      "domain": "wikitree",
+      "evidenceExcerpt": "고 최종근 하사 아버지는 영결식이 열리는 동안 고개를 숙이며 차분히 앉아 있었다.",
+      "atomicFact": "최종근 하사는 아버지의 영결식에 참석하였다.",
+      "goldLabel": "contradicted",
+      "annotation": {
+        "authorLabel": "contradicted",
+        "validatorLabels": [
+          "supported",
+          "contradicted",
+          "contradicted",
+          "contradicted"
+        ],
+        "agreeingVotes": 4,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00304",
+      "excerptSha256": "c51e03556f0c21aad963398b3af4476a4b81ed4abd34b20aed8061bdca8b2d95",
+      "factSha256": "00f4c63f7912edf0f93ebde64ab460df2a02eb0040c6e04f96a0db21ee577e51",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "4577afe4f5944aa2968d7f5138ab7eae690b37f47aca2cce3ea07ce026a60746"
+    },
+    {
+      "id": "KEN033",
+      "sourceGuid": "klue-nli-v1_dev_02143",
+      "domain": "wikitree",
+      "evidenceExcerpt": "이용섭 시장은 지난 9일 2018정율성음악축제 참석을 위해 취안저우시를 방문, 왕용리 취안저우 시장을 만나 양 도시 간 우호협력 관계 확대에 대해 논의했다.",
+      "atomicFact": "이용섭 시장은 왕용리 취안저우 시장을 만났다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02143",
+      "excerptSha256": "36bc47c1a68dd30687b15055dca6b80f3c2e84d21ef236ce689ee3e95425aede",
+      "factSha256": "b3f988b48fa90496368d47668de78ed3e91feab592196feb012b789bec3bcd41",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "292ce3355013b84440a9a5e9796ae6f93aecc6cd0c0f08f2f0f4e1a7b1599572"
+    },
+    {
+      "id": "KEN034",
+      "sourceGuid": "klue-nli-v1_dev_00357",
+      "domain": "wikitree",
+      "evidenceExcerpt": "관내 착한가게 235곳에서 6,685만원 상당을 후원했고, 착한 가정 34곳에서도 1,064만원 상당의 성금을 쾌척했다.",
+      "atomicFact": "총 269곳에서 후원했다.",
+      "goldLabel": "supported",
+      "annotation": {
+        "authorLabel": "supported",
+        "validatorLabels": [
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_00357",
+      "excerptSha256": "cbeb7f48eecea74a66056f3421dc3e945589ed94dccfaad1c7ad64cfee953674",
+      "factSha256": "14a5b99d0496d63d4dc9fd6f957d334cd2faaa0b0ffed189c08bb5f42c5e4364",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "2400d26c928181d16212dc92c7bceae29af9af0de11c979c9a5dead7324464e6"
+    },
+    {
+      "id": "KEN035",
+      "sourceGuid": "klue-nli-v1_dev_02981",
+      "domain": "wikitree",
+      "evidenceExcerpt": "황금을 찾아 헤매고, 싸우고, 황금을 위해 죽은 수많은 사람들의 심장을 뛰게 한 단어, 는 원래 이야기다.",
+      "atomicFact": "원래 이야기는 15세기부터 전해져왔다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_02981",
+      "excerptSha256": "23faae8430e74b18630266a42f551bc864c8e760fe3511c468b26735f7ab8f17",
+      "factSha256": "2ab250eee314500e905e27236cfc7c51b79add27ce505114cda786db5e527c41",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "bcc8fe9283500fb4c10a24100b2b908914dc2393094377dcb7380685077eba9a"
+    },
+    {
+      "id": "KEN036",
+      "sourceGuid": "klue-nli-v1_dev_01574",
+      "domain": "wikitree",
+      "evidenceExcerpt": "어플리케이션이나 홈페이지를 통해 구매하는 소비자들은 3만원가량 더 주고 해당 제품을 구입해야 하는 것이다.",
+      "atomicFact": "소비자들은 금액차에도 불구하고 어플리케이션을 통해 구매하는 것을 선호한다.",
+      "goldLabel": "insufficient",
+      "annotation": {
+        "authorLabel": "insufficient",
+        "validatorLabels": [
+          "insufficient",
+          "insufficient",
+          "insufficient",
+          "insufficient"
+        ],
+        "agreeingVotes": 5,
+        "totalVotes": 5
+      },
+      "sourceUrl": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json",
+      "revision": "3efd98708a40ff49251fddde35453f8fbb11f536",
+      "locator": "klue-nli-v1_dev_01574",
+      "excerptSha256": "aa13d00ebbc21e504325b90b9184f2da76ea4e6e96bf24d008d9d8fd75a5bebf",
+      "factSha256": "4dd275f3ba8797c1561efe6dab695b78dd4a6fa8e5702ec40e0589ae37969a5c",
+      "license": "CC-BY-SA-4.0",
+      "caseSha256": "ae4b26f2b79652b4c74e7770b6c4d208ff07027b273908b3923ab2f639b35f07"
+    }
+  ],
+  "contentSha256": "864e8af5bb88e16521e630c9f8987b32b36916c1042fee6a8ee54e76d7d8f5d8"
+}

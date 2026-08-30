@@ -220,6 +220,25 @@ def testEvidenceCommandReportsValidAndTamperedLedgers(tmp_path, capsys):
     assert "근거 원장 위반" in output and "excerptSha256" in output
 
 
+def testEntailmentCasesHideGoldAndEvaluatePredictions(tmp_path, capsys):
+    from tests.entailment.testEntailment import oraclePredictions
+
+    assert main(["entailment", "cases"]) == 0
+    cases = json.loads(capsys.readouterr().out)
+    assert len(cases["cases"]) == 36 and "goldLabel" not in json.dumps(cases)
+
+    predictions = write(tmp_path, "predictions.json", json.dumps(oraclePredictions(), ensure_ascii=False))
+    assert main(["entailment", "evaluate", str(predictions), "--format", "json"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["metrics"]["macroF1"] == 1.0 and result["metrics"]["coverage"] == 1.0
+
+    broken = oraclePredictions()
+    broken["predictions"].pop()
+    predictions.write_text(json.dumps(broken, ensure_ascii=False), encoding="utf-8")
+    assert main(["entailment", "evaluate", str(predictions)]) == 2
+    assert "36개" in capsys.readouterr().err
+
+
 def testStructuredPacketCarriesItsGuardConfiguration(tmp_path, capsys):
     briefData = {
         "version": 1,

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/evidenceEntailmentBenchmark.schema.json",
+  "title": "hanlint evidence entailment benchmark",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "benchmarkId", "source", "selection", "cases", "contentSha256"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.evidenceEntailmentBenchmark" },
+    "benchmarkId": { "const": "klue-nli-v1.1-dev-balanced-36" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repositoryUrl",
+        "paperUrl",
+        "sourceUrl",
+        "revision",
+        "sourceSha256",
+        "license",
+        "attribution"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "repositoryUrl": { "type": "string", "format": "uri" },
+        "paperUrl": { "type": "string", "format": "uri" },
+        "sourceUrl": {
+          "const": "https://raw.githubusercontent.com/KLUE-benchmark/KLUE/3efd98708a40ff49251fddde35453f8fbb11f536/klue_benchmark/klue-nli-v1.1/klue-nli-v1.1_dev.json"
+        },
+        "revision": { "const": "3efd98708a40ff49251fddde35453f8fbb11f536" },
+        "sourceSha256": { "const": "0699db82be17766b26e199864e6260443e17ec6e91d1870e876419e388f245b1" },
+        "license": { "const": "CC-BY-SA-4.0" },
+        "attribution": { "type": "string", "minLength": 1 }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "sources",
+        "sourceLabels",
+        "labelMap",
+        "casesPerSourceLabel",
+        "minimumAgreement",
+        "premiseDuplicates",
+        "hypothesisDuplicates"
+      ],
+      "properties": {
+        "method": { "type": "string", "minLength": 1 },
+        "sources": { "const": ["NSMC", "airbnb", "policy", "wikinews", "wikipedia", "wikitree"] },
+        "sourceLabels": { "const": ["contradiction", "entailment", "neutral"] },
+        "labelMap": {
+          "const": {
+            "contradiction": "contradicted",
+            "entailment": "supported",
+            "neutral": "insufficient"
+          }
+        },
+        "casesPerSourceLabel": { "const": 2 },
+        "minimumAgreement": { "const": 4 },
+        "premiseDuplicates": { "const": 0 },
+        "hypothesisDuplicates": { "const": 0 }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 36,
+      "maxItems": 36,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sourceGuid",
+          "domain",
+          "evidenceExcerpt",
+          "atomicFact",
+          "goldLabel",
+          "annotation",
+          "sourceUrl",
+          "revision",
+          "locator",
+          "excerptSha256",
+          "factSha256",
+          "license",
+          "caseSha256"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^KEN[0-9]{3}$" },
+          "sourceGuid": { "type": "string", "minLength": 1 },
+          "domain": { "type": "string", "minLength": 1 },
+          "evidenceExcerpt": { "type": "string", "minLength": 1 },
+          "atomicFact": { "type": "string", "minLength": 1 },
+          "goldLabel": { "enum": ["supported", "contradicted", "insufficient"] },
+          "annotation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["authorLabel", "validatorLabels", "agreeingVotes", "totalVotes"],
+            "properties": {
+              "authorLabel": { "enum": ["supported", "contradicted", "insufficient"] },
+              "validatorLabels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": { "enum": ["supported", "contradicted", "insufficient"] }
+              },
+              "agreeingVotes": { "type": "integer", "minimum": 4, "maximum": 5 },
+              "totalVotes": { "const": 5 }
+            }
+          },
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "revision": { "const": "3efd98708a40ff49251fddde35453f8fbb11f536" },
+          "locator": { "type": "string", "minLength": 1 },
+          "excerptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "factSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "license": { "const": "CC-BY-SA-4.0" },
+          "caseSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "contentSha256": { "const": "864e8af5bb88e16521e630c9f8987b32b36916c1042fee6a8ee54e76d7d8f5d8" }
+  }
+}

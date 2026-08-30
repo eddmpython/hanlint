@@ -193,6 +193,30 @@ hanlint packet brief-v2.json --purpose draft --output packet.json
 `facts.statement`만 주장 재료이며 excerpt의 다른 이름·수치·문장을 결과로 확산하지 않는다. 기존 v1
 schema, 로딩, guard와 기본 draft packet 해시는 그대로다.
 
+근거 조각과 fact의 문맥상 관계를 판정하는 외부 평가기는 별도 벤치마크로 잰다. 배포 평가판은
+[KLUE-NLI](https://github.com/KLUE-benchmark/KLUE) v1.1 dev의 여섯 source에서 세 관계를 두 개씩 고른
+36개다. 각 사례는 작성자 한 표와 독립 검토자 네 표 가운데 4표 이상이 gold와 일치한다. GUID 해시 순으로
+선택해 손으로 유리한 사례를 고르지 않았고 전제와 가설 중복을 막았다.
+
+```console
+hanlint entailment cases --output entailment-cases.json
+hanlint entailment evaluate predictions.json
+hanlint entailment evaluate predictions.json --format json
+```
+
+`cases`는 gold와 다섯 표를 빼고 `caseId`, domain, evidence excerpt와 atomic fact만 낸다. 외부 평가기는
+[예측 schema](src/hanlint/data/entailmentPredictions.schema.json)에 맞춰 `supported`, `contradicted`,
+`insufficient`, `abstain`과 0부터 1까지 confidence를 사례마다 하나씩 기록한다. `evaluate`는 class별
+혼동행렬과 F1, macro F1, coverage, 기권을 뺀 선택 정확도, selective risk와 risk-coverage 곡선을 낸다.
+기권만 늘려 오류를 감춘 결과는 coverage와 macro F1에서 함께 드러난다.
+Python에서는 `entailmentCases()`와 `evaluateEntailment(predictions)`가 같은 계약과 결과를 낸다.
+
+이 평가는 문장 두 개의 관계만 잰다. 원문 자체나 fact가 세상에서 참인지 판정하지 않으며, 36개 공개 KLUE
+사례가 모델 학습에 들어갔을 가능성도 배제하지 못한다. 따라서 한 모델 결과를 일반 함의 성능이나 글 품질
+향상으로 부르지 않는다. 한국어 문장과 주석이 든
+[`evidenceEntailmentV1.json`](src/hanlint/data/evidenceEntailmentV1.json)은 CC BY-SA 4.0이고, 코드와 다른
+데이터의 MIT 라이선스와 [분리해 표시한다](src/hanlint/data/evidenceEntailmentV1.LICENSE.md).
+
 구조가 필요하면 고정 말뭉치 1,600편의 종류별 절·문단·문장·글자 수 백분위로 원문 없는 청사진을 만든다.
 배포 데이터에는 원문, 제목, URL과 문장이 없고 허가된 출처 ID, 고정 판의 해시와 숫자 분포만 있다.
 `blueprint`은 마크다운 절 수와 도입·본문·마무리의 위치별 글자·문단·문장 예산을 따로 내며 사실이나
@@ -547,6 +571,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
 | `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다. Python 판 전용 |
 | `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 판·인용 조각 해시·라이선스를 검증한다. Python 판 전용 |
+| `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류·기권 지표를 집계한다. Python 판 전용 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다. Python 판 전용 |
 | `hanlint arena blind ...` | 기준과 후보의 자동 안전 계약을 가른 뒤 안전한 쌍만 블라인드 선호 평가한다. Python 판 전용 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
