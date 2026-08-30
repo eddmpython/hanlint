@@ -10,9 +10,10 @@ from .build import buildFingerprint
 from .codeBlocks import CodeBlock, codeBlocksOf
 from .documentPrint import DocumentPrint
 from .paragraphPrint import ParagraphPrint
-from .readerState import ReaderState, ReaderTrail
+from .readerState import ReaderState, ReaderTrail, readerKind
 from .sectionPrint import SectionPrint
 from .sentencePrint import DictionaryMatch, SentencePrint
+from .sourceSentence import sourceSentenceText, sourceSentenceTexts
 
 __all__ = [
     "CodeBlock",
@@ -23,6 +24,9 @@ __all__ = [
     "ReaderTrail",
     "SectionPrint",
     "SentencePrint",
+    "sourceSentenceText",
+    "sourceSentenceTexts",
     "buildFingerprint",
     "codeBlocksOf",
+    "readerKind",
 ]

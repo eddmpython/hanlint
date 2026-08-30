@@ -180,6 +180,27 @@ def testMatchedRegisterReportsAgree(tmp_path):
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testPatchSelectionAgrees(tmp_path):
+    config = tmp_path / "hanlint.toml"
+    config.write_text(
+        '[[patches]]\nrule = "cliche"\nbefore = "핵심은 `속도`입니다."\nafter = "`처리`에는 3초가 걸립니다."\n'
+        'moved = "결과를 직접 씀"\nsentence = "핵심은 속도입니다."\n'
+        'cue = "핵심은"\nreader = "new"\npresets = ["blog"]\n',
+        encoding="utf-8",
+    )
+    matched = tmp_path / "matched.md"
+    matched.write_text("## 절\n\n핵심은 `속도`입니다.\n", encoding="utf-8")
+    missed = tmp_path / "missed.md"
+    missed.write_text("## 절\n\n결국 중요한 것은 속도입니다.\n", encoding="utf-8")
+    python, node = runBoth([str(matched), str(missed), "--config", str(config), "--format", "json"])
+    assert python.returncode == node.returncode == 1, node.stderr
+    assert python.stdout == node.stdout
+    files = json.loads(python.stdout)["files"]
+    assert any("patch" in finding for finding in files[0]["findings"])
+    assert all("patch" not in finding for finding in files[1]["findings"])
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testInitPresetsAgree(tmp_path):
     # 같은 경로에 두 판을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
     for preset in ("blog", "report", "docs"):

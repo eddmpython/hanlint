@@ -67,7 +67,7 @@ def lintFile(path: str | Path, config: Config | None = None) -> list[Finding]:
 
 
 def learnText(before: str, after: str, config: Config | None = None) -> tuple[LearnedExemplar, ...]:
-    """앞뒤 문자열에서 사람이 승인할 본보기 후보를 찾는다."""
+    """앞뒤 문자열에서 사람이 승인할 정확 재생 패치 후보를 찾는다."""
     config = config or Config()
     beforeDoc = fingerprint(before, config)
     afterDoc = fingerprint(after, config)

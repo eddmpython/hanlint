@@ -9,6 +9,7 @@ import test from "node:test";
 import { loadConfig } from "../src/config/loadConfig.js";
 import { configFromMapping } from "../src/config/settings.js";
 import { exemplarFor } from "../src/data/exemplars.js";
+import { patchFor } from "../src/data/patches.js";
 import { parseToml } from "../src/config/toml.js";
 
 test("parseToml reads the hanlint subset", () => {
@@ -97,4 +98,55 @@ test("loadConfig reads project exemplar array tables", () => {
     "utf-8",
   );
   assert.equal(loadConfig(null, root).exemplars[0].rule, "translationese");
+});
+
+test("project patches require one exact selector", () => {
+  const entry = {
+    rule: "translationese",
+    before: "설계에 대한 이해가 필요합니다.",
+    after: "설계를 알아야 합니다.",
+    moved: "명사구를 서술어로 풂",
+    cue: "에  대한",
+    reader: "new",
+    presets: ["blog"],
+  };
+  const config = configFromMapping({ patches: [entry] });
+  const chosen = patchFor("translationese", "blog", entry.before, entry.before, "에 대한", "new", config.patches);
+  assert.equal(chosen?.cue, "에 대한");
+  const folded = entry.before.normalize("NFD").replaceAll(" ", "\n  ");
+  assert.equal(patchFor("translationese", "blog", folded, folded, "에 대한", "new", config.patches), chosen);
+  assert.equal(patchFor("translationese", "docs", entry.before, entry.before, "에 대한", "new", config.patches), undefined);
+  assert.equal(patchFor("translationese", "blog", "다른 문장입니다.", "다른 문장입니다.", "에 대한", "new", config.patches), undefined);
+  assert.equal(patchFor("translationese", "blog", entry.before, entry.before, "에 대해", "new", config.patches), undefined);
+  assert.equal(patchFor("translationese", "blog", entry.before, entry.before, "에 대한", "known", config.patches), undefined);
+  assert.equal(patchFor("translationese", "blog", entry.before, entry.before, "에 대한", "new", [chosen, chosen]), undefined);
+  const other = { ...entry, before: "자료에 대한 이해가 필요합니다.", after: "자료를 알아야 합니다." };
+  const two = configFromMapping({ patches: [entry, other] }).patches;
+  assert.equal(patchFor("translationese", "blog", other.before, other.before, "에 대한", "new", two), two[1]);
+  const marked = {
+    ...entry,
+    before: "`설계`에 대한 이해가 필요합니다.",
+    after: "`설계`를 알아야 합니다.",
+    sentence: entry.before,
+  };
+  const markedPatch = configFromMapping({ patches: [marked] }).patches[0];
+  assert.equal(patchFor("translationese", "blog", marked.before, entry.before, "에 대한", "new", [markedPatch]), markedPatch);
+  assert.equal(patchFor("translationese", "blog", entry.before, entry.before, "에 대한", "new", [markedPatch]), undefined);
+  assert.ok(markedPatch.before.startsWith("`설계`"));
+  assert.throws(() => configFromMapping({ patches: [entry, entry] }), /선택 조건이 겹친다/);
+  assert.throws(() => configFromMapping({ patches: [{ ...entry, presets: [] }] }), /비지 않은 문자열 배열/);
+  assert.throws(() => configFromMapping({ patches: [{ ...entry, reader: "any" }] }), /reader/);
+  assert.throws(() => configFromMapping({ patches: [{ ...entry, sentence: "" }] }), /sentence/);
+  assert.throws(() => configFromMapping({ patches: [{ ...entry, sourceText: "" }] }), /sourceText/);
+});
+
+test("loadConfig reads project patch array tables", () => {
+  const root = mkdtempSync(join(tmpdir(), "hanlintPatches-"));
+  writeFileSync(
+    join(root, "hanlint.toml"),
+    '[[patches]]\nrule = "translationese"\nbefore = "전입니다."\nafter = "후입니다."\n' +
+      'moved = "서술어로 바꿈"\ncue = "에 대한"\nreader = "new"\npresets = ["blog"]\n',
+    "utf-8",
+  );
+  assert.equal(loadConfig(null, root).patches[0].cue, "에 대한");
 });

@@ -33,6 +33,8 @@ def run(args: argparse.Namespace) -> int:
                 registers={str(args.file): doc.register},
                 preset=config.preset,
                 customExemplars=config.exemplars,
+                documents={str(args.file): doc},
+                patches=config.patches,
             ),
             args.output,
         )

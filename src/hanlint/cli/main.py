@@ -17,7 +17,7 @@ hanlint init                       주석 달린 hanlint.toml. --output 과 --pr
 hanlint profile build 글들/         승인된 글의 문체 분포. lint 의 --profile 로 견준다
 hanlint coverage review.json 글.md 평가자 지적 가운데 hanlint 가 같은 자리를 집은 비율
 hanlint diff 전.md 후.md           두 초안의 지문 차이
-hanlint learn 전.md 후.md          실제 고침에서 승인할 본보기 후보
+hanlint learn 전.md 후.md          실제 고침에서 승인할 정확 재생 패치 후보
 hanlint packet 글.md              초안과 대조 자료와 고침 근거를 AI용 JSON으로
 hanlint terms 글.md               한국어 학습자에게 처음 풀어 쓸 낱말 후보
 ```

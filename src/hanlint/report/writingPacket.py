@@ -1,7 +1,8 @@
 """AI 작문기가 같은 근거로 초안을 쓰고 고치게 하는 결정적 JSON 계약.
 
-잘 쓴 글을 복사하지 않는다. 현재 글의 지문과 같은 종류의 편집 글 분포, 독자 상태, 실제 지적, 검증된
-본보기와 문형을 분리해 싣는다. 분포는 품질 점수가 아니며 본보기의 `before` 는 따라 쓸 문장이 아니다.
+잘 쓴 글을 복사하지 않는다. 현재 글의 지문과 같은 종류의 편집 글 분포, 독자 상태, 실제 지적, 승인 패치와
+검증된 문형을 분리해 싣는다. 분포는 품질 점수가 아니다. 승인 패치는 원문 완전 일치에서만 재생하며 유사
+문장에는 주지 않는다.
 """
 
 from __future__ import annotations
@@ -11,11 +12,12 @@ from hashlib import sha256
 
 from ..audit import AuditResult
 from ..config import PROFILE_OF, Config
-from ..data import exemplarFor, patterns
+from ..data import patterns
 from ..data.profiles import Histogram, Profile, profileOf, userProfile
 from ..fingerprint import DocumentPrint
 from ..rules import Finding
-from .registerMatch import exemplarInRegister, patternInRegister
+from .patchMatch import patchData
+from .registerMatch import patternInRegister
 
 PURPOSES = ("draft", "revise")
 
@@ -76,8 +78,10 @@ def contractFor(purpose: str) -> dict:
         "constraints": [
             preservation,
             findingUse,
-            "guidance.exemplar는 목표 지적과 같은 국소 변환을 할 수 있을 때만 쓰고 맞지 않으면 원문을 둔다",
-            "guidance.exemplar의 이름과 수치와 사실을 input에 복사하거나 없는 정보를 만들어 채우지 않는다",
+            "guidance.patch는 글쓴이가 승인했고 match의 원문, 프리셋, 국소 표지와 독자 상태가 현재 자리에 모두 맞는 고침이다",
+            "guidance.patch가 있으면 현재 문장 전체를 patch.after로 바꾸고 비슷한 다른 문장에는 일반화하지 않는다",
+            "guidance.patch가 없는 지적에는 다른 본보기를 끌어오지 말고 확실하지 않으면 원문을 둔다",
+            "guidance.patch.after의 이름과 수치와 사실을 다른 문장으로 확산하거나 없는 정보를 만들어 채우지 않는다",
             "patterns에서는 form과 example만 쓰고 instead는 피한다",
             "referenceProfile은 같은 종류 글의 분포이며 품질 점수나 평균을 흉내 내라는 명령이 아니다",
             "설명 없이 완성된 한국어 마크다운만 결과로 낸다",
@@ -103,12 +107,11 @@ def readerState(doc: DocumentPrint, audit: AuditResult) -> dict:
 
 
 def guidanceFor(doc: DocumentPrint, findings: list[Finding], config: Config) -> list[dict]:
-    names = {finding.rule for finding in findings} | {exemplar.rule for exemplar in config.exemplars}
     guidance: list[dict] = []
-    for name in sorted(names):
-        exemplar = exemplarFor(name, config.preset, config.exemplars)
-        if exemplar:
-            guidance.append({"rule": name, "exemplar": exemplarInRegister(exemplar, doc.register).asDict()})
+    for finding in findings:
+        selected = patchData(doc, finding, config.preset, config.patches)
+        if selected:
+            guidance.append({"rule": finding.rule, "line": finding.line, "patch": selected})
     return guidance
 
 
@@ -148,7 +151,7 @@ def buildWritingPacket(
             "noticeCount": notices,
             "items": [finding.asDict() for finding in findings],
         },
-        "guidance": guidanceFor(doc, findings, config),
+        "guidance": guidanceFor(doc, findings, config) if purpose == "revise" else [],
         "patterns": [patternInRegister(pattern, doc.register).asDict() for pattern in patterns()],
         "verify": {
             "argv": [

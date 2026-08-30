@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 
-from ..fingerprint import DocumentPrint, SentencePrint
+from ..fingerprint import DocumentPrint, SentencePrint, readerKind, sourceSentenceTexts
 from ..rules import Finding
 from ..rules.finding import SENTENCE
 
@@ -24,6 +24,10 @@ class LearnedExemplar:
     why: str
     beforeLine: int
     afterLines: tuple[int, ...]
+    sentence: str
+    """마크다운 표식을 걷은 선택용 원문."""
+    cue: str
+    reader: str
     presets: tuple[str, ...] = ()
 
     def asDict(self) -> dict:
@@ -35,6 +39,9 @@ class LearnedExemplar:
             "why": self.why,
             "beforeLine": self.beforeLine,
             "afterLines": list(self.afterLines),
+            "sentence": self.sentence,
+            "cue": self.cue,
+            "reader": self.reader,
         }
         if self.presets:
             data["presets"] = list(self.presets)
@@ -76,6 +83,8 @@ def learnExemplars(
 ) -> tuple[LearnedExemplar, ...]:
     """사라진 문장 지적의 전후 짝. 같은 규칙이 고친 문장에 남으면 배우지 않는다."""
     pairs = changedSentencePairs(beforeDoc.sentences, afterDoc.sentences)
+    rawBefore = sourceSentenceTexts(beforeDoc)
+    rawAfter = sourceSentenceTexts(afterDoc)
     remaining = {(finding.rule, finding.at) for finding in afterFindings if finding.scope == SENTENCE and finding.at >= 0}
     beforeByIndex = {sentence.index: sentence for sentence in beforeDoc.sentences}
     seen: set[tuple[str, int]] = set()
@@ -90,19 +99,25 @@ def learnExemplars(
             continue
         if any((finding.rule, sentence.index) in remaining for sentence in afterSentences):
             continue
-        afterText = " ".join(sentence.text.strip() for sentence in afterSentences if sentence.text.strip())
-        if not afterText or beforeSentence.text.strip() == afterText:
+        afterPlain = " ".join(sentence.text.strip() for sentence in afterSentences if sentence.text.strip())
+        afterText = " ".join(
+            rawAfter.get(sentence.index, sentence.text).strip() for sentence in afterSentences if sentence.text.strip()
+        )
+        if not afterText or beforeSentence.text.strip() == afterPlain:
             continue
         seen.add(key)
         learned.append(
             LearnedExemplar(
                 rule=finding.rule,
-                before=beforeSentence.text.strip(),
+                before=rawBefore.get(beforeSentence.index, beforeSentence.text).strip(),
                 after=afterText,
                 moved="실제 수정본의 문장으로 바꿈",
                 why=finding.why,
                 beforeLine=beforeSentence.line,
                 afterLines=tuple(dict.fromkeys(sentence.line for sentence in afterSentences)),
+                sentence=beforeSentence.text.strip(),
+                cue=finding.localCue,
+                reader=readerKind(beforeSentence, beforeDoc.reader.beforeSentence[finding.at]),
                 presets=(preset,) if preset else (),
             )
         )

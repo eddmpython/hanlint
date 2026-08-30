@@ -9,6 +9,8 @@ export const PARAGRAPH = "paragraph";
 export const SECTION = "section";
 export const DOCUMENT = "document";
 
+const MIN_LOCAL_CUE = 2;
+
 /**
  * @typedef {object} Finding
  * @property {string} rule
@@ -55,4 +57,19 @@ export function findingAsDict(f) {
   }
   if (f.candidates.length) data.candidates = f.candidates.map((candidate) => ({ text: candidate.text, why: candidate.why }));
   return data;
+}
+
+/** 규칙이 짚은 국소 표지. 너무 짧으면 오선택을 피하려고 인용 전체를 쓴다. @param {Finding} f */
+export function localCue(f) {
+  const flat = (text) => text.split(/\s+/).filter(Boolean).join(" ");
+  const quote = flat(f.quote);
+  if (f.fragment) {
+    const fragment = flat(f.fragment);
+    if (fragment.length >= MIN_LOCAL_CUE) return fragment;
+  }
+  const marked = [...f.why.matchAll(/`([^`\n]+)`/g)]
+    .map((match) => flat(match[1]))
+    .filter((candidate) => candidate.length >= MIN_LOCAL_CUE && quote.includes(candidate));
+  marked.sort((left, right) => right.length - left.length || (left < right ? 1 : left > right ? -1 : 0));
+  return marked[0] ?? quote;
 }

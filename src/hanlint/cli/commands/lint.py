@@ -60,10 +60,12 @@ def run(args: argparse.Namespace) -> int:
     results: dict[str, list[Finding]] = {}
     texts: dict[str, str] = {}
     registers: dict[str, str] = {}
+    documents = {}
     for path in files:
         name, text = readInput(path, args.stdinPath)
         texts[name] = text
         doc = buildFingerprint(parseMarkdown(text, path=name), config)
+        documents[name] = doc
         registers[name] = doc.register
         results[name] = baseline.keep(name, runAll(doc, config))
 
@@ -79,6 +81,8 @@ def run(args: argparse.Namespace) -> int:
                 registers=registers,
                 preset=config.preset,
                 customExemplars=config.exemplars,
+                documents=documents,
+                patches=config.patches,
             ),
             args.output,
         )

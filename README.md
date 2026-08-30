@@ -94,22 +94,28 @@ hanlint 는 그 셀 수 있는 것만 맡는다. 재미있는지, 설득력이 �
 이름의 관계를 푼 짝이 나오고, `--preset docs` 에는 기술 용어를 남긴 채 실패 조건과 행동을 푼 짝이 나온다.
 어느 짝이든 고치기 전은 잡히고 고친 뒤는 모든 error 가 0인지 세 문체에서 게이트가 확인한다.
 
-### 고친 글에서 프로젝트 본보기를 배운다
+### 승인 고침의 정확 재생
 
-`hanlint learn 전.md 후.md` 는 글쓴이가 실제로 고쳐서 지적이 사라진 문장 짝을 후보로 낸다. 여러 문장을
-한꺼번에 다시 쓴 모호한 구간은 추측하지 않는다. 출력은 제안일 뿐이며, 사람이 뜻을 확인한 것만
-`hanlint.toml` 의 `[[exemplars]]` 에 승인한다. 프로젝트 본보기는 같은 규칙과 프리셋의 내장 본보기를
-덮어쓰므로 이후 lint, rules, explain 과 JSON 출력에서 조직이 실제로 쓰는 고침을 보여 준다.
+`hanlint learn 전.md 후.md` 는 글쓴이가 실제로 고쳐서 지적이 사라진 문장 짝과 그때의 국소 표지와 독자
+상태를 후보로 낸다. 여러 문장을 한꺼번에 다시 쓴 모호한 구간은 추측하지 않는다. 출력은 제안일 뿐이며,
+사람이 문장 대응과 뜻 보존을 확인한 것만 `hanlint.toml` 의 `[[patches]]` 에 승인한다.
 
 ```console
 hanlint learn 전.md 후.md
 hanlint learn 전.md 후.md --format toml
 ```
 
+승인 패치는 유사도 검색을 하지 않는다. NFC로 조합하고 줄과 연속 공백만 눕힌 마크다운 원문 `sourceText`,
+표식을 걷은 `sentence`, 규칙, 프리셋, 국소 표지, 문장 직전 독자 상태가 모두 같고 패치가 하나일 때만
+승인한 `after`를 그대로 돌려준다. 같은 규칙과
+표지라도 원문이 한 글자 다르면 기권한다. 그래서 같은 규칙 아래 서로 다른 승인 원문을 여러 개 쌓을 수
+있지만, 비슷한 문장에 남의 이름과 수치와 사실을 옮기지는 않는다. `before`, `after`, `sourceText`는 인라인
+코드와 링크 같은 마크다운을 보존하고, `sentence`는 그 표식만 걷은 선택용 원문이다.
+
 ### AI에 작문 근거를 한 번에 건넨다
 
-`hanlint packet 글.md`는 원문, 현재 지문, 독자 상태, 같은 종류의 편집 글 분포, 실제 지적, 선택된 본보기,
-검증된 문형을 `hanlint.writingPacket` JSON 하나로 묶는다. 생성 모델이 바뀌어도 근거는 같다. 처음부터
+`hanlint packet 글.md`는 원문, 현재 지문, 독자 상태, 같은 종류의 편집 글 분포, 실제 지적, 정확히 선택된
+승인 패치, 검증된 문형을 `hanlint.writingPacket` JSON 하나로 묶는다. 생성 모델이 바뀌어도 근거는 같다. 처음부터
 쓸 때는 `--purpose draft`, 초안을 고칠 때는 `--purpose revise`를 쓴다. 말뭉치 문장을 검색해 복사하지 않고
 분포와 전후 변환만 전달하므로 공통 AI 문체로 평준화하는 위험도 줄인다.
 
@@ -361,12 +367,16 @@ AI 가 쓴 한국어는 대체로 문법이 맞고 대체로 밋밋하다. 위 �
 hanlint 글.md --format json
 ```
 
-지적마다 `rule`, `line`, `quote`, `why` 가 오고 그 뒤에 `exemplar` 가 붙는다. `before` 와 `after` 와
-`moved` 셋이다. AI 는 규칙 이름과 금지 사유뿐 아니라 검증된 변환 한 쌍을 받는다. 실제 수정 성공률이
-높아지는지는 [exemplarLift 탐침](tests/_attempts/exemplarLift/)의 짝실험으로 따로 잰다. `qwen3:8b`로 실제
-문장 30쌍을 전수 판정한 결과, 목표 규칙 해결과 새 error 0과 뜻 보존을 함께 만족한 것은 본보기 유무 모두
-12/30이었다. 단일 규칙 본보기는 순향상이 없었다. 그래서 본보기의 이름과 수치와 사실은 복사하지 않고,
-목표 문장에 같은 국소 변환을 할 수 있을 때만 쓴다. 맞지 않으면 원문을 둔다.
+지적마다 `rule`, `line`, `quote`, `why`와 규칙을 설명하는 `exemplar`가 온다. 교육용 본보기가 실제 수정
+성공률을 높이는지는 [exemplarLift 탐침](tests/_attempts/exemplarLift/)에서 따로 쟀다. `qwen3:8b` 실제 문장
+30쌍에서 목표 규칙 해결, 새 error 0, 뜻 보존을 함께 만족한 것은 본보기 유무 모두 12/30이었다. 따라서
+`writingPacket`은 일반 본보기를 작문 근거로 싣지 않는다.
+
+대신 지적의 정규화한 원문까지 사람이 승인한 `[[patches]]`와 완전히 같을 때만 `patch`와
+`guidance.patch`가 붙는다. [patchMemory 탐침](tests/_attempts/patchMemory/)의 고정 9과제에서는 세 조건을
+모두 만족한 것이 이유만 제공 2/9, 무조건 본보기 3/9, 정확 재생 4/9이었다. 승인 원문 세 건만 보면 정확
+재생이 일반 본보기에 2승 0패 1무였다. 표본이 작으므로 유사 문장으로 넓히지 않는다. 맞는 승인 원문이
+없으면 `guidance`는 비고 모델은 확실하지 않은 문장을 그대로 둔다.
 
 에이전트에 붙일 때는 [skills/use-hanlint/SKILL.md](skills/use-hanlint/SKILL.md) 를 스킬 폴더에 둔다.
 글을 쓴 직후 스스로 검사하고 error 가 0 이 될 때까지 고친 뒤에 사람에게 넘긴다.
@@ -415,7 +425,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint map 글.md --format html` | 지도를 단일 HTML 로 |
 | `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 지문을 JSON 으로 |
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 |
-| `hanlint learn 전.md 후.md` | 사라진 문장 지적에서 사람이 승인할 프로젝트 본보기 후보 |
+| `hanlint learn 전.md 후.md` | 사라진 문장 지적에서 사람이 승인할 정확 재생 패치 후보 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 |
 | `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 |

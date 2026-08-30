@@ -50,6 +50,17 @@ START = ReaderState(None, frozenset(), frozenset(), frozenset(), 0, (), ())
 """아직 아무것도 읽지 않은 독자."""
 
 
+def readerKind(sentence: SentencePrint, state: ReaderState) -> str:
+    """현재 문장의 화제가 직전 독자에게 새 것인지 이미 손에 든 것인지 네 꼴로 줄인다."""
+    if not sentence.topics:
+        return "none"
+    if sentence.topics & state.recent:
+        return "recent"
+    if sentence.topics & state.known:
+        return "known"
+    return "new"
+
+
 @dataclass(frozen=True)
 class ReaderTrail:
     """자리마다의 독자 상태. 문장은 `SentencePrint.index` 로, 블록은 `Block.index` 로 찾는다."""

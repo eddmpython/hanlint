@@ -5,6 +5,7 @@
  */
 
 import { projectExemplars } from "../data/exemplars.js";
+import { projectPatches } from "../data/patches.js";
 
 /**
  * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py 의 PRESETS 다.
@@ -57,6 +58,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {string | null} baseline
  * @property {Record<string, unknown[]>} dictionary
  * @property {import("../data/exemplars.js").Exemplar[]} exemplars 사람이 승인한 프로젝트 본보기
+ * @property {import("../data/patches.js").Patch[]} patches 사람이 승인한 국소 고침
  * @property {string[]} ignoreFences 지문에서 뺄 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록이 아니다
  * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
  * @property {number} fragmentRun
@@ -94,6 +96,7 @@ export function defaultConfig() {
     baseline: null,
     dictionary: {},
     exemplars: [],
+    patches: [],
     ignoreFences: [],
     source: null,
     fragmentRun: 3,
@@ -147,6 +150,8 @@ export function configFromMapping(data) {
       config.dictionary = { .../** @type {Record<string, unknown[]>} */ (value) };
     } else if (key === "exemplars") {
       config.exemplars = projectExemplars(value, PRESET_NAMES);
+    } else if (key === "patches") {
+      config.patches = projectPatches(value, PRESET_NAMES);
     } else if (key === "ignoreFences" || key === "introFields" || key === "endingFields") {
       if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) {
         throw new Error(`${key} 는 문자열 배열이다: ${JSON.stringify(value)}`);

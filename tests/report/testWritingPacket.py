@@ -22,25 +22,26 @@ def testWritingPacketCarriesEvidenceWithoutDuplicatingExemplars():
     assert packet["comparison"]["current"]["sentenceCount"] == 5
     assert packet["comparison"]["readerState"]["numbersSeen"] == ["3"]
     assert packet["findings"]["errorCount"] > 0
-    names = [entry["rule"] for entry in packet["guidance"]]
-    assert names == sorted(set(names)) and "cliche" in names and "translationese" in names
+    assert packet["guidance"] == []
     assert all("exemplar" not in finding for finding in packet["findings"]["items"])
     constraints = packet["contract"]["constraints"]
-    assert any("맞지 않으면 원문을 둔다" in item for item in constraints)
+    assert any("다른 본보기를 끌어오지 말고" in item for item in constraints)
     assert any("없는 정보를 만들어" in item for item in constraints)
     assert len(packet["patterns"]) >= 10
     assert packet == writingPacket(SAMPLE, path="글.md")
 
 
-def testWritingPacketUsesProjectExemplarAndDocumentRegister():
+def testWritingPacketUsesOnlyAnExactlyMatchedApprovedPatch():
     config = Config.fromMapping(
         {
-            "exemplars": [
+            "patches": [
                 {
                     "rule": "cliche",
-                    "before": "조직의 전 문장입니다.",
-                    "after": "조직의 후 문장입니다.",
+                    "before": "핵심은 처리 속도입니다.",
+                    "after": "처리에는 3초가 걸립니다.",
                     "moved": "결론을 직접 씀",
+                    "cue": "핵심은",
+                    "reader": "new",
                     "presets": ["blog"],
                 }
             ]
@@ -48,8 +49,17 @@ def testWritingPacketUsesProjectExemplarAndDocumentRegister():
     )
     packet = writingPacket(SAMPLE, config)
     cliche = next(entry for entry in packet["guidance"] if entry["rule"] == "cliche")
-    assert cliche["exemplar"]["before"] == "조직의 전 문장입니다."
+    assert cliche["patch"]["before"] == "핵심은 처리 속도입니다."
+    assert cliche["patch"]["match"] == {
+        "sourceText": "핵심은 처리 속도입니다.",
+        "sentence": "핵심은 처리 속도입니다.",
+        "preset": "blog",
+        "cue": "핵심은",
+        "reader": "new",
+    }
+    assert not any(entry["rule"] == "translationese" for entry in packet["guidance"])
     assert packet["input"]["register"] == "합니다"
+    assert writingPacket(SAMPLE, config, purpose="draft")["guidance"] == []
 
 
 def testDraftPacketChangesContractAndCanOmitSource():

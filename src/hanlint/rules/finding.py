@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 ERROR = "error"
@@ -11,6 +12,9 @@ SENTENCE = "sentence"
 PARAGRAPH = "paragraph"
 SECTION = "section"
 DOCUMENT = "document"
+
+MARKED = re.compile(r"`([^`\n]+)`")
+MIN_LOCAL_CUE = 2
 
 
 @dataclass(frozen=True)
@@ -43,6 +47,21 @@ class Finding:
     replacement: str | None = None
     candidates: tuple[Candidate, ...] = ()
     """뜻을 정하지 않고 형태로 좁힐 수 있을 때만. 순위와 점수는 없다."""
+
+    @property
+    def localCue(self) -> str:
+        """규칙이 짚은 국소 표지. 너무 짧으면 오선택을 피하려고 인용 전체를 쓴다."""
+        quote = " ".join(self.quote.split())
+        if self.fragment:
+            fragment = " ".join(self.fragment.split())
+            if len(fragment) >= MIN_LOCAL_CUE:
+                return fragment
+        marked = [
+            candidate
+            for raw in MARKED.findall(self.why)
+            if len(candidate := " ".join(raw.split())) >= MIN_LOCAL_CUE and candidate in quote
+        ]
+        return max(marked, key=lambda item: (len(item), item), default=quote)
 
     def asDict(self) -> dict:
         data = {

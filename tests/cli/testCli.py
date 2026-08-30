@@ -62,16 +62,21 @@ def testLearnEmitsReviewableTextJsonAndToml(tmp_path, capsys):
     after = write(tmp_path, "후.md", "설계를 알아야 합니다.\n")
     assert main(["learn", str(before), str(after)]) == 0
     text = capsys.readouterr().out
-    assert "본보기 후보" in text and "[translationese]" in text and "사람이 뜻을 확인" in text
+    assert "패치 후보" in text and "[translationese]" in text and "사람이 뜻을 확인" in text
 
     assert main(["learn", str(before), str(after), "--format", "json"]) == 0
     data = json.loads(capsys.readouterr().out)
     candidate = next(item for item in data["candidates"] if item["rule"] == "translationese")
     assert candidate["beforeLine"] == 1 and candidate["presets"] == ["blog"]
+    assert candidate["sentence"] == "설계에 대한 이해가 필요합니다."
+    assert candidate["cue"] == "에 대한" and candidate["reader"] == "new"
 
     assert main(["learn", str(before), str(after), "--format", "toml"]) == 0
     toml = capsys.readouterr().out
-    assert "[[exemplars]]" in toml and 'rule = "translationese"' in toml and 'presets = ["blog"]' in toml
+    assert "[[patches]]" in toml and 'rule = "translationese"' in toml and 'presets = ["blog"]' in toml
+    assert 'sourceText = "설계에 대한 이해가 필요합니다."' in toml
+    assert 'sentence = "설계에 대한 이해가 필요합니다."' in toml
+    assert 'cue = "에 대한"' in toml and 'reader = "new"' in toml
 
 
 def testProjectExemplarReachesLintRulesAndExplain(tmp_path, capsys):
@@ -94,6 +99,30 @@ def testProjectExemplarReachesLintRulesAndExplain(tmp_path, capsys):
     assert main(["explain", "cliche", "--config", str(config), "--format", "json"]) == 0
     explainData = json.loads(capsys.readouterr().out)
     assert explainData["exemplar"]["before"] == "조직 전입니다."
+
+
+def testApprovedPatchReachesOnlyItsMatchingFinding(tmp_path, capsys):
+    config = write(
+        tmp_path,
+        "hanlint.toml",
+        '[[patches]]\nrule = "cliche"\nbefore = "핵심은 속도입니다."\nafter = "처리에는 3초가 걸립니다."\n'
+        'moved = "결과를 직접 씀"\ncue = "핵심은"\nreader = "new"\npresets = ["blog"]\n',
+    )
+    bad = write(tmp_path, "bad.md", BAD)
+    assert main([str(bad), "--config", str(config), "--format", "json"]) == 1
+    finding = next(item for item in json.loads(capsys.readouterr().out)["files"][0]["findings"] if item["rule"] == "cliche")
+    assert finding["patch"]["match"] == {
+        "sourceText": "핵심은 속도입니다.",
+        "sentence": "핵심은 속도입니다.",
+        "preset": "blog",
+        "cue": "핵심은",
+        "reader": "new",
+    }
+
+    other = write(tmp_path, "other.md", "## 절\n\n결국 중요한 것은 속도입니다.\n")
+    assert main([str(other), "--config", str(config), "--format", "json"]) == 1
+    findings = json.loads(capsys.readouterr().out)["files"][0]["findings"]
+    assert all("patch" not in item for item in findings)
 
 
 def testPacketWritesDeterministicAiContract(tmp_path, capsys):

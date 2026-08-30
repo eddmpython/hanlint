@@ -5,11 +5,14 @@ from __future__ import annotations
 from .exemplars import Exemplar, allExemplars, exemplarFor, exemplars, projectExemplars
 from .learningVocabulary import Term, VocabularyEntry, gradesByLexeme, termsIn, vocabularyEntries, vocabularyMetadata
 from .load import loadLines, loadPatterns, loadToml
+from .patches import READER_KINDS, Patch, flatCue, flatSentence, patchFor, projectPatches
 from .patterns import Pattern, patterns, patternsAvoiding
 
 __all__ = [
     "Exemplar",
     "Pattern",
+    "Patch",
+    "READER_KINDS",
     "Term",
     "VocabularyEntry",
     "allExemplars",
@@ -19,9 +22,13 @@ __all__ = [
     "loadLines",
     "loadPatterns",
     "loadToml",
+    "flatCue",
+    "flatSentence",
+    "patchFor",
     "patterns",
     "patternsAvoiding",
     "projectExemplars",
+    "projectPatches",
     "termsIn",
     "vocabularyEntries",
     "vocabularyMetadata",

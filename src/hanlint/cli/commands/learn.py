@@ -1,4 +1,4 @@
-"""`hanlint learn 전.md 후.md`. 글쓴이의 실제 고침에서 승인할 본보기 후보를 찾는다."""
+"""`hanlint learn 전.md 후.md`. 글쓴이의 실제 고침에서 승인할 패치 후보를 찾는다."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from ...learn import LearnedExemplar, learnExemplars
 from ...rules import runAll
 from .shared import addCommonOptions, configFrom, emit, readFile, startFolder
 
-HELP = "두 초안에서 사람이 승인할 본보기 후보를 찾는다"
+HELP = "두 초안에서 사람이 승인할 패치 후보를 찾는다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
@@ -32,11 +32,11 @@ def lineLabel(lines: tuple[int, ...]) -> str:
 
 
 def renderLearnText(candidates: tuple[LearnedExemplar, ...], beforePath: Path, afterPath: Path) -> str:
-    lines = [f"본보기 후보 {len(candidates)}건  {beforePath} -> {afterPath}"]
+    lines = [f"패치 후보 {len(candidates)}건  {beforePath} -> {afterPath}"]
     if not candidates:
         lines.append("사라진 문장 지적이 없거나 문장 대응이 모호하다")
         return "\n".join(lines)
-    lines.append("사람이 뜻을 확인한 뒤 같은 규칙과 프리셋에서 하나만 hanlint.toml 에 승인한다")
+    lines.append("사람이 뜻을 확인한 뒤 선택 조건과 함께 hanlint.toml 에 승인한다")
     for candidate in candidates:
         lines.extend(
             [
@@ -45,6 +45,7 @@ def renderLearnText(candidates: tuple[LearnedExemplar, ...], beforePath: Path, a
                 f"  전  {flat(candidate.before)}",
                 f"  후  {flat(candidate.after)}",
                 f"  사라진 까닭: {flat(candidate.why)}",
+                f"  선택 조건: cue={candidate.cue!r}, reader={candidate.reader}, presets={','.join(candidate.presets)}",
             ]
         )
     return "\n".join(lines)
@@ -66,18 +67,22 @@ def tomlString(text: str) -> str:
 
 
 def renderLearnToml(candidates: tuple[LearnedExemplar, ...]) -> str:
-    lines = ["# hanlint learn 후보. 뜻을 확인하고 같은 규칙과 프리셋에서 하나만 남긴다."]
+    lines = ["# hanlint learn 후보. 문장 대응과 뜻을 확인한 뒤 승인한다."]
     for candidate in candidates:
         presets = ", ".join(tomlString(preset) for preset in candidate.presets)
         lines.extend(
             [
                 "",
                 f"# 전 {candidate.beforeLine}줄 -> 후 {lineLabel(candidate.afterLines)}. {flat(candidate.why)}",
-                "[[exemplars]]",
+                "[[patches]]",
                 f"rule = {tomlString(candidate.rule)}",
                 f"before = {tomlString(candidate.before)}",
                 f"after = {tomlString(candidate.after)}",
                 f"moved = {tomlString(candidate.moved)}",
+                f"sourceText = {tomlString(candidate.before)}",
+                f"sentence = {tomlString(candidate.sentence)}",
+                f"cue = {tomlString(candidate.cue)}",
+                f"reader = {tomlString(candidate.reader)}",
             ]
         )
         if candidate.presets:

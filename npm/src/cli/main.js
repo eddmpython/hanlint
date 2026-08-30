@@ -384,10 +384,13 @@ function runLint(args) {
   const texts = new Map();
   /** @type {Map<string, string>} */
   const registers = new Map();
+  /** @type {Map<string, import("../fingerprint/build.js").DocumentPrint>} */
+  const documents = new Map();
   for (const path of files) {
     const [name, text] = readInput(path, stdinName);
     texts.set(name, text);
     const document = fingerprint(text, config, name);
+    documents.set(name, document);
     registers.set(name, document.register);
     results.set(name, baseline.keep(name, runAll(document, config)));
   }
@@ -399,7 +402,7 @@ function runLint(args) {
 
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (format === "json") {
-    emit(renderJson(shown, configLabel(config), registers, config.preset, config.exemplars), output);
+    emit(renderJson(shown, configLabel(config), registers, config.preset, config.exemplars, documents, config.patches), output);
   } else if (format === "github") {
     emit([...shown].map(([name, findings]) => renderGithub(name, findings)).join("\n"), output);
   } else {
@@ -704,6 +707,18 @@ export function renderInit(preset = "blog") {
     '# before = "설계에 대한 이해가 필요합니다."',
     '# after = "설계를 알아야 합니다."',
     '# moved = "명사구를 서술어로 풀어 씀"',
+    '# presets = ["blog"]',
+    "",
+    "# 사람이 승인한 국소 고침. 원문을 포함한 모든 조건이 맞을 때만 그대로 재생한다",
+    "# [[patches]]",
+    '# rule = "translationese"',
+    '# before = "설계에 대한 이해가 필요합니다."',
+    '# after = "설계를 알아야 합니다."',
+    '# moved = "명사구를 서술어로 풀어 씀"',
+    '# sourceText = "설계에 대한 이해가 필요합니다."  # before의 마크다운까지 보존한 선택용 원문',
+    '# sentence = "설계에 대한 이해가 필요합니다."  # before에서 마크다운 표식을 걷은 선택용 원문',
+    '# cue = "에 대한"',
+    '# reader = "new"',
     '# presets = ["blog"]',
     "",
   );

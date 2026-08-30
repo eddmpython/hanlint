@@ -21,6 +21,7 @@ import json
 from dataclasses import dataclass, field
 
 from ..data.exemplars import Exemplar, projectExemplars
+from ..data.patches import Patch, projectPatches
 
 PRESETS: dict[str, tuple[str, ...]] = {
     "blog": (),
@@ -99,6 +100,8 @@ class Config:
     """사전에 더할 항목. 키는 사전 이름 (cliches, translationese, redundantPair, japaneseLoan)."""
     exemplars: tuple[Exemplar, ...] = ()
     """사람이 승인해 `[[exemplars]]` 로 넣은 프로젝트 본보기."""
+    patches: tuple[Patch, ...] = ()
+    """사람이 승인해 `[[patches]]` 로 넣은 국소 고침. 원문을 포함한 모든 조건이 맞을 때만 재생한다."""
     ignoreFences: list[str] = field(default_factory=list)
     """지문에서 뺄 펜스의 언어 표기. 코드도 산문도 아닌 펜스 (강의 장면 계약, 도표 원문) 가 코드 블록으로 세어지면
     거의 같은 블록, 읽어 주지 않은 출력, 절의 결과로 잘못 잡힌다. 실측: eddmpython-course 의 `course-scene` 펜스가
@@ -157,6 +160,11 @@ class Config:
                 self.exemplars = tuple(self.exemplars)
             else:
                 self.exemplars = projectExemplars(self.exemplars, PRESET_NAMES)
+        if self.patches:
+            if all(isinstance(patch, Patch) for patch in self.patches):
+                self.patches = tuple(self.patches)
+            else:
+                self.patches = projectPatches(self.patches, PRESET_NAMES)
 
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable and ruleName not in PRESETS[self.preset]
@@ -183,6 +191,8 @@ class Config:
                 config.dictionary = dict(value)
             elif key == "exemplars":
                 config.exemplars = projectExemplars(value, PRESET_NAMES)
+            elif key == "patches":
+                config.patches = projectPatches(value, PRESET_NAMES)
             elif key in ("ignoreFences", "introFields", "endingFields"):
                 if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
                     raise ValueError(f"{key} 는 문자열 배열이다: {shown(value)}")

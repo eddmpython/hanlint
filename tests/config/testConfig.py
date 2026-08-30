@@ -1,9 +1,10 @@
 from pathlib import Path
+from unicodedata import normalize
 
 import pytest
 
 from hanlint.config import Config, loadConfig
-from hanlint.data import exemplarFor
+from hanlint.data import Patch, exemplarFor, patchFor
 
 
 def testDefaultsAreTheTruth():
@@ -115,3 +116,82 @@ def testLoadReadsProjectExemplarArrayTable(tmp_path: Path):
     )
     config = loadConfig(start=tmp_path)
     assert config.exemplars[0].rule == "translationese"
+
+
+def testProjectPatchesSelectOnlyOneExactContext():
+    entry = {
+        "rule": "translationese",
+        "before": "설계에 대한 이해가 필요합니다.",
+        "after": "설계를 알아야 합니다.",
+        "moved": "명사구를 서술어로 풂",
+        "cue": "에  대한",
+        "reader": "new",
+        "presets": ["blog"],
+    }
+    config = Config.fromMapping({"patches": [entry]})
+    chosen = patchFor(
+        "translationese",
+        "blog",
+        "설계에 대한 이해가 필요합니다.",
+        "설계에 대한 이해가 필요합니다.",
+        "에 대한",
+        "new",
+        config.patches,
+    )
+    assert chosen and chosen.cue == "에 대한"
+    folded = normalize("NFD", entry["before"]).replace(" ", "\n  ")
+    assert patchFor("translationese", "blog", folded, folded, "에 대한", "new", config.patches) == chosen
+    args = (entry["before"], entry["before"], "에 대한", "new", config.patches)
+    assert patchFor("translationese", "docs", *args) is None
+    assert patchFor("translationese", "blog", "다른 문장입니다.", "다른 문장입니다.", "에 대한", "new", config.patches) is None
+    assert patchFor("translationese", "blog", args[0], args[1], "에 대해", "new", config.patches) is None
+    assert patchFor("translationese", "blog", args[0], args[1], "에 대한", "known", config.patches) is None
+    assert patchFor("translationese", "blog", args[0], args[1], "에 대한", "new", (chosen, chosen)) is None
+
+    other = {**entry, "before": "자료에 대한 이해가 필요합니다.", "after": "자료를 알아야 합니다."}
+    two = Config.fromMapping({"patches": [entry, other]}).patches
+    assert patchFor("translationese", "blog", other["before"], other["before"], "에 대한", "new", two) == two[1]
+
+    marked = {
+        **entry,
+        "before": "`설계`에 대한 이해가 필요합니다.",
+        "after": "`설계`를 알아야 합니다.",
+        "sentence": entry["before"],
+    }
+    markedPatch = Config.fromMapping({"patches": [marked]}).patches[0]
+    assert patchFor("translationese", "blog", marked["before"], entry["before"], "에 대한", "new", (markedPatch,)) == markedPatch
+    assert patchFor("translationese", "blog", entry["before"], entry["before"], "에 대한", "new", (markedPatch,)) is None
+    assert markedPatch.asDict("blog")["before"].startswith("`설계`")
+
+    direct = Config(patches=[chosen])
+    assert direct.patches == config.patches
+    with pytest.raises(ValueError, match="선택 조건이 겹친다"):
+        Config.fromMapping({"patches": [entry, entry]})
+    with pytest.raises(ValueError, match="비지 않은 문자열 배열"):
+        Config.fromMapping({"patches": [{**entry, "presets": []}]})
+    with pytest.raises(ValueError, match="reader"):
+        Config.fromMapping({"patches": [{**entry, "reader": "any"}]})
+    with pytest.raises(ValueError, match="sentence"):
+        Config.fromMapping({"patches": [{**entry, "sentence": ""}]})
+    with pytest.raises(ValueError, match="sourceText"):
+        Config.fromMapping({"patches": [{**entry, "sourceText": ""}]})
+
+
+def testPatchDataKeepsSelectionEvidence():
+    patch = Patch("translationese", "전입니다.", "후입니다.", "바꿈", "에 대한", "new", ("blog",))
+    assert patch.asDict("blog")["match"] == {
+        "sourceText": "전입니다.",
+        "sentence": "전입니다.",
+        "preset": "blog",
+        "cue": "에 대한",
+        "reader": "new",
+    }
+
+
+def testLoadReadsProjectPatchArrayTable(tmp_path: Path):
+    (tmp_path / "hanlint.toml").write_text(
+        '[[patches]]\nrule = "translationese"\nbefore = "전입니다."\nafter = "후입니다."\n'
+        'moved = "서술어로 바꿈"\ncue = "에 대한"\nreader = "new"\npresets = ["blog"]\n',
+        encoding="utf-8",
+    )
+    assert loadConfig(start=tmp_path).patches[0].cue == "에 대한"

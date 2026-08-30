@@ -76,11 +76,7 @@ def makeSentencePrint(
         deixis=deixis,
         euiCount=euiCount(text),
         nounRun=longestNounRun(text),
-        passives=tuple(
-            surface
-            for start, end, surface in doublePassiveSpans(text)
-            if not markers.insideAny(start, end, quoted)
-        ),
+        passives=tuple(surface for start, end, surface in doublePassiveSpans(text) if not markers.insideAny(start, end, quoted)),
         hedges=markers.countMatches(text, "hedges.txt"),
         numbers=markers.countNumbers(text),
         topics=topicsOf(text),

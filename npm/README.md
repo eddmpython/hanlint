@@ -19,6 +19,10 @@ npx hanlint 글.md --format compact --errors-only
 로 받는다. 규칙 목록은 `npx hanlint rules`, 규칙의 기술서는 `npx hanlint explain <규칙>`, 지금 어느 설정으로
 도는지는 `npx hanlint doctor` 다.
 
+파이썬 판의 `hanlint learn 전.md 승인본.md --format toml`로 승인한 `[[patches]]`를 같은
+`hanlint.toml`에 두면 npm 판도 같은 패치를 읽는다. 정규화한 원문, 규칙, 프리셋, 국소 표지, 독자 상태가
+모두 같은 유일한 패치만 JSON 지적의 `patch`로 내고, 원문이 다르면 유사 문장이라도 기권한다.
+
 글의 종류가 블로그가 아니면 프리셋을 먼저 고른다. `npx hanlint init --preset docs` 가 참고 문서에 맞지 않는
 규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs` 셋이다.
 

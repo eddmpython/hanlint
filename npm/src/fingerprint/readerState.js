@@ -33,6 +33,18 @@ import { numeralsIn } from "./markers.js";
 /** @type {Set<string>} */
 const NOTHING = new Set();
 
+/**
+ * 현재 문장의 화제가 직전 독자에게 새 것인지 이미 손에 든 것인지 네 꼴로 줄인다.
+ * @param {import("./build.js").SentencePrint} sentence
+ * @param {ReaderState} state
+ */
+export function readerKind(sentence, state) {
+  if (!sentence.topics.size) return "none";
+  if ([...sentence.topics].some((topic) => state.recent.has(topic))) return "recent";
+  if ([...sentence.topics].some((topic) => state.known.has(topic))) return "known";
+  return "new";
+}
+
 /** @param {Set<string>} base @param {Set<string>} added */
 function union(base, added) {
   if (!added.size) return base;

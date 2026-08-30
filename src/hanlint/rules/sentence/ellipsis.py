@@ -19,8 +19,12 @@ def _insideCommandExample(text: str, start: int, end: int) -> bool:
     """괄호 안 명령 예시의 생략 인자. 예: (kubectl get -o yaml …)."""
     opened = text.rfind("(", 0, start + 1)
     closed = text.find(")", end)
-    return opened >= 0 and closed >= 0 and ")" not in text[opened:start] and "(" not in text[end:closed] and bool(
-        CLI_OPTION.search(text[opened + 1 : closed])
+    return (
+        opened >= 0
+        and closed >= 0
+        and ")" not in text[opened:start]
+        and "(" not in text[end:closed]
+        and bool(CLI_OPTION.search(text[opened + 1 : closed]))
     )
 
 
