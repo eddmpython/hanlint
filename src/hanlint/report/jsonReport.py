@@ -7,16 +7,22 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 
 from ..audit import AuditResult
-from ..data import exemplarFor
+from ..data import Exemplar, exemplarFor
 from ..rules import Finding
 from .registerMatch import exemplarInRegister
 
 
-def findingWithExemplar(finding: Finding, register: str | None = None, preset: str | None = None) -> dict:
+def findingWithExemplar(
+    finding: Finding,
+    register: str | None = None,
+    preset: str | None = None,
+    customExemplars: Iterable[Exemplar] = (),
+) -> dict:
     data = finding.asDict()
-    exemplar = exemplarFor(finding.rule, preset)
+    exemplar = exemplarFor(finding.rule, preset, customExemplars)
     if exemplar:
         data["exemplar"] = exemplarInRegister(exemplar, register).asDict()
     return data
@@ -28,11 +34,15 @@ def renderJson(
     configLabel: str | None = None,
     registers: dict[str, str] | None = None,
     preset: str | None = None,
+    customExemplars: Iterable[Exemplar] = (),
 ) -> str:
     files = []
     for path, findings in results.items():
         register = registers.get(path) if registers else None
-        entry: dict = {"path": path, "findings": [findingWithExemplar(f, register, preset) for f in findings]}
+        entry: dict = {
+            "path": path,
+            "findings": [findingWithExemplar(f, register, preset, customExemplars) for f in findings],
+        }
         if audits and path in audits:
             entry["audit"] = audits[path].asDict()
         files.append(entry)

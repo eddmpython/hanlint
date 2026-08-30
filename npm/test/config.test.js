@@ -8,6 +8,7 @@ import test from "node:test";
 
 import { loadConfig } from "../src/config/loadConfig.js";
 import { configFromMapping } from "../src/config/settings.js";
+import { exemplarFor } from "../src/data/exemplars.js";
 import { parseToml } from "../src/config/toml.js";
 
 test("parseToml reads the hanlint subset", () => {
@@ -67,4 +68,33 @@ test("loadConfig walks up to hanlint.toml or pyproject", () => {
   const other = mkdtempSync(join(tmpdir(), "hanlintPyproject-"));
   writeFileSync(join(other, "pyproject.toml"), "[tool.hanlint]\nendingRun = 6\n", "utf-8");
   assert.equal(loadConfig(null, other).endingRun, 6);
+});
+
+test("project exemplars override built-ins and reject overlap", () => {
+  const entry = {
+    rule: "translationese",
+    before: "우리 조직의 전 문장입니다.",
+    after: "우리 조직의 후 문장입니다.",
+    moved: "조직의 동사로 바꿈",
+    presets: ["docs"],
+  };
+  const config = configFromMapping({ exemplars: [entry] });
+  assert.equal(exemplarFor("translationese", "docs", config.exemplars)?.before, entry.before);
+  assert.notEqual(exemplarFor("translationese", "blog", config.exemplars)?.before, entry.before);
+  const defaultNounPile = configFromMapping({ exemplars: [{ ...entry, rule: "nounPile", presets: [] }] });
+  assert.equal(exemplarFor("nounPile", "blog", defaultNounPile.exemplars)?.before, entry.before);
+  assert.ok(exemplarFor("nounPile", "docs", defaultNounPile.exemplars)?.before.startsWith("사용자 인증"));
+  assert.throws(() => configFromMapping({ exemplars: [entry, entry] }), /프리셋이 겹친다/);
+  assert.throws(() => configFromMapping({ exemplars: [{ ...entry, rule: "noSuchRule" }] }), /모르는 규칙/);
+});
+
+test("loadConfig reads project exemplar array tables", () => {
+  const root = mkdtempSync(join(tmpdir(), "hanlintExemplars-"));
+  writeFileSync(
+    join(root, "hanlint.toml"),
+    '[[exemplars]]\nrule = "translationese"\nbefore = "전입니다."\nafter = "후입니다."\n' +
+      'moved = "서술어로 바꿈"\npresets = ["blog"]\n',
+    "utf-8",
+  );
+  assert.equal(loadConfig(null, root).exemplars[0].rule, "translationese");
 });

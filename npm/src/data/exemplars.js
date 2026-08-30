@@ -103,12 +103,66 @@ export function exemplars() {
   return defaultCache;
 }
 
-/** @param {string} rule @param {string | null | undefined} [preset] @returns {Exemplar | undefined} */
-export function exemplarFor(rule, preset = null) {
+/** 설정의 `[[exemplars]]` 를 검증한다. @param {unknown} entries @param {string[]} presetNames @returns {Exemplar[]} */
+export function projectExemplars(entries, presetNames) {
+  if (!Array.isArray(entries)) throw new Error("exemplars 는 [[exemplars]] 배열이다");
+  const allowedKeys = new Set(["rule", "before", "after", "moved", "presets"]);
+  const knownRules = new Set(exemplars().keys());
+  const knownPresets = new Set(presetNames);
+  const defaults = new Set();
+  /** @type {Map<string, Set<string>>} */
+  const contexts = new Map();
+  return entries.map((raw, offset) => {
+    const index = offset + 1;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`exemplars ${index}번째 항목은 표다`);
+    const entry = /** @type {Record<string, unknown>} */ (raw);
+    const unknown = Object.keys(entry).filter((key) => !allowedKeys.has(key)).sort();
+    if (unknown.length) throw new Error(`exemplars ${index}번째 항목의 모르는 키: ${unknown.join(", ")}`);
+    /** @type {Record<string, string>} */
+    const values = {};
+    for (const key of ["rule", "before", "after", "moved"]) {
+      const value = entry[key];
+      if (typeof value !== "string" || !value.trim()) {
+        throw new Error(`exemplars ${index}번째 항목의 ${key} 는 비지 않은 문자열이다`);
+      }
+      values[key] = value;
+    }
+    const rule = values.rule;
+    if (!knownRules.has(rule)) throw new Error(`exemplars ${index}번째 항목의 모르는 규칙: ${rule}`);
+    const rawPresets = entry.presets ?? [];
+    if (!Array.isArray(rawPresets) || !rawPresets.every((item) => typeof item === "string")) {
+      throw new Error(`exemplars ${index}번째 항목의 presets 는 문자열 배열이다`);
+    }
+    const presets = /** @type {string[]} */ (rawPresets);
+    const unknownPresets = [...new Set(presets.filter((preset) => !knownPresets.has(preset)))].sort();
+    if (unknownPresets.length) {
+      throw new Error(`exemplars ${index}번째 항목의 모르는 프리셋: ${unknownPresets.join(", ")}`);
+    }
+    if (new Set(presets).size !== presets.length) throw new Error(`프로젝트 본보기의 프리셋이 겹친다: ${rule}`);
+    if (!presets.length) {
+      if (defaults.has(rule)) throw new Error(`프로젝트 기본 본보기가 겹친다: ${rule}`);
+      defaults.add(rule);
+    } else {
+      const used = contexts.get(rule) ?? new Set();
+      const overlap = presets.filter((preset) => used.has(preset)).sort();
+      if (overlap.length) throw new Error(`프로젝트 본보기의 프리셋이 겹친다: ${rule} ${overlap.join(", ")}`);
+      for (const preset of presets) used.add(preset);
+      contexts.set(rule, used);
+    }
+    return { rule, before: expand(values.before), after: expand(values.after), moved: values.moved, presets };
+  });
+}
+
+/** @param {string} rule @param {string | null | undefined} [preset] @param {Exemplar[]} [customExemplars] @returns {Exemplar | undefined} */
+export function exemplarFor(rule, preset = null, customExemplars = []) {
   if (preset) {
-    const contextual = allExemplars().find((exemplar) => exemplar.rule === rule && exemplar.presets.includes(preset));
+    const contextual = customExemplars.find((exemplar) => exemplar.rule === rule && exemplar.presets.includes(preset));
     if (contextual) return contextual;
+    const builtInContextual = allExemplars().find((exemplar) => exemplar.rule === rule && exemplar.presets.includes(preset));
+    if (builtInContextual) return builtInContextual;
   }
+  const customDefault = customExemplars.find((exemplar) => exemplar.rule === rule && !exemplar.presets.length);
+  if (customDefault) return customDefault;
   return exemplars().get(rule);
 }
 

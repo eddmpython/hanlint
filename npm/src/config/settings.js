@@ -4,6 +4,8 @@
  * 기본값을 바꾸면 양쪽을 같은 작업에서 바꾼다. tests/parity 가 두 구현의 결과를 견준다.
  */
 
+import { projectExemplars } from "../data/exemplars.js";
+
 /**
  * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py 의 PRESETS 다.
  * @type {Record<string, string[]>}
@@ -54,6 +56,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {number} countMismatchSpan 절이 없는 글이 이 줄 수 안일 때만 글 전체를 견준다
  * @property {string | null} baseline
  * @property {Record<string, unknown[]>} dictionary
+ * @property {import("../data/exemplars.js").Exemplar[]} exemplars 사람이 승인한 프로젝트 본보기
  * @property {string[]} ignoreFences 지문에서 뺄 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록이 아니다
  * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
  * @property {number} fragmentRun
@@ -90,6 +93,7 @@ export function defaultConfig() {
     countMismatchSpan: 60,
     baseline: null,
     dictionary: {},
+    exemplars: [],
     ignoreFences: [],
     source: null,
     fragmentRun: 3,
@@ -141,6 +145,8 @@ export function configFromMapping(data) {
       config.preset = /** @type {string} */ (value);
     } else if (key === "dictionary") {
       config.dictionary = { .../** @type {Record<string, unknown[]>} */ (value) };
+    } else if (key === "exemplars") {
+      config.exemplars = projectExemplars(value, PRESET_NAMES);
     } else if (key === "ignoreFences" || key === "introFields" || key === "endingFields") {
       if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) {
         throw new Error(`${key} 는 문자열 배열이다: ${JSON.stringify(value)}`);

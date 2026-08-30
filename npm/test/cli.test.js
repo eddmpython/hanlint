@@ -114,11 +114,30 @@ test("rules, explain, version", () => {
   assert.ok(execFileSync(process.execPath, [BIN, "--version"], { encoding: "utf-8" }).startsWith("hanlint "));
 });
 
+test("project exemplar reaches lint, rules, and explain", () => {
+  const room = mkdtempSync(join(tmpdir(), "hanlintExemplarCli-"));
+  const config = join(room, "hanlint.toml");
+  const draft = join(room, "bad.md");
+  writeFileSync(
+    config,
+    '[[exemplars]]\nrule = "cliche"\nbefore = "조직 전입니다."\nafter = "조직 후입니다."\n' +
+      'moved = "결론을 직접 씀"\npresets = ["blog"]\n',
+    "utf-8",
+  );
+  writeFileSync(draft, BAD, "utf-8");
+  const lint = JSON.parse(run([draft, "--config", config, "--format", "json"]).out);
+  assert.equal(lint.files[0].findings.find((finding) => finding.rule === "cliche").exemplar.before, "조직 전입니다.");
+  const rules = JSON.parse(run(["rules", "--config", config, "--format", "json"]).out);
+  assert.equal(rules.rules.find((rule) => rule.name === "cliche").exemplar.before, "조직 전입니다.");
+  const explain = JSON.parse(run(["explain", "cliche", "--config", config, "--format", "json"]).out);
+  assert.equal(explain.exemplar.before, "조직 전입니다.");
+});
+
 test("init writes config and refuses to overwrite", () => {
   const target = join(dir, "hanlint.toml");
   assert.equal(run(["init", "--output", target]).code, 0);
   const text = readFileSync(target, "utf-8");
-  assert.ok(text.includes("disable = []") && text.includes("#   doublePassive:"));
+  assert.ok(text.includes("disable = []") && text.includes("#   doublePassive:") && text.includes("# [[exemplars]]"));
   const again = run(["init", "--output", target]);
   assert.equal(again.code, 2);
   assert.ok(again.err.includes("이미 있다"));

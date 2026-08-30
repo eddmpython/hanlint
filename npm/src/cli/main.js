@@ -39,7 +39,7 @@ import { renderText } from "../report/textReport.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init"];
-const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff", "terms"];
+const PYTHON_ONLY = ["audit", "map", "watch", "profile", "coverage", "diff", "learn", "terms"];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
 /** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py 가 소유한다. */
@@ -399,7 +399,7 @@ function runLint(args) {
 
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (format === "json") {
-    emit(renderJson(shown, configLabel(config), registers, config.preset), output);
+    emit(renderJson(shown, configLabel(config), registers, config.preset, config.exemplars), output);
   } else if (format === "github") {
     emit([...shown].map(([name, findings]) => renderGithub(name, findings)).join("\n"), output);
   } else {
@@ -418,7 +418,11 @@ function runLint(args) {
       }
       emit(parts.join("\n"), output);
     } else {
-      parts.push([...shown].map(([name, findings]) => renderText(name, findings, registers.get(name), config.preset)).join("\n\n"));
+      parts.push(
+        [...shown]
+          .map(([name, findings]) => renderText(name, findings, registers.get(name), config.preset, config.exemplars))
+          .join("\n\n"),
+      );
       if (shown.size > 1) parts.push(summary(results));
       if (!options["--quiet"]) {
         if (baseline.count) parts.push(lockedNote(baseline));
@@ -482,7 +486,7 @@ function runRules(args) {
   const off = new Set(offRules(config));
   if (options["--format"] === "json") {
     const rules = names.map((name) => {
-      const exemplar = exemplarFor(name, config.preset);
+      const exemplar = exemplarFor(name, config.preset, config.exemplars);
       /** @type {Record<string, unknown>} */
       const entry = { name, category: ruleCategory(name), mechanism: ruleMechanism(name), summary: ruleSummary(name), doc: ruleDoc(name), enabled: !off.has(name) };
       if (exemplar) entry.exemplar = { before: exemplar.before, after: exemplar.after, moved: exemplar.moved };
@@ -553,8 +557,8 @@ function runExplain(args) {
     throw new Error(`모르는 규칙: ${wanted}.${hint}`);
   }
   const category = ruleCategory(wanted);
-  const preset = choose(/** @type {string} */ (options["--preset"] ?? DEFAULT_PRESET), PRESET_NAMES, "--preset");
-  const exemplarOf = exemplarFor(wanted, preset);
+  const config = configFrom(options, []);
+  const exemplarOf = exemplarFor(wanted, config.preset, config.exemplars);
   const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
   if (options["--format"] === "json") {
     /** @type {Record<string, unknown>} */
@@ -693,6 +697,14 @@ export function renderInit(preset = "blog") {
     "# [dictionary]",
     '# cliches = ["우리의 여정"]',
     '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',
+    "",
+    "# 사람이 승인한 프로젝트 본보기. 같은 규칙과 프리셋의 내장 본보기를 덮어쓴다",
+    "# [[exemplars]]",
+    '# rule = "translationese"',
+    '# before = "설계에 대한 이해가 필요합니다."',
+    '# after = "설계를 알아야 합니다."',
+    '# moved = "명사구를 서술어로 풀어 씀"',
+    '# presets = ["blog"]',
     "",
   );
   return lines.join("\n");

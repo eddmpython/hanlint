@@ -57,6 +57,45 @@ def testLintJsonAndGithub(tmp_path, capsys):
     assert capsys.readouterr().out.startswith("::error file=")
 
 
+def testLearnEmitsReviewableTextJsonAndToml(tmp_path, capsys):
+    before = write(tmp_path, "전.md", "설계에 대한 이해가 필요합니다.\n")
+    after = write(tmp_path, "후.md", "설계를 알아야 합니다.\n")
+    assert main(["learn", str(before), str(after)]) == 0
+    text = capsys.readouterr().out
+    assert "본보기 후보" in text and "[translationese]" in text and "사람이 뜻을 확인" in text
+
+    assert main(["learn", str(before), str(after), "--format", "json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    candidate = next(item for item in data["candidates"] if item["rule"] == "translationese")
+    assert candidate["beforeLine"] == 1 and candidate["presets"] == ["blog"]
+
+    assert main(["learn", str(before), str(after), "--format", "toml"]) == 0
+    toml = capsys.readouterr().out
+    assert "[[exemplars]]" in toml and 'rule = "translationese"' in toml and 'presets = ["blog"]' in toml
+
+
+def testProjectExemplarReachesLintRulesAndExplain(tmp_path, capsys):
+    config = write(
+        tmp_path,
+        "hanlint.toml",
+        '[[exemplars]]\nrule = "cliche"\nbefore = "조직 전입니다."\nafter = "조직 후입니다."\n'
+        'moved = "결론을 직접 씀"\npresets = ["blog"]\n',
+    )
+    bad = write(tmp_path, "bad.md", BAD)
+    assert main([str(bad), "--config", str(config), "--format", "json"]) == 1
+    lintData = json.loads(capsys.readouterr().out)
+    cliche = next(item for item in lintData["files"][0]["findings"] if item["rule"] == "cliche")
+    assert cliche["exemplar"]["before"] == "조직 전입니다."
+
+    assert main(["rules", "--config", str(config), "--format", "json"]) == 0
+    rulesData = json.loads(capsys.readouterr().out)
+    assert next(item for item in rulesData["rules"] if item["name"] == "cliche")["exemplar"]["before"] == "조직 전입니다."
+
+    assert main(["explain", "cliche", "--config", str(config), "--format", "json"]) == 0
+    explainData = json.loads(capsys.readouterr().out)
+    assert explainData["exemplar"]["before"] == "조직 전입니다."
+
+
 def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     mixed = write(tmp_path, "mixed.md", MIXED)
     assert main([str(mixed), "--format", "compact", "--quiet"]) == 1

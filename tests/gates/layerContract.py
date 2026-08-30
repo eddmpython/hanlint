@@ -25,6 +25,7 @@ LAYERS: dict[str, int] = {
     "edit": 6,
     "coverage": 6,
     "baseline": 6,
+    "learn": 6,
     "cli": 7,
 }
 

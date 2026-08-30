@@ -96,6 +96,14 @@ def render(preset: str = "blog") -> str:
             '# cliches = ["우리의 여정"]',
             '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',
             "",
+            "# 사람이 승인한 프로젝트 본보기. 같은 규칙과 프리셋의 내장 본보기를 덮어쓴다",
+            "# [[exemplars]]",
+            '# rule = "translationese"',
+            '# before = "설계에 대한 이해가 필요합니다."',
+            '# after = "설계를 알아야 합니다."',
+            '# moved = "명사구를 서술어로 풀어 씀"',
+            '# presets = ["blog"]',
+            "",
         ]
     )
     return "\n".join(lines)

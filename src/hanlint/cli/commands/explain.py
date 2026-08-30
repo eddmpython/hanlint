@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
 from ...analysis.grammar import HAPNIDA, REGISTERS
-from ...config import DEFAULT_PRESET, PRESET_NAMES
+from ...config import PRESET_NAMES
 from ...data import exemplarFor, patternsAvoiding
 from ...report import exemplarInRegister, patternInRegister
 from ...rules import CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleDoc, ruleMechanism, ruleNames
-from .shared import addOutputOption, emit
+from .shared import addOutputOption, configFrom, emit
 
 ISSUES = "github.com/eddmpython/hanlint/issues"
 """오탐과 미탐을 받는 자리. 끄는 것은 그 저장소에서만 조용해지고 규칙은 그대로 틀린 채 남는다."""
@@ -37,13 +38,14 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("rule", nargs="?", help="규칙 이름. hanlint rules 로 목록을 본다")
     parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
     parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="본보기 문체. 기본 합니다체")
-    parser.add_argument("--preset", choices=PRESET_NAMES, default=DEFAULT_PRESET, help="본보기의 글 종류. 기본 blog")
+    parser.add_argument("--config", type=Path, help="설정 파일. 프로젝트 본보기를 함께 읽는다")
+    parser.add_argument("--preset", choices=PRESET_NAMES, help="본보기의 글 종류. 기본은 설정이나 blog")
     addOutputOption(parser)
 
 
-def asJson(rule: str, register: str = HAPNIDA, preset: str = DEFAULT_PRESET) -> str:
+def asJson(rule: str, register: str = HAPNIDA, preset: str = "blog", customExemplars=()) -> str:
     """규칙 하나를 기계가 읽는 꼴로. 기술서와 본보기와 다시 쓸 틀을 한 덩어리로 준다."""
-    exemplar = exemplarFor(rule, preset)
+    exemplar = exemplarFor(rule, preset, customExemplars)
     data: dict = {
         "version": 1,
         "rule": rule,
@@ -82,15 +84,16 @@ def run(args: argparse.Namespace) -> int:
         near = nearNames(args.rule, names)
         hint = f" 이것을 찾았나: {', '.join(near)}" if near else " hanlint rules 로 목록을 본다"
         raise KeyError(f"모르는 규칙: {args.rule}.{hint}")
+    config = configFrom(args)
     if args.format == "json":
-        emit(asJson(args.rule, args.register, args.preset), args.output)
+        emit(asJson(args.rule, args.register, config.preset, config.exemplars), args.output)
         return 0
     category = ruleCategory(args.rule)
     mechanism = ruleMechanism(args.rule)
     print(f"{args.rule}  ({CATEGORY_TITLES[category]})")
     print(f"기제: {mechanism}. {MECHANISMS[mechanism]}\n")
     print(ruleDoc(args.rule))
-    exemplar = exemplarFor(args.rule, args.preset)
+    exemplar = exemplarFor(args.rule, config.preset, config.exemplars)
     if exemplar:
         exemplar = exemplarInRegister(exemplar, args.register)
         print("\n본보기")

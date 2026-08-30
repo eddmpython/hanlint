@@ -100,6 +100,9 @@ hanlint 보고서.md --preset report
    것은 라운드마다 다시 돌렸기 때문이다.
 10. 라운드 사이에 `hanlint diff 앞라운드.md 이번.md` 를 찍으면 고친 것이 짜임과 리듬을 어떻게 바꿨는지
     숫자로 남는다. 고친 자리가 다음 라운드의 새 지적을 낳는지도 거기서 먼저 보인다.
+11. 사람이 최종 고침을 승인한 뒤에는 `hanlint learn 앞라운드.md 승인본.md` 로 사라진 문장 지적의 짝을
+    본다. 문장 대응이 맞고 뜻을 보존한 후보 하나만 `hanlint.toml` 의 `[[exemplars]]` 에 넣는다. 같은 규칙과
+    프리셋의 후보를 모두 넣으면 설정이 겹치므로 하나를 고른다.
 
 ## 지킬 것
 
@@ -127,4 +130,5 @@ hanlint 보고서.md --preset report
 - 문체 프로파일: `hanlint profile build 승인된글들/` 뒤 `hanlint 글.md --profile profile.json`
 - 학습 어휘: `hanlint terms 글.md`. 한국어 학습자가 독자일 때만 C 전용 화제어의 첫 자리를 본다
 - 초안 비교: `hanlint diff 전.md 후.md`. 고친 뒤 짜임과 지적 수가 어떻게 변했는지 숫자로 본다
+- 고침 학습: `hanlint learn 전.md 승인본.md`. 사람이 승인할 프로젝트 본보기 후보를 낸다
 - 이미 있는 지적 잠그기: `hanlint baseline 글들/` 뒤 `hanlint 글들/ --baseline`. 죽은 잠금은 `--prune`

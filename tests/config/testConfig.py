@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from hanlint.config import Config, loadConfig
+from hanlint.data import exemplarFor
 
 
 def testDefaultsAreTheTruth():
@@ -51,3 +52,66 @@ def testLoadReadsPyprojectSection(tmp_path: Path):
 
 def testLoadWithoutFileGivesDefaults(tmp_path: Path):
     assert loadConfig(start=tmp_path) == Config()
+
+
+def testProjectExemplarOverridesTheMatchingBuiltIn():
+    config = Config.fromMapping(
+        {
+            "exemplars": [
+                {
+                    "rule": "translationese",
+                    "before": "우리 조직의 전 문장입니다.",
+                    "after": "우리 조직의 후 문장입니다.",
+                    "moved": "조직의 동사로 바꿈",
+                    "presets": ["docs"],
+                }
+            ]
+        }
+    )
+    chosen = exemplarFor("translationese", "docs", config.exemplars)
+    assert chosen and chosen.before == "우리 조직의 전 문장입니다."
+    assert exemplarFor("translationese", "blog", config.exemplars).before != chosen.before
+
+    direct = Config(exemplars=[config.exemplars[0]])
+    assert direct.exemplars == config.exemplars
+
+    defaultNounPile = Config.fromMapping(
+        {
+            "exemplars": [
+                {
+                    "rule": "nounPile",
+                    "before": "프로젝트 기본 전입니다.",
+                    "after": "프로젝트 기본 후입니다.",
+                    "moved": "관계를 풀어 씀",
+                }
+            ]
+        }
+    )
+    assert exemplarFor("nounPile", "blog", defaultNounPile.exemplars).before == "프로젝트 기본 전입니다."
+    assert exemplarFor("nounPile", "docs", defaultNounPile.exemplars).before.startswith("사용자 인증")
+
+
+def testProjectExemplarsRejectAmbiguousOrUnknownEntries():
+    exemplar = {
+        "rule": "translationese",
+        "before": "전 문장입니다.",
+        "after": "후 문장입니다.",
+        "moved": "서술어로 바꿈",
+        "presets": ["blog"],
+    }
+    with pytest.raises(ValueError, match="프리셋이 겹친다"):
+        Config.fromMapping({"exemplars": [exemplar, exemplar]})
+    with pytest.raises(ValueError, match="모르는 규칙"):
+        Config.fromMapping({"exemplars": [{**exemplar, "rule": "noSuchRule"}]})
+    with pytest.raises(ValueError, match="비지 않은 문자열"):
+        Config.fromMapping({"exemplars": [{**exemplar, "after": ""}]})
+
+
+def testLoadReadsProjectExemplarArrayTable(tmp_path: Path):
+    (tmp_path / "hanlint.toml").write_text(
+        '[[exemplars]]\nrule = "translationese"\nbefore = "전입니다."\nafter = "후입니다."\n'
+        'moved = "서술어로 바꿈"\npresets = ["blog"]\n',
+        encoding="utf-8",
+    )
+    config = loadConfig(start=tmp_path)
+    assert config.exemplars[0].rule == "translationese"

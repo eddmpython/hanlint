@@ -31,6 +31,8 @@ def run(args: argparse.Namespace) -> int:
                 {str(args.file): findings},
                 {str(args.file): audit},
                 registers={str(args.file): doc.register},
+                preset=config.preset,
+                customExemplars=config.exemplars,
             ),
             args.output,
         )

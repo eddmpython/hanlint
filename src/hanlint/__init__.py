@@ -22,6 +22,7 @@ from .audit import AuditResult, auditDocument
 from .config import Config, loadConfig
 from .document import parseMarkdown
 from .fingerprint import DocumentPrint, buildFingerprint
+from .learn import LearnedExemplar, learnExemplars
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
@@ -29,11 +30,13 @@ __all__ = [
     "Config",
     "DocumentPrint",
     "Finding",
+    "LearnedExemplar",
     "auditFile",
     "auditText",
     "fingerprint",
     "lintFile",
     "lintText",
+    "learnText",
     "loadConfig",
     "ruleDoc",
     "ruleNames",
@@ -58,6 +61,14 @@ def lintFile(path: str | Path, config: Config | None = None) -> list[Finding]:
     """파일을 UTF-8 로 읽어 검사한다."""
     path = Path(path)
     return lintText(path.read_text(encoding="utf-8"), config, path=str(path))
+
+
+def learnText(before: str, after: str, config: Config | None = None) -> tuple[LearnedExemplar, ...]:
+    """앞뒤 문자열에서 사람이 승인할 본보기 후보를 찾는다."""
+    config = config or Config()
+    beforeDoc = fingerprint(before, config)
+    afterDoc = fingerprint(after, config)
+    return learnExemplars(beforeDoc, afterDoc, runAll(beforeDoc, config), runAll(afterDoc, config), config.preset)
 
 
 def auditText(text: str, config: Config | None = None, path: str | None = None) -> AuditResult:

@@ -20,6 +20,8 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 
+from ..data.exemplars import Exemplar, projectExemplars
+
 PRESETS: dict[str, tuple[str, ...]] = {
     "blog": (),
     "report": ("noQuestion", "sectionResult", "firstResultDistance", "introImage", "moreLater", "numberOrphan"),
@@ -95,6 +97,8 @@ class Config:
     """잠근 지적을 적은 파일 경로. 있으면 그 안의 지적은 조용히 넘긴다."""
     dictionary: dict[str, list] = field(default_factory=dict)
     """사전에 더할 항목. 키는 사전 이름 (cliches, translationese, redundantPair, japaneseLoan)."""
+    exemplars: tuple[Exemplar, ...] = ()
+    """사람이 승인해 `[[exemplars]]` 로 넣은 프로젝트 본보기."""
     ignoreFences: list[str] = field(default_factory=list)
     """지문에서 뺄 펜스의 언어 표기. 코드도 산문도 아닌 펜스 (강의 장면 계약, 도표 원문) 가 코드 블록으로 세어지면
     거의 같은 블록, 읽어 주지 않은 출력, 절의 결과로 잘못 잡힌다. 실측: eddmpython-course 의 `course-scene` 펜스가
@@ -147,6 +151,13 @@ class Config:
     문서의 최솟값은 0.9778, 에세이 하위 5%는 0.7576이었고 실제 혼합 기사 한 편은 0.625였다. 0.7은
     그 기사를 섞임으로 가르면서 일관된 발행문을 보존한다 (2026-08-28)."""
 
+    def __post_init__(self) -> None:
+        if self.exemplars:
+            if all(isinstance(exemplar, Exemplar) for exemplar in self.exemplars):
+                self.exemplars = tuple(self.exemplars)
+            else:
+                self.exemplars = projectExemplars(self.exemplars, PRESET_NAMES)
+
     def enabled(self, ruleName: str) -> bool:
         return ruleName not in self.disable and ruleName not in PRESETS[self.preset]
 
@@ -170,6 +181,8 @@ class Config:
                 config.preset = value
             elif key == "dictionary":
                 config.dictionary = dict(value)
+            elif key == "exemplars":
+                config.exemplars = projectExemplars(value, PRESET_NAMES)
             elif key in ("ignoreFences", "introFields", "endingFields"):
                 if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
                     raise ValueError(f"{key} 는 문자열 배열이다: {shown(value)}")

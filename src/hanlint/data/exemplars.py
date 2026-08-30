@@ -11,6 +11,7 @@ fixture 와 같다. `{em}` 은 긴 줄표, `{dot}` 은 마침표다. 결함을 �
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cache
 from unicodedata import east_asian_width
@@ -112,9 +113,67 @@ def exemplars() -> dict[str, Exemplar]:
     return {exemplar.rule: exemplar for exemplar in allExemplars() if not exemplar.presets}
 
 
-def exemplarFor(rule: str, preset: str | None = None) -> Exemplar | None:
+def projectExemplars(entries: object, presetNames: Iterable[str]) -> tuple[Exemplar, ...]:
+    """설정의 `[[exemplars]]` 를 검증해 본보기로 바꾼다.
+
+    프로젝트 안에서는 같은 규칙과 선택 조건이 하나뿐이어야 한다. 내장 본보기와 겹치는 것은 덮어쓰기
+    계약이므로 허용한다.
+    """
+    if not isinstance(entries, (list, tuple)):
+        raise ValueError("exemplars 는 [[exemplars]] 배열이다")
+    allowedKeys = {"rule", "before", "after", "moved", "presets"}
+    knownRules = set(exemplars())
+    knownPresets = set(presetNames)
+    defaults: set[str] = set()
+    contexts: dict[str, set[str]] = {}
+    found: list[Exemplar] = []
+    for index, entry in enumerate(entries, start=1):
+        if not isinstance(entry, dict):
+            raise ValueError(f"exemplars {index}번째 항목은 표다")
+        unknown = sorted(set(entry) - allowedKeys)
+        if unknown:
+            raise ValueError(f"exemplars {index}번째 항목의 모르는 키: {', '.join(unknown)}")
+        values: dict[str, str] = {}
+        for key in ("rule", "before", "after", "moved"):
+            value = entry.get(key)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"exemplars {index}번째 항목의 {key} 는 비지 않은 문자열이다")
+            values[key] = value
+        rule = values["rule"]
+        if rule not in knownRules:
+            raise ValueError(f"exemplars {index}번째 항목의 모르는 규칙: {rule}")
+        rawPresets = entry.get("presets", [])
+        if not isinstance(rawPresets, list) or not all(isinstance(item, str) for item in rawPresets):
+            raise ValueError(f"exemplars {index}번째 항목의 presets 는 문자열 배열이다")
+        presets = tuple(rawPresets)
+        unknownPresets = sorted(set(presets) - knownPresets)
+        if unknownPresets:
+            raise ValueError(f"exemplars {index}번째 항목의 모르는 프리셋: {', '.join(unknownPresets)}")
+        if len(set(presets)) != len(presets):
+            raise ValueError(f"프로젝트 본보기의 프리셋이 겹친다: {rule}")
+        if not presets:
+            if rule in defaults:
+                raise ValueError(f"프로젝트 기본 본보기가 겹친다: {rule}")
+            defaults.add(rule)
+        else:
+            overlap = contexts.setdefault(rule, set()) & set(presets)
+            if overlap:
+                raise ValueError(f"프로젝트 본보기의 프리셋이 겹친다: {rule} {', '.join(sorted(overlap))}")
+            contexts[rule].update(presets)
+        found.append(Exemplar(rule, expand(values["before"]), expand(values["after"]), values["moved"], presets))
+    return tuple(found)
+
+
+def exemplarFor(rule: str, preset: str | None = None, customExemplars: Iterable[Exemplar] = ()) -> Exemplar | None:
+    custom = tuple(customExemplars)
     if preset:
+        for exemplar in custom:
+            if exemplar.rule == rule and preset in exemplar.presets:
+                return exemplar
         for exemplar in allExemplars():
             if exemplar.rule == rule and preset in exemplar.presets:
                 return exemplar
+    for exemplar in custom:
+        if exemplar.rule == rule and not exemplar.presets:
+            return exemplar
     return exemplars().get(rule)

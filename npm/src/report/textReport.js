@@ -6,12 +6,12 @@
 import { exemplarFor, shortened, twoLines } from "../data/exemplars.js";
 import { exemplarInRegister } from "./registerMatch.js";
 
-/** 그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다. @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} register @param {string | null | undefined} preset */
-function exemplarLines(findings, register, preset) {
+/** 그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다. @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} register @param {string | null | undefined} preset @param {import("../data/exemplars.js").Exemplar[]} customExemplars */
+function exemplarLines(findings, register, preset, customExemplars) {
   const lines = [];
   let cut = false;
   for (const name of [...new Set(findings.map((f) => f.rule))].sort()) {
-    let exemplar = exemplarFor(name, preset);
+    let exemplar = exemplarFor(name, preset, customExemplars);
     if (!exemplar) continue;
     exemplar = exemplarInRegister(exemplar, register);
     const [before, after] = twoLines(exemplar);
@@ -35,8 +35,8 @@ function candidateLines(findings) {
   return lines;
 }
 
-/** @param {string} path @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} [register] @param {string | null | undefined} [preset] */
-export function renderText(path, findings, register = null, preset = null) {
+/** @param {string} path @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} [register] @param {string | null | undefined} [preset] @param {import("../data/exemplars.js").Exemplar[]} [customExemplars] */
+export function renderText(path, findings, register = null, preset = null, customExemplars = []) {
   if (!findings.length) return `${path}  집은 자리 없음`;
   const errors = findings.filter((f) => f.severity === "error").length;
   const notices = findings.length - errors;
@@ -48,7 +48,7 @@ export function renderText(path, findings, register = null, preset = null) {
     if (f.fix) lines.push(`  고친 뒤: ${f.fix}`);
     lines.push("");
   }
-  lines.push(...exemplarLines(findings, register, preset));
+  lines.push(...exemplarLines(findings, register, preset, customExemplars));
   const candidates = candidateLines(findings);
   if (candidates.length) lines.push("", ...candidates);
   return lines.join("\n").replace(/\n+$/, "");
