@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "source": {
+    "repository": "eddmpython",
+    "revision": "b6c3b075f8d8e05cb6bbd9826ffbf2511e9b6a4a",
+    "preset": "blog",
+    "posts": [
+      "001-ai-needs-an-environment",
+      "003-python-qr",
+      "005-python-history"
+    ]
+  },
+  "totals": {
+    "reviewFindings": 435,
+    "located": 156,
+    "covered": 38,
+    "coveredByError": 3,
+    "ratioPerMille": 243
+  },
+  "posts": [
+    {
+      "post": "001-ai-needs-an-environment",
+      "reviewFindings": 150,
+      "located": 58,
+      "covered": 10,
+      "coveredByError": 0,
+      "byRule": [
+        {
+          "rule": "endingRepeat",
+          "covered": 8
+        },
+        {
+          "rule": "factListParagraph",
+          "covered": 2
+        }
+      ],
+      "uncaughtKinds": [
+        {
+          "kind": "문장과 표현",
+          "count": 2
+        },
+        {
+          "kind": "설치와 실행",
+          "count": 4
+        },
+        {
+          "kind": "순서와 구조",
+          "count": 6
+        },
+        {
+          "kind": "숫자와 표",
+          "count": 1
+        },
+        {
+          "kind": "파일과 폴더",
+          "count": 35
+        }
+      ]
+    },
+    {
+      "post": "003-python-qr",
+      "reviewFindings": 134,
+      "located": 43,
+      "covered": 19,
+      "coveredByError": 0,
+      "byRule": [
+        {
+          "rule": "topicBreak",
+          "covered": 10
+        },
+        {
+          "rule": "factListParagraph",
+          "covered": 8
+        },
+        {
+          "rule": "endingRepeat",
+          "covered": 2
+        }
+      ],
+      "uncaughtKinds": [
+        {
+          "kind": "문장과 표현",
+          "count": 1
+        },
+        {
+          "kind": "설치와 실행",
+          "count": 4
+        },
+        {
+          "kind": "순서와 구조",
+          "count": 5
+        },
+        {
+          "kind": "숫자와 표",
+          "count": 2
+        },
+        {
+          "kind": "용어와 설명",
+          "count": 1
+        },
+        {
+          "kind": "파일과 폴더",
+          "count": 11
+        }
+      ]
+    },
+    {
+      "post": "005-python-history",
+      "reviewFindings": 151,
+      "located": 55,
+      "covered": 9,
+      "coveredByError": 3,
+      "byRule": [
+        {
+          "rule": "topicBreak",
+          "covered": 5
+        },
+        {
+          "rule": "translationese",
+          "covered": 3
+        },
+        {
+          "rule": "endingRepeat",
+          "covered": 1
+        }
+      ],
+      "uncaughtKinds": [
+        {
+          "kind": "문장과 표현",
+          "count": 5
+        },
+        {
+          "kind": "설치와 실행",
+          "count": 8
+        },
+        {
+          "kind": "순서와 구조",
+          "count": 15
+        },
+        {
+          "kind": "숫자와 표",
+          "count": 5
+        },
+        {
+          "kind": "용어와 설명",
+          "count": 4
+        },
+        {
+          "kind": "파일과 폴더",
+          "count": 9
+        }
+      ]
+    }
+  ],
+  "byRule": [
+    {
+      "rule": "topicBreak",
+      "covered": 15
+    },
+    {
+      "rule": "endingRepeat",
+      "covered": 11
+    },
+    {
+      "rule": "factListParagraph",
+      "covered": 10
+    },
+    {
+      "rule": "translationese",
+      "covered": 3
+    }
+  ],
+  "uncaughtKinds": [
+    {
+      "kind": "파일과 폴더",
+      "count": 55
+    },
+    {
+      "kind": "순서와 구조",
+      "count": 26
+    },
+    {
+      "kind": "설치와 실행",
+      "count": 16
+    },
+    {
+      "kind": "문장과 표현",
+      "count": 8
+    },
+    {
+      "kind": "숫자와 표",
+      "count": 8
+    },
+    {
+      "kind": "용어와 설명",
+      "count": 5
+    }
+  ]
+}
