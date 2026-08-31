@@ -228,6 +228,30 @@ def testSurfaceOperationSelectionAgrees(tmp_path):
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testProtectedSurfacesAgreeOnKoreanPathsAndLinks(tmp_path):
+    """한글이 든 경로와 링크 목적지를 두 판이 같이 보호한다.
+
+    앞 시험은 경로도 링크도 없는 문장만 봐서 두 구멍을 놓쳤다. JS 의 `\\w` 는 /u 를 붙여도 ASCII 뿐이라
+    npm 만 `docs/렌더/index.md` 안을 치환했고 (말뭉치 32,274문장에서 280건), 링크 목적지 자리를
+    `indexOf` 로 찾아 `[렌더](렌더)` 에서 링크 글자를 목적지로 착각했다 (2026-08-31).
+    """
+    config = tmp_path / "hanlint.toml"
+    config.write_text('[[operations]]\nbefore = "렌더"\nafter = "렌더링"\npresets = ["blog"]\n', encoding="utf-8")
+    path = tmp_path / "path.md"
+    path.write_text("설명은 docs/렌더/index.md 파일에 있습니다.\n", encoding="utf-8")
+    link = tmp_path / "link.md"
+    link.write_text("첫 [렌더](렌더) 결과입니다.\n", encoding="utf-8")
+    python, node = runBoth([str(path), str(link), "--config", str(config), "--format", "json"])
+    assert python.returncode == node.returncode, node.stderr
+    assert python.stdout == node.stdout
+    files = json.loads(python.stdout)["files"]
+    # 한글 경로 안의 낱말은 두 판 다 사실 표면이라 기권한다
+    assert "operations" not in files[0]
+    # 링크 글자는 고치고 목적지는 그대로 둔다
+    assert files[1]["operations"][0]["operation"]["result"] == "첫 [렌더링](렌더) 결과입니다."
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testInitPresetsAgree(tmp_path):
     # 같은 경로에 두 판을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
     for preset in ("blog", "report", "docs"):

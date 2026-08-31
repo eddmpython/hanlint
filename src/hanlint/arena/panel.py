@@ -1305,15 +1305,18 @@ def classificationMetrics(
             "f1": round(f1, 6),
             "support": sum(gold == label for gold in golds),
         }
-    selectedAccuracy = sum(correct) / len(correct) if correct else 0.0
+    # 잰 것이 없으면 0.0 이 아니라 null 이다. 0건과 전부 틀린 것을 같은 줄로 내면 심사기를 쓸지
+    # 정하는 근거가 반대로 읽힌다. 같은 저장소의 consistencyMetric 과 entailment.ratio 도 이 규약이다
+    # (2026-08-31). coverage 는 비교할 사례 자체가 없을 때, 정확도와 macroF1 은 기권하지 않은 답이
+    # 없을 때 null 이다.
     return {
         "total": total,
         "answered": len(answeredPositions),
         "abstained": total - len(answeredPositions),
-        "coverage": round(len(answeredPositions) / total, 6) if total else 0.0,
-        "selectedAccuracy": round(selectedAccuracy, 6),
+        "coverage": round(len(answeredPositions) / total, 6) if total else None,
+        "selectedAccuracy": round(sum(correct) / len(correct), 6) if correct else None,
         "selectedAccuracyCi95": bootstrapMean([float(value) for value in correct], seedKey),
-        "macroF1": round(sum(item["f1"] for item in perClass.values()) / len(labels), 6),
+        "macroF1": round(sum(item["f1"] for item in perClass.values()) / len(labels), 6) if correct else None,
         "confusionMatrix": confusion,
         "perClass": perClass,
         "calibration": {

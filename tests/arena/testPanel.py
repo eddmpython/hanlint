@@ -300,7 +300,12 @@ def testJudgeCalibrationUsesBothOrdersAndHumanConsensusWithoutLeakingIt():
     assert result["preferences"]["naturalness"]["selectedAccuracy"] == 1.0
     assert result["preferences"]["naturalness"]["coverage"] == 1.0
     assert result["positionConsistency"]["preferences"]["naturalness"]["consistency"] == 1.0
+    # 견줄 사례가 없는 차원은 0.0 이 아니라 null 이다. 0건과 심사기가 전부 틀린 것을 같은 줄로 내면
+    # 심사기를 쓸지 정하는 근거가 반대로 읽힌다 (2026-08-31).
     assert result["preferences"]["voice"]["total"] == 0
+    assert result["preferences"]["voice"]["coverage"] is None
+    assert result["preferences"]["voice"]["selectedAccuracy"] is None
+    assert result["preferences"]["voice"]["macroF1"] is None
     consistency = summarizePanelJudgeConsistency(suite, judgeCases, predictions)
     assert consistency["positionConsistency"]["content"]["usableCoverage"] == 1.0
     assert consistency["positionConsistency"]["preferences"]["naturalness"]["consistency"] == 1.0

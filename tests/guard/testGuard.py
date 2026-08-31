@@ -92,3 +92,29 @@ def testNfdDraftCannotBypassAForbiddenNfcSurface():
     text = GOOD + normalize("NFD", "\n효과가 입증됐다.\n")
     result = guardText(brief(), text)
     assert result.forbiddenHits == ("효과가 입증됐다",)
+
+
+def testCharacterCountIsNfcSoDecomposedHangulDoesNotInflate():
+    """자모로 풀어 쓴 한글도 같은 글자 수로 센다.
+
+    길이만 원문을 세고 나머지 표면 검사는 NFC 를 쓰던 때는 같은 글이 NFD 로 오면 글자 수가 두 배가 넘어
+    길이 계약이 뒤집혔다. 실측: 13자가 27자로 세어졌다 (2026-08-31).
+    """
+    nfcBrief = WritingBrief.fromMapping(
+        {
+            "version": 1,
+            "preset": "docs",
+            "reader": "처음 쓰는 작성자",
+            "task": "글자 수를 센다",
+            "facts": [{"id": "F1", "statement": "한국어 글자 수를 센다."}],
+            "mustInclude": ["글자 수"],
+            "allowedNumbers": [],
+            "forbidden": ["자동으로"],
+            "length": {"min": 1, "max": 20},
+        }
+    )
+    text = "한국어 글자 수를 센다.\n"
+    composed = guardText(nfcBrief, normalize("NFC", text))
+    decomposed = guardText(nfcBrief, normalize("NFD", text))
+    assert composed.characterCount == decomposed.characterCount
+    assert decomposed.characterCount <= 20

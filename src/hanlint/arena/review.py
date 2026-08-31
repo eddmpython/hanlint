@@ -46,9 +46,16 @@ def checkedEvaluator(evaluatorId: object, group: object) -> dict:
     }
 
 
-def reversedFor(suiteSha256: str, evaluatorId: str, index: int) -> bool:
-    first = int(sha256(f"panel-assignment:{suiteSha256}:{evaluatorId}".encode()).hexdigest(), 16) % 2 == 1
-    return first if index % 2 == 0 else not first
+def reversedFor(suiteSha256: str, evaluatorId: str) -> bool:
+    """이 평가자가 suite 의 좌우를 통째로 뒤집어 보는가. 사례마다 다르지 않다.
+
+    사례마다 번갈아 뒤집던 때는 suite 의 좌우 교대 (`desiredCandidateLeft`) 와 같은 홀짝 함수를 같은
+    색인에 써서 XOR 이 색인에 대해 상수가 됐다. 그래서 한 평가자가 모든 사례에서 후보를 같은 쪽으로만
+    봤고 (실측: pilot 일곱 사례가 LLLLLLL 또는 RRRRRRR), 위치 편향이 후보 요인과 완전히 교락됐다.
+    통째로 뒤집으면 suite 의 교대가 그대로 남아 평가자 안에서 좌우가 갈리고, 평가자는 두 순서로
+    나뉜다 (2026-08-31).
+    """
+    return int(sha256(f"panel-assignment:{suiteSha256}:{evaluatorId}".encode()).hexdigest(), 16) % 2 == 1
 
 
 def assignmentReviewTemplate(evaluator: dict, cases: list[dict]) -> dict:
@@ -79,7 +86,7 @@ def preparePanelAssignment(suite: dict, evaluatorId: str, group: str) -> dict:
     cases = []
     for index, panelCase in enumerate(suite["cases"]):
         comparison = deepcopy(panelCase["comparison"])
-        if reversedFor(suite["suiteSha256"], evaluator["id"], index):
+        if reversedFor(suite["suiteSha256"], evaluator["id"]):
             comparison = {"left": comparison["right"], "right": comparison["left"]}
         assigned = {
             "caseId": f"case-{index + 1:03d}",
@@ -182,7 +189,6 @@ def recordPanelAssignmentReview(suite: dict, assignment: dict, data: object) -> 
         raise ValueError("panel assignment review의 reviews는 배열이다")
     panelCases = {assigned["caseId"]: panelCase for assigned, panelCase in zip(assignment["cases"], suite["cases"], strict=True)}
     assignedCases = {item["caseId"]: item for item in assignment["cases"]}
-    caseIndexes = {item["caseId"]: index for index, item in enumerate(assignment["cases"])}
     normalized = []
     seen = set()
     for index, review in enumerate(data["reviews"], start=1):
@@ -200,7 +206,7 @@ def recordPanelAssignmentReview(suite: dict, assignment: dict, data: object) -> 
         seen.add(caseId)
         if review["assignmentCaseSha256"] != assignedCases[caseId]["assignmentCaseSha256"]:
             raise ValueError(f"{where}.assignmentCaseSha256가 다르다")
-        reversedOrder = reversedFor(suite["suiteSha256"], assignment["evaluator"]["id"], caseIndexes[caseId])
+        reversedOrder = reversedFor(suite["suiteSha256"], assignment["evaluator"]["id"])
         normalized.append(
             {
                 "caseId": panelCases[caseId]["caseId"],

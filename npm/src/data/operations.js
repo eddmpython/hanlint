@@ -4,9 +4,18 @@
 const URL_PATTERN = /https?:\/\/[^\s)>\]]*[\p{L}\p{N}_/#=%&+~-]/gu;
 const NUMBER_PATTERN = /(?<![A-Za-z가-힣])[-+]?\d+(?:[.,:]\d+)*(?:%|[가-힣]+)?/gu;
 const LATIN_PATTERN = /(?<![A-Za-z0-9_])(?:[A-Za-z_][A-Za-z0-9_.:/<>-]*)(?![A-Za-z0-9_])/gu;
-const PATH_PATTERN = /(?<!\w)(?:[\w.-]+\/)+[\w.-]+|(?<!\w)[\w-]+\.[A-Za-z0-9]{1,8}(?!\w)/gu;
+// 파이썬 `re` 의 `\w` 는 유니코드라 한글을 담지만 JS 의 `\w` 는 /u 를 붙여도 ASCII 뿐이다. 그대로 두면
+// docs/렌더/index.md 를 파이썬만 경로 원자로 보고 npm 은 그 안을 치환해 버린다 (말뭉치 실문장
+// 32,274개에서 280건이 갈렸다). URL_PATTERN 이 이미 쓰는 표기로 맞춘다.
+const WORD = "[\\p{L}\\p{N}_]";
+const PATH_PATTERN = new RegExp(
+  `(?<!${WORD})(?:[\\p{L}\\p{N}_.-]+/)+[\\p{L}\\p{N}_.-]+|(?<!${WORD})[\\p{L}\\p{N}_-]+\\.[A-Za-z0-9]{1,8}(?!${WORD})`,
+  "gu",
+);
 const INLINE_CODE_PATTERN = /`([^`\n]+)`/gu;
-const LINK_DESTINATION_PATTERN = /\[[^\u005D]*\]\(([^)]+)\)/gu;
+// d 플래그로 진짜 그룹 시작을 읽는다. indexOf 로 찾으면 [렌더](렌더) 처럼 링크 글자와 목적지가 같을 때
+// 링크 글자 쪽을 목적지로 착각한다. 파이썬은 match.start(1) 을 쓴다.
+const LINK_DESTINATION_PATTERN = /\[[^\u005D]*\]\(([^)]+)\)/gdu;
 const HTML_TAG_PATTERN = /<[^>\n]+>/gu;
 const DEICTIC_FRAGMENT = /이것|그것|저것|이러한|그러한|해당|이는|그는|그녀|그들/u;
 const SURFACE_CHARACTER = /[가-힣A-Za-z0-9]/gu;
@@ -46,10 +55,12 @@ export function protectedSpans(text) {
     for (const match of text.matchAll(pattern)) spans.push([match.index, match.index + match[0].length]);
   }
   for (const match of text.matchAll(LINK_DESTINATION_PATTERN)) {
-    const offset = match[0].indexOf(match[1]);
-    spans.push([match.index + offset, match.index + offset + match[1].length]);
+    const [start, end] = /** @type {RegExpIndicesArray} */ (match.indices)[1];
+    spans.push([start, end]);
   }
-  return spans.sort((left, right) => left[0] - right[0] || left[1] - right[1]);
+  // 파이썬은 sorted(set(spans)) 라 겹친 구간을 한 번만 둔다 (코드 안의 URL 처럼).
+  const unique = [...new Map(spans.map((span) => [`${span[0]}:${span[1]}`, span])).values()];
+  return unique.sort((left, right) => left[0] - right[0] || left[1] - right[1]);
 }
 
 /** @param {string} text @param {string[]} terms */

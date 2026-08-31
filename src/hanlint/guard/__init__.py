@@ -157,7 +157,9 @@ def guardText(
         missingLinks=tuple(sorted(expectedLinks - actualLinks)),
         unexpectedLinks=tuple(sorted(actualLinks - allowedLinks)),
         forbiddenHits=tuple(literal for literal in brief.forbidden if literal in surfaceText),
-        characterCount=len(text),
+        # NFC 로 세지 않으면 한글 한 글자가 자모 두세 개로 세어져 길이 계약이 뒤집힌다. 나머지 표면 검사는
+        # 전부 surfaceText 를 쓰는데 여기만 원문을 쓰고 있었다 (2026-08-31).
+        characterCount=len(surfaceText),
         minCharacters=brief.minCharacters,
         maxCharacters=brief.maxCharacters,
         findings=findings,

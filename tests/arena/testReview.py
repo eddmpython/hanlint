@@ -53,11 +53,18 @@ def testAssignmentShowsOneBalancedOrderWithoutIdentityOrInternalOrderMetadata():
     shown = json.dumps(first, ensure_ascii=False).casefold()
     for hidden in ("contextfirstv1", "plainbrief", "hanlint.protocolfixture", "candidate", "forward", "reversed"):
         assert hidden not in shown
-    swaps = [
-        assigned["comparison"]["left"] != source["comparison"]["left"]
-        for assigned, source in zip(first["cases"], suite["cases"], strict=True)
-    ]
-    assert sum(swaps) in (3, 4)
+    # 재야 할 것은 suite 대비 뒤집힌 사례 수가 아니라 **후보가 왼쪽에 온 사례 수** 다. suite 가 이미
+    # 좌우를 번갈아 놓으므로 하나 걸러 뒤집으면 뒤집힌 수는 3이나 4로 나오면서 후보 위치는 상수가 된다.
+    # 그 구멍으로 한 평가자가 모든 사례에서 후보를 같은 쪽으로만 보던 결함이 초록으로 지나갔다 (2026-08-31).
+    trialSet = loadPanelTrialSet(PILOT)
+    candidateText = {trial["id"]: trial["candidate"]["text"] for trial in trialSet["trials"]}
+    for evaluator in ("reviewer-1", "reviewer-2", "reviewer-3", "reviewer-4"):
+        assignment = preparePanelAssignment(suite, evaluator, "targetReader")
+        onLeft = [
+            assigned["comparison"]["left"] == candidateText[source["caseId"]]
+            for assigned, source in zip(assignment["cases"], suite["cases"], strict=True)
+        ]
+        assert 0 < sum(onLeft) < len(onLeft), f"{evaluator} 가 후보를 한쪽에서만 본다: {onLeft}"
     assert [item["caseId"] for item in first["cases"]] == [f"case-{index:03d}" for index in range(1, 8)]
     assert first["studyCode"] == f"panel-{suite['suiteSha256'][:12]}"
     variants = {

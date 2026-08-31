@@ -225,9 +225,14 @@ def renderJudgeConsistency(data: dict) -> str:
 def renderJudgeEvaluation(data: dict) -> str:
     lines = [f"자동 심사기: {data['evaluatorId']}"]
     for dimension, metric in data["preferences"].items():
+        # 비교할 사례가 없으면 수치 대신 몇 건을 견줬는지 말한다. 0.0 으로 찍으면 잰 적 없는 차원이
+        # 심사기가 전부 틀린 차원과 같은 줄로 보인다 (2026-08-31).
+        if metric["selectedAccuracy"] is None:
+            lines.append(f"{dimension}: 견줄 사례 {metric['total']}건, 답한 것 {metric['answered']}건이라 재지 않았다")
+            continue
         lines.append(
-            f"{dimension}: coverage {metric['coverage']}, selected accuracy {metric['selectedAccuracy']}, "
-            f"macro F1 {metric['macroF1']}"
+            f"{dimension}: 견줄 사례 {metric['total']}건, coverage {metric['coverage']}, "
+            f"selected accuracy {metric['selectedAccuracy']}, macro F1 {metric['macroF1']}"
         )
     lines.extend((data["claimBoundary"], f"evaluation SHA256: {data['evaluationSha256']}"))
     return "\n".join(lines)
