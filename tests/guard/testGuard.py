@@ -1,3 +1,4 @@
+from hashlib import sha256
 from unicodedata import normalize
 
 from hanlint import WritingBrief, guardText
@@ -40,7 +41,9 @@ def testGuardAcceptsOnlyTheDeclaredSurfaceAndDoesNotEditText():
     assert source == GOOD
     data = result.asDict()
     assert data["kind"] == "hanlint.guardResult" and data["meaning"] == GUARD_MEANING
-    assert len(data["briefSha256"]) == 64 and len(data["draftSha256"]) == 64
+    # 길이만 재면 상수 해시로 굳혀도 초록이다. draft 쪽은 값으로 못박는다 (2026-08-31).
+    assert len(data["briefSha256"]) == 64
+    assert data["draftSha256"] == sha256(source.encode()).hexdigest()
 
 
 def testGuardReportsEveryDeterministicFailureWithoutCallingItTruth():
@@ -118,3 +121,34 @@ def testCharacterCountIsNfcSoDecomposedHangulDoesNotInflate():
     decomposed = guardText(nfcBrief, normalize("NFD", text))
     assert composed.characterCount == decomposed.characterCount
     assert decomposed.characterCount <= 20
+
+
+def testLengthAndMissingLinkFailuresAreReportedByValue():
+    """길이 미달과 빠진 링크 목적지를 값으로 확인한다.
+
+    있던 시험은 `lengthSatisfied` 의 참인 쪽과 `missingLinks == ()` 인 쪽만 봤다. 거짓 쪽을 아무도 안 봐서
+    두 필드를 상수로 굳혀도 초록이었다 (2026-08-31).
+    """
+    short = "## 절\n\n해솔 계획은 짧다.\n"
+    result = guardText(brief(), short)
+    assert result.lengthSatisfied is False, "길이 미달을 거짓으로 내야 한다"
+    assert result.characterCount == len(short)
+    assert not result.contractSatisfied
+    assert "380,000원" in result.missingRequired
+
+    # brief 가 마크다운 링크 목적지를 요구하면 본문에 그 링크가 없을 때 missingLinks 가 그것을 든다
+    linked = WritingBrief.fromMapping(
+        {
+            "version": 1,
+            "preset": "report",
+            "reader": "결정할 운영자",
+            "task": "명세를 연다",
+            "facts": [{"id": "F1", "statement": "명세는 [명세](https://example.invalid/check)에 있다."}],
+            "mustInclude": ["명세"],
+            "allowedNumbers": [],
+            "forbidden": ["효과가 입증됐다"],
+            "length": {"min": 1, "max": 500},
+        }
+    )
+    assert guardText(linked, "## 절\n\n명세를 연다.\n").missingLinks == ("https://example.invalid/check",)
+    assert guardText(linked, "## 절\n\n[명세](https://example.invalid/check)를 연다.\n").missingLinks == ()

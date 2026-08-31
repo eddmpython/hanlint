@@ -18,7 +18,8 @@ def testWritingPacketCarriesEvidenceWithoutInjectingGeneralExamples():
     packet = writingPacket(SAMPLE, path="글.md")
     assert packet["version"] == 2 and packet["kind"] == "hanlint.writingPacket" and packet["purpose"] == "revise"
     assert packet["input"]["text"] == SAMPLE and packet["input"]["preset"] == "blog"
-    assert len(packet["input"]["textSha256"]) == 64
+    # 길이만 재면 빈 문자열 해시로 굳혀도 초록이다. 값으로 못박는다 (2026-08-31).
+    assert packet["input"]["textSha256"] == sha256(SAMPLE.encode()).hexdigest()
     assert packet["comparison"]["referenceProfile"]["source"] == "bundled:blog"
     assert packet["comparison"]["current"]["sentenceCount"] == 5
     assert packet["comparison"]["readerState"]["numbersSeen"] == ["3"]

@@ -243,6 +243,14 @@ def testRevealMapsHiddenSidesAndReturnsBootstrapIntervalsWithoutACompositeScore(
     assert result["dimensions"]["naturalness"]["baseline"] == 1
     assert result["dimensions"]["naturalness"]["candidatePreferenceShare"] == 0.5
     assert result["dimensions"]["naturalness"]["candidatePreferenceShareCi95"]["iterations"] == 5000
+    # 무승부는 0.5 로 센다. naturalness 는 무승부가 0건이라 가중치에 둔감하다. 무승부가 있는 두 차원을
+    # 값으로 못박지 않으면 가중치를 1.0 으로 바꿔도 초록이었다 (2026-08-31).
+    clarity = result["dimensions"]["clarity"]
+    assert (clarity["candidate"], clarity["baseline"], clarity["tie"]) == (0, 1, 1)
+    assert clarity["candidatePreferenceShare"] == 0.25
+    task = result["dimensions"]["taskUtility"]
+    assert (task["candidate"], task["baseline"], task["tie"]) == (1, 0, 1)
+    assert task["candidatePreferenceShare"] == 0.75
     assert "overall" not in result and "score" not in result
 
 

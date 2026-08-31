@@ -8,6 +8,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Fixed
 
+- **이빨 없던 단언 넷에 값을 박았다.** 돌연변이를 넣어도 초록이던 자리다. `entailment` 의 macro F1 은
+  분모를 "점수가 난 클래스 수" 로 바꿔도 안 잡혔다 (시나리오 셋이 전부 분모에 둔감했다). `writingPacket`
+  의 `input.textSha256` 과 `guard` 의 `draftSha256` 은 길이만 재서 빈 문자열 해시로 굳혀도 통과했다.
+  `guard` 의 `length.satisfied` 거짓 쪽과 비지 않은 `missingLinks` 는 아무도 안 봤다. `arena` 의 선호
+  비율은 무승부 가중치를 0.5 에서 1.0 으로 바꿔도 통과했다 (값을 단언하던 차원에 무승부가 0건이었다).
+  넷 다 돌연변이로 빨간 것을 본 뒤에 넣었다
+
 - **em 대시 강행규칙이 제품 파일 118개를 안 보고 있었다.** 게이트 `testDash` 가 `.js` 와 `.html` 을
   범위 밖에 두어 npm 소스 117개와 `panelReviewPage.html` 이 검사되지 않았다. 훅 (`.githooks/pre-commit`)
   은 `.js` 를 이미 보고 있어 둘이 갈려 있기도 했다. 양쪽에 `.js` 와 `.html` 을 넣어 추적 파일 619개 중

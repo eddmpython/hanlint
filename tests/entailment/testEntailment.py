@@ -171,3 +171,19 @@ def testPublishedSchemasNameGoldFreePredictionsAndLicensedBenchmark():
     assert "goldLabel" not in predictionItem["properties"] and predictions["properties"]["predictions"]["minItems"] == 36
     assert benchmark["properties"]["source"]["properties"]["license"]["const"] == "CC-BY-SA-4.0"
     assert benchmark["properties"]["cases"]["minItems"] == benchmark["properties"]["cases"]["maxItems"] == 36
+
+
+def testMacroF1AveragesOverEveryLabelNotOnlyTheOnesThatScored():
+    """한 클래스만 맞힌 예측에서 macro F1 이 클래스 셋으로 나뉜다.
+
+    있던 시나리오는 셋 다 1.0, 셋 다 0 아님, 셋 다 0 이라 분모에 둔감했다. 분모를 "f1 이 0 이 아닌 클래스
+    수" 로 바꿔도 아무 시험이 안 잡았다. 전부 supported 로 답하면 perClass f1 이 [0.5, 0, 0] 이라
+    셋으로 나누면 0.1667, 하나로 나누면 0.5 다 (2026-08-31).
+    """
+    metrics = evaluateEntailment(oraclePredictions("supported")).metrics
+    assert {name: item["f1"] for name, item in metrics["perClass"].items()} == {
+        "supported": 0.5,
+        "contradicted": 0.0,
+        "insufficient": 0.0,
+    }
+    assert metrics["macroF1"] == 0.1667, "라벨 셋으로 나눈다. 점수가 난 클래스만 세지 않는다"
