@@ -15,6 +15,7 @@
     "src",
     "data",
     "LICENSE",
+    "koglType1.LICENSE.md",
     "README.md"
   ],
   "engines": {
@@ -37,7 +38,7 @@
     "proofreading",
     "text-linter"
   ],
-  "license": "MIT",
+  "license": "SEE LICENSE IN koglType1.LICENSE.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eddmpython/hanlint.git",

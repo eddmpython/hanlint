@@ -8,6 +8,11 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Fixed
 
+- **npm 배포물이 공공누리 파생 자료를 MIT로만 표시했다.** `easyWords.json`의 정본에는 국립국어원과
+  공공누리 제1유형 출처가 있었지만 npm 0.0.8의 메타데이터와 tarball에는 고지 전문이 없었다.
+  `package.json`은 이제 `koglType1.LICENSE.md`를 가리키고 `exportData.py`가 정본 고지를 npm 뿌리로
+  투영한다. npm 명령이 읽지 않는 Python 전용 `coverageTypes.txt`는 tarball에서 뺐다
+
 - **한 번도 안 울리던 규칙 넷의 버그.** 기준 말뭉치에서 0건이라 아무도 못 보던 자리다. `tableOddCell`
   의 단위 정규식이 빈 단위를 허용해 맨숫자 열에서 지적문이 빈 백틱으로 나갔다. `negationRedefine` 의
   정규식에 관형형 `아닌` 이 들어 있어 (문장을 끝낼 수 없어 "앞 문장이 부정" 전제를 못 만족한다) 뒤

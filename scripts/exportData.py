@@ -1,8 +1,9 @@
 """파이썬 data/ 와 규칙 docstring 을 npm 패키지의 data/ 로 투영한다.
 
-정본은 src/hanlint/data 와 규칙 파일의 docstring 이다. txt 는 그대로, toml 은 json 으로, docstring 은
-ruleDocs.json 으로 간다. 만든 것을 손으로 고치지 않는다. tests/gates/testNpmData.py 가 투영이 정본과
-같은지 본다. `python scripts/exportData.py --check` 가 같은 검사다.
+정본은 src/hanlint/data 와 규칙 파일의 docstring, 루트와 data 의 라이선스 전문이다. txt 는 그대로,
+toml 은 json 으로, docstring 은 ruleDocs.json 으로 간다. 만든 것을 손으로 고치지 않는다.
+tests/gates/testNpmData.py 가 투영이 정본과 같은지 본다. `python scripts/exportData.py --check` 가 같은
+검사다.
 """
 
 from __future__ import annotations
@@ -15,12 +16,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src" / "hanlint" / "data"
 TARGET = ROOT / "npm" / "data"
-LICENSE_SOURCE = ROOT / "LICENSE"
-LICENSE_TARGET = ROOT / "npm" / "LICENSE"
-"""MIT 전문의 정본은 뿌리 LICENSE 하나다. npm 은 패키지 뿌리에서만 라이선스를 찾으므로 그리로 투영한다.
-휠은 pyproject 의 license-files 로 같은 정본을 담는다. 0.0.7 까지 npm 판만 전문 없이 나갔다."""
+LICENSE_PROJECTIONS = (
+    (ROOT / "LICENSE", ROOT / "npm" / "LICENSE"),
+    (SOURCE / "koglType1.LICENSE.md", ROOT / "npm" / "koglType1.LICENSE.md"),
+)
+"""라이선스 전문의 정본과 npm 패키지 뿌리 투영. 휠은 pyproject 의 license-files 로 같은 정본을 담는다."""
 PYTHON_ONLY_DATA = {
     "blueprints.json",
+    "coverageTypes.txt",
     "evidenceEntailmentV1.json",
     "learningVocabularySource.toml",
     "writingArenaPilotV1.json",
@@ -62,16 +65,16 @@ def staleFiles(files: dict[str, str]) -> list[str]:
             stale.append(name)
     if TARGET.exists():
         stale.extend(f"{p.name} (정본에 없다)" for p in sorted(TARGET.iterdir()) if p.name not in files)
+    for source, target in LICENSE_PROJECTIONS:
+        if not target.exists() or target.read_text(encoding="utf-8") != source.read_text(encoding="utf-8"):
+            stale.append(f"../{target.name} ({source.relative_to(ROOT).as_posix()} 와 다르다)")
     return stale
 
 
 def main(argv: list[str]) -> int:
     files = render()
-    licenseText = LICENSE_SOURCE.read_text(encoding="utf-8")
     if "--check" in argv:
         stale = staleFiles(files)
-        if not LICENSE_TARGET.exists() or LICENSE_TARGET.read_text(encoding="utf-8") != licenseText:
-            stale.append("../LICENSE (뿌리 LICENSE 와 다르다)")
         if stale:
             print("npm/data 가 정본과 다르다. python scripts/exportData.py 를 돌린다: " + ", ".join(stale))
             return 1
@@ -83,8 +86,9 @@ def main(argv: list[str]) -> int:
             path.unlink()
     for name, content in files.items():
         (TARGET / name).write_text(content, encoding="utf-8", newline="\n")
-    LICENSE_TARGET.write_text(licenseText, encoding="utf-8", newline="\n")
-    print(f"{len(files)}개와 LICENSE 를 {TARGET.parent} 에 썼다")
+    for source, target in LICENSE_PROJECTIONS:
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+    print(f"{len(files)}개와 라이선스 {len(LICENSE_PROJECTIONS)}개를 {TARGET.parent} 에 썼다")
     return 0
 
 

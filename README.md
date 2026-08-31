@@ -706,5 +706,6 @@ Two implementations, zero runtime dependencies, identical output: `pip install h
 | `evidenceEntailmentV1.json` (KLUE-NLI 파생 36개 사례) | CC BY-SA 4.0 | `src/hanlint/data/evidenceEntailmentV1.LICENSE.md` |
 | `learningVocabulary.tsv`, `easyWords.toml` (국립국어원) | 공공누리 제1유형 | `src/hanlint/data/koglType1.LICENSE.md` |
 
-배포 메타데이터의 표현식은 `MIT AND CC-BY-SA-4.0 AND LicenseRef-KOGL-Type-1` 이고 세 고지 파일이
-휠과 sdist 에 함께 들어간다. 기준 말뭉치의 원문은 저장소 밖에 있고 배포물에 싣지 않는다.
+파이썬 배포 메타데이터의 표현식은 `MIT AND CC-BY-SA-4.0 AND LicenseRef-KOGL-Type-1` 이고 세 고지
+파일이 휠과 sdist 에 함께 들어간다. npm 배포물에는 `easyWords.json`만 가며 `package.json`이
+`koglType1.LICENSE.md`를 가리킨다. 기준 말뭉치의 원문은 저장소 밖에 있고 배포물에 싣지 않는다.

@@ -42,4 +42,7 @@ for (const finding of lintFile("글.md")) console.log(finding.line, finding.rule
 문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`) 은 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는
 [저장소의 product 문서](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/product.md) 에 있다.
 
-MIT.
+## 라이선스
+
+코드와 나머지 데이터는 [MIT](LICENSE)다. `data/easyWords.json`은 국립국어원 자료의 파생물이며
+[공공누리 제1유형 고지](koglType1.LICENSE.md)가 적용된다.
