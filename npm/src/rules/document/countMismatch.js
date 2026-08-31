@@ -11,12 +11,23 @@ function sectionIndexAt(doc, line) {
   return index;
 }
 
-/** 도입의 약속과 마지막 절의 결산만 같은 목록으로 본다. 절이 없는 글은 전체가 span 줄 안일 때만 견준다. 파이썬과 같다. */
+/** 줄이 든 문단의 차례. sectionIndexAt 과 같은 꼴로 훑는다. */
+function blockIndexAt(doc, line) {
+  let index = 0;
+  for (const block of doc.blocks) if (block.startLine <= line) index = block.index;
+  return index;
+}
+
+/** 도입의 약속과 마지막 절의 결산만 같은 목록으로 본다. 절이 없으면 첫 문단과 마지막 문단이다. 파이썬과 같다. */
 function comparable(doc, lineA, lineB, span) {
   const a = sectionIndexAt(doc, lineA);
   const b = sectionIndexAt(doc, lineB);
   const last = doc.sections[doc.sections.length - 1].index;
-  if (last === 0) return Math.max(...doc.blocks.map((block) => block.endLine)) <= span;
+  if (last === 0) {
+    if (Math.max(...doc.blocks.map((block) => block.endLine)) > span) return false;
+    const lastBlock = doc.blocks[doc.blocks.length - 1].index;
+    return lastBlock !== 0 && blockIndexAt(doc, lineA) === 0 && blockIndexAt(doc, lineB) === lastBlock;
+  }
   return Math.min(a, b) === 0 && Math.max(a, b) === last && a !== b;
 }
 

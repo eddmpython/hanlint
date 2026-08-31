@@ -168,13 +168,13 @@
     },
     {
       "rule": "countMismatch",
-      "occurrences": 3,
-      "documents": 3,
-      "sampled": 3,
-      "reviewed": 3,
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
       "correct": 0,
-      "falsePositive": 3,
-      "precision": 0.0
+      "falsePositive": 0,
+      "precision": null
     },
     {
       "rule": "danglingDeixis",
@@ -218,8 +218,8 @@
     },
     {
       "rule": "doublePassive",
-      "occurrences": 164,
-      "documents": 127,
+      "occurrences": 162,
+      "documents": 126,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,
@@ -248,8 +248,8 @@
     },
     {
       "rule": "ellipsis",
-      "occurrences": 878,
-      "documents": 161,
+      "occurrences": 877,
+      "documents": 160,
       "sampled": 20,
       "reviewed": 20,
       "correct": 0,
@@ -578,8 +578,8 @@
     },
     {
       "rule": "redundantPair",
-      "occurrences": 22,
-      "documents": 19,
+      "occurrences": 24,
+      "documents": 21,
       "sampled": 20,
       "reviewed": 20,
       "correct": 20,

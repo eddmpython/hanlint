@@ -17,17 +17,33 @@ def sectionIndexAt(doc: DocumentPrint, line: int) -> int:
     return index
 
 
+def blockIndexAt(doc: DocumentPrint, line: int) -> int:
+    """줄이 든 문단의 차례. sectionIndexAt 과 같은 꼴로 훑는다."""
+    index = 0
+    for block in doc.blocks:
+        if block.startLine <= line:
+            index = block.index
+    return index
+
+
 def comparable(doc: DocumentPrint, lineA: int, lineB: int, span: int) -> bool:
-    """도입의 약속과 마지막 절의 결산만 같은 목록으로 본다. 절이 없는 글은 전체가 span 줄 안일 때만 견준다.
+    """도입의 약속과 마지막 절의 결산만 같은 목록으로 본다. 절이 없으면 첫 문단과 마지막 문단이 그 자리다.
 
     같은 절 안의 두 수도 견줬더니 백과와 수필에서 한 절이 목록 여럿을 담아 표본 20건 가운데 11건이 오탐이었다
     (2026-08-29). 약속과 결산이라는 꼴 (실측 004) 만 남긴다.
+
+    절이 없는 글에서 span 줄만 재고 자리를 안 보던 때는 한 문장 안의 대조까지 잡았다. 실측: `흔히 말하는
+    세 가지 방법이 아니라 네 가지 방법이 있다` 가 error 였고 지적문이 자기 줄을 가리켰다 (2026-08-31).
     """
     a, b = sectionIndexAt(doc, lineA), sectionIndexAt(doc, lineB)
     last = doc.sections[-1].index
     if last == 0:
         # 절이 없는 글은 짧을 때만 전체가 도입이자 결산이다. 긴 수필과 소설의 한 가지, 세 가지 는 목록 약속이 아니다.
-        return max(block.endLine for block in doc.blocks) <= span
+        if max(block.endLine for block in doc.blocks) > span:
+            return False
+        # 한 문단 (한 문장 포함) 안의 두 수는 대조이지 두 번의 약속이 아니다. 첫 문단과 마지막 문단만 견준다.
+        lastBlock = doc.blocks[-1].index
+        return lastBlock != 0 and blockIndexAt(doc, lineA) == 0 and blockIndexAt(doc, lineB) == lastBlock
     return {a, b} == {0, last}
 
 

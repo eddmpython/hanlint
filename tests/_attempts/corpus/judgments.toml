@@ -32,12 +32,6 @@ default = "correct"
 note = "같은 접속어가 가까운 문장 첫머리에 되풀이된 경우만 검출됐다."
 
 [[rule]]
-name = "countMismatch"
-sampled = 3
-default = "falsePositive"
-note = "도입의 약속과 마지막 절의 결산이 갈린 자리는 정탐이다. 같은 절 안의 두 수까지 견주던 때는 백과와 수필에서 표본 20건 가운데 11건이 오탐이라 2026-08-29 에 약속과 결산의 꼴만 남겼다. 남은 오탐 한 건은 절 없는 짧은 수필의 한 가지 와 백 가지 다."
-
-[[rule]]
 name = "danglingDeixis"
 sampled = 20
 default = "correct"
@@ -237,7 +231,7 @@ note = "후술, 아래에서 설명 을 써 놓고 앞에서 미룬 것으로 �
 name = "redundantPair"
 sampled = 20
 default = "correct"
-note = "다시 재회, 과반수 이상, 그때 당시 는 겹말이다. 다시 재력, 다시 재주 는 규칙에서 뺐다 (2026-08-29)."
+note = "다시 재회, 과반수 이상, 그때 당시 는 겹말이다. 다시 재력 (財力), 다시 재주 (才) 는 규칙에서 뺐다 (2026-08-29). 再 를 드는 목록으로 세던 때는 말뭉치의 재탈환과 재임을 놓쳐 2026-08-31 에 빼는 목록으로 뒤집었다. 표본 20건은 그대로다."
 
 [[rule]]
 name = "sectionNoProse"
