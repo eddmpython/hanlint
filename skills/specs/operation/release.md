@@ -38,24 +38,31 @@ status: curated
 
 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전을 손으로 적는 곳은 `src/hanlint/__init__.py` 의
 `__version__` 과 `npm/package.json` 둘뿐이다. `pyproject.toml` 은 hatch 가 `__version__` 을 읽고 (dynamic),
-`npm/data/version.json` 은 투영이라 `python scripts/exportData.py` 를 같은 커밋에서 돌린다. 워크플로가
-`__version__`, `package.json`, 태그를 대조하고 `tests/gates/testVersion.py` 가 로컬에서 같은 것을 강제한다.
+`npm/data/version.json` 은 투영이라 `python scripts/exportData.py` 를 같은 커밋에서 돌린다.
+`npm/package-lock.json`도 `npm install --package-lock-only --ignore-scripts`로 갱신하는 투영이다. 워크플로가
+`__version__`, `package.json`, 태그를 대조하고 `tests/gates/testVersion.py` 가 로컬에서 버전 투영까지 강제한다.
 0.0.2 에서 pyproject 만 올리고 `__version__` 을 빼먹어 `--version` 이 낡은 채 게시된 것이 이 구조의 이유다.
 
 체인지로그의 정본은 루트 `CHANGELOG.md` (Keep a Changelog 형식) 다. 변경은 `[Unreleased]` 에 쌓고 릴리즈
-커밋에서 그 내용을 `[X.Y.Z] - 날짜` 절로 내린다. 태그는 annotated 로 만들고 메시지는 dartlab 관례대로
-`hanlint X.Y.Z 요약` 한 줄이다. GitHub Release 노트는 워크플로가 커밋 목록에서 만들고 상세는 CHANGELOG 가
-정본이다.
+커밋에서 그 내용을 `[X.Y.Z] - 날짜` 절로 내린다. `git log v이전판..HEAD`의 공개 변경이 이 절에 모두
+분류됐는지 검토한다. 내부 작업을 공개 노트에서 뺄 때도 누락으로 두지 않고 검토 기록에 제외 이유를 남긴다.
+
+릴리즈 메시지는 제목 `hanlint X.Y.Z 요약`과 그 버전의 CHANGELOG 본문을 한 임시 파일에 둔다. annotated
+tag는 이 파일을 `-F`로 읽는다. 배포 워크플로도 tag 객체에서 같은 본문을 꺼내 GitHub Release의
+`body_path`로 쓴다. 태그와 공개 노트가 서로 다른 이력을 만들지 않는다.
 
 ```powershell
 # src/hanlint/__init__.py 의 __version__ 과 npm/package.json 의 version 을 올리고
-# CHANGELOG 의 Unreleased 를 버전 절로 내린 뒤
+# CHANGELOG 의 Unreleased 를 버전 절로 내리고 정확한 Git 범위를 대조한 뒤
 .venv/Scripts/python.exe -X utf8 -B scripts/exportData.py
+Push-Location npm
+npm install --package-lock-only --ignore-scripts
+Pop-Location
 .venv/Scripts/python.exe -X utf8 -B -m pytest -q
-git add src/hanlint/__init__.py npm/package.json npm/data/version.json CHANGELOG.md
+git add src/hanlint/__init__.py npm/package.json npm/package-lock.json npm/data/version.json CHANGELOG.md
 git commit -F 메시지파일
 git status --short   # tracked 수정이 남아 있으면 커밋에 빠진 파일이 있는 것이다. 비기 전에는 태그를 만들지 않는다
-git tag -a v0.0.x -m "hanlint 0.0.x 요약"
+git tag -a v0.0.x -F 릴리즈메시지파일
 git push origin main v0.0.x
 ```
 
@@ -68,7 +75,7 @@ git push origin main v0.0.x
 2. 세 버전 일치 검증. wheel 과 sdist 빌드. 그 wheel 을 격리 venv 에 설치해 Requires 가 비어 있는지, 데이터가
    동봉됐는지, `hanlint README.md` 가 통과하는지 본다.
 3. `publish-pypi` (environment `pypi`, OIDC) 와 `publish-npm` (OIDC, npm 11 이상) 이 나란히 올린다.
-4. GitHub Release 에 wheel 과 sdist 를 붙인다.
+4. annotated tag의 검토된 메시지를 본문으로 쓰고 GitHub Release에 wheel과 sdist를 붙인다.
 
 ## 올린 뒤
 

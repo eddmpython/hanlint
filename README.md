@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/v/hanlint?label=npm)](https://www.npmjs.com/package/hanlint)
 [![CI](https://github.com/eddmpython/hanlint/actions/workflows/ci.yml/badge.svg)](https://github.com/eddmpython/hanlint/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/hanlint)](https://pypi.org/project/hanlint/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-details-blue)](#라이선스)
 
 **한국어 글쓰기 검사 도구 (Korean prose linter).** 마크다운 원고에서 번역투, 명사 나열, 이중 피동,
 가리킬 것 없는 지시어, 조각난 문단처럼 **세면 확정되는 결함**을 찾아 자리와 이유와 다시 쓴 본보기를 준다.
@@ -13,10 +13,51 @@
 파이썬과 npm 두 판이고 런타임 의존성이 없다. 블로그 원고, 기술 문서, 보고서, AI 가 쓴 초안을 발행 전에
 게이트로 막는 자리에 쓴다.
 
+## 30초 만에 첫 검사
+
+Python 3.11 이상이면 패키지를 설치한다.
+
 ```powershell
-pip install hanlint      # 파이썬이 없으면 npx hanlint 글.md
+pip install hanlint
+hanlint
 hanlint 글.md
 ```
+
+Node 18 이상이면 설치 없이 같은 검사를 실행할 수 있다.
+
+```powershell
+npx hanlint
+npx hanlint 글.md
+```
+
+인자 없이 치면 현재 폴더의 마크다운 이름을 넣은 첫 화면이 나온다. 버전 숫자를 문서에 복사하지 않아도
+실행한 배포판을 바로 확인할 수 있다.
+
+```text
+hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집는다. 좋은 글인지는 판정하지 않는다
+
+  hanlint 초안.md        검사한다. 자리와 이유와 고칠 말이 나온다
+  hanlint fix 초안.md    기계가 확실히 고칠 수 있는 자리를 원문에 적용한다
+  hanlint audit 초안.md  글의 모양을 지도와 분포로 본다
+
+이 폴더의 마크다운: 초안.md. 폴더를 통째로 줘도 된다 (hanlint .)
+```
+
+처음에는 셋만 알면 된다.
+
+| 하고 싶은 것 | 치는 것 |
+|---|---|
+| 이 글에 무엇이 잘못됐나 | `hanlint 글.md` |
+| 기계가 고칠 수 있는 것은 먼저 고쳐 줘 | `hanlint fix 글.md` |
+| Python에서 쓰는 동안 계속 봐 줘 | `hanlint watch 글.md` |
+
+필요한 내용부터 바로 읽을 수 있다.
+
+- [지적과 본보기가 어떻게 나오는지](#hanlint-가-한국어-글에서-잡는-것)
+- [글 종류에 맞는 프리셋을 고르는 법](#글의-종류를-고른다-블로그-보고서-문서-안내서-수필-소설-백과)
+- [기존 문서의 지적을 잠그고 새 결함만 막는 법](#이미-쓴-글이-많은-저장소에-들일-때)
+- [Python과 npm의 명령 범위](#명령-한눈에)
+- [AI 초안에 연결하는 법](#ai-초안-검사)
 
 ## 읽기 쉬운 글이란 무엇인가
 
@@ -315,36 +356,6 @@ Brier와 calibration을 낸다. 일곱 쌍 `qwen3:8b` 실제 탐침에서 독자
 1건은 글쓴이의 사용이 아니라 지적에서 제외했고, 남은 57건은 모두 확정 치환으로 승격했다.
 다섯 종류의 새 글을 쓴 3회차에서는 첫 검사 error 14, notice 6에 후보 14개가 나왔고, 두 번 고친 뒤 다섯 편
 모두 error 0, notice 0이었다.
-
-## 설치와 첫 검사, 30초
-
-```powershell
-pip install hanlint
-hanlint
-```
-
-인자 없이 치면 첫 화면이 나온다. 지금 이 폴더에 있는 마크다운 이름으로 만든 예시가 거기 있다.
-
-```text
-hanlint 0.0.7  한국어 글에서 세면 확정되는 결함을 집는다. 좋은 글인지는 판정하지 않는다
-
-  hanlint 초안.md        검사한다. 자리와 이유와 고칠 말이 나온다
-  hanlint fix 초안.md    기계가 확실히 고칠 수 있는 자리를 원문에 적용한다
-  hanlint audit 초안.md  글의 모양을 지도와 분포로 본다
-
-이 폴더의 마크다운: 초안.md. 폴더를 통째로 줘도 된다 (hanlint .)
-```
-
-그다음은 셋만 알면 된다.
-
-| 하고 싶은 것 | 치는 것 |
-|---|---|
-| 이 글에 무엇이 잘못됐나 | `hanlint 글.md` |
-| 기계가 고칠 수 있는 것은 먼저 고쳐 줘 | `hanlint fix 글.md` |
-| 쓰는 동안 계속 봐 줘 | `hanlint watch 글.md` |
-
-`npx hanlint 글.md` 는 설치 없이 같은 검사를 한다. 폴더를 주면 그 아래 마크다운을 찾되 점으로 시작하는
-폴더와 `node_modules` 에는 안 들어간다. 그 안을 보려면 그 폴더를 직접 준다.
 
 ## 글의 종류를 고른다: 블로그, 보고서, 문서, 안내서, 수필, 소설, 백과
 
@@ -707,5 +718,6 @@ Two implementations, zero runtime dependencies, identical output: `pip install h
 | `learningVocabulary.tsv`, `easyWords.toml` (국립국어원) | 공공누리 제1유형 | `src/hanlint/data/koglType1.LICENSE.md` |
 
 파이썬 배포 메타데이터의 표현식은 `MIT AND CC-BY-SA-4.0 AND LicenseRef-KOGL-Type-1` 이고 세 고지
-파일이 휠과 sdist 에 함께 들어간다. npm 배포물에는 `easyWords.json`만 가며 `package.json`이
-`koglType1.LICENSE.md`를 가리킨다. 기준 말뭉치의 원문은 저장소 밖에 있고 배포물에 싣지 않는다.
+파일이 휠과 sdist 에 함께 들어간다. 외부 자료 가운데 npm 배포물에는 `easyWords.json`만 가며
+`package.json`이 `koglType1.LICENSE.md`를 가리킨다. 기준 말뭉치의 원문은 저장소 밖에 있고 배포물에
+싣지 않는다.

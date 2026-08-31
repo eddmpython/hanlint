@@ -159,7 +159,7 @@ __all__ = [
     "ruleSummary",
     "writingPacket",
 ]
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 
 def fingerprint(text: str, config: Config | None = None, path: str | None = None) -> DocumentPrint:

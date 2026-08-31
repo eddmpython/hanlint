@@ -23,7 +23,7 @@ status: curated
 |---|---|---|
 | 강행규칙 | 위반하면 제품이나 이력이 망가지는 것 | 루트 `CLAUDE.md` (추적하지 않음) |
 | 운영 정본 | 경계, 절차, 계약. 기계가 강제하는 것 | **`skills/specs/`** |
-| 사용 스킬 | AI 가 hanlint 를 바로 쓰는 절차 | `skills/use-hanlint/SKILL.md` (코어가 생긴 뒤 만든다) |
+| 사용 스킬 | AI 가 hanlint 로 검사하거나 글을 쓰는 절차 | `skills/use-hanlint/`, `skills/write-korean/` |
 | 끝나지 않은 기획 | 이니셔티브 | `mainPlan/` (추적하지 않음) |
 | 규칙의 근거 | 실측 사례와 판정 기준 | 그 규칙 파일의 docstring |
 
@@ -48,9 +48,8 @@ status: curated
 | [`operation.moduleLayers`](specs/operation/moduleLayers.md) | 층 구조와 import 방향. 순위 정본은 `tests/gates/layerContract.py` |
 | [`operation.codeStyle`](specs/operation/codeStyle.md) | 이름, 크기, 타입, docstring, 예외, 상수, 테스트, 도구 |
 | [`operation.sourceControl`](specs/operation/sourceControl.md) | 브랜치, 커밋 메시지, 커밋 단위, 릴리즈, 훅 |
-
-사용 스킬은 둘이다. `write-korean`은 요구사항과 초안을 `writingPacket`으로 컴파일해 글을 쓰고 고친다.
-`use-hanlint`는 이미 쓴 글의 결정적 지적을 없애고 평가 단계로 넘긴다.
+| [`use-hanlint`](use-hanlint/SKILL.md) | 이미 쓴 글의 결정적 지적을 없애고 평가 단계로 넘기는 절차 |
+| [`write-korean`](write-korean/SKILL.md) | 요구사항과 초안을 작문 패킷으로 컴파일해 쓰고 고치는 절차 |
 
 검증 절차 (`operation.verify`) 와 배포 (`operation.release`) 는 코어가 생기면서 같은 커밋에 만든다.
 

@@ -6,6 +6,8 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-09-01
+
 ### Fixed
 
 - **평가 작업대에서 라디오를 눌러도 선택과 진행이 저장되지 않았다.** content 변경 처리기가 파일로 옮긴
@@ -18,6 +20,10 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   공공누리 제1유형 출처가 있었지만 npm 0.0.8의 메타데이터와 tarball에는 고지 전문이 없었다.
   `package.json`은 이제 `koglType1.LICENSE.md`를 가리키고 `exportData.py`가 정본 고지를 npm 뿌리로
   투영한다. npm 명령이 읽지 않는 Python 전용 `coverageTypes.txt`는 tarball에서 뺐다
+
+- **물음과 감탄 뒤의 지시어를 `danglingDeixis`가 오탐했다.** `왜일까요?` 다음의 `이것은`은 방금 나온
+  물음을 가리키므로 앞 문장과 명사가 겹치지 않는 것이 정상이다. 말뭉치에서 이 꼴 48건을 제외해 해당
+  규칙의 표본 정탐률이 0.85에서 0.95로 올랐다
 
 - **한 번도 안 울리던 규칙 넷의 버그.** 기준 말뭉치에서 0건이라 아무도 못 보던 자리다. `tableOddCell`
   의 단위 정규식이 빈 단위를 허용해 맨숫자 열에서 지적문이 빈 백틱으로 나갔다. `negationRedefine` 의
@@ -64,6 +70,15 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   `start.product` 의 잡지 않는 것에 남겼다. 문형 `수치 비교` 는 `ellipsis` 에 기대 있어 함께 뺐다
 
 ### Changed
+
+- **README의 첫 검사까지 가는 길을 앞당겼다.** Python과 npm 시작 명령, 버전에 묶이지 않는 첫 화면,
+  주요 절 바로 가기를 소개 다음에 배치했다. 복합 라이선스를 MIT 하나로 보이던 배지도 상세 고지로
+  연결했다. npm README의 맞춤법 범위와 Skill OS의 두 사용 스킬 색인도 제품 정본에 맞췄다
+- **annotated tag와 GitHub Release가 같은 검토본을 쓴다.** 정확한 Git 범위와 버전 CHANGELOG를 대조한
+  한 메시지 파일로 태그를 만들고, 배포 워크플로가 태그 객체의 본문을 그대로 공개한다
+- **평가자 지적 겹침의 내부 분류와 기준선을 바로잡았다.** 흔한 서술어 때문에 지적을 잘못된 유형으로
+  몰던 분류를 고쳤다. 산문 되풀이 후보는 무작위 기준선 400회와 대조했을 때 신호가 아니었고, 표 되풀이는
+  발화가 1건뿐이라 새 규칙으로 올리지 않았다. 공개 검사 동작에는 규칙을 더하지 않았다
 
 - **오탐이 많던 규칙 넷을 종류로 좁혔다.** 규칙을 지우지 않고 그 규칙이 맞지 않는 종류에서만 끈다.
   `duplicateBlock` 은 `docs` 와 `guide` 에서 끈다 (발화 174건이 technicalDocs 155, guide 18 이고
@@ -454,7 +469,9 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   저장 시 진단과 quick fix), AI 스킬 (`skills/use-hanlint/SKILL.md`)
 - 형태소 정밀 모드 (`pip install hanlint[kiwi]`) 는 선택이고 기본은 표층 근사다
 
-[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.9...HEAD
+[0.0.9]: https://github.com/eddmpython/hanlint/compare/v0.0.8...v0.0.9
+[0.0.8]: https://github.com/eddmpython/hanlint/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/eddmpython/hanlint/compare/v0.0.2...v0.0.7
 [0.0.2]: https://github.com/eddmpython/hanlint/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/eddmpython/hanlint/releases/tag/v0.0.1

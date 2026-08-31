@@ -139,13 +139,27 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
+      # 주석 태그와 GitHub Release가 같은 검토본을 쓴다. 태그를 가리키는 커밋만으로는 메시지가 없으므로
+      # annotated tag 객체를 확인한 뒤 그 본문을 파일로 꺼낸다.
+      - name: 태그의 검토된 릴리즈 메시지 추출
+        run: |
+          set -eu
+          mapfile -t releaseTags < <(git tag --points-at HEAD --list 'v*')
+          test "${#releaseTags[@]}" -eq 1
+          releaseTag="${releaseTags[0]}"
+          test "$(git cat-file -t "$releaseTag")" = tag
+          git for-each-ref --format='%(contents)' "refs/tags/$releaseTag" > "$RUNNER_TEMP/releaseNotes.md"
+          test -s "$RUNNER_TEMP/releaseNotes.md"
       - uses: softprops/action-gh-release@v3
         with:
-          generate_release_notes: true
+          body_path: ${{ runner.temp }}/releaseNotes.md
           files: |
             dist/*.whl
             dist/*.tar.gz

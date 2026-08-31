@@ -24,6 +24,13 @@ def testHandWrittenVersionsAgree():
     assert __version__ == npmVersion == projection
 
 
+def testNpmLockProjectsPackageVersion():
+    npmVersion = json.loads((ROOT / "npm" / "package.json").read_text(encoding="utf-8"))["version"]
+    lock = json.loads((ROOT / "npm" / "package-lock.json").read_text(encoding="utf-8"))
+    assert lock["version"] == npmVersion
+    assert lock["packages"][""]["version"] == npmVersion
+
+
 def testPyprojectDelegatesToInit():
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
     assert "version" in project.get("dynamic", []), "pyproject 는 버전을 직접 들지 않고 hatch dynamic 으로 __version__ 을 읽는다"

@@ -1,6 +1,6 @@
 {
   "name": "hanlint",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "한국어 글 검사기. Korean prose linter for Markdown: translationese, noun piles, double passives, weak structure. Zero dependencies",
   "type": "module",
   "bin": {

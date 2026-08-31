@@ -71,8 +71,8 @@ status: curated
 
 `0.0.x` 라인에서 명시 지시가 있을 때만 한다. 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전의 정본은
 `src/hanlint/__init__.py` 의 `__version__` 이고 태그와 항상 같은 값. 체인지로그 정본은 루트
-`CHANGELOG.md` 이고 태그는 annotated 로 `hanlint X.Y.Z 요약` 한 줄이다. 전체 배포 절차는
-`operation.release` 가 정본이다.
+`CHANGELOG.md` 이다. 릴리즈 메시지는 제목과 버전 절의 CHANGELOG 본문을 한 검토 파일에 둔다. 주석
+태그와 GitHub Release가 그 파일을 같이 쓴다. 전체 배포 절차는 `operation.release` 가 정본이다.
 
 ## 훅
 

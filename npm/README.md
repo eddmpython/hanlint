@@ -1,7 +1,8 @@
 # hanlint
 
-한국어 글에서 반복되는 결함을 결정적으로 잡는 린터다. 번역투, 상투어, 자주 틀리는 맞춤법과 띄어쓰기,
-헷갈리는 말, 조각난 문단, 코드 튜토리얼의 계약 위반까지 집는다. 의존성이 없고 Node 18 이상이면 된다.
+한국어 글에서 반복되는 결함을 결정적으로 잡는 린터다. 번역투, 상투어, 이중 피동, 명사 나열, 조각난
+문단과 코드 튜토리얼의 계약 위반을 집는다. 맞춤법 전체를 추측하지 않고 앞뒤 낱말로 확정되는 일부 표기만
+본다. 런타임 의존성이 없고 Node 18 이상이면 된다.
 
 ```powershell
 npx hanlint
@@ -40,7 +41,8 @@ for (const finding of lintFile("글.md")) console.log(finding.line, finding.rule
 
 파이썬 패키지 (`pip install hanlint`) 와 같은 규칙, 같은 fixture, 같은 출력이다. 지문 지도 (`audit`, `map`),
 문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`) 은 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는
-[저장소의 product 문서](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/product.md) 에 있다.
+[전체 사용 안내](https://github.com/eddmpython/hanlint#readme)와
+[제품 경계](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/product.md)에서 확인할 수 있다.
 
 ## 라이선스
 
