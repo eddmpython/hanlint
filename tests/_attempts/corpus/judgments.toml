@@ -72,9 +72,9 @@ note = "소설의 인물이 쓴 것을 고친 서술 한 건은 글쓴이의 초
 
 [[rule]]
 name = "duplicateBlock"
-sampled = 20
+sampled = 1
 default = "falsePositive"
-note = "명령 전후 상태와 독립된 설정 예제를 보여 주려고 같은 코드나 출력을 다시 둔 사례였다."
+note = "명령 전후 상태와 독립된 설정 예제를 보여 주려고 같은 코드나 출력을 다시 둔 사례였다. 2026-08-31 에 docs 와 guide 에서 끄자 발화 174건이 1건이 됐다. 남은 하나도 쿠버네티스 릴리스 블로그가 조건 출력을 전후로 다시 둔 같은 꼴이다."
 
 [[rule]]
 name = "endingRepeat"
@@ -128,10 +128,9 @@ note = "위키백과와 MDN 의 제목 수준 건너뜀이다. 정규화 뒤의 
 
 [[rule]]
 name = "headingUniform"
-sampled = 20
+sampled = 1
 default = "falsePositive"
-correct = ["974f4f6f86ff576fcff0"]
-note = "옛 판정대로 기본은 오탐이다 (같은 어미의 목차가 그 문서의 관례인 자리). 2026-08-29 새 표본 둘 가운데 alarm() API 구현하기, 사용하기 로 이어진 MDN 목차 한 건은 정탐이고 한자 독음 괄호로 끝난 수필 제목은 표기라 오탐이다."
+note = "2026-08-31 에 어미를 한글 음절로 제한하고 (한자 독음 괄호와 라틴 약어로 끝난 제목 셋이 빠졌다) severity 를 notice 로 낮추고 docs 와 guide 에서 껐다. 발화 39건이 1건이 됐다. 남은 하나는 수필의 탑동 공원 / 장충단 공원 / 한양공원 으로 어미가 아니라 고유명사라 오탐이다. 정탐이던 MDN 목차는 technicalDocs 라 이제 안 돈다."
 
 [[rule]]
 name = "imperativePeriod"
@@ -202,12 +201,6 @@ sampled = 20
 default = "falsePositive"
 correct = ["01a66b4cca0f8811c67c", "02b730143719070cc35c", "137e19a19d7c8ab70ed8", "2b7017eeaf4a63e04b0d", "95e07a00badedcc2703e", "ddc0d199f61c0c4368ba", "6264690e2cdbb69d8cd7", "8229c34a9770c037a692", "c062daa480ac009cf4c2", "5019321a9f94c8134d21"]
 note = "같은 기술 화제를 짧게 끊은 문단은 정탐이다. 편집자 정보, 대화, 장면 전환, 기사 단락은 분리할 이유가 있었다. 링크 하나뿐인 문단을 embed 로 읽게 한 뒤 표본이 다섯 건 바뀌어 다시 읽었다. 기술 문서의 한두 문장 문단 셋은 정탐이고, 한 문장이 한 문단인 옛 수필과 글자가 빈 목록 항목은 오탐이다."
-
-[[rule]]
-name = "platformApi"
-sampled = 8
-default = "falsePositive"
-note = "Kubernetes 안내서의 /proc/ 은 리눅스 노드 안의 명령이라 독자가 멈추지 않는다. 사실은 맞지만 그 글에서는 오탐으로 둔다 (2026-08-29, 여덟 건)."
 
 [[rule]]
 name = "promiseRecall"

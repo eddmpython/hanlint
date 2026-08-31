@@ -3,12 +3,13 @@
   "catch": [
     "```python\nimport psutil\nprint(psutil.Process().memory_info().peak_wset)\n```\n",
     "```python\nimport os\nos.startfile(\"report.xlsx\")\n```\n",
-    "```python\npath = \"C:\\\\Users\\\\name\\\\data.csv\"\n```\n",
-    "```python\nwith open(\"/proc/meminfo\") as f:\n    print(f.read())\n```\n"
+    "```python\npath = \"C:\\\\Users\\\\name\\\\data.csv\"\n```\n"
   ],
   "spare": [
     "```python\nimport psutil\nprint(psutil.Process().memory_info().rss)\n```\n",
     "```text\npeak_wset 123\n```\n",
-    "peak_wset 은 윈도우 전용이라 산문에서만 말합니다.\n"
-  ]
+    "peak_wset 은 윈도우 전용이라 산문에서만 말합니다.\n",
+    "```python\nwith open(\"/proc/meminfo\") as f:\n    print(f.read())\n```\n"
+  ],
+  "note": "/proc/ 는 코드에 박히는 API 호출이 아니라 셸 경로이고 컨테이너 안에서는 리눅스가 기본이라 사전에서 뺐다."
 }

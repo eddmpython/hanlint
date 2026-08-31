@@ -35,8 +35,27 @@ PRESETS: dict[str, tuple[str, ...]] = {
         "draftHistory",
         "blockUnread",
         "numberOrphan",
+        "duplicateBlock",
+        "headingUniform",
     ),
 }
+REFERENCE = ("duplicateBlock", "headingUniform")
+"""참고 문서와 자습서에서만 끄는 것. 둘 다 규칙이 온 자리는 blog 라 거기서는 켠 채 둔다.
+
+`duplicateBlock` 은 거의 같은 블록을 두 번 읽으면 독자가 다른 한 줄을 찾느라 훑는다고 본다. 그런데
+자습서는 명령 전후의 상태를 견주려고 같은 출력을 일부러 다시 두고, 참고 문서는 절마다 완결된 예제를
+다시 싣는다. 낭비인지 전후 대조인지는 두 블록 사이 산문을 읽어야 갈린다. 실측: 발화 174건이
+technicalDocs 155, guide 18, blog 1 이고 표본 20건이 전부 오탐이었다.
+`headingUniform` 은 목차가 한 어미로 끝나면 나열로 읽힌다고 본다. 그런데 태스크 문서의 목차는
+`생성하기 / 적용하기 / 검증하기 / 정리하기` 가 관례다. 그 목차가 순서 있는 과정인지 관례인지는 표층이
+못 가른다. 실측: 발화 39건이 guide 22, technicalDocs 16, essay 1 이고 표본 20건 중 정탐이 하나였다
+(2026-08-31)."""
+ENCYCLOPEDIC = ("introLong",)
+"""백과에서만 끄는 것.
+
+`introLong` 은 도입이 문단 넷을 넘으면 미룬 배경 설명이라고 본다. 백과 표제어는 첫 절 앞의 머리말이
+길게 정의와 요약을 담는 것이 관례다. 실측: 발화 75건 가운데 encyclopedia 가 39건이고 표본의 새
+열 건이 암모니아, 독일의 국기, 레이디 가가처럼 전부 위키백과 머리말이었다 (2026-08-31)."""
 NARRATIVE = ("factListParagraph",)
 """서사 글에서만 끄는 것. 설명글의 전제가 서사에는 성립하지 않는다.
 
@@ -44,10 +63,10 @@ NARRATIVE = ("factListParagraph",)
 그 전제가 없다. 실측: 기준 말뭉치 표본에서 essay 11건이 전부 오탐이고 비-essay 9건이 전부 정탐이라
 교차표에 예외가 하나도 없었다. 끄고 다시 재니 표본이 전부 비-서사로 바뀌어 기본 판정이 정탐이 됐다
 (2026-08-31)."""
-PRESETS["guide"] = PRESETS["blog"]
+PRESETS["guide"] = PRESETS["blog"] + REFERENCE
 PRESETS["essay"] = PRESETS["report"] + NARRATIVE
 PRESETS["fiction"] = PRESETS["report"] + NARRATIVE
-PRESETS["encyclopedia"] = PRESETS["docs"]
+PRESETS["encyclopedia"] = PRESETS["docs"] + ENCYCLOPEDIC
 """글의 종류마다 처음부터 끄고 시작할 규칙. `preset` 키가 고르고 `disable` 이 그 위에 더한다.
 
 blog 는 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다.
@@ -55,9 +74,9 @@ report 는 보고서다. 독자에게 말을 걸지 않고 절이 결과를 남�
 docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기는 것 (draftHistory) 과 그림을 text 펜스로
 그리는 것 (blockUnread) 이 제 일이다. 실측: 이 저장소의 hanlint.toml 이 noQuestion 과 readerAbsent 를
 손으로 끄고 있었다. 프리셋은 그 손질을 이름 하나로 바꾼 것이다.
-guide (단계별 안내) 는 blog 와 같은 묶음, encyclopedia (백과) 는 docs 와 같은 묶음이다.
-essay 와 fiction (1930년대 문학) 은 report 에 NARRATIVE 를 더한다. 서사 글은 규칙 묶음도 다르다.
-나머지 종류가 다른 것은 견주는 프로파일 (PROFILE_OF) 이다.
+나머지 넷은 위의 셋에 종류가 요구하는 것을 더한다. guide (단계별 안내) 는 blog 에 REFERENCE 를,
+essay 와 fiction (1930년대 문학) 은 report 에 NARRATIVE 를, encyclopedia (백과) 는 docs 에
+ENCYCLOPEDIC 을 더한다. 그래도 종류가 다른 것은 견주는 프로파일 (PROFILE_OF) 이다.
 numberOrphan 은 실행 결과가 있는 글 (blog, guide) 에만 켠다. 실측: 백과와 뉴스의 표본 19건이 전부 서술의 A에서 B로 였다
 (2026-08-29). 그 글에는 앞서 보인 실행이 없으니 기준값이 앞에 나올 이유도 없다.
 """

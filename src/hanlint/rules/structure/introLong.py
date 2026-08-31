@@ -17,11 +17,17 @@ def introLong(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     어디서: 글쓰기 스킬의 도입은 결핍부터. 임계는 config.introMaxParagraphs.
     고치기: 넘치는 문단을 첫 절로 내리거나 지운다. 정의 문단이면 지운다. 검색해 들어온 독자는 그것이
         무엇인지 이미 안다.
-    안 잡는 것: H2 가 없는 글. 전체가 도입이라 셀 수 없다.
+    안 잡는 것: H2 가 없는 글 (전체가 도입이라 셀 수 없다). **본문 절이 하나뿐인 글과 도입이 문단의
+        절반을 넘는 글.** 둘 다 절 구조가 없는 글이지 도입이 긴 글이 아니다. 실측: 위키뉴스 단신은 본문이
+        문단 나열이고 끝에 `## 출처` 하나가 붙어 H2 가 하나 있다는 이유로 기사 전체가 도입으로 세어졌다.
+        제목 구조가 없는 수필은 도입 문단이 78개였다. 표본 20건의 오탐 11건이 전부 이 꼴이었다 (2026-08-31).
     """
-    if not doc.bodySections:
+    if len(doc.bodySections) < 2:
         return
     paragraphs = doc.intro.paragraphs
+    # 도입이 글의 절반을 넘으면 긴 도입이 아니라 절이 없는 글이다.
+    if len(paragraphs) * 2 > len(doc.paragraphs):
+        return
     if len(paragraphs) > config.introMaxParagraphs:
         over = paragraphs[config.introMaxParagraphs]
         yield Finding(

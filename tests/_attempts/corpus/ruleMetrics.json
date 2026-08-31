@@ -238,12 +238,12 @@
     },
     {
       "rule": "duplicateBlock",
-      "occurrences": 174,
-      "documents": 56,
-      "sampled": 20,
-      "reviewed": 20,
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
       "correct": 0,
-      "falsePositive": 20,
+      "falsePositive": 1,
       "precision": 0.0
     },
     {
@@ -358,13 +358,13 @@
     },
     {
       "rule": "headingUniform",
-      "occurrences": 46,
-      "documents": 46,
-      "sampled": 20,
-      "reviewed": 20,
-      "correct": 1,
-      "falsePositive": 19,
-      "precision": 0.05
+      "occurrences": 1,
+      "documents": 1,
+      "sampled": 1,
+      "reviewed": 1,
+      "correct": 0,
+      "falsePositive": 1,
+      "precision": 0.0
     },
     {
       "rule": "imperativePeriod",
@@ -408,8 +408,8 @@
     },
     {
       "rule": "introLong",
-      "occurrences": 218,
-      "documents": 218,
+      "occurrences": 36,
+      "documents": 36,
       "sampled": 20,
       "reviewed": 20,
       "correct": 6,
@@ -538,13 +538,13 @@
     },
     {
       "rule": "platformApi",
-      "occurrences": 8,
-      "documents": 3,
-      "sampled": 8,
-      "reviewed": 8,
+      "occurrences": 0,
+      "documents": 0,
+      "sampled": 0,
+      "reviewed": 0,
       "correct": 0,
-      "falsePositive": 8,
-      "precision": 0.0
+      "falsePositive": 0,
+      "precision": null
     },
     {
       "rule": "promiseRecall",

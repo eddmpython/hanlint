@@ -9,8 +9,10 @@ export const mechanism = "threshold";
  * @param {import("../../config/settings.js").Config} config
  */
 export function run(doc, config) {
-  if (!doc.bodySections.length) return [];
+  // 본문 절이 하나뿐이거나 도입이 문단의 절반을 넘으면 절이 없는 글이지 도입이 긴 글이 아니다. 파이썬과 같다.
+  if (doc.bodySections.length < 2) return [];
   const paragraphs = doc.intro.paragraphs;
+  if (paragraphs.length * 2 > doc.paragraphs.length) return [];
   if (paragraphs.length > config.introMaxParagraphs) {
     const over = paragraphs[config.introMaxParagraphs];
     return [

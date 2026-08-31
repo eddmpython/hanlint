@@ -23,15 +23,21 @@ export const PRESETS = {
     "draftHistory",
     "blockUnread",
     "numberOrphan",
+    "duplicateBlock",
+    "headingUniform",
   ],
 };
 // 서사 글에서만 끄는 것. 설명글의 전제 (독자가 문장 사이 이유를 따라간다, 말끝을 맺는다) 가 장면과
 // 대사에는 성립하지 않는다. 파이썬 settings.py 의 NARRATIVE 와 같다.
+// 참고 문서와 자습서는 명령 전후 상태와 완결된 예제를 보이려 같은 블록을 다시 둔다. 파이썬의 REFERENCE 와 같다.
+const REFERENCE = ["duplicateBlock", "headingUniform"];
+// 백과 표제어는 첫 절 앞의 머리말이 길게 정의와 요약을 담는 것이 관례다. 파이썬의 ENCYCLOPEDIC 과 같다.
+const ENCYCLOPEDIC = ["introLong"];
 const NARRATIVE = ["factListParagraph"];
-PRESETS.guide = PRESETS.blog;
+PRESETS.guide = [...PRESETS.blog, ...REFERENCE];
 PRESETS.essay = [...PRESETS.report, ...NARRATIVE];
 PRESETS.fiction = [...PRESETS.report, ...NARRATIVE];
-PRESETS.encyclopedia = PRESETS.docs;
+PRESETS.encyclopedia = [...PRESETS.docs, ...ENCYCLOPEDIC];
 
 /** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
 export const PROFILE_OF = {

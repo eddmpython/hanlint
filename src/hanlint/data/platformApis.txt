@@ -6,7 +6,9 @@ os\.startfile\(	윈도우	subprocess.run(["open", 경로]) 나 xdg-open
 \bmsvcrt\b	윈도우	termios 나 다른 입력 방법
 \bwin32(?:api|con|gui|com)\b	윈도우	pywin32 는 윈도우 전용이다
 \bosascript\b	맥	다른 운영체제에는 AppleScript 가 없다
-/proc/	리눅스	psutil 같은 이식 가능한 API
+# /proc/ 는 뺐다. 코드에 박히는 API 호출이 아니라 셸 명령의 경로이고, 컨테이너 안에서는
+# 리눅스가 기본 실행 환경이다. 실측: 기준 말뭉치의 지적 여덟 건이 전부 이 한 줄이었고 전부
+# 쿠버네티스 안내서의 kubectl exec 와 컨테이너 안 셸 기록이라 독자가 멈추지 않는다 (2026-08-31).
 \bfcntl\b	리눅스와 맥	윈도우에는 fcntl 이 없다
 resource\.getrusage\(	리눅스와 맥	윈도우에는 resource 모듈이 없다
 [A-Za-z]:\\\\	윈도우	절대 경로 대신 상대 경로나 pathlib
