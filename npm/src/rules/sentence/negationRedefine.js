@@ -4,7 +4,8 @@ import { COPULA as COPULA_KIND, lastWord, parsePredicate } from "../../analysis/
 
 export const name = "negationRedefine";
 export const mechanism = "repeat";
-const NEGATION = /단순(?:한|히)\s?.{0,15}?(?:이|가)\s?아(?:닙니다|니다|니에요|니죠|닌)/;
+// 관형형 `아닌` 은 뺐다. 문장을 끝낼 수 없어 앞 문장이 부정이라는 전제를 못 만족한다. 파이썬과 같다.
+const NEGATION = /단순(?:한|히)\s?.{0,15}?(?:이|가)\s?아(?:닙니다|니다|니에요|니죠)/;
 const COPULA = /(입니다|이다|이에요|예요)[.!]?$/;
 
 /** @param {string} text */

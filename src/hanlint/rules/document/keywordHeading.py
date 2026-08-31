@@ -25,9 +25,13 @@ def keywordHeading(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         안에서 만드는 도구가 아니라 파이썬 코드를 찾아 들어온 사람이다.` 필드 이름은 config.keywordField.
     고치기: 그 말이 실제로 하는 일을 맡은 절의 제목에 넣는다. 003 이면 `파이썬으로 QR코드 파일 만들기`.
         억지로 모든 제목에 넣지 않는다. 한 번이면 된다.
-    안 잡는 것: keywordField 를 설정하지 않은 글. 검색어가 제목에 없는 글 (그것은 keywordMissing 이 먼저
-        짚는다). H2 가 셋 미만인 글. 한 글자 낱말. 뜻이 같은 다른 말로 목차를 쓴 자리는 갈라내지 못하므로
-        notice 로만 낸다 (실측: 001 의 `시작` 은 목차에 없지만 `프로젝트 폴더 열기` 가 그 일을 한다).
+    안 잡는 것: keywordField 를 설정하지 않은 글. 검색어가 제목에도 첫 문단에도 없는 글 (그것은
+        keywordMissing 이 먼저 짚는다). H2 가 셋 미만인 글. 한 글자 낱말. 뜻이 같은 다른 말로 목차를 쓴
+        자리는 갈라내지 못하므로 notice 로만 낸다 (실측: 001 의 `시작` 은 목차에 없지만 `프로젝트 폴더
+        열기` 가 그 일을 한다).
+    왜 제목만 보지 않나: 제목에만 있는지 보면 **제목엔 없고 첫 문단에만 있는 검색어**가 두 규칙 사이로
+        빠진다. keywordMissing 은 제목과 첫 문단을 함께 보므로 통과시키고, 여기서는 제목에 없다고
+        건너뛴다. keywordMissing 과 같은 자리 (제목 + 첫 문단) 를 본다 (2026-08-31).
     """
     if not config.keywordField:
         return
@@ -36,15 +40,18 @@ def keywordHeading(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     headings = doc.headingsOfLevel(2)
     if not keyword or len(headings) < MIN_HEADINGS:
         return
+    # keywordMissing 과 같은 자리를 본다. 제목만 보면 첫 문단에만 있는 검색어가 두 규칙 사이로 빠진다.
+    first = doc.paragraphs[0] if doc.paragraphs else None
+    promised = title + "\n" + (first.text if first else "")
     joined = " / ".join(text for _, text, _ in headings)
-    missing = [word for word in keyword.split() if len(word) >= MIN_WORD and word in title and word not in joined]
+    missing = [word for word in keyword.split() if len(word) >= MIN_WORD and word in promised and word not in joined]
     if not missing:
         return
     yield Finding(
         "keywordHeading",
         headings[0][2],
         joined,
-        f"제목이 약속한 `{missing[0]}` 가 절 제목 어디에도 없다. 목차를 훑는 독자가 이 글이 그것을 다루는지 못 본다",
+        f"글이 내건 `{missing[0]}` 가 절 제목 어디에도 없다. 목차를 훑는 독자가 이 글이 그것을 다루는지 못 본다",
         None,
         NOTICE,
         DOCUMENT,

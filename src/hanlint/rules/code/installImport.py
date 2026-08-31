@@ -10,7 +10,10 @@ from ...fingerprint import DocumentPrint
 from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
 
-INSTALL = re.compile(r"(?:pip\s+install|uv\s+add|uv\s+pip\s+install|conda\s+install|poetry\s+add)\s+([^\n#|&;]+)")
+# 캡처는 백틱과 한글에서 멈춘다. 패키지 이름에 한글은 없고, 산문 문장에서는 지문이 백틱을 이미 걷어
+# 내므로 한글이 유일한 경계다. 안 멈추면 `pip install kubernetes` 뒤의 산문까지 삼켜 python, client,
+# library 를 설치된 패키지로 등록하고 그 이름을 import 하는 코드를 조용히 통과시킨다 (2026-08-31).
+INSTALL = re.compile(r"(?:pip\s+install|uv\s+add|uv\s+pip\s+install|conda\s+install|poetry\s+add)\s+([^\n#|&;`가-힣]+)")
 IMPORT = re.compile(r"^\s*(?:import\s+([\w.]+(?:\s*,\s*[\w.]+)*)|from\s+([\w.]+)\s+import\b)")
 REQUIREMENT = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[([^\]]*)\])?")
 

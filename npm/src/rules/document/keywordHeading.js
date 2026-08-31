@@ -19,9 +19,14 @@ export function run(doc, config) {
   const headings = doc.headings.filter(([level]) => level === 2);
   if (!keyword || headings.length < MIN_HEADINGS) return [];
   const joined = headings.map(([, text]) => text).join(" / ");
-  const missing = keyword.split(/\s+/).filter((word) => word.length >= MIN_WORD && title.includes(word) && !joined.includes(word));
+  // keywordMissing 과 같은 자리를 본다. 제목만 보면 첫 문단에만 있는 검색어가 두 규칙 사이로 빠진다. 파이썬과 같다.
+  const first = doc.paragraphs.length ? doc.paragraphs[0].text : "";
+  const promised = `${title}\n${first}`;
+  const missing = keyword
+    .split(/\s+/)
+    .filter((word) => word.length >= MIN_WORD && promised.includes(word) && !joined.includes(word));
   if (!missing.length) return [];
   return [
-    finding(name, headings[0][2], joined, `제목이 약속한 \`${missing[0]}\` 가 절 제목 어디에도 없다. 목차를 훑는 독자가 이 글이 그것을 다루는지 못 본다`, null, NOTICE, DOCUMENT, -1),
+    finding(name, headings[0][2], joined, `글이 내건 \`${missing[0]}\` 가 절 제목 어디에도 없다. 목차를 훑는 독자가 이 글이 그것을 다루는지 못 본다`, null, NOTICE, DOCUMENT, -1),
   ];
 }

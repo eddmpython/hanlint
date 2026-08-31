@@ -5,7 +5,8 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 export const name = "tableOddCell";
 export const mechanism = "contrast";
 const SEPARATOR = /^:?-{2,}:?$/;
-const MEASURE = /^([+-]?\d[\d,]*(?:\.\d+)?)\s*([^\s\d]{0,6})$/;
+// 단위는 한 글자 이상이다. 0 을 허용하면 맨숫자 칸이 빈 단위를 받아 지적문이 깨진다. 파이썬과 같다.
+const MEASURE = /^([+-]?\d[\d,]*(?:\.\d+)?)\s*([^\s\d]{1,6})$/;
 const EMPTY = ["", "-", "--"];
 
 /** (블록 안 줄 오프셋, 칸 목록). 구분 줄은 뺀다. @param {string} text @returns {[number, string[]][]} */

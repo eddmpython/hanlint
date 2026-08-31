@@ -10,7 +10,9 @@ from ..finding import DOCUMENT, NOTICE, Finding
 from ..registry import rule
 
 SEPARATOR = re.compile(r"^:?-{2,}:?$")
-MEASURE = re.compile(r"^([+-]?[0-9][0-9,]*(?:\.[0-9]+)?)\s*([^\s0-9]{0,6})$")
+# 단위는 한 글자 이상이다. {0,6} 이면 맨숫자 칸 (`453`) 이 빈 단위를 받아 지적문이 "나머지 3칸은
+# `` 으로 잰 값" 처럼 빈 백틱으로 나간다. 실측: 말뭉치의 유일한 근접 열이 그 경우였다 (2026-08-31).
+MEASURE = re.compile(r"^([+-]?[0-9][0-9,]*(?:\.[0-9]+)?)\s*([^\s0-9]{1,6})$")
 EMPTY = ("", "-", "--")
 
 

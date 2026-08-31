@@ -5,7 +5,8 @@ import { DOCUMENT, NOTICE, finding } from "../finding.js";
 export const name = "installImport";
 export const mechanism = "contrast";
 
-const INSTALL = /(?:pip\s+install|uv\s+add|uv\s+pip\s+install|conda\s+install|poetry\s+add)\s+([^\n#|&;]+)/g;
+// 캡처는 백틱과 한글에서 멈춘다. 안 멈추면 설치 줄 뒤의 산문을 패키지로 등록한다. 파이썬과 같다.
+const INSTALL = /(?:pip\s+install|uv\s+add|uv\s+pip\s+install|conda\s+install|poetry\s+add)\s+([^\n#|&;`가-힣]+)/g;
 const IMPORT = /^\s*(?:import\s+([\w.]+(?:\s*,\s*[\w.]+)*)|from\s+([\w.]+)\s+import\b)/;
 const REQUIREMENT = /^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[([^\]]*)\])?/;
 const PY_FILE = /\b(\w+)\.py\b/g;

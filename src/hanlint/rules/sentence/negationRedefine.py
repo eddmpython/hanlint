@@ -10,7 +10,10 @@ from ...fingerprint import DocumentPrint
 from ..finding import SENTENCE, Finding
 from ..registry import rule
 
-NEGATION = re.compile(r"단순(?:한|히)\s?.{0,15}?(?:이|가)\s?아(?:닙니다|니다|니에요|니죠|닌)")
+# 관형형 `아닌` 은 뺐다. 문장을 끝낼 수 없어 "앞 문장이 부정" 이라는 전제를 만족할 수 없는데, 뒤
+# 문장이 우연히 계사문이면 발화했다. 실측: 말뭉치의 열 건이 전부 한 문장 안의 `단순한 X 가 아닌 Y`
+# 였고 그 꼴로 오탐을 재현했다 (2026-08-31).
+NEGATION = re.compile(r"단순(?:한|히)\s?.{0,15}?(?:이|가)\s?아(?:닙니다|니다|니에요|니죠)")
 COPULA = re.compile(r"(입니다|이다|이에요|예요)[.!]?$")
 
 
