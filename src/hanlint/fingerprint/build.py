@@ -22,14 +22,20 @@ from .sentencePrint import SentencePrint
 from .topics import overlap, topicsOf
 
 
-def quotedIn(sentence: Sentence, blockCodeSpans: tuple[tuple[int, int], ...]) -> tuple[tuple[int, int], ...]:
-    """문장 안의 인용 구간. 블록의 인라인 코드 구간을 문장 좌표로 옮기고 따옴표 쌍을 더한다."""
+def quotedIn(sentence: Sentence, blockSpans: tuple[tuple[int, int], ...]) -> tuple[tuple[int, int], ...]:
+    """문장 안의 인용 구간. 블록 좌표의 구간을 문장 좌표로 옮긴다.
+
+    **따옴표 쌍도 블록에서 재서 넘겨받는다.** 문장 안에서 재던 때는 문장 분리가 따옴표 안에서 잘리면
+    (`TERMINAL` 은 물음표 뒤 공백에서 자른다) 조각에 여는 따옴표만 남아 쌍이 안 잡히고, docstring 이
+    "안 잡는다" 고 선언한 인용 예외가 통째로 풀렸다. 실측: `"네가 탄 곡조는 누구의 것인데? 대단히 듣기
+    좋던데..."` 가 두 문장으로 잘려 양쪽 다 인용 구간 0 이었다 (2026-08-31). ellipsis 표본 20건 가운데
+    10건이 이 결함이었고 deixis 와 이중 피동과 사전 규칙도 같은 예외를 쓴다.
+    """
     spans: list[tuple[int, int]] = []
-    for start, end in blockCodeSpans:
+    for start, end in blockSpans:
         lo, hi = max(start, sentence.start), min(end, sentence.end)
         if lo < hi:
             spans.append((lo - sentence.start, hi - sentence.start))
-    spans.extend(markers.quoteSpans(sentence.text))
     return tuple(sorted(set(spans)))
 
 
@@ -124,11 +130,12 @@ def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPr
             previousBlock = block
             continue
         text = plainText(block.text)
-        blockCodeSpans = codeSpans(block.text, text)
+        # 인라인 코드와 따옴표 쌍을 둘 다 블록 좌표에서 잰다. 문장 분리가 인용 안에서 잘려도 쌍이 남는다.
+        blockSpans = tuple(sorted(set(codeSpans(block.text, text) + markers.quoteSpans(text))))
         blockSentences: list[SentencePrint] = []
         for sentence in splitSentences(text):
             line = block.startLine + text.count("\n", 0, sentence.start)
-            quoted = quotedIn(sentence, blockCodeSpans)
+            quoted = quotedIn(sentence, blockSpans)
             made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted)
             # 만든 자리에서 바로 쌓는다. 다음 문장의 index 가 이 길이에서 나오므로 미루면 셈이 어긋난다.
             build.sentences.append(made)

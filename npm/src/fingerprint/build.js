@@ -98,20 +98,20 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  */
 
 /**
- * 문장 안의 인용 구간. 블록의 인라인 코드 구간을 문장 좌표로 옮기고 따옴표 쌍을 더한다.
+ * 문장 안의 인용 구간. 블록 좌표의 구간을 문장 좌표로 옮긴다. 따옴표 쌍도 블록에서 재서 넘겨받는다.
+ * 문장 안에서 재면 문장 분리가 따옴표 안에서 잘릴 때 쌍이 안 잡혀 인용 예외가 풀린다. 파이썬과 같다.
  * @param {import("../analysis/splitSentences.js").Sentence} sentence
- * @param {[number, number][]} blockCodeSpans
+ * @param {[number, number][]} blockSpans
  * @returns {[number, number][]}
  */
-function quotedIn(sentence, blockCodeSpans) {
+function quotedIn(sentence, blockSpans) {
   /** @type {[number, number][]} */
   const spans = [];
-  for (const [start, end] of blockCodeSpans) {
+  for (const [start, end] of blockSpans) {
     const lo = Math.max(start, sentence.start);
     const hi = Math.min(end, sentence.end);
     if (lo < hi) spans.push([lo - sentence.start, hi - sentence.start]);
   }
-  spans.push(...markers.quoteSpans(sentence.text));
   const unique = new Map(spans.map((span) => [`${span[0]},${span[1]}`, span]));
   return [...unique.values()].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 }
@@ -219,12 +219,15 @@ function buildSection(build, section, sectionIndex) {
       continue;
     }
     const text = plainText(block.text);
-    const blockCodeSpans = codeSpans(block.text, text);
+    // 인라인 코드와 따옴표 쌍을 둘 다 블록 좌표에서 잰다. 문장 분리가 인용 안에서 잘려도 쌍이 남는다.
+    const blockSpans = [...codeSpans(block.text, text), ...markers.quoteSpans(text)].sort(
+      (a, b) => a[0] - b[0] || a[1] - b[1],
+    );
     /** @type {SentencePrint[]} */
     const blockSentences = [];
     for (const sentence of splitSentences(text)) {
       const line = block.startLine + countIn(text, "\n", sentence.start);
-      const quoted = quotedIn(sentence, blockCodeSpans);
+      const quoted = quotedIn(sentence, blockSpans);
       const made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted);
       // 만든 자리에서 바로 쌓는다. 다음 문장의 index 가 이 길이에서 나오므로 미루면 셈이 어긋난다.
       sentences.push(made);

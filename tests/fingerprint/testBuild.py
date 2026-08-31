@@ -3,6 +3,7 @@ from hanlint.document import parseMarkdown
 from hanlint.fingerprint import buildFingerprint
 from hanlint.fingerprint.markers import endingOf, moodOf
 from hanlint.fingerprint.topics import overlap, topicsOf
+from hanlint.rules import runAll
 
 SAMPLE = """---
 title: 제목
@@ -118,3 +119,17 @@ def testTopicsAndOverlap():
     assert "파일" in a and "표" in a and "만듭니다" not in a
     assert 0 < overlap(a, b) < 1
     assert overlap(frozenset(), a) == 0.0
+
+
+def testQuoteSpansSurviveSentenceSplitInsideTheQuote():
+    """따옴표 안에서 문장이 잘려도 두 조각이 모두 인용 구간을 든다.
+
+    문장 안에서 따옴표 쌍을 재던 때는 `TERMINAL` 이 물음표 뒤 공백에서 잘라 조각마다 따옴표가 하나씩만
+    남았고 쌍이 안 잡혀 인용 예외가 통째로 풀렸다. ellipsis 표본 20건 가운데 10건이 이 결함이었고
+    deixis 와 이중 피동과 사전 규칙도 같은 예외를 쓴다 (2026-08-31).
+    """
+    doc = build("“네가 탄 곡조는 누구의 것인데? 대단히 듣기 좋던데…”\n")
+    assert len(doc.sentences) == 2, "물음표 뒤에서 두 문장으로 잘려야 이 시험이 뜻이 있다"
+    assert all(sentence.quoted for sentence in doc.sentences), "잘린 두 조각이 모두 인용 구간을 들어야 한다"
+    # 인용 안의 말줄임표는 표기이지 글쓴이의 말끝 흐리기가 아니다
+    assert not [finding for finding in runAll(doc, Config()) if finding.rule == "ellipsis"]
