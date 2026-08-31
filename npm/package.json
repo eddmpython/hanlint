@@ -14,6 +14,7 @@
     "bin",
     "src",
     "data",
+    "LICENSE",
     "README.md"
   ],
   "engines": {

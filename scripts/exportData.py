@@ -15,6 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src" / "hanlint" / "data"
 TARGET = ROOT / "npm" / "data"
+LICENSE_SOURCE = ROOT / "LICENSE"
+LICENSE_TARGET = ROOT / "npm" / "LICENSE"
+"""MIT 전문의 정본은 뿌리 LICENSE 하나다. npm 은 패키지 뿌리에서만 라이선스를 찾으므로 그리로 투영한다.
+휠은 pyproject 의 license-files 로 같은 정본을 담는다. 0.0.7 까지 npm 판만 전문 없이 나갔다."""
 PYTHON_ONLY_DATA = {
     "blueprints.json",
     "evidenceEntailmentV1.json",
@@ -63,8 +67,11 @@ def staleFiles(files: dict[str, str]) -> list[str]:
 
 def main(argv: list[str]) -> int:
     files = render()
+    licenseText = LICENSE_SOURCE.read_text(encoding="utf-8")
     if "--check" in argv:
         stale = staleFiles(files)
+        if not LICENSE_TARGET.exists() or LICENSE_TARGET.read_text(encoding="utf-8") != licenseText:
+            stale.append("../LICENSE (뿌리 LICENSE 와 다르다)")
         if stale:
             print("npm/data 가 정본과 다르다. python scripts/exportData.py 를 돌린다: " + ", ".join(stale))
             return 1
@@ -76,7 +83,8 @@ def main(argv: list[str]) -> int:
             path.unlink()
     for name, content in files.items():
         (TARGET / name).write_text(content, encoding="utf-8", newline="\n")
-    print(f"{len(files)}개를 {TARGET} 에 썼다")
+    LICENSE_TARGET.write_text(licenseText, encoding="utf-8", newline="\n")
+    print(f"{len(files)}개와 LICENSE 를 {TARGET.parent} 에 썼다")
     return 0
 
 
