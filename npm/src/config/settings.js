@@ -73,7 +73,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {number} endingRun
  * @property {number} factListMinSentences
  * @property {number} factListMaxMeanLength
- * @property {number} topicBreakMinSentences
+ * @property {number} flowValleyMinSentences
  * @property {number} longSentenceMax
  * @property {number} duplicateBlockRatio
  * @property {number} firstResultMaxParagraphs
@@ -113,7 +113,7 @@ export function defaultConfig() {
     endingRun: 4,
     factListMinSentences: 3,
     factListMaxMeanLength: 8.0,
-    topicBreakMinSentences: 2,
+    flowValleyMinSentences: 2,
     longSentenceMax: 30,
     duplicateBlockRatio: 0.9,
     firstResultMaxParagraphs: 4,

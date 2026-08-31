@@ -258,12 +258,6 @@ default = "correct"
 note = "됬, 역활, 금새, 설겆이 와 1930년대 수필의 지 안습니다 는 지금 맞춤법으로 틀린 표기다 (2026-08-29)."
 
 [[rule]]
-name = "topicBreak"
-sampled = 20
-default = "falsePositive"
-note = "서사 장면 전환과 기술 문서의 새 단락이었고 제목과 문맥이 이미 화제 관계를 드러냈다. 낱말 겹침이 없어도 단절되지 않았다."
-
-[[rule]]
 name = "translationese"
 sampled = 20
 default = "correct"

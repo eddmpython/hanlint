@@ -637,16 +637,6 @@
       "precision": null
     },
     {
-      "rule": "topicBreak",
-      "occurrences": 2807,
-      "documents": 520,
-      "sampled": 20,
-      "reviewed": 20,
-      "correct": 0,
-      "falsePositive": 20,
-      "precision": 0.0
-    },
-    {
       "rule": "translationese",
       "occurrences": 15270,
       "documents": 1382,

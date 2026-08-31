@@ -91,9 +91,9 @@ hanlint 보고서.md --preset report
    쓴다. 이 결과는 승인한 32자 이하 표면 치환이 단어 경계 한 자리에만 있고 숫자, URL, 식별자, 경로,
    코드, 링크 목적지와 설정의 `protectedTerms`를 보존할 때만 나온다. 새 치환을 추측하지 않는다.
 5. 마지막에 한 번 `--severity all` 로 `notice` 를 읽고 판단한다. **읽는 순서가 있다.** 실측에서 사람
-   평가자와 실제로 같은 자리를 짚은 notice 는 `endingRepeat`, `topicBreak`, `factListParagraph` 셋이었다
-   (글 셋, 평가자 지적 435건 기준). 그 셋을 먼저 보고 나머지는 그다음이다. 사실 나열과 흐름 끊김은 이유
-   문장을 넣어 잇는 것이 대체로 답이다. 정당한 문장이면 둔다.
+   평가자와 같은 자리를 짚은 notice 는 `endingRepeat` 과 `factListParagraph` 둘이었다 (글 셋, 평가자
+   지적 435건 기준, `memory/evidence/coverageRound2.md`). 그 둘을 먼저 보고 나머지는 그다음이다.
+   사실 나열은 이유 문장을 넣어 잇는 것이 대체로 답이다. 정당한 문장이면 둔다.
 6. 3 으로 돌아가 `error` 가 0 이 될 때까지 반복한다. 새 글 다섯 편의 3회차 실측에서는 첫 검사 error 14,
    notice 6이었고 후보 14개를 읽은 뒤 수정 패스 두 번으로 다섯 편 모두 error 0, notice 0이 됐다.
 7. 글의 모양을 보려면 `hanlint audit 글.md`. 지문 지도에서 색이 있는 자리가 구멍이다. 점수는 없다.

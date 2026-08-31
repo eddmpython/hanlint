@@ -24,7 +24,6 @@ import * as spacing from "./orthography/spacing.js";
 import * as spelling from "./orthography/spelling.js";
 import * as factListParagraph from "./paragraph/factListParagraph.js";
 import * as paraFragment from "./paragraph/paraFragment.js";
-import * as topicBreak from "./paragraph/topicBreak.js";
 import * as cliche from "./sentence/cliche.js";
 import * as hardWord from "./sentence/hardWord.js";
 import * as connectorRepeat from "./sentence/connectorRepeat.js";
@@ -94,7 +93,6 @@ export const RULES = [
   translationese,
   factListParagraph,
   paraFragment,
-  topicBreak,
   blockUnread,
   bridgeRepeat,
   emojiBullet,

@@ -135,8 +135,11 @@ class Config:
     """인과 표지 없는 문단을 사실 나열로 보는 최소 문장 수."""
     factListMaxMeanLength: float = 8.0
     """사실 나열로 볼 문단의 평균 어절 수 상한. 긴 문장은 안에서 이미 이어져 있다. 실측: 004 의 오탐 문단은 평균 9~15 어절."""
-    topicBreakMinSentences: int = 2
-    """화제 중첩 0 을 흐름 끊김으로 볼 때 앞뒤 문단의 최소 문장 수. 한 문장 문단은 중첩이 원래 작다."""
+    flowValleyMinSentences: int = 2
+    """`hanlint audit` 의 흐름 골짜기로 볼 때 앞뒤 문단의 최소 문장 수. 한 문장 문단은 중첩이 원래 작다.
+
+    2026-08-31 까지는 규칙 topicBreak 의 임계였다. 그 규칙을 빼면서 이름을 지금 쓰는 곳에 맞췄다.
+    골짜기는 지도가 보이는 사실이고 결함 판정이 아니다."""
     longSentenceMax: int = 30
     """이보다 어절이 많으면 긴 문장. 실측: 다섯 편의 최장 문장 23, 33, 23, 26, 45 가운데 30 을 넘는 둘이 목록을 문장에 넣은 것."""
     duplicateBlockRatio: float = 0.9

@@ -10,14 +10,6 @@ hex = "#56B4E9"
 rules = ["endingRepeat", "longSentence", "profile"]
 
 [[kind]]
-id = "flow"
-name = "흐름"
-symbol = "F"
-ansi = 214
-hex = "#E69F00"
-rules = ["topicBreak"]
-
-[[kind]]
 id = "deixis"
 name = "지시"
 symbol = "D"

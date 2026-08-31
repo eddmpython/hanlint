@@ -13,9 +13,9 @@
   "totals": {
     "reviewFindings": 435,
     "located": 156,
-    "covered": 38,
+    "covered": 23,
     "coveredByError": 3,
-    "ratioPerMille": 243
+    "ratioPerMille": 147
   },
   "posts": [
     {
@@ -61,13 +61,9 @@
       "post": "003-python-qr",
       "reviewFindings": 134,
       "located": 43,
-      "covered": 19,
+      "covered": 9,
       "coveredByError": 0,
       "byRule": [
-        {
-          "rule": "topicBreak",
-          "covered": 10
-        },
         {
           "rule": "factListParagraph",
           "covered": 8
@@ -88,11 +84,11 @@
         },
         {
           "kind": "순서와 구조",
-          "count": 5
+          "count": 7
         },
         {
           "kind": "숫자와 표",
-          "count": 2
+          "count": 3
         },
         {
           "kind": "용어와 설명",
@@ -100,7 +96,7 @@
         },
         {
           "kind": "파일과 폴더",
-          "count": 11
+          "count": 18
         }
       ]
     },
@@ -108,13 +104,9 @@
       "post": "005-python-history",
       "reviewFindings": 151,
       "located": 55,
-      "covered": 9,
+      "covered": 4,
       "coveredByError": 3,
       "byRule": [
-        {
-          "rule": "topicBreak",
-          "covered": 5
-        },
         {
           "rule": "translationese",
           "covered": 3
@@ -135,11 +127,11 @@
         },
         {
           "kind": "순서와 구조",
-          "count": 15
+          "count": 17
         },
         {
           "kind": "숫자와 표",
-          "count": 5
+          "count": 6
         },
         {
           "kind": "용어와 설명",
@@ -147,16 +139,12 @@
         },
         {
           "kind": "파일과 폴더",
-          "count": 9
+          "count": 11
         }
       ]
     }
   ],
   "byRule": [
-    {
-      "rule": "topicBreak",
-      "covered": 15
-    },
     {
       "rule": "endingRepeat",
       "covered": 11
@@ -173,22 +161,22 @@
   "uncaughtKinds": [
     {
       "kind": "파일과 폴더",
-      "count": 55
+      "count": 64
     },
     {
       "kind": "순서와 구조",
-      "count": 26
+      "count": 30
     },
     {
       "kind": "설치와 실행",
       "count": 16
     },
     {
-      "kind": "문장과 표현",
-      "count": 8
+      "kind": "숫자와 표",
+      "count": 10
     },
     {
-      "kind": "숫자와 표",
+      "kind": "문장과 표현",
       "count": 8
     },
     {

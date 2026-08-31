@@ -72,7 +72,7 @@ const THRESHOLD_FIELDS = [
   "endingRun",
   "factListMinSentences",
   "factListMaxMeanLength",
-  "topicBreakMinSentences",
+  "flowValleyMinSentences",
   "longSentenceMax",
   "duplicateBlockRatio",
   "firstResultMaxParagraphs",

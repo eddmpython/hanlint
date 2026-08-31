@@ -18,7 +18,7 @@ def valleysOf(doc: DocumentPrint, config: Config) -> tuple[Valley, ...]:
         for previous, paragraph in zip(paragraphs, paragraphs[1:], strict=False):
             if paragraph.overlapWithPrevious != 0.0:
                 continue
-            if min(previous.sentenceCount, paragraph.sentenceCount) < config.topicBreakMinSentences:
+            if min(previous.sentenceCount, paragraph.sentenceCount) < config.flowValleyMinSentences:
                 continue
             valleys.append(Valley(paragraph.index, paragraph.startLine, previous.startLine, 0.0))
     return tuple(valleys)
