@@ -9,7 +9,9 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-TEXT_SUFFIXES = {".py", ".md", ".toml", ".json", ".txt", ".sh", ".yml", ".yaml"}
+# 훅 (.githooks/pre-commit) 과 같은 범위다. 둘이 갈리면 한쪽이 통과시킨 것을 다른 쪽이 막는다.
+# .js 는 훅만 보고 있었고 .html 은 둘 다 안 봐서 제품 파일 118개가 강행규칙 밖이었다 (2026-08-31).
+TEXT_SUFFIXES = {".py", ".js", ".html", ".md", ".toml", ".json", ".txt", ".sh", ".yml", ".yaml"}
 DASHES = ("\u2014", "\u2013")
 
 

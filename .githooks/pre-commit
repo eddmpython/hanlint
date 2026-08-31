@@ -10,7 +10,7 @@ blocked=0
 
 for file in $(git diff --cached --name-only --diff-filter=ACM); do
   case "$file" in
-    *.py|*.js|*.md|*.toml|*.json|*.txt|*.sh|*.yml|*.yaml) ;;
+    *.py|*.js|*.html|*.md|*.toml|*.json|*.txt|*.sh|*.yml|*.yaml) ;;
     .githooks/*) ;;
     *) continue ;;
   esac

@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from ...config import DEFAULT_PRESET, PRESET_NAMES, Config, loadConfig
 from ...data import patternsAvoiding
@@ -143,14 +143,20 @@ def configFrom(args: argparse.Namespace, start: Path | None = None) -> Config:
 
 
 def configLabel(config: Config) -> str:
-    """출력 첫 줄에 적을 설정 출처. 현재 폴더 아래면 상대 경로, 아니면 그대로."""
+    """출력 첫 줄에 적을 설정 출처. 현재 폴더 아래면 상대 경로, 아니면 그대로.
+
+    **경로 구분자는 언제나 `/` 다.** 윈도에서 파이썬은 `str(Path)` 로 역슬래시를 내고 npm 은 받은
+    문자열을 그대로 들어, 설정이 작업 폴더 밖일 때 두 판의 첫 줄과 JSON 의 config 값이 갈렸다
+    (2026-08-31). 게이트가 늘 tmp_path 의 역슬래시만 넘겨 이 자리를 못 봤다.
+    """
     if config.source is None:
         return "기본값"
     try:
         relative = os.path.relpath(config.source)
     except ValueError:
-        return config.source
-    return config.source if relative.startswith("..") else relative
+        return PurePath(config.source).as_posix()
+    label = config.source if relative.startswith("..") else relative
+    return PurePath(label).as_posix()
 
 
 def header(config: Config) -> str:

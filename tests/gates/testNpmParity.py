@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -354,3 +355,63 @@ def testWalkAndGuardsAgree(tmp_path):
     python, node = runBoth(["rulez"])
     assert python.returncode == node.returncode == 2
     assert python.stderr == node.stderr
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testCommandSetsAgree():
+    """파이썬 서브명령 전부가 npm 의 COMMANDS 나 PYTHON_ONLY 에 정확히 한 번 든다.
+
+    npm 은 두 목록을 손으로 들고 있다. 파이썬에 명령을 더하고 npm 을 안 고치면 `npx hanlint 새명령` 이
+    이름을 잘못 짚었다는 안내를 내고, 반대로 npm 이 파이썬에 없는 이름을 들면 없는 명령을 안내한다.
+    둘 다 아무도 안 보고 있었다 (2026-08-31).
+    """
+    from hanlint.cli.main import COMMANDS as pythonCommands
+
+    source = (ROOT / "npm" / "src" / "cli" / "main.js").read_text(encoding="utf-8")
+    listed = {}
+    for name in ("COMMANDS", "PYTHON_ONLY"):
+        match = re.search(rf"const {name} = \[(.*?)\];", source, re.DOTALL)
+        assert match, f"npm main.js 에서 {name} 를 못 찾았다"
+        listed[name] = set(re.findall(r'"([a-z-]+)"', match.group(1)))
+    both = listed["COMMANDS"] & listed["PYTHON_ONLY"]
+    assert not both, f"npm 이 같은 이름을 두 목록에 든다: {sorted(both)}"
+    assert set(pythonCommands) == listed["COMMANDS"] | listed["PYTHON_ONLY"], (
+        f"파이썬에만: {sorted(set(pythonCommands) - listed['COMMANDS'] - listed['PYTHON_ONLY'])}, "
+        f"npm 에만: {sorted((listed['COMMANDS'] | listed['PYTHON_ONLY']) - set(pythonCommands))}"
+    )
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testConfigLabelAgreesWhenConfigIsOutsideTheWorkingFolder(tmp_path):
+    """설정이 작업 폴더 밖에 있고 경로를 슬래시로 줘도 두 판의 첫 줄과 JSON config 값이 같다.
+
+    파이썬은 `str(Path)` 로 역슬래시를 내고 npm 은 받은 문자열을 그대로 들어 윈도에서 갈렸다. 게이트가
+    늘 `tmp_path` 의 역슬래시만 넘겨 이 자리를 못 봤다 (2026-08-31).
+    """
+    outside = tmp_path / "설정밖"
+    outside.mkdir()
+    config = outside / "hanlint.toml"
+    config.write_text('preset = "docs"\n', encoding="utf-8")
+    work = tmp_path / "작업"
+    work.mkdir()
+    draft = work / "글.md"
+    draft.write_text("## 절\n\n핵심은 속도입니다.\n", encoding="utf-8")
+    slashed = str(config).replace("\\", "/")
+    for extra in (["--format", "json"], ["--format", "text", "--no-color"]):
+        python = subprocess.run(
+            [sys.executable, "-X", "utf8", "-B", "-m", "hanlint", "lint", str(draft), "--config", slashed, *extra],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=work,
+        )
+        node = subprocess.run(
+            [str(NODE), str(NODE_CLI), "lint", str(draft), "--config", slashed, *extra],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=work,
+        )
+        assert python.returncode == node.returncode, node.stderr
+        assert python.stdout == node.stdout, extra
+        assert "\\" not in python.stdout.split("\n")[0], "설정 출처는 언제나 / 로 적는다"

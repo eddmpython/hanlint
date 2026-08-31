@@ -18,7 +18,7 @@
  * audit, guard, arena, blueprint, evidence, entailment 같은 확장 명령은 파이썬 패키지에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import { fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
 import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
@@ -237,8 +237,9 @@ function configFrom(options, paths) {
 function configLabel(config) {
   if (config.source === null) return "기본값";
   const rel = relative(process.cwd(), config.source);
-  if (!rel || rel.startsWith("..") || isAbsolute(rel)) return config.source;
-  return rel;
+  // 경로 구분자는 언제나 /. 설정이 작업 폴더 밖일 때 두 판의 첫 줄이 갈렸다. 파이썬과 같다.
+  const label = !rel || rel.startsWith("..") || isAbsolute(rel) ? config.source : rel;
+  return label.split(sep).join("/");
 }
 
 /** 설정 출처와 지금 도는 프리셋. 기본 프리셋이면 이름을 빼서 줄이 길어지지 않게 한다.
