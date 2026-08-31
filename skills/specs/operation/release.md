@@ -48,8 +48,9 @@ status: curated
 분류됐는지 검토한다. 내부 작업을 공개 노트에서 뺄 때도 누락으로 두지 않고 검토 기록에 제외 이유를 남긴다.
 
 릴리즈 메시지는 제목 `hanlint X.Y.Z 요약`과 그 버전의 CHANGELOG 본문을 한 임시 파일에 둔다. annotated
-tag는 이 파일을 `-F`로 읽는다. 배포 워크플로도 tag 객체에서 같은 본문을 꺼내 GitHub Release의
-`body_path`로 쓴다. 태그와 공개 노트가 서로 다른 이력을 만들지 않는다.
+tag는 이 파일을 `--cleanup=verbatim -F`로 읽는다. 기본 정리 방식은 `###` 제목을 주석으로 보고 지우므로
+쓰지 않는다. 배포 워크플로도 tag 객체에서 같은 본문을 꺼내 GitHub Release의 `body_path`로 쓴다. 태그와
+공개 노트가 서로 다른 이력을 만들지 않는다.
 
 ```powershell
 # src/hanlint/__init__.py 의 __version__ 과 npm/package.json 의 version 을 올리고
@@ -62,7 +63,7 @@ Pop-Location
 git add src/hanlint/__init__.py npm/package.json npm/package-lock.json npm/data/version.json CHANGELOG.md
 git commit -F 메시지파일
 git status --short   # tracked 수정이 남아 있으면 커밋에 빠진 파일이 있는 것이다. 비기 전에는 태그를 만들지 않는다
-git tag -a v0.0.x -F 릴리즈메시지파일
+git tag -a v0.0.x --cleanup=verbatim -F 릴리즈메시지파일
 git push origin main v0.0.x
 ```
 
