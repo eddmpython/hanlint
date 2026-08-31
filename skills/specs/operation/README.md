@@ -19,5 +19,6 @@ status: curated
 | [`operation.moduleLayers`](moduleLayers.md) | 층 구조와 import 방향 |
 | [`operation.codeStyle`](codeStyle.md) | 코드 스타일 세부 |
 | [`operation.sourceControl`](sourceControl.md) | 소스 관리와 훅 |
-
-`operation.verify` (게이트 전체 절차) 와 `operation.release` (배포) 는 코어가 생기면서 같은 커밋에 만든다.
+| [`operation.verify`](verify.md) | 게이트 전체 절차 |
+| [`operation.release`](release.md) | PyPI 와 npm 배포 |
+| [`operation.feedback`](feedback.md) | 오탐과 미탐 신고 |

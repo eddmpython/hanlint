@@ -42,7 +42,7 @@ skills/specs/{category}/README.md   ->   id: {category}.README
   이유와 함께 적는다.
 - **되돌리는 법을 적는다.** 절차마다 롤백 경로가 한 줄 있어야 한다.
 - 문서가 코드보다 낡은 것을 발견하면 그 자리에서 고친다.
-- 규칙 목록과 임계를 문서에 옮겨 적지 않는다. 규칙은 `hanlint --list-rules`, 임계는 `config/` 가 정본이다.
+- 규칙 목록과 임계를 문서에 옮겨 적지 않는다. 규칙은 `hanlint rules`, 임계는 `config/` 가 정본이다.
 - 이 저장소의 문서는 hanlint 자신이 검사한다. em 대시와 명령형 뒤 마침표를 쓰지 않는다.
 
 ## 4. 검사

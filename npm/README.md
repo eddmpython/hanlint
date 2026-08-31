@@ -29,7 +29,8 @@ npx hanlint 글.md --format compact --errors-only
 지시어와 의미 고침, 여러 자리 일치는 기권하며 원문 완전 일치 패치와 확정 fix가 먼저다.
 
 글의 종류가 블로그가 아니면 프리셋을 먼저 고른다. `npx hanlint init --preset docs` 가 참고 문서에 맞지 않는
-규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs` 셋이다.
+규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia` 일곱이고
+`npx hanlint rules` 가 지금 도는 목록을 낸다.
 
 ```js
 import { lintFile } from "hanlint";

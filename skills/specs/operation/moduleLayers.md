@@ -37,10 +37,12 @@ npm 구현 (`npm/src/`) 은 같은 폴더와 같은 순위를 거울처럼 따�
 루트 도우미 층 `util` (`text.js`, `regex.js`) 이 있다. 파이썬 `str` 과 `re` 의 뜻을 JS 에서 같게 드는 자리라
 `data` 보다도 아래다. `index.js` 는 `__init__.py` 처럼 층이 아니라 공개 표면이다.
 
-`src/hanlint/__init__.py` 는 층이 아니라 공개 표면이다. report 와 rules 와 fingerprint 를 모아 `lintText`,
-`lintFile`, `auditText`, `auditFile`, `fingerprint`, `learnText`, `writingPacket`, `Finding`, `Config`,
-`ruleNames`, `WritingBrief`, `guardText`, `guardFile`, `blueprintFor`, `evidenceLedger`, `entailmentCases`,
-`evaluateEntailment`를 낸다. 패키지 밖에서 deep-path를 import 하게 두지 않는다.
+`src/hanlint/__init__.py` 는 층이 아니라 공개 표면이다. report 와 rules 와 fingerprint 를 모아 밖에 낸다.
+패키지 밖에서 deep-path를 import 하게 두지 않는다.
+
+**이름 목록은 여기 적지 않는다.** 정본은 `src/hanlint/__init__.py` 의 `__all__` 하나이고 지금 무엇이
+나가는지는 `python -c "import hanlint; print(sorted(hanlint.__all__))"` 가 말한다. 2026-08-31 이전에는
+이 자리에 열일곱 개를 손으로 베껴 두었고, 그 사이 실제 표면이 일흔 개로 늘어 문서가 사실과 어긋났다.
 
 ## 규칙 파일의 격리
 
