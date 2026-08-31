@@ -178,13 +178,13 @@
     },
     {
       "rule": "danglingDeixis",
-      "occurrences": 1835,
-      "documents": 688,
+      "occurrences": 1769,
+      "documents": 675,
       "sampled": 20,
       "reviewed": 20,
-      "correct": 17,
-      "falsePositive": 3,
-      "precision": 0.85
+      "correct": 19,
+      "falsePositive": 1,
+      "precision": 0.95
     },
     {
       "rule": "dash",
