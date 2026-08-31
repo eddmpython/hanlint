@@ -26,10 +26,9 @@ from ..data.patches import Patch, projectPatches
 
 PRESETS: dict[str, tuple[str, ...]] = {
     "blog": (),
-    "report": ("noQuestion", "sectionResult", "firstResultDistance", "introImage", "moreLater", "numberOrphan"),
+    "report": ("noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan"),
     "docs": (
         "noQuestion",
-        "sectionResult",
         "firstResultDistance",
         "introImage",
         "moreLater",
@@ -38,9 +37,16 @@ PRESETS: dict[str, tuple[str, ...]] = {
         "numberOrphan",
     ),
 }
+NARRATIVE = ("factListParagraph",)
+"""서사 글에서만 끄는 것. 설명글의 전제가 서사에는 성립하지 않는다.
+
+`factListParagraph` 은 독자가 문장 사이 이유를 따라가야 한다고 본다. 장면과 사건이 진행하는 글에는
+그 전제가 없다. 실측: 기준 말뭉치 표본에서 essay 11건이 전부 오탐이고 비-essay 9건이 전부 정탐이라
+교차표에 예외가 하나도 없었다. 끄고 다시 재니 표본이 전부 비-서사로 바뀌어 기본 판정이 정탐이 됐다
+(2026-08-31)."""
 PRESETS["guide"] = PRESETS["blog"]
-PRESETS["essay"] = PRESETS["report"]
-PRESETS["fiction"] = PRESETS["report"]
+PRESETS["essay"] = PRESETS["report"] + NARRATIVE
+PRESETS["fiction"] = PRESETS["report"] + NARRATIVE
 PRESETS["encyclopedia"] = PRESETS["docs"]
 """글의 종류마다 처음부터 끄고 시작할 규칙. `preset` 키가 고르고 `disable` 이 그 위에 더한다.
 
@@ -49,8 +55,9 @@ report 는 보고서다. 독자에게 말을 걸지 않고 절이 결과를 남�
 docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기는 것 (draftHistory) 과 그림을 text 펜스로
 그리는 것 (blockUnread) 이 제 일이다. 실측: 이 저장소의 hanlint.toml 이 noQuestion 과 readerAbsent 를
 손으로 끄고 있었다. 프리셋은 그 손질을 이름 하나로 바꾼 것이다.
-guide (단계별 안내) 는 blog 와 같은 묶음, essay 와 fiction (1930년대 문학) 은 report 와 같은 묶음, encyclopedia (백과) 는
-docs 와 같은 묶음이다. 종류가 다른 것은 규칙 묶음이 아니라 견주는 프로파일 (PROFILE_OF) 이다.
+guide (단계별 안내) 는 blog 와 같은 묶음, encyclopedia (백과) 는 docs 와 같은 묶음이다.
+essay 와 fiction (1930년대 문학) 은 report 에 NARRATIVE 를 더한다. 서사 글은 규칙 묶음도 다르다.
+나머지 종류가 다른 것은 견주는 프로파일 (PROFILE_OF) 이다.
 numberOrphan 은 실행 결과가 있는 글 (blog, guide) 에만 켠다. 실측: 백과와 뉴스의 표본 19건이 전부 서술의 A에서 B로 였다
 (2026-08-29). 그 글에는 앞서 보인 실행이 없으니 기준값이 앞에 나올 이유도 없다.
 """
@@ -146,12 +153,8 @@ class Config:
     """코드나 출력 블록의 줄 겹침이 이 비율 이상이면 거의 같은 블록. 실측: 004 의 출력 서른 줄 중 다른 것 한 줄."""
     firstResultMaxParagraphs: int = 4
     """첫 코드나 표나 그림 전에 둘 수 있는 산문 문단 수. 글쓰기 스킬의 도입 문단 넷과 같다."""
-    sectionResultMinParagraphs: int = 3
-    """이보다 문단이 많은 본문 절만 결과 (코드, 표, 파일) 를 요구한다. 짧은 절 (설치, 계정) 은 뺀다."""
     introMaxImages: int = 1
     """도입에 둘 수 있는 그림 수. 스킬: 도입은 문단 넷과 이미지 한 장을 넘지 않는다."""
-    headingQuestionRatio: float = 0.5
-    """H2 가운데 이 비율 넘게 물음표로 끝나면 과정이 아니라 FAQ 로 읽힌다."""
     moreLaterMaxChars: int = 150
     """마지막 절 목록 항목의 글자 상한. 실측: 다섯 편의 마지막 절 항목 24개가 17~196자였고 149자부터가
     문장 셋 이상으로 본문만큼 설명하는 것이었다."""

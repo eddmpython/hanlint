@@ -34,7 +34,6 @@ import * as dash from "./sentence/dash.js";
 import * as deixis from "./sentence/deixis.js";
 import * as doubleNegative from "./sentence/doubleNegative.js";
 import * as doublePassive from "./sentence/doublePassive.js";
-import * as ellipsis from "./sentence/ellipsis.js";
 import * as endingRepeat from "./sentence/endingRepeat.js";
 import * as euiChain from "./sentence/euiChain.js";
 import * as fillerOpener from "./sentence/fillerOpener.js";
@@ -49,7 +48,6 @@ import * as translationese from "./sentence/translationese.js";
 import * as blockUnread from "./structure/blockUnread.js";
 import * as bridgeRepeat from "./structure/bridgeRepeat.js";
 import * as emojiBullet from "./structure/emojiBullet.js";
-import * as headingQuestion from "./structure/headingQuestion.js";
 import * as introImage from "./structure/introImage.js";
 import * as loneSubheading from "./structure/loneSubheading.js";
 import * as moreLater from "./structure/moreLater.js";
@@ -58,7 +56,6 @@ import * as headingSkip from "./structure/headingSkip.js";
 import * as headingUniform from "./structure/headingUniform.js";
 import * as introLong from "./structure/introLong.js";
 import * as sectionNoProse from "./structure/sectionNoProse.js";
-import * as sectionResult from "./structure/sectionResult.js";
 
 /**
  * @typedef {object} Rule
@@ -78,7 +75,6 @@ export const RULES = [
   deixis,
   doubleNegative,
   doublePassive,
-  ellipsis,
   endingRepeat,
   euiChain,
   fillerOpener,
@@ -96,7 +92,6 @@ export const RULES = [
   blockUnread,
   bridgeRepeat,
   emojiBullet,
-  headingQuestion,
   introImage,
   loneSubheading,
   moreLater,
@@ -105,7 +100,6 @@ export const RULES = [
   headingUniform,
   introLong,
   sectionNoProse,
-  sectionResult,
   countMismatch,
   enoughOnce,
   fieldEcho,

@@ -247,16 +247,6 @@
       "precision": 0.0
     },
     {
-      "rule": "ellipsis",
-      "occurrences": 683,
-      "documents": 130,
-      "sampled": 20,
-      "reviewed": 20,
-      "correct": 0,
-      "falsePositive": 20,
-      "precision": 0.0
-    },
-    {
       "rule": "emojiBullet",
       "occurrences": 0,
       "documents": 0,
@@ -298,13 +288,13 @@
     },
     {
       "rule": "factListParagraph",
-      "occurrences": 1261,
-      "documents": 356,
+      "occurrences": 351,
+      "documents": 243,
       "sampled": 20,
       "reviewed": 20,
-      "correct": 9,
-      "falsePositive": 11,
-      "precision": 0.45
+      "correct": 15,
+      "falsePositive": 5,
+      "precision": 0.75
     },
     {
       "rule": "fieldEcho",
@@ -345,16 +335,6 @@
       "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
-    },
-    {
-      "rule": "headingQuestion",
-      "occurrences": 5,
-      "documents": 5,
-      "sampled": 5,
-      "reviewed": 5,
-      "correct": 0,
-      "falsePositive": 5,
-      "precision": 0.0
     },
     {
       "rule": "headingSentence",
@@ -595,16 +575,6 @@
       "correct": 20,
       "falsePositive": 0,
       "precision": 1.0
-    },
-    {
-      "rule": "sectionResult",
-      "occurrences": 52,
-      "documents": 35,
-      "sampled": 20,
-      "reviewed": 20,
-      "correct": 0,
-      "falsePositive": 20,
-      "precision": 0.0
     },
     {
       "rule": "spacing",

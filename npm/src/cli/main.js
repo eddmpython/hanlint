@@ -76,13 +76,11 @@ const THRESHOLD_FIELDS = [
   "longSentenceMax",
   "duplicateBlockRatio",
   "firstResultMaxParagraphs",
-  "sectionResultMinParagraphs",
   "introMaxImages",
-  "headingQuestionRatio",
   "moreLaterMaxChars",
   "tableOddCellMinRows",
 ];
-const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength", "headingQuestionRatio"]);
+const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength"]);
 
 const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|json|github] [--severity all|error|notice] [--errors-only]
                 [--config 파일] [--preset blog|report|docs] [--disable 규칙] [--baseline [파일]] [--output 파일] [--quiet]

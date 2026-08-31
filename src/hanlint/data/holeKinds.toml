@@ -79,4 +79,4 @@ name = "표현"
 symbol = "W"
 ansi = 137
 hex = "#A0522D"
-rules = ["cliche", "translationese", "redundantPair", "japaneseLoan", "hardWord", "connectorRepeat", "fillerOpener", "doubleNegative", "negationRedefine", "dash", "imperativePeriod", "ellipsis"]
+rules = ["cliche", "translationese", "redundantPair", "japaneseLoan", "hardWord", "connectorRepeat", "fillerOpener", "doubleNegative", "negationRedefine", "dash", "imperativePeriod"]

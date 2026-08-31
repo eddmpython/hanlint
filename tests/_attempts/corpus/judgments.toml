@@ -77,12 +77,6 @@ default = "falsePositive"
 note = "명령 전후 상태와 독립된 설정 예제를 보여 주려고 같은 코드나 출력을 다시 둔 사례였다."
 
 [[rule]]
-name = "ellipsis"
-sampled = 20
-default = "falsePositive"
-note = "수필의 대화와 여운, 생략한 코드, 명령 예시의 자리표시자, API 경로에 쓰인 표지였다."
-
-[[rule]]
 name = "endingRepeat"
 sampled = 20
 default = "correct"
@@ -97,9 +91,9 @@ note = "모두 한 문장 안에서 의가 겹쳐 관계를 동사나 다른 조
 [[rule]]
 name = "factListParagraph"
 sampled = 20
-default = "falsePositive"
-correct = ["f6dcdf8944e563b89ef7", "51fae08221220e9934a4", "be50251eff45dd56bd32", "6c2b7ea605bd7b465dfe", "93398f39d0284d275265", "612cb19dfef5d88bf4bc", "00e4ea4f31a5f33fd007", "fb1a7e2facc8c8a88f9f", "fde530b4150e32c947ca"]
-note = "기술 설명에서 인과 없이 이어진 사실은 정탐이다. 수필의 대화, 장면과 사건 진행은 나열이 아니었다."
+default = "correct"
+falsePositive = ["18185a8bbb429ef9854e", "3c6b4f9f0079307dff62", "ea7b49bed63a6a344920", "abb64e790f68fb80d299", "e8da6ef46e3bf878d402"]
+note = "기술 설명에서 인과 없이 이어진 사실은 정탐이다. 2026-08-31 에 essay 와 fiction 프리셋에서 끄자 표본 스무 건이 전부 비-서사로 바뀌어 새로 든 열한 건을 읽었고 기본 판정을 정탐으로 뒤집었다. 남은 오탐 다섯은 서사와 같은 꼴이다. 전기의 날짜 연대기 (김규식), 용어를 되풀이해 이은 정의 (유전학의 유전자부동), 단신의 변경 나열 (KBO), 절을 닫는 요약과 예고 (React 앱 컴포넌트화), 조건 분기를 나열한 API 설명 (setAttribute) 이다. 이 다섯은 인과 표지가 없어도 독자가 안 끊긴다."
 
 [[rule]]
 name = "fillerOpener"
@@ -118,12 +112,6 @@ name = "hardWord"
 sampled = 20
 default = "correct"
 note = "검토, 단계별 계획, 의견, 오늘, 참고 자료처럼 문맥을 잃지 않는 쉬운 말이 모두 있었다."
-
-[[rule]]
-name = "headingQuestion"
-sampled = 5
-default = "falsePositive"
-note = "FAQ 꼴 문서의 물음 제목이라 그 문서에서는 의도다. 사실은 맞지만 고칠 자리가 아니라 오탐으로 둔다 (2026-08-29, 다섯 건)."
 
 [[rule]]
 name = "headingSentence"
@@ -238,12 +226,6 @@ name = "sectionNoProse"
 sampled = 20
 default = "correct"
 note = "제목 아래에 코드, 표, 그림만 있고 그것을 읽어 주는 산문이 실제로 없었다."
-
-[[rule]]
-name = "sectionResult"
-sampled = 20
-default = "falsePositive"
-note = "릴리스 설명과 개념 절은 자체로 목적을 이뤘고, 실행 절의 자료는 원문 서식 안에 있어 별도 결과를 요구하지 않았다."
 
 [[rule]]
 name = "spacing"

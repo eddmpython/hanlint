@@ -14,10 +14,9 @@ import { projectPatches } from "../data/patches.js";
  */
 export const PRESETS = {
   blog: [],
-  report: ["noQuestion", "sectionResult", "firstResultDistance", "introImage", "moreLater", "numberOrphan"],
+  report: ["noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan"],
   docs: [
     "noQuestion",
-    "sectionResult",
     "firstResultDistance",
     "introImage",
     "moreLater",
@@ -26,9 +25,12 @@ export const PRESETS = {
     "numberOrphan",
   ],
 };
+// 서사 글에서만 끄는 것. 설명글의 전제 (독자가 문장 사이 이유를 따라간다, 말끝을 맺는다) 가 장면과
+// 대사에는 성립하지 않는다. 파이썬 settings.py 의 NARRATIVE 와 같다.
+const NARRATIVE = ["factListParagraph"];
 PRESETS.guide = PRESETS.blog;
-PRESETS.essay = PRESETS.report;
-PRESETS.fiction = PRESETS.report;
+PRESETS.essay = [...PRESETS.report, ...NARRATIVE];
+PRESETS.fiction = [...PRESETS.report, ...NARRATIVE];
 PRESETS.encyclopedia = PRESETS.docs;
 
 /** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
@@ -77,9 +79,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {number} longSentenceMax
  * @property {number} duplicateBlockRatio
  * @property {number} firstResultMaxParagraphs
- * @property {number} sectionResultMinParagraphs
  * @property {number} introMaxImages
- * @property {number} headingQuestionRatio
  * @property {number} moreLaterMaxChars
  * @property {number} tableOddCellMinRows
  * @property {number} registerMinShare
@@ -117,9 +117,7 @@ export function defaultConfig() {
     longSentenceMax: 30,
     duplicateBlockRatio: 0.9,
     firstResultMaxParagraphs: 4,
-    sectionResultMinParagraphs: 3,
     introMaxImages: 1,
-    headingQuestionRatio: 0.5,
     moreLaterMaxChars: 150,
     tableOddCellMinRows: 4,
     // 기준 말뭉치에서 일관된 에세이 하위 5%는 0.7576, 실제 혼합 기사는 0.625였다.

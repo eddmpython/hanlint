@@ -91,12 +91,6 @@ after = "```text\n한 줄\n두 줄\n세 줄\n네 줄\n다섯 줄\n```\n\n두 번
 moved = "거의 같은 블록을 다시 싣지 않고 달라진 줄만 말했다"
 
 [[entry]]
-rule = "ellipsis"
-before = "속도는 조금 느려집니다..."
-after = "속도는 조금 느려집니다."
-moved = "말끝을 흐리지 않고 같은 사실로 문장을 끝냈다"
-
-[[entry]]
 rule = "emojiBullet"
 before = "- ✅ 파일을 만듭니다\n"
 after = "- 파일을 만듭니다\n"
@@ -149,12 +143,6 @@ rule = "hardWord"
 before = "금일 중으로 소정의 양식을 제출합니다."
 after = "오늘 안에 정해진 양식을 냅니다."
 moved = "관청 말을 평소에 쓰는 말로 바꿨다"
-
-[[entry]]
-rule = "headingQuestion"
-before = "## 파일은 어디에 생길까요?\n\n첫 문단.\n\n## 왜 안 열릴까요?\n\n둘째 문단.\n\n## 크기는 어떻게 바꿀까요?\n\n셋째 문단.\n"
-after = "## 파일이 생기는 자리\n\n첫 문단.\n\n## 왜 안 열릴까요?\n\n둘째 문단.\n\n## 인쇄용 크기로 다시 저장\n\n셋째 문단.\n"
-moved = "질문 제목을 하나만 남기고 나머지는 행동과 결과로 바꿨다"
 
 [[entry]]
 rule = "headingSentence"
@@ -313,12 +301,6 @@ rule = "sectionNoProse"
 before = "도입입니다.\n\n## 절\n\n```python\nprint(1)\n```\n\n## 다음 절\n\n끝.\n"
 after = "도입입니다.\n\n## 절\n\n이 코드는 줄 수를 출력합니다.\n\n```python\nprint(1)\n```\n\n## 몇 줄이 나올까?\n\n끝.\n"
 moved = "코드가 하는 일을 한 문장으로 먼저 말했다"
-
-[[entry]]
-rule = "sectionResult"
-before = "도입.\n\n## 말투 찾기\n\n첫 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\n둘째 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\n셋째 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\n넷째 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\n## 결과는 어디에 남나?\n\n끝.\n"
-after = "도입.\n\n## 말투 찾기\n\n첫 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\n둘째 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\n셋째 문단입니다. 이유가 붙습니다. 그래서 이어집니다.\n\npython make_qr.py 를 돌리면 폴더에 link.png 가 생깁니다.\n\n## 결과는 어디에 남나?\n\n끝.\n"
-moved = "절 끝에 독자가 자기 화면에서 확인할 결과를 하나 남겼다"
 
 [[entry]]
 rule = "spacing"

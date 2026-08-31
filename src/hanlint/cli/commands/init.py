@@ -26,9 +26,7 @@ THRESHOLD_FIELDS = (
     "longSentenceMax",
     "duplicateBlockRatio",
     "firstResultMaxParagraphs",
-    "sectionResultMinParagraphs",
     "introMaxImages",
-    "headingQuestionRatio",
     "moreLaterMaxChars",
     "tableOddCellMinRows",
 )
