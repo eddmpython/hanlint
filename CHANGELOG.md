@@ -8,6 +8,12 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Fixed
 
+- **평가 작업대에서 라디오를 눌러도 선택과 진행이 저장되지 않았다.** content 변경 처리기가 파일로 옮긴
+  `bothContentPass`를 전역 함수처럼 불러 첫 클릭에서 `ReferenceError`가 났다. 실제 Edge에서 일곱 장르를
+  입력하며 찾았고 `hanlintReview.bothContentPass`로 배선을 고쳤다. 같은 배선을 정적 게이트로 잠갔다.
+  브라우저 검수 도구는 npm 개발 의존성에 정확 버전으로 고정하고 잠금 파일로 설치 실물을 고정했다. 제품의
+  Python과 npm 런타임 의존성은 계속 0이다
+
 - **npm 배포물이 공공누리 파생 자료를 MIT로만 표시했다.** `easyWords.json`의 정본에는 국립국어원과
   공공누리 제1유형 출처가 있었지만 npm 0.0.8의 메타데이터와 tarball에는 고지 전문이 없었다.
   `package.json`은 이제 `koglType1.LICENSE.md`를 가리키고 `exportData.py`가 정본 고지를 npm 뿌리로

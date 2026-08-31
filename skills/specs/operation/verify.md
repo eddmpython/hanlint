@@ -70,6 +70,11 @@ node --test npm/test/*.test.js
 - **지도 HTML.** `hanlint map --format html` 산출물은 공통 실행 공간의 pyproc 하네스로 데스크톱 1440 과
   모바일 390 스크린샷을 만들어 눈으로 본다. DOM 확인으로 끝내지 않는다. 범례 색이 0 개로 나온 지도 버그는
   이 눈검수가 찾았다.
+- **평가 작업대 HTML.** `hanlint arena review-page` 산출물은 `npm/package.json`과 잠금 파일이 소유한 정확
+  버전의 pyproc으로 실제 Chromium에서 확인한다. 고정 일곱 장르를 데스크톱 1440과 모바일 390에서 모두
+  캡처해 눈으로 보고, 실제 라디오와 근거 입력, Alt+화살표 뒤 제목 초점, 창을 닫고 다시 연 뒤 진행 복원,
+  7건 JSON 다운로드와 해시를 확인한다. 마지막에는 target, session, locator, artifact와 transport 자원 수가
+  시작값으로 돌아와야 한다.
 
 ## 실측
 

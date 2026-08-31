@@ -96,7 +96,9 @@ def doublePassive(prints, config):
 
 ## 도구
 
-- 런타임 의존성 0. dev 도구는 `[project.optional-dependencies].dev` 에만 둔다. pytest, ruff.
+- 런타임 의존성 0. Python dev 도구는 `[project.optional-dependencies].dev` 에 둔다. pytest, ruff.
+- 브라우저 표면 검수 도구는 `npm/package.json` 의 `devDependencies`가 정확 버전을 소유하고
+  `npm/package-lock.json`이 설치 실물을 잠근다. 제품의 npm `dependencies`에는 넣지 않는다.
 - ruff: 포맷과 E, F, W, I, B, UP. **N (pep8-naming) 은 선택하지 않는다.** camelCase 와 충돌한다. 이름은
   우리 게이트가 본다.
 - pytest 는 `python_files = ["test*.py"]` 로 camelCase 테스트 파일을 수집한다. 설정은 `pyproject.toml`.
@@ -107,9 +109,10 @@ def doublePassive(prints, config):
 
 `npm/` 은 파이썬의 투영이고 같은 이름 규칙을 따른다. 파일과 폴더와 함수와 변수는 camelCase, 테스트 파일은
 `<이름>.test.js` (node 의 관례). 순수 ESM 이고 빌드가 없다. 타입은 JSDoc 과 파일 첫 줄의 `// @ts-check` 로
-편집기가 본다. 런타임 의존성 0 이라 `node_modules` 가 생기지 않는다. 파이썬 `re` 와 JS `RegExp`, 파이썬 `str`
-과 JS `String` 의 뜻 차이는 `npm/src/regex.js` 와 `npm/src/text.js` 가 흡수하고 규칙 파일은 그 위에서 파이썬과
-같은 문장으로 쓴다. 사전과 규칙 기술서는 손으로 옮기지 않고 `scripts/exportData.py` 가 `npm/data` 로 투영한다.
+편집기가 본다. 런타임 의존성은 0이다. 브라우저 표면 검수용 dev 설치만 `npm/node_modules`에 생기며 배포물에는
+들어가지 않는다. 파이썬 `re` 와 JS `RegExp`, 파이썬 `str` 과 JS `String` 의 뜻 차이는 `npm/src/regex.js` 와
+`npm/src/text.js` 가 흡수하고 규칙 파일은 그 위에서 파이썬과 같은 문장으로 쓴다. 사전과 규칙 기술서는 손으로
+옮기지 않고 `scripts/exportData.py` 가 `npm/data` 로 투영한다.
 
 ## 되돌리기
 

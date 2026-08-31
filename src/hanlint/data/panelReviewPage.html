@@ -445,9 +445,9 @@
           const panelCase = assignment.cases[state.currentIndex];
           const review = reviewFor(panelCase);
           if (input.name.startsWith("content-")) {
-            const wasBothPass = bothContentPass(review);
+            const wasBothPass = hanlintReview.bothContentPass(review);
             review.contentChecks[input.name.slice(8)] = input.value;
-            if (!wasBothPass && bothContentPass(review)) {
+            if (!wasBothPass && hanlintReview.bothContentPass(review)) {
               for (const dimension of dimensions) review.preferences[dimension] = "";
             }
           }

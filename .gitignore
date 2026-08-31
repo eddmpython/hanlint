@@ -34,7 +34,7 @@ __pycache__/
 dist/
 build/
 
-# npm. 의존성 0 이라 node_modules 는 원래 없다. pack 산출물도 저장소 밖으로
+# npm. 런타임 의존성은 0 이고 browser QA dev 설치만 node_modules 에 둔다. pack 산출물도 저장소 밖으로
 node_modules/
 *.tgz
 

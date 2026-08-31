@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "src" / "hanlint" / "data" / "writingArenaPilotV1.json"
 PAGE = ROOT / "src" / "hanlint" / "data" / "panelReviewPage.html"
 LOGIC = ROOT / "src" / "hanlint" / "data" / "panelReviewPage.js"
+NPM_PACKAGE = ROOT / "npm" / "package.json"
+NPM_LOCK = ROOT / "npm" / "package-lock.json"
 
 
 def pilotSuite() -> dict:
@@ -80,6 +82,8 @@ def testReviewPageAllowsNoExternalChannelOrUnsafeHtmlSink():
     assert '<html lang="ko">' in source and 'href="#reviewMain"' in source
     assert "event.altKey" in source and "ArrowLeft" in source and "ArrowRight" in source
     assert 'tabindex="1"' not in source and "prefers-reduced-motion" in source
+    assert source.count("hanlintReview.bothContentPass(review)") == 3
+    assert re.search(r"(?<![.\w])bothContentPass\(review\)", source) is None
 
 
 def testRenderedPageKeepsPilotIdentityAndOtherReviewsOut():
@@ -118,3 +122,15 @@ def testAssignmentReviewSchemaProjectsToNpm():
     assert schema["properties"]["reviews"]["minItems"] == 1
     reviewItem = schema["properties"]["reviews"]["items"]
     assert reviewItem["allOf"][0]["then"]["properties"]["preferences"]["properties"]["voice"] == {"const": "cannotJudge"}
+
+
+def testBrowserQaToolUsesOneExactLockedPyproc():
+    package = json.loads(NPM_PACKAGE.read_text(encoding="utf-8"))
+    pyprocVersion = package["devDependencies"]["pyproc"]
+    assert re.fullmatch(r"\d+\.\d+\.\d+", pyprocVersion)
+    assert not package.get("dependencies")
+
+    lock = json.loads(NPM_LOCK.read_text(encoding="utf-8"))
+    assert lock["packages"][""]["devDependencies"]["pyproc"] == pyprocVersion
+    assert lock["packages"]["node_modules/pyproc"]["version"] == pyprocVersion
+    assert lock["packages"]["node_modules/pyproc"]["dev"] is True
