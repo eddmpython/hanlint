@@ -36,24 +36,36 @@
       ],
       "uncaughtKinds": [
         {
+          "kind": "되풀이",
+          "count": 8
+        },
+        {
           "kind": "문장과 표현",
           "count": 2
         },
         {
           "kind": "설치와 실행",
-          "count": 4
-        },
-        {
-          "kind": "순서와 구조",
-          "count": 6
-        },
-        {
-          "kind": "숫자와 표",
           "count": 1
         },
         {
+          "kind": "순서와 구조",
+          "count": 5
+        },
+        {
+          "kind": "숫자와 표",
+          "count": 5
+        },
+        {
+          "kind": "용어와 설명",
+          "count": 5
+        },
+        {
           "kind": "파일과 폴더",
-          "count": 35
+          "count": 16
+        },
+        {
+          "kind": "화제 과적",
+          "count": 6
         }
       ]
     },
@@ -75,20 +87,24 @@
       ],
       "uncaughtKinds": [
         {
-          "kind": "문장과 표현",
-          "count": 1
-        },
-        {
-          "kind": "설치와 실행",
+          "kind": "되풀이",
           "count": 4
         },
         {
+          "kind": "문장과 표현",
+          "count": 4
+        },
+        {
+          "kind": "설치와 실행",
+          "count": 1
+        },
+        {
           "kind": "순서와 구조",
-          "count": 7
+          "count": 8
         },
         {
           "kind": "숫자와 표",
-          "count": 3
+          "count": 6
         },
         {
           "kind": "용어와 설명",
@@ -96,7 +112,11 @@
         },
         {
           "kind": "파일과 폴더",
-          "count": 18
+          "count": 6
+        },
+        {
+          "kind": "화제 과적",
+          "count": 4
         }
       ]
     },
@@ -118,28 +138,36 @@
       ],
       "uncaughtKinds": [
         {
+          "kind": "기타",
+          "count": 2
+        },
+        {
+          "kind": "되풀이",
+          "count": 12
+        },
+        {
           "kind": "문장과 표현",
-          "count": 5
+          "count": 7
         },
         {
           "kind": "설치와 실행",
-          "count": 8
+          "count": 2
         },
         {
           "kind": "순서와 구조",
-          "count": 17
+          "count": 11
         },
         {
           "kind": "숫자와 표",
-          "count": 6
+          "count": 5
         },
         {
           "kind": "용어와 설명",
-          "count": 4
+          "count": 6
         },
         {
-          "kind": "파일과 폴더",
-          "count": 11
+          "kind": "화제 과적",
+          "count": 6
         }
       ]
     }
@@ -160,28 +188,40 @@
   ],
   "uncaughtKinds": [
     {
-      "kind": "파일과 폴더",
-      "count": 64
+      "kind": "되풀이",
+      "count": 24
     },
     {
       "kind": "순서와 구조",
-      "count": 30
+      "count": 24
     },
     {
-      "kind": "설치와 실행",
-      "count": 16
+      "kind": "파일과 폴더",
+      "count": 22
     },
     {
       "kind": "숫자와 표",
-      "count": 10
+      "count": 16
+    },
+    {
+      "kind": "화제 과적",
+      "count": 16
     },
     {
       "kind": "문장과 표현",
-      "count": 8
+      "count": 13
     },
     {
       "kind": "용어와 설명",
-      "count": 5
+      "count": 12
+    },
+    {
+      "kind": "설치와 실행",
+      "count": 4
+    },
+    {
+      "kind": "기타",
+      "count": 2
     }
   ]
 }
