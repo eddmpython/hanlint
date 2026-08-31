@@ -187,6 +187,7 @@
   </div>
 
   <script id="assignmentData" type="application/json">__HANLINT_ASSIGNMENT__</script>
+  <script>__HANLINT_PAGE_LOGIC__</script>
   <script>
     "use strict";
     const assignment = JSON.parse(document.getElementById("assignmentData").textContent);
@@ -224,54 +225,19 @@
     const progressText = document.querySelector(".progressText");
     const caseNav = document.querySelector(".caseNav");
 
-    function emptyReview(panelCase) {
-      return {
-        caseId: panelCase.caseId,
-        assignmentCaseSha256: panelCase.assignmentCaseSha256,
-        contentChecks: { left: "", right: "" },
-        preferences: { naturalness: "", clarity: "", taskUtility: "", voice: "" },
-        reasons: { content: "", naturalness: "", clarity: "", taskUtility: "", voice: "" }
-      };
-    }
-
     function reviewFor(panelCase) {
-      if (!state.reviews[panelCase.caseId]) state.reviews[panelCase.caseId] = emptyReview(panelCase);
+      if (!state.reviews[panelCase.caseId]) state.reviews[panelCase.caseId] = hanlintReview.emptyReview(panelCase, dimensions);
       return state.reviews[panelCase.caseId];
-    }
-
-    function storedReviewValid(review, panelCase) {
-      const exactKeys = (value, keys) => value !== null
-        && typeof value === "object"
-        && !Array.isArray(value)
-        && Object.keys(value).length === keys.length
-        && keys.every((key) => Object.hasOwn(value, key));
-      return exactKeys(review, ["caseId", "assignmentCaseSha256", "contentChecks", "preferences", "reasons"])
-        && review.caseId === panelCase.caseId
-        && review.assignmentCaseSha256 === panelCase.assignmentCaseSha256
-        && exactKeys(review.contentChecks, ["left", "right"])
-        && dimensions.every((dimension) => Object.hasOwn(review.preferences || {}, dimension))
-        && Object.keys(review.preferences || {}).length === dimensions.length
-        && ["content", ...dimensions].every((name) => Object.hasOwn(review.reasons || {}, name))
-        && Object.keys(review.reasons || {}).length === dimensions.length + 1;
     }
 
     function loadState() {
       try {
         const stored = localStorage.getItem(storageKey);
         if (!stored) return;
-        const parsed = JSON.parse(stored);
-        const casesById = Object.fromEntries(assignment.cases.map((panelCase) => [panelCase.caseId, panelCase]));
-        const reviewEntries = parsed.reviews !== null && typeof parsed.reviews === "object"
-          ? Object.entries(parsed.reviews)
-          : [];
-        const valid = Number.isInteger(parsed.currentIndex)
-          && reviewEntries.every(([caseId, review]) => casesById[caseId] && storedReviewValid(review, casesById[caseId]));
-        if (!valid) return;
-        state = parsed;
+        state = hanlintReview.restoreState(JSON.parse(stored), assignment, dimensions);
       } catch (_error) {
         state = emptyState();
       }
-      state.currentIndex = Math.max(0, Math.min(assignment.cases.length - 1, state.currentIndex));
     }
 
     function saveState() {
@@ -392,37 +358,19 @@
       });
     }
 
-    function bothContentPass(review) {
-      return ["left", "right"].every((side) => review.contentChecks[side] === "pass");
-    }
-
     function syncPreferenceRules(panelCase, review) {
       const contentComplete = ["left", "right"].every((side) => review.contentChecks[side]);
-      const bothPass = contentComplete && bothContentPass(review);
+      const bothPass = contentComplete && hanlintReview.bothContentPass(review);
       document.querySelector(".contentWarning").classList.toggle("visible", contentComplete && !bothPass);
+      const locks = hanlintReview.preferenceLock(panelCase, review, dimensions);
+      byId("voiceChoiceHint").textContent = panelCase.context.voiceReference === null
+        ? "목소리 표본이 없어 판단 불가로 고정됩니다."
+        : "위에 제공된 목소리 표본과 두 글을 대조합니다.";
       for (const dimension of dimensions) {
-        const voiceMissing = dimension === "voice" && panelCase.context.voiceReference === null;
-        if (dimension === "voice") {
-          byId("voiceChoiceHint").textContent = voiceMissing
-            ? "목소리 표본이 없어 판단 불가로 고정됩니다."
-            : "위에 제공된 목소리 표본과 두 글을 대조합니다.";
-        }
-        if (voiceMissing) {
-          review.preferences[dimension] = "cannotJudge";
-          setChecked(`preference-${dimension}`, "cannotJudge");
-          setGroupDisabled(`preference-${dimension}`, true);
-        } else if (!contentComplete) {
-          review.preferences[dimension] = "";
-          setChecked(`preference-${dimension}`, "");
-          setGroupDisabled(`preference-${dimension}`, true);
-        } else if (!bothPass) {
-          review.preferences[dimension] = "cannotJudge";
-          setChecked(`preference-${dimension}`, "cannotJudge");
-          setGroupDisabled(`preference-${dimension}`, true);
-        } else {
-          setChecked(`preference-${dimension}`, review.preferences[dimension]);
-          setGroupDisabled(`preference-${dimension}`, false);
-        }
+        const lock = locks[dimension];
+        if (lock.disabled) review.preferences[dimension] = lock.value;
+        setChecked(`preference-${dimension}`, lock.value);
+        setGroupDisabled(`preference-${dimension}`, lock.disabled);
       }
     }
 
@@ -462,21 +410,8 @@
       if (focusHeading) byId("caseHeading").focus();
     }
 
-    function reasonReady(value) {
-      return typeof value === "string" && value.trim().length > 0 && value.trim() !== "<required>";
-    }
-
     function caseComplete(panelCase) {
-      const review = reviewFor(panelCase);
-      const contentComplete = ["left", "right"].every((side) => ["pass", "fail", "cannotJudge"].includes(review.contentChecks[side]));
-      if (!contentComplete) return false;
-      const bothPass = ["left", "right"].every((side) => review.contentChecks[side] === "pass");
-      const preferencesComplete = dimensions.every((dimension) => {
-        if (!bothPass) return review.preferences[dimension] === "cannotJudge";
-        if (dimension === "voice" && panelCase.context.voiceReference === null) return review.preferences[dimension] === "cannotJudge";
-        return ["left", "right", "tie", "cannotJudge"].includes(review.preferences[dimension]);
-      });
-      return preferencesComplete && ["content", ...dimensions].every((name) => reasonReady(review.reasons[name]));
+      return hanlintReview.caseComplete(panelCase, reviewFor(panelCase), dimensions);
     }
 
     function updateProgress() {
@@ -534,19 +469,7 @@
     }
 
     function exportPayload() {
-      return {
-        version: assignment.version,
-        kind: "hanlint.panelAssignmentReview",
-        assignmentSha256: assignment.assignmentSha256,
-        evaluator: assignment.evaluator,
-        reviews: assignment.cases.map((panelCase) => {
-          const review = reviewFor(panelCase);
-          return {
-            ...review,
-            reasons: Object.fromEntries(Object.entries(review.reasons).map(([name, value]) => [name, value.trim()]))
-          };
-        })
-      };
+      return hanlintReview.exportPayload(assignment, reviewFor);
     }
 
     function showExport() {

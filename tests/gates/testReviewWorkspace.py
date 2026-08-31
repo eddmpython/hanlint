@@ -15,6 +15,7 @@ from hanlint import checkedPanelAssignment, loadPanelTrialSet, preparePanelAssig
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "src" / "hanlint" / "data" / "writingArenaPilotV1.json"
 PAGE = ROOT / "src" / "hanlint" / "data" / "panelReviewPage.html"
+LOGIC = ROOT / "src" / "hanlint" / "data" / "panelReviewPage.js"
 
 
 def pilotSuite() -> dict:
@@ -58,13 +59,21 @@ def testAssignmentHasNoIdentityOrderOrPrefilledQualityLabel():
 def testReviewPageAllowsNoExternalChannelOrUnsafeHtmlSink():
     source = PAGE.read_text(encoding="utf-8")
     assert source.count("__HANLINT_ASSIGNMENT__") == 1
-    assert source.count("<script") == 2
+    assert source.count("__HANLINT_PAGE_LOGIC__") == 1
+    # assignment JSON, 판정 논리, DOM 배선 셋이다. 넷째가 생기면 무엇이 늘었는지 보고 늘린다.
+    assert source.count("<script") == 3
     assert "connect-src 'none'" in source and "default-src 'none'" in source
-    for forbidden in ("<script src=", "fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon", "innerHTML"):
-        assert forbidden not in source
+    forbidden = ("<script src=", "fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon", "innerHTML")
+    # 판정 논리도 같은 페이지에 인라인되므로 같은 잣대를 댄다
+    for text in (source, LOGIC.read_text(encoding="utf-8")):
+        for pattern in forbidden:
+            assert pattern not in text
+    assert "</script" not in LOGIC.read_text(encoding="utf-8").lower(), "인라인할 때 페이지가 깨진다"
     assert "https://" not in source and "http://" not in source
     assert "localStorage" in source and "assignment.assignmentSha256" in source
-    assert "Object.hasOwn" in source and 'aria-live="polite"' in source
+    # 저장분 꼴 검사는 판정 논리로 옮겼다. 렌더할 때 같은 페이지에 인라인되므로 둘을 합쳐 본다.
+    assert "Object.hasOwn" in LOGIC.read_text(encoding="utf-8")
+    assert 'aria-live="polite"' in source
     assert 'review.preferences[dimension] === "cannotJudge" && dimension !== "voice"' not in source
     identifiers = re.findall(r' id="([^"]+)"', source)
     assert len(identifiers) == len(set(identifiers))

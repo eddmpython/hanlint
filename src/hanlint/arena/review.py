@@ -22,7 +22,13 @@ from .panel import (
 ASSIGNMENT_KIND = "hanlint.panelAssignment"
 ASSIGNMENT_REVIEW_KIND = "hanlint.panelAssignmentReview"
 PAGE_TEMPLATE = "data/panelReviewPage.html"
+PAGE_LOGIC = "data/panelReviewPage.js"
 PAGE_PLACEHOLDER = "__HANLINT_ASSIGNMENT__"
+LOGIC_PLACEHOLDER = "__HANLINT_PAGE_LOGIC__"
+"""판정 논리는 별도 파일이고 렌더할 때 인라인한다. 단일 HTML 과 외부 요청 0 은 그대로다.
+
+인라인 스크립트 안에 두면 `node --test` 가 못 읽어 content 우선 잠금, 목소리 기권, 진행 재개,
+내보내기 계약을 브라우저 없이는 잴 수 없다. 파일로 빼면 같은 글자를 두 곳이 쓴다 (2026-08-31)."""
 
 
 def assignmentDigest(data: dict) -> str:
@@ -247,7 +253,12 @@ def renderPanelReviewHtml(suite: dict, assignment: dict) -> str:
     template = files("hanlint").joinpath(PAGE_TEMPLATE).read_text(encoding="utf-8")
     if template.count(PAGE_PLACEHOLDER) != 1:
         raise RuntimeError("panel review page template의 assignment 자리가 하나가 아니다")
-    return template.replace(PAGE_PLACEHOLDER, scriptJson(assignment))
+    if template.count(LOGIC_PLACEHOLDER) != 1:
+        raise RuntimeError("panel review page template의 판정 논리 자리가 하나가 아니다")
+    logic = files("hanlint").joinpath(PAGE_LOGIC).read_text(encoding="utf-8")
+    if "</script" in logic.lower():
+        raise RuntimeError("판정 논리에 스크립트 닫는 태그가 있으면 인라인할 때 페이지가 깨진다")
+    return template.replace(LOGIC_PLACEHOLDER, logic).replace(PAGE_PLACEHOLDER, scriptJson(assignment))
 
 
 def preparePanelReviewHtml(suite: dict, evaluatorId: str, group: str) -> str:
