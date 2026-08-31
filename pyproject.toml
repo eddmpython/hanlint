@@ -8,16 +8,25 @@ name = "hanlint"
 dynamic = ["version"]
 description = "한국어 글 검사기. Korean prose linter for Markdown: translationese, noun piles, double passives, weak structure"
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE", "src/hanlint/data/evidenceEntailmentV1.LICENSE.md"]
+# 코드는 MIT 다. 배포물이 담는 외부 자료 둘은 라이선스가 달라 표현식에 함께 적는다. MIT 하나만 적으면
+# 배포 메타데이터가 사실이 아니다. CC-BY-SA-4.0 은 evidenceEntailmentV1.json (KLUE-NLI 파생),
+# KOGL 제1유형은 learningVocabulary.tsv 와 easyWords.toml (국립국어원) 이다. 공공누리는 SPDX 식별자가
+# 없어 PEP 639 의 LicenseRef 로 적는다. 자세한 고지는 아래 두 LICENSE.md 가 소유한다.
+license = "MIT AND CC-BY-SA-4.0 AND LicenseRef-KOGL-Type-1"
+license-files = [
+  "LICENSE",
+  "src/hanlint/data/evidenceEntailmentV1.LICENSE.md",
+  "src/hanlint/data/koglType1.LICENSE.md",
+]
 requires-python = ">=3.11"
 keywords = ["korean", "korean-language", "hangul", "linter", "prose", "prose-linter", "writing", "readability", "markdown", "style-checker", "proofreading", "text-linter"]
+# 라이선스는 PEP 639 의 license 표현식 하나가 소유한다. License :: 분류자를 함께 두면 사실이 두 곳에서
+# 갈리고 (분류자는 MIT 만 말한다) 최신 packaging 은 둘을 함께 두는 것을 거부한다.
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Intended Audience :: End Users/Desktop",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -52,6 +61,20 @@ path = "src/hanlint/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hanlint"]
+
+[tool.hatch.build.targets.sdist]
+# 기준 말뭉치를 재는 연구 부산물은 배포물이 아니다. reviewSample.json 과 candidateSample.json 의
+# quote 와 context 는 위키백과와 MDN 과 Kubernetes 원문을 그대로 담고 (합쳐 96만 바이트), documents.json
+# 은 외부 문서 1,600편의 판과 해시 목록이다. sdist 에 실으면 저작자 표시 없이 제3자 원문을 재배포하게
+# 된다. 저장소에는 그대로 두고 (Git 이 소유한다) 배포물에서만 뺀다.
+exclude = [
+  "tests/_attempts",
+  "corpus",
+  ".github",
+  ".githooks",
+  "mainPlan",
+  "memory",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
