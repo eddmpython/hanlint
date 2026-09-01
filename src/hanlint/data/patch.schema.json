@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/patch.schema.json",
+  "title": "hanlint Patch",
+  "description": "An exact local replacement connected to a named existing violation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reason", "before", "after"],
+  "properties": {
+    "reason": { "type": "string", "minLength": 1 },
+    "before": { "type": "string", "minLength": 1 },
+    "after": { "type": "string", "minLength": 1 }
+  }
+}

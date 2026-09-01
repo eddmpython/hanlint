@@ -13,6 +13,7 @@ from ..config import Config, WritingBrief
 from ..document import parseMarkdown
 from ..fingerprint import buildFingerprint
 from ..rules import Finding, runAll
+from .contract import CHECK_MEANING, PATCH_MEANING, CheckResult, PatchResult, check, verifyPatch
 from .surface import surfaceDiff
 
 GUARD_MEANING = (
@@ -185,4 +186,16 @@ def renderGuard(result: GuardResult) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["GUARD_MEANING", "GuardResult", "guardFile", "guardText", "renderGuard"]
+__all__ = [
+    "CHECK_MEANING",
+    "GUARD_MEANING",
+    "PATCH_MEANING",
+    "CheckResult",
+    "GuardResult",
+    "PatchResult",
+    "check",
+    "guardFile",
+    "guardText",
+    "renderGuard",
+    "verifyPatch",
+]

@@ -71,7 +71,7 @@ from .arena import (
 )
 from .audit import AuditResult, auditDocument
 from .blueprint import STRATEGIES, STRATEGY_ID, blueprintFor, rhetoricalBlueprint
-from .config import AtomicFact, Config, EvidenceRecord, WritingBrief, loadConfig, loadWritingBrief
+from .config import AtomicFact, Config, Contract, EvidenceRecord, Patch, WritingBrief, loadConfig, loadContract, loadWritingBrief
 from .document import parseMarkdown
 from .entailment import (
     EntailmentEvaluationResult,
@@ -82,7 +82,7 @@ from .entailment import (
 )
 from .evidence import EvidenceLedgerResult, evidenceLedger
 from .fingerprint import DocumentPrint, buildFingerprint
-from .guard import GuardResult, guardFile, guardText
+from .guard import CheckResult, GuardResult, PatchResult, check, guardFile, guardText, verifyPatch
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
 from .report import buildBriefWritingPacket, buildWritingPacket
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
@@ -95,6 +95,7 @@ __all__ = [
     "BlindEvaluation",
     "CONTENT_CHOICES",
     "Config",
+    "Contract",
     "DocumentPrint",
     "EvidenceLedgerResult",
     "EvidenceRecord",
@@ -102,11 +103,14 @@ __all__ = [
     "EntailmentPrediction",
     "EntailmentPredictions",
     "Finding",
+    "CheckResult",
     "GuardResult",
     "GenerationRecord",
     "EVALUATOR_GROUPS",
     "LearnedExemplar",
     "LearnedOperation",
+    "Patch",
+    "PatchResult",
     "WritingBrief",
     "WritingTrial",
     "PANEL_DIMENSIONS",
@@ -126,6 +130,7 @@ __all__ = [
     "checkedPanelSuite",
     "checkedPanelAssignment",
     "checkedPanelTrialSet",
+    "check",
     "evidenceLedger",
     "entailmentCases",
     "evaluateEntailment",
@@ -138,6 +143,7 @@ __all__ = [
     "learnText",
     "learnOperationText",
     "loadConfig",
+    "loadContract",
     "loadPanelTrialSet",
     "loadWritingBrief",
     "prepareBlind",
@@ -157,6 +163,7 @@ __all__ = [
     "ruleDoc",
     "ruleNames",
     "ruleSummary",
+    "verifyPatch",
     "writingPacket",
 ]
 __version__ = "0.0.9"
