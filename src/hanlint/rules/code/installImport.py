@@ -24,11 +24,11 @@ def stdlib() -> frozenset[str]:
 
 
 @cache
-def packageOf() -> dict[str, str]:
+def packageOf() -> dict[str, frozenset[str]]:
     mapping = {}
     for line in loadLines("pythonPackages.txt"):
         module, _, package = line.partition("\t")
-        mapping[module] = package
+        mapping[module] = frozenset(normalize(name) for name in package.split("|"))
     return mapping
 
 
@@ -105,13 +105,15 @@ def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                     top = module.split(".")[0]
                     if not top or top in stdlib() or top in local:
                         continue
-                    package = normalize(packageOf().get(top, top))
-                    if package not in packages:
+                    acceptable = packageOf().get(top, frozenset((normalize(top),)))
+                    if acceptable.isdisjoint(packages):
+                        package = "`, `".join(sorted(acceptable))
                         yield Finding(
                             "installImport",
                             line,
                             code.strip(),
-                            f"`{top}` 를 import 하는데 설치 줄에 `{package}` 가 없다. 독자는 ModuleNotFoundError 에서 멈춘다",
+                            f"`{top}` 를 import 하는데 설치 줄에 허용되는 이름 `{package}` 가 없다. "
+                            "독자는 ModuleNotFoundError 에서 멈춘다",
                             None,
                             "error",
                             DOCUMENT,

@@ -4,13 +4,17 @@
     "```powershell\npython -m pip install pandas\n```\n\n```python\nimport polars as pl\n```\n",
     "설치는 `pip install ibis-framework[duckdb]` 입니다.\n\n```python\nimport ibis\ncon = ibis.sqlite.connect(\"x.db\")\n```\n",
     "```powershell\npip install pandas\n```\n\n```python\nimport pandas as pd\n표 = pd.read_excel(\"x.xlsx\")\n```\n",
-    "`pip install kubernetes` 추가 설치 옵션은 문서를 본다.\n\n```python\nimport client\n```\n"
+    "`pip install kubernetes` 추가 설치 옵션은 문서를 본다.\n\n```python\nimport client\n```\n",
+    "```powershell\npip install opencv\n```\n\n```python\nimport cv2\n```\n"
   ],
   "spare": [
     "```powershell\npython -m pip install pandas polars\n```\n\n```python\nimport pandas as pd\nimport polars as pl\nimport os, sys\nfrom make_sales import run\n```\n\n아래를 make_sales.py 로 저장합니다.\n",
     "```python\nimport pandas as pd\n```\n",
     "설치: `pip install \"ibis-framework[duckdb,sqlite]\"`\n\n```python\nimport ibis\nibis.sqlite.connect(\"x.db\")\n```\n",
-    "```powershell\npip install scikit-learn openpyxl pandas\n```\n\n```python\nimport sklearn\nimport pandas as pd\n표 = pd.read_excel(\"x.xlsx\")\n```\n"
+    "```powershell\npip install scikit-learn openpyxl pandas\n```\n\n```python\nimport sklearn\nimport pandas as pd\n표 = pd.read_excel(\"x.xlsx\")\n```\n",
+    "```powershell\npip install opencv-python-headless\n```\n\n```python\nimport cv2\n```\n",
+    "```powershell\npip install cudf-cu12\n```\n\n```python\nimport cudf\n```\n",
+    "```powershell\npip install cudf-cu13\n```\n\n```python\nimport cudf\n```\n"
   ],
   "note": "설치 줄 캡처는 백틱과 한글에서 멈춘다. 뒤 산문의 낱말을 설치된 패키지로 등록하지 않는다."
 }

@@ -18,14 +18,14 @@ function stdlib() {
   return stdlibCache;
 }
 
-/** @type {Map<string, string> | null} */
+/** @type {Map<string, Set<string>> | null} */
 let packageCache = null;
 function packageOf() {
   if (!packageCache) {
     packageCache = new Map();
     for (const line of loadLines("pythonPackages.txt")) {
       const [module, pkg] = line.split("\t");
-      packageCache.set(module, pkg);
+      packageCache.set(module, new Set(pkg.split("|").map(normalize)));
     }
   }
   return packageCache;
@@ -105,9 +105,10 @@ export function run(doc) {
         for (const module of modules) {
           const top = module.split(".")[0];
           if (!top || stdlib().has(top) || local.has(top)) continue;
-          const pkg = normalize(packageOf().get(top) ?? top);
-          if (!packages.has(pkg)) {
-            findings.push(finding(name, line, code.trim(), `\`${top}\` 를 import 하는데 설치 줄에 \`${pkg}\` 가 없다. 독자는 ModuleNotFoundError 에서 멈춘다`, null, "error", DOCUMENT, block.index));
+          const acceptable = packageOf().get(top) ?? new Set([normalize(top)]);
+          if (![...acceptable].some((pkg) => packages.has(pkg))) {
+            const packageNames = [...acceptable].sort().join("`, `");
+            findings.push(finding(name, line, code.trim(), `\`${top}\` 를 import 하는데 설치 줄에 허용되는 이름 \`${packageNames}\` 가 없다. 독자는 ModuleNotFoundError 에서 멈춘다`, null, "error", DOCUMENT, block.index));
           }
         }
       }
