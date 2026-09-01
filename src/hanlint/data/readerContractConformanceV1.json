@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "kind": "hanlint.readerContractConformance",
+  "mode": "surfaceOnly",
+  "contract": {
+    "version": 1,
+    "reader": "release operator",
+    "goal": "verify budget and specification",
+    "facts": [
+      "Budget is 380,000 KRW.",
+      "Specification is [check](https://example.invalid/check).",
+      "Command is `mora check`."
+    ]
+  },
+  "contractSha256": "db6bcd85a32b032aec0537b0798fb21541474b29a58ae16299d1e7957fbb2700",
+  "checks": [
+    {
+      "id": "atomsPreserved",
+      "text": "Budget is 380,000 KRW. Open [check](https://example.invalid/check) and run `mora check`.",
+      "expected": {
+        "version": 1,
+        "kind": "hanlint.checkResult",
+        "violationCount": 0,
+        "contractSha256": "db6bcd85a32b032aec0537b0798fb21541474b29a58ae16299d1e7957fbb2700",
+        "draftSha256": "621f4a001b2411b7a50cdbf2ae3f96093a3601aa873943257f82a27657698c30",
+        "surface": {
+          "missingNumbers": [],
+          "unexpectedNumbers": [],
+          "missingUrls": [],
+          "unexpectedUrls": [],
+          "missingCode": [],
+          "unexpectedCode": [],
+          "missingLinks": [],
+          "unexpectedLinks": []
+        },
+        "lint": {
+          "errorCount": 0,
+          "noticeCount": 0,
+          "errorRules": {},
+          "items": []
+        },
+        "meaning": "violationCount는 선언한 보호 원자와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다"
+      }
+    },
+    {
+      "id": "atomsChanged",
+      "text": "Budget is 400,000 KRW. Open https://example.invalid/other and run `mora run`.",
+      "expected": {
+        "version": 1,
+        "kind": "hanlint.checkResult",
+        "violationCount": 7,
+        "contractSha256": "db6bcd85a32b032aec0537b0798fb21541474b29a58ae16299d1e7957fbb2700",
+        "draftSha256": "61996e43ea762bd8d1e7ca94465b5260dcaa15147a4e378ab4c2f92055c11fad",
+        "surface": {
+          "missingNumbers": ["380000"],
+          "unexpectedNumbers": ["400000"],
+          "missingUrls": ["https://example.invalid/check"],
+          "unexpectedUrls": ["https://example.invalid/other"],
+          "missingCode": ["mora check"],
+          "unexpectedCode": ["mora run"],
+          "missingLinks": ["https://example.invalid/check"],
+          "unexpectedLinks": []
+        },
+        "lint": {
+          "errorCount": 0,
+          "noticeCount": 0,
+          "errorRules": {},
+          "items": []
+        },
+        "meaning": "violationCount는 선언한 보호 원자와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다"
+      }
+    }
+  ],
+  "patches": [
+    {
+      "id": "namedReasonReduced",
+      "text": "Budget is 400,000 KRW. Open https://example.invalid/other and run `mora run`.",
+      "patch": {
+        "reason": "unexpectedNumbers",
+        "before": "400,000",
+        "after": "380,000"
+      },
+      "expected": {
+        "version": 1,
+        "kind": "hanlint.patchResult",
+        "verified": true,
+        "violationCount": 0,
+        "contractSha256": "db6bcd85a32b032aec0537b0798fb21541474b29a58ae16299d1e7957fbb2700",
+        "sourceSha256": "61996e43ea762bd8d1e7ca94465b5260dcaa15147a4e378ab4c2f92055c11fad",
+        "patchSha256": "79ee21727a19e3466b5fa5f2d37731640550c8f35e1b4b08958eb26271dea6cd",
+        "resultSha256": "af74b6b5fab9af9ecc32ebfc8e4a2333310814e5324d4fbd7b0c3170ac7c5d78",
+        "matchCount": 1,
+        "reason": {
+          "name": "unexpectedNumbers",
+          "before": 1,
+          "after": 0,
+          "reduced": true
+        },
+        "newSurfaceIssues": [],
+        "newErrors": [],
+        "meaning": "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
+      }
+    },
+    {
+      "id": "newAtomRejected",
+      "text": "Budget is 400,000 KRW. Open https://example.invalid/other and run `mora run`.",
+      "patch": {
+        "reason": "unexpectedNumbers",
+        "before": "400,000",
+        "after": "500,000"
+      },
+      "expected": {
+        "version": 1,
+        "kind": "hanlint.patchResult",
+        "verified": false,
+        "violationCount": 2,
+        "contractSha256": "db6bcd85a32b032aec0537b0798fb21541474b29a58ae16299d1e7957fbb2700",
+        "sourceSha256": "61996e43ea762bd8d1e7ca94465b5260dcaa15147a4e378ab4c2f92055c11fad",
+        "patchSha256": "fcdda25edcc5fcbc2f94f843503713bf9bb8090dfc8a2cde0317ad56b32b3126",
+        "resultSha256": "99cc1b154baa798457652dee24ff3e5cc2f83bd703790b37885edd510e9e145d",
+        "matchCount": 1,
+        "reason": {
+          "name": "unexpectedNumbers",
+          "before": 1,
+          "after": 1,
+          "reduced": false
+        },
+        "newSurfaceIssues": [
+          {
+            "kind": "unexpectedNumbers",
+            "value": "500000"
+          }
+        ],
+        "newErrors": [],
+        "meaning": "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
+      }
+    },
+    {
+      "id": "ambiguousTargetRejected",
+      "text": "Budget is 400,000 plus 400,000 KRW.",
+      "patch": {
+        "reason": "unexpectedNumbers",
+        "before": "400,000",
+        "after": "380,000"
+      },
+      "expected": {
+        "version": 1,
+        "kind": "hanlint.patchResult",
+        "verified": false,
+        "violationCount": 2,
+        "contractSha256": "db6bcd85a32b032aec0537b0798fb21541474b29a58ae16299d1e7957fbb2700",
+        "sourceSha256": "a4f2694e45a011411cb36f53edf8b27371d4bc49a5898948687db9913d75c19c",
+        "patchSha256": "79ee21727a19e3466b5fa5f2d37731640550c8f35e1b4b08958eb26271dea6cd",
+        "resultSha256": null,
+        "matchCount": 2,
+        "reason": {
+          "name": "unexpectedNumbers",
+          "before": 1,
+          "after": null,
+          "reduced": false
+        },
+        "newSurfaceIssues": [],
+        "newErrors": [],
+        "meaning": "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
+      }
+    }
+  ]
+}

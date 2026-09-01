@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/checkResult.schema.json",
+  "title": "hanlint Check Result",
+  "description": "A deterministic receipt for a Reader Contract and a prose draft.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "kind",
+    "violationCount",
+    "contractSha256",
+    "draftSha256",
+    "surface",
+    "lint",
+    "meaning"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.checkResult" },
+    "violationCount": { "type": "integer", "minimum": 0 },
+    "contractSha256": { "$ref": "#/$defs/sha256" },
+    "draftSha256": { "$ref": "#/$defs/sha256" },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missingNumbers",
+        "unexpectedNumbers",
+        "missingUrls",
+        "unexpectedUrls",
+        "missingCode",
+        "unexpectedCode",
+        "missingLinks",
+        "unexpectedLinks"
+      ],
+      "properties": {
+        "missingNumbers": { "$ref": "#/$defs/strings" },
+        "unexpectedNumbers": { "$ref": "#/$defs/strings" },
+        "missingUrls": { "$ref": "#/$defs/strings" },
+        "unexpectedUrls": { "$ref": "#/$defs/strings" },
+        "missingCode": { "$ref": "#/$defs/strings" },
+        "unexpectedCode": { "$ref": "#/$defs/strings" },
+        "missingLinks": { "$ref": "#/$defs/strings" },
+        "unexpectedLinks": { "$ref": "#/$defs/strings" }
+      }
+    },
+    "lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["errorCount", "noticeCount", "errorRules", "items"],
+      "properties": {
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "noticeCount": { "type": "integer", "minimum": 0 },
+        "errorRules": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "finding.schema.json" }
+        }
+      }
+    },
+    "meaning": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "strings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

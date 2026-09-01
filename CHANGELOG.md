@@ -6,6 +6,14 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **모델 독립적 산문 타입 검사 계약을 공개했다.** `Contract`는 reader, goal, facts에서 숫자, URL,
+  인라인 코드와 링크 목적지를 자동으로 보호하고 `check`는 기존 Finding과 함께 결정적 JSON 영수증을
+  낸다. `Patch`는 reason, before, after만 받으며 `verifyPatch`가 원문 한 자리, reason 감소, 새 보호
+  원자 위반과 새 error 부재를 확인한다. Python과 npm의 라이브러리 및 `check`, `verify-patch` CLI가 같은
+  결과를 내며 세 입력 개념, 두 영수증, 고정 적합성 사례를 배포 데이터로 싣는다
+
 ## [0.0.9] - 2026-09-01
 
 ### Fixed

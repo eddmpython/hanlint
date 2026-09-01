@@ -1,6 +1,9 @@
 // @ts-check
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { Contract, Patch, check, defaultConfig, ruleNames, verifyPatch } from "../src/index.js";
 
@@ -41,4 +44,18 @@ test("patch rejects unknown reasons and new protected atoms", () => {
   const changed = verifyPatch(TEXT, new Patch("unexpectedNumbers", "400,000", "500,000"), contract(), surfaceConfig());
   assert.equal(changed.verified, false);
   assert.deepEqual(changed.newSurfaceIssues, [["unexpectedNumbers", "500000"]]);
+});
+
+test("npm matches the published surface conformance suite", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const suite = JSON.parse(readFileSync(join(here, "..", "data", "readerContractConformanceV1.json"), "utf-8"));
+  const selectedContract = Contract.fromMapping(suite.contract);
+  const config = surfaceConfig();
+  assert.equal(selectedContract.digest, suite.contractSha256);
+  for (const item of suite.checks) {
+    assert.deepEqual(check(item.text, selectedContract, config).asDict(), item.expected, item.id);
+  }
+  for (const item of suite.patches) {
+    assert.deepEqual(verifyPatch(item.text, Patch.fromMapping(item.patch), selectedContract, config).asDict(), item.expected, item.id);
+  }
 });

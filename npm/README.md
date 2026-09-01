@@ -9,6 +9,8 @@ npx hanlint
 npx hanlint 글.md
 npx hanlint fix 글.md
 npx hanlint 글.md --format compact --errors-only
+npx hanlint check contract.json 초안.md
+npx hanlint verify-patch contract.json 초안.md patch.json
 ```
 
 인자 없이 치면 첫 화면이 나온다. 이 폴더의 마크다운 이름으로 만든 예시와 지금 칠 수 있는 명령이 거기 있다.
@@ -34,10 +36,20 @@ npx hanlint 글.md --format compact --errors-only
 `npx hanlint rules` 가 지금 도는 목록을 낸다.
 
 ```js
-import { lintFile } from "hanlint";
+import { Contract, Patch, check, lintFile, verifyPatch } from "hanlint";
 
 for (const finding of lintFile("글.md")) console.log(finding.line, finding.rule, finding.why);
+
+const contract = new Contract("배포를 결정할 운영자", "예산을 확인한다", ["예산은 380,000원이다."]);
+const receipt = check(text, contract);
+const patch = new Patch("unexpectedNumbers", "400,000", "380,000");
+const verified = verifyPatch(text, patch, contract);
 ```
+
+Reader Contract는 `reader`, `goal`, `facts`에서 숫자, URL, 인라인 코드와 링크 목적지를 자동으로 보호한다.
+check 결과는 Contract와 초안 해시, 보호 원자 차이와 기존 Finding을 담는다. Patch는 원문 한 자리에 정확히
+맞고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않을 때만 검증된다. 이 조건은 의미나
+진실, 자연스러움의 승인이 아니다. Python과 npm은 배포물의 같은 적합성 JSON을 독립 실행한다.
 
 파이썬 패키지 (`pip install hanlint`) 와 같은 규칙, 같은 fixture, 같은 출력이다. 지문 지도 (`audit`, `map`),
 문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`) 은 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는

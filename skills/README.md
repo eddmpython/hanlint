@@ -44,6 +44,7 @@ status: curated
 |---|---|
 | [`start.hanlintSkillOs`](specs/start/hanlintSkillOs.md) | 이 저장소가 소유하는 것과 어디로 가야 하는지 |
 | [`start.product`](specs/start/product.md) | 무엇을 잡고 무엇을 잡지 않는가. 평가 루프에서의 자리 |
+| [`start.readerContract`](specs/start/readerContract.md) | 모델 독립적 Contract, Finding, Patch와 결정적 영수증 프로토콜 |
 | [`operation.addingARule`](specs/operation/addingARule.md) | 규칙을 더하고 고치고 빼는 절차 |
 | [`operation.moduleLayers`](specs/operation/moduleLayers.md) | 층 구조와 import 방향. 순위 정본은 `tests/gates/layerContract.py` |
 | [`operation.codeStyle`](specs/operation/codeStyle.md) | 이름, 크기, 타입, docstring, 예외, 상수, 테스트, 도구 |

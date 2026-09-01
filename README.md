@@ -6,9 +6,13 @@
 [![Python](https://img.shields.io/pypi/pyversions/hanlint)](https://pypi.org/project/hanlint/)
 [![License](https://img.shields.io/badge/license-details-blue)](#라이선스)
 
-**한국어 글쓰기 검사 도구 (Korean prose linter).** 마크다운 원고에서 번역투, 명사 나열, 이중 피동,
-가리킬 것 없는 지시어, 조각난 문단처럼 **세면 확정되는 결함**을 찾아 자리와 이유와 다시 쓴 본보기를 준다.
-맞춤법 검사기가 아니다. 맞춤법이 맞는데도 안 읽히는 글을 잡는 문장과 문단의 린터다.
+**AI 산문을 위한 한국어 타입 검사기 (Korean prose type checker).** `Contract`, `Finding`, `Patch`라는
+작은 공개 계약으로 초안이 선언하지 않은 수치와 링크를 보태거나, 필요한 원자를 잃거나, 이유 없이
+재작성되는 일을 결정적으로 드러낸다. 같은 입력은 모델과 편집기가 달라도 같은 JSON 영수증을 만든다.
+
+자유 형식 마크다운에서는 번역투, 명사 나열, 이중 피동, 가리킬 것 없는 지시어, 조각난 문단처럼
+**세면 확정되는 결함**을 찾아 자리와 이유와 다시 쓴 본보기를 준다. 맞춤법 검사기가 아니다. 맞춤법이
+맞는데도 안 읽히는 글을 잡는 문장과 문단의 린터다.
 
 파이썬과 npm 두 판이고 런타임 의존성이 없다. 블로그 원고, 기술 문서, 보고서, AI 가 쓴 초안을 발행 전에
 게이트로 막는 자리에 쓴다.
@@ -54,10 +58,61 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 필요한 내용부터 바로 읽을 수 있다.
 
 - [지적과 본보기가 어떻게 나오는지](#hanlint-가-한국어-글에서-잡는-것)
+- [AI 산문의 Contract, Finding, Patch](#contract-finding-patch)
 - [글 종류에 맞는 프리셋을 고르는 법](#글의-종류를-고른다-블로그-보고서-문서-안내서-수필-소설-백과)
 - [기존 문서의 지적을 잠그고 새 결함만 막는 법](#이미-쓴-글이-많은-저장소에-들일-때)
 - [Python과 npm의 명령 범위](#명령-한눈에)
 - [AI 초안에 연결하는 법](#ai-초안-검사)
+
+## Contract, Finding, Patch
+
+모델에 장문의 작법 프롬프트를 주기 전에 독자, 목표, 사실을 닫힌 JSON으로 선언한다.
+[Reader Contract 스키마](src/hanlint/data/readerContract.schema.json)는 의미 필드 셋 외의 입력을 거부한다.
+
+```json
+{
+  "version": 1,
+  "reader": "배포를 결정할 운영자",
+  "goal": "예산과 명세를 확인한다",
+  "facts": [
+    "예산은 380,000원이다.",
+    "명세는 https://example.invalid/check 에 있다.",
+    "확인 명령은 `mora check`다."
+  ]
+}
+```
+
+`check`는 숫자, URL, 인라인 코드, 링크 목적지를 Contract에서 자동으로 컴파일한다. 별도
+`allowedNumbers`를 다시 적지 않는다. 결과에는 Contract와 초안의 SHA-256, 빠진 원자와 선언 밖 원자,
+기존 hanlint `Finding`이 담긴다. 시각과 모델 이름은 들어가지 않는다.
+
+```console
+hanlint check contract.json 초안.md
+npx hanlint check contract.json 초안.md
+```
+
+```python
+from hanlint import Contract, Patch, check, verifyPatch
+
+contract = Contract(
+    reader="배포를 결정할 운영자",
+    goal="예산과 명세를 확인한다",
+    facts=["예산은 380,000원이다.", "확인 명령은 `mora check`다."],
+)
+receipt = check(text, contract)
+
+patch = Patch(reason="unexpectedNumbers", before="400,000", after="380,000")
+verified = verifyPatch(text, patch, contract)
+```
+
+[Patch 스키마](src/hanlint/data/patch.schema.json)는 `reason`, `before`, `after`만 받는다. 원문 한 자리에
+정확히 맞고, check에 실제로 있던 reason을 줄이며, 새 보호 원자 위반과 새 error를 만들지 않을 때만
+`verified`가 참이다. 이는 국소 기계 조건을 확인했다는 뜻이지 고친 문장이 참이거나 아름답다는 승인이
+아니다. **Finding이 없으면 Patch도 없다.**
+
+Python과 npm은 [같은 적합성 사례](src/hanlint/data/readerContractConformanceV1.json)를 독립 실행한다.
+교환 형식의 정확한 뜻과 해시 규칙은 [Reader Contract 프로토콜](skills/specs/start/readerContract.md)에
+있고 `Finding`, check 결과, Patch 결과도 각각 버전 고정 스키마가 있다.
 
 ## 읽기 쉬운 글이란 무엇인가
 
@@ -185,9 +240,10 @@ hanlint packet 요구.md --purpose draft --preset docs
 hanlint packet 초안.md --purpose revise --output packet.json
 ```
 
-사실과 수치가 중요한 새 글은 자유 형식 요구 대신 [writing brief 스키마](src/hanlint/data/writingBrief.schema.json)를
-쓴다. 원자 사실의 `id`는 대조용이고 글에는 나오지 않는다. `allowedNumbers`에는 reader, task, facts에
-있는 숫자를 천 단위 쉼표 없이 모두 적는다.
+생성 패킷, 프리셋, 필수 표면, 금지 표면과 길이까지 필요한 새 글은 최소 Reader Contract 대신 확장
+[writing brief 스키마](src/hanlint/data/writingBrief.schema.json)를 쓴다. 원자 사실의 `id`는 대조용이고
+글에는 나오지 않는다. 기존 호환 계약이라 `allowedNumbers`에는 reader, task, facts에 있는 숫자를 천 단위
+쉼표 없이 모두 적는다. 일반 편집기와 에이전트는 위의 Reader Contract를 쓰면 이 중복 입력이 없다.
 
 ```json
 {
@@ -600,6 +656,8 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 |---|---|---|
 | `hanlint` | 첫 화면. 이 폴더의 파일 이름으로 만든 예시와 다음 걸음 | 예 |
 | `hanlint 글.md` 또는 `hanlint 글들/` | 검사한다. 폴더면 그 아래 마크다운 전부 | 예 |
+| `hanlint check contract.json 글.md` | Reader Contract의 보호 원자와 Finding을 결정적 영수증으로 묶는다 | 예 |
+| `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
 | `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
@@ -665,7 +723,7 @@ for finding in lintText(text):
     print(finding.line, finding.rule, finding.why)
 ```
 
-`lintFile`, `auditText`, `fingerprint` 도 같은 자리에 있다.
+`Contract`, `Patch`, `check`, `verifyPatch`, `lintFile`, `auditText`, `fingerprint`도 같은 자리에 있다.
 
 ## CI 게이트로 물린다: pre-commit, GitHub Actions
 
@@ -699,7 +757,13 @@ pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-com
 
 ## English
 
-hanlint is a linter for Korean prose in Markdown. It reports only what can be decided by counting:
+hanlint is a type checker for Korean prose in Markdown. Its model-independent front door is three concepts:
+`Contract`, `Finding`, and `Patch`. A Reader Contract declares a reader, a goal, and facts. `check` derives protected
+numbers, URLs, inline code, and link destinations, then emits a deterministic receipt with regular lint findings.
+`verifyPatch` accepts only an exact local replacement tied to a named existing issue and rejects new protected-atom
+violations or new errors.
+
+The regular linter reports only what can be decided by counting:
 translationese, noun pile-ups, double passives, dangling demonstratives, fragmented paragraphs and
 document-level structure. It does not judge whether writing is good, and it is not a spell checker.
 

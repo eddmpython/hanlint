@@ -133,12 +133,21 @@ v2 반복은 2/7과 error 0건이었다. 일반 brief도 2/7이고 v2의 안전 
 향상은 입증되지 않았다. `comparison`은 진단 자료이고 결과 글의 사실이나 문장 재료가 아니다. 필요한
 문형은 사람이 실제 error를 정한 뒤 `patterns --rule`로 별도 요청한다.
 
-사실과 수치가 중요한 draft는 version 1 `writing brief` JSON을 받는다. preset, reader, task, 원자 facts,
+일반 편집기와 에이전트의 최소 입력은 version 1 `Reader Contract`다. 의미 필드는 reader, goal, facts 셋이고
+숫자, URL, 인라인 코드와 링크 목적지를 이 셋에서 보호 원자로 컴파일한다. `check`는 보호 원자 차이와 기존
+Finding을 결정적 영수증으로 묶는다. `Patch`는 reason, before, after만 든 정확 치환이며 `verifyPatch`는
+원문 한 자리, reason 감소, 새 보호 원자 위반과 새 error 부재만 확인한다. 자세한 정본은
+`start.readerContract`다. Finding이 없으면 Patch도 없다.
+
+생성 패킷과 추가 제약이 필요한 draft는 version 1 `writing brief` JSON을 받는다. preset, reader, task, 원자 facts,
 reader·task·facts 안의 mustInclude, 세 필드의 모든 allowedNumbers, forbidden, length가 닫힌 스키마다. 구조화 draft 패킷은
 brief만 사실 재료로 싣고 comparison을 싣지 않는다. `guard brief.json 글.md`는 필수 표면, 숫자, URL,
 인라인 코드, 링크 목적지, 금지 표면, 길이와 hanlint error를 결정적으로 비교하며 글을 바꾸지 않는다.
 `contractSatisfied`는 이 표면 계약의 결과다. 원자 사실의 관계와 진실, 빠진 의미, 금지 주장의 바꿔 말하기,
 독자 효용과 자연스러움은 판정하지 않는다. guard 위반을 모델에게 자동 재작성시키지 않고 한 자리씩 원문과 대조한다.
+
+Reader Contract를 되돌릴 때는 공개 진입점과 스키마를 함께 제거하고 기존 writing brief와 guard로
+돌아간다. 배포한 프로토콜 버전의 뜻을 제자리에서 바꾸지 않는다.
 
 새 작법 전략과 말뭉치 검색은 `writing trial`로 `plainBrief` 기준과 같은 brief에서 짝 비교한다. 모델,
 프롬프트, 출력 해시를 잠근 뒤 guard를 먼저 실행한다. 한쪽만 자동 계약을 통과하면 안전 승패로 끝내고,

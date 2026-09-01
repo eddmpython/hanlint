@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/patchResult.schema.json",
+  "title": "hanlint Patch Result",
+  "description": "A deterministic verification receipt for an exact prose Patch.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "kind",
+    "verified",
+    "violationCount",
+    "contractSha256",
+    "sourceSha256",
+    "patchSha256",
+    "resultSha256",
+    "matchCount",
+    "reason",
+    "newSurfaceIssues",
+    "newErrors",
+    "meaning"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "const": "hanlint.patchResult" },
+    "verified": { "type": "boolean" },
+    "violationCount": { "type": "integer", "minimum": 0 },
+    "contractSha256": { "$ref": "#/$defs/sha256" },
+    "sourceSha256": { "$ref": "#/$defs/sha256" },
+    "patchSha256": { "$ref": "#/$defs/sha256" },
+    "resultSha256": {
+      "oneOf": [
+        { "$ref": "#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "matchCount": { "type": "integer", "minimum": 0 },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "before", "after", "reduced"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "before": { "type": "integer", "minimum": 0 },
+        "after": {
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "null" }
+          ]
+        },
+        "reduced": { "type": "boolean" }
+      }
+    },
+    "newSurfaceIssues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "value"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "missingNumbers",
+              "unexpectedNumbers",
+              "missingUrls",
+              "unexpectedUrls",
+              "missingCode",
+              "unexpectedCode",
+              "missingLinks",
+              "unexpectedLinks"
+            ]
+          },
+          "value": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "newErrors": {
+      "type": "array",
+      "items": { "$ref": "finding.schema.json" }
+    },
+    "meaning": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
