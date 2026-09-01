@@ -8,7 +8,7 @@ import { parseMarkdown } from "../document/parseMarkdown.js";
 import { buildFingerprint } from "../fingerprint/build.js";
 import { findingAsDict } from "../rules/finding.js";
 import { runAll } from "../rules/registry.js";
-import { compareText, surfaceDiff, surfaceViolationCount } from "./surface.js";
+import { compareText, factLines, surfaceDiff, surfaceViolationCount } from "./surface.js";
 
 export const CHECK_MEANING = "violationCount는 선언한 보호 원자와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
 export const PATCH_MEANING = "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다";
@@ -118,6 +118,22 @@ export class PatchResult {
       meaning: PATCH_MEANING,
     };
   }
+}
+
+/** 원문의 보호 표면을 모두 덮는 version 1 Contract 초안을 만든다. @param {string} text @param {string} reader @param {string} goal */
+export function contractFromText(text, reader, goal) {
+  const contract = new Contract(reader, goal, factLines(text));
+  const result = surfaceDiff(contract.text, text);
+  const missing = [];
+  for (const kind of ["missingNumbers", "missingUrls", "missingCode", "missingLinks"]) {
+    for (const value of result[/** @type {keyof typeof result} */ (kind)]) missing.push(`${kind}=${value}`);
+  }
+  if (missing.length) throw new Error(`reader 또는 goal이 원문에 없는 보호 원자를 넣었다: ${missing.join(", ")}`);
+  if (surfaceViolationCount(result)) {
+    const issues = Object.entries(result).flatMap(([kind, values]) => values.map((value) => `${kind}=${value}`));
+    throw new Error(`계약 초안이 원문의 보호 표면을 모두 담지 못했다: ${issues.join(", ")}`);
+  }
+  return contract;
 }
 
 /** @param {string} text @param {Contract | Record<string, unknown>} rawContract @param {import("../config/settings.js").Config} [config] @param {string | null} [path] */

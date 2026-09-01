@@ -9,6 +9,14 @@ from unicodedata import normalize
 from ..config import numberValues
 from ..data.operations import INLINE_CODE, LINK_DESTINATION, URL
 
+FACT_FIELDS = (
+    ("unexpectedNumbers", "{}"),
+    ("unexpectedUrls", "{}"),
+    ("unexpectedCode", "`{}`"),
+    ("unexpectedLinks", "[]({})"),
+)
+UNEXPECTED_FIELDS = tuple(field for field, _ in FACT_FIELDS)
+
 
 def valuesOf(pattern, text: str) -> tuple[str, ...]:
     """정규식이 잡은 전체 값이나 첫 캡처 그룹의 정렬된 집합."""
@@ -85,4 +93,43 @@ def surfaceDiff(contractText: str, text: str, numbers: Iterable[str] | None = No
     )
 
 
-__all__ = ["SurfaceDiff", "surfaceDiff", "valuesOf"]
+def factLines(text: str) -> tuple[str, ...]:
+    """원문의 보호 표면을 모두 덮는 Contract 사실 후보 줄."""
+    surfaceText = normalize("NFC", text)
+    seen = set()
+    candidates = []
+    for line in surfaceText.splitlines():
+        candidate = line.strip()
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        atoms = {(kind, value) for kind in UNEXPECTED_FIELDS for value in getattr(surfaceDiff("", candidate), kind)}
+        if atoms:
+            candidates.append((candidate, atoms))
+
+    allAtoms = {(kind, value) for kind in UNEXPECTED_FIELDS for value in getattr(surfaceDiff("", surfaceText), kind)}
+    if not allAtoms:
+        raise ValueError("원문에 자동으로 보호할 숫자, URL, 인라인 코드, 링크 목적지가 없다. facts를 직접 작성한다")
+
+    uncovered = set(allAtoms)
+    selected = set()
+    while uncovered:
+        ranked = [(len(atoms & uncovered), -index, index) for index, (_, atoms) in enumerate(candidates) if index not in selected]
+        gain, _, best = max(ranked, default=(0, 0, -1))
+        if gain == 0:
+            break
+        selected.add(best)
+        uncovered -= candidates[best][1]
+
+    facts = [candidate for index, (candidate, _) in enumerate(candidates) if index in selected]
+    seen = set(facts)
+    for field, template in FACT_FIELDS:
+        for value in sorted(value for kind, value in uncovered if kind == field):
+            candidate = template.format(value)
+            if candidate not in seen:
+                facts.append(candidate)
+                seen.add(candidate)
+    return tuple(facts)
+
+
+__all__ = ["SurfaceDiff", "factLines", "surfaceDiff", "valuesOf"]

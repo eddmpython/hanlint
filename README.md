@@ -69,6 +69,14 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 모델에 장문의 작법 프롬프트를 주기 전에 독자, 목표, 사실을 닫힌 JSON으로 선언한다.
 [Reader Contract 스키마](src/hanlint/data/readerContract.schema.json)는 의미 필드 셋 외의 입력을 거부한다.
 
+기존 글에서는 독자와 목표만 적어 계약 초안을 만든다. 숫자, URL, 인라인 코드와 링크 목적지를 많이 덮는
+원문 줄부터 골라 facts 후보를 줄이며, 사실의 진실과 빠진 의미는 사람이 확인한다.
+
+```console
+hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산과 명세를 확인한다"
+npx hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산과 명세를 확인한다"
+```
+
 ```json
 {
   "version": 1,
@@ -92,7 +100,9 @@ npx hanlint check contract.json 초안.md
 ```
 
 ```python
-from hanlint import Contract, Patch, check, verifyPatch
+from hanlint import Contract, Patch, check, contractFromText, verifyPatch
+
+draftContract = contractFromText(text, "배포를 결정할 운영자", "예산과 명세를 확인한다")
 
 contract = Contract(
     reader="배포를 결정할 운영자",
@@ -656,6 +666,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 |---|---|---|
 | `hanlint` | 첫 화면. 이 폴더의 파일 이름으로 만든 예시와 다음 걸음 | 예 |
 | `hanlint 글.md` 또는 `hanlint 글들/` | 검사한다. 폴더면 그 아래 마크다운 전부 | 예 |
+| `hanlint contract init 글.md --reader "독자" --goal "목표"` | 기존 글의 보호 표면에서 Reader Contract 초안을 만든다 | 예 |
 | `hanlint check contract.json 글.md` | Reader Contract의 보호 원자와 Finding을 결정적 영수증으로 묶는다 | 예 |
 | `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
@@ -760,6 +771,7 @@ pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-com
 hanlint is a type checker for Korean prose in Markdown. Its model-independent front door is three concepts:
 `Contract`, `Finding`, and `Patch`. A Reader Contract declares a reader, a goal, and facts. `check` derives protected
 numbers, URLs, inline code, and link destinations, then emits a deterministic receipt with regular lint findings.
+`contractFromText` and `hanlint contract init` derive a reviewable version 1 draft from an existing Markdown file.
 `verifyPatch` accepts only an exact local replacement tied to a named existing issue and rejects new protected-atom
 violations or new errors.
 

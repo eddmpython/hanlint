@@ -14,13 +14,14 @@
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint doctor                설정과 꺼진 규칙
  * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
+ * hanlint contract init 글.md   원문에서 최소 Reader Contract 초안
  * ```
  * audit, guard, arena, blueprint, evidence, entailment 같은 확장 명령은 파이썬 패키지에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
-import { Contract, Patch, check, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, verifyPatch, version } from "../index.js";
+import { Contract, Patch, check, contractFromText, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, verifyPatch, version } from "../index.js";
 import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
 import { loadConfig } from "../config/loadConfig.js";
 import { DEFAULT_PRESET, defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
@@ -38,7 +39,7 @@ import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init", "check", "verify-patch"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -93,6 +94,7 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
         hanlint baseline 글들/ [--prune] [--output 파일]
         hanlint doctor
         hanlint init [--output hanlint.toml] [--preset blog|report|docs] [--force]
+        hanlint contract init 글.md --reader "독자" --goal "목표" [--output contract.json]
         hanlint check contract.json 글.md [--format json]
         hanlint verify-patch contract.json 글.md patch.json [--format json]
         hanlint --version
@@ -118,6 +120,8 @@ const OPTION_KINDS = {
   "--dry-run": "flag",
   "--names": "flag",
   "--force": "flag",
+  "--reader": "value",
+  "--goal": "value",
   "--preset": "value",
   "--rule": "value",
   "--register": "value",
@@ -405,6 +409,26 @@ function runCheck(args) {
   const result = check(readOne(path), contract, config, path);
   emit(JSON.stringify(result.asDict(), null, 2), /** @type {string | undefined} */ (options["--output"]));
   return result.violationCount === 0 ? 0 : 1;
+}
+
+/** @param {string[]} args */
+function runContract(args) {
+  const { options, positionals } = parseArgs(args);
+  if (positionals.length !== 2 || positionals[0] !== "init") {
+    throw new UsageError("contract init과 계약 초안을 만들 마크다운 파일이 필요하다");
+  }
+  const reader = options["--reader"];
+  const goal = options["--goal"];
+  if (typeof reader !== "string" || typeof goal !== "string") {
+    throw new UsageError("contract init에는 --reader와 --goal이 필요하다");
+  }
+  const output = options["--output"];
+  if (typeof output === "string" && existsSync(output) && !options["--force"]) {
+    throw new Error(`${output} 가 이미 있다. 덮어쓰려면 --force`);
+  }
+  const contract = contractFromText(readOne(positionals[1]), reader, goal);
+  emit(JSON.stringify(contract.asDict(), null, 2), typeof output === "string" ? output : undefined);
+  return 0;
 }
 
 /** @param {string[]} args */
@@ -832,6 +856,7 @@ function dispatch(argv) {
     throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 ${COMMANDS.join(", ")} 을 제공한다`);
   }
   if (command === "lint") return runLint(rest);
+  if (command === "contract") return runContract(rest);
   if (command === "check") return runCheck(rest);
   if (command === "verify-patch") return runVerifyPatch(rest);
   if (command === "fix") return runFix(rest);

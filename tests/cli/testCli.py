@@ -319,6 +319,47 @@ def testCheckAndVerifyPatchEmitDeterministicReceipts(tmp_path, capsys):
     assert verified["kind"] == "hanlint.patchResult" and verified["verified"] is True
 
 
+def testContractInitWritesDraftAndRefusesToOverwrite(tmp_path, capsys):
+    draft = write(
+        tmp_path,
+        "contractDraft.md",
+        "# 예산 2026\n\n[명세](https://example.invalid/spec)를 `mora check`로 확인한다.\n",
+    )
+    output = tmp_path / "readerContract.json"
+    args = [
+        "contract",
+        "init",
+        str(draft),
+        "--reader",
+        "배포를 결정할 운영자",
+        "--goal",
+        "예산과 명세를 확인한다",
+        "--output",
+        str(output),
+    ]
+    assert main(args) == 0
+    capsys.readouterr()
+    contract = json.loads(output.read_text(encoding="utf-8"))
+    assert contract == {
+        "version": 1,
+        "reader": "배포를 결정할 운영자",
+        "goal": "예산과 명세를 확인한다",
+        "facts": [
+            "# 예산 2026",
+            "[명세](https://example.invalid/spec)를 `mora check`로 확인한다.",
+        ],
+    }
+    assert main(args) == 2
+    assert "이미 있다" in capsys.readouterr().err
+    assert main([*args, "--force"]) == 0
+
+
+def testContractInitRefusesAContractWithoutProtectedSurface(tmp_path, capsys):
+    draft = write(tmp_path, "plainDraft.md", "보호할 표면이 없는 글입니다.\n")
+    assert main(["contract", "init", str(draft), "--reader", "독자", "--goal", "내용을 읽는다"]) == 2
+    assert "facts를 직접 작성" in capsys.readouterr().err
+
+
 def testArenaBlindRecordRevealAndAggregate(tmp_path, capsys):
     baselineText = "# 결정\n\n해솔 계획은 2026년 8월 31일 시작하며 예산은 380,000원이다. 운영자는 다음 확인 순서를 정한다.\n"
     candidateText = "# 결정\n\n운영자는 해솔 계획의 2026년 8월 31일 시작과 380,000원 예산을 확인하고 다음 순서를 정한다.\n"

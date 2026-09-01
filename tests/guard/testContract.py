@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from hanlint import Config, Contract, Patch, check, ruleNames, verifyPatch
+from hanlint import Config, Contract, Patch, check, contractFromText, ruleNames, verifyPatch
 from hanlint.guard import CHECK_MEANING, PATCH_MEANING
 
 
@@ -20,6 +20,39 @@ def contract() -> Contract:
 
 def surfaceConfig() -> Config:
     return Config(disable=set(ruleNames()))
+
+
+def testContractFromTextKeepsSourceOrderNormalizesAndRemovesDuplicateLines():
+    text = """---
+published: 2026-09-01
+source: https://example.invalid/source
+---
+
+글 3은 [명세](https://example.invalid/spec)를 `mora check`로 확인한다.
+published: 2026-09-01
+"""
+    contract = contractFromText(text, "배포를 결정할 운영자", "명세를 확인한다")
+    assert contract.facts == (
+        "published: 2026-09-01",
+        "source: https://example.invalid/source",
+        "글 3은 [명세](https://example.invalid/spec)를 `mora check`로 확인한다.",
+    )
+    assert check(text, contract, surfaceConfig()).surface.violationCount == 0
+
+
+def testContractFromTextPrefersALineThatCoversMoreProtectedAtoms():
+    text = """계획은 2026년에 시작한다.
+2026년 계획의 명세는 https://example.invalid/spec 에 있다.
+"""
+    contract = contractFromText(text, "운영자", "계획과 명세를 확인한다")
+    assert contract.facts == ("2026년 계획의 명세는 https://example.invalid/spec 에 있다.",)
+
+
+def testContractFromTextRefusesToInventMeaningOrReaderAtoms():
+    with pytest.raises(ValueError, match="facts를 직접 작성"):
+        contractFromText("숫자와 링크가 없는 글입니다.", "독자", "내용을 읽는다")
+    with pytest.raises(ValueError, match="missingNumbers=7"):
+        contractFromText("예산은 3원이다.", "7명의 운영자", "예산을 확인한다")
 
 
 def testCheckReturnsAStableReceiptWithoutAQualityVerdict():

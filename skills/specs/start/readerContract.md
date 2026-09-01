@@ -55,6 +55,25 @@ Contract 본문은 `reader`, `goal`, `facts`를 줄바꿈 하나로 이은 문�
 그 값을 백틱이나 링크 목적지로 감싸도 새 원자로 보지 않는다. 숫자, URL, 코드, 링크를 별도 허용 목록에
 다시 쓰지 않는다.
 
+### 기존 글에서 계약 초안 만들기
+
+이미 쓴 글은 `contract init`으로 version 1 초안을 만든다.
+
+```console
+hanlint contract init 글.md --reader "배포를 결정할 운영자" --goal "지원 버전을 확인한다"
+npx hanlint contract init 글.md --reader "배포를 결정할 운영자" --goal "지원 버전을 확인한다"
+```
+
+`contractFromText(text, reader, goal)`은 보호 원자를 많이 덮는 원문 줄부터 결정적으로 골라 facts 후보를
+줄이고, 결과는 원문 순서로 돌려준다. 줄은 NFC로 정규화하고 양끝 공백을 걷으며 같은 줄은 처음 한 번만
+남긴다. 여러 줄 링크처럼 선택한 줄로 덮이지 않는 원자는 정규화한 최소 표면으로 보충한다. 생성 직후
+원문과의 보호 원자 차이는 0이다.
+
+이 함수는 원문의 문장이 참인지 판단하거나 보호 원자가 없는 의미 사실을 추측하지 않는다. 보호 원자가
+하나도 없으면 facts를 직접 쓰라고 멈춘다. reader나 goal이 원문에 없던 보호 원자를 추가해도 멈춘다.
+기본 출력은 stdout이고 `--output`은 기존 파일을 덮지 않는다. 같은 경로를 덮으려면 `--force`가 필요하다.
+초안의 facts는 자동 추출 후보이므로 사람이 사실과 빠진 의미를 확인한 뒤 check에 넣는다.
+
 ## Finding과 check
 
 `check(text, contract)`는 보호 원자 차이와 기존 hanlint `Finding`을 한 번 계산한다. 출력은

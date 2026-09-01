@@ -150,6 +150,46 @@ test("init writes config and refuses to overwrite", () => {
   assert.equal(run(["init", "--output", target, "--force"]).code, 0);
 });
 
+test("contract init writes a draft and refuses to overwrite", () => {
+  const draft = join(dir, "contractDraft.md");
+  const target = join(dir, "readerContract.json");
+  writeFileSync(
+    draft,
+    "# 예산 2026\n\n[명세](https://example.invalid/spec)를 `mora check`로 확인한다.\n",
+    "utf-8",
+  );
+  const args = [
+    "contract",
+    "init",
+    draft,
+    "--reader",
+    "배포를 결정할 운영자",
+    "--goal",
+    "예산과 명세를 확인한다",
+    "--output",
+    target,
+  ];
+  assert.equal(run(args).code, 0);
+  assert.deepEqual(JSON.parse(readFileSync(target, "utf-8")), {
+    version: 1,
+    reader: "배포를 결정할 운영자",
+    goal: "예산과 명세를 확인한다",
+    facts: ["# 예산 2026", "[명세](https://example.invalid/spec)를 `mora check`로 확인한다."],
+  });
+  const again = run(args);
+  assert.equal(again.code, 2);
+  assert.ok(again.err.includes("이미 있다"));
+  assert.equal(run([...args, "--force"]).code, 0);
+});
+
+test("contract init refuses a draft without protected surface", () => {
+  const draft = join(dir, "plainContractDraft.md");
+  writeFileSync(draft, "보호할 표면이 없는 글입니다.\n", "utf-8");
+  const result = run(["contract", "init", draft, "--reader", "독자", "--goal", "내용을 읽는다"]);
+  assert.equal(result.code, 2);
+  assert.ok(result.err.includes("facts를 직접 작성"));
+});
+
 test("welcome screen when no arguments", () => {
   const room = mkdtempSync(join(tmpdir(), "hanlintWelcome-"));
   writeFileSync(join(room, "초안.md"), CLEAN, "utf-8");

@@ -413,6 +413,42 @@ def testReaderContractCommandsGiveTheSameReceipts(tmp_path):
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testReaderContractInitGivesTheSameDraft(tmp_path):
+    draft = tmp_path / "draft.md"
+    draft.write_text(
+        "# 예산 2026\r\n\r\n[명세](https://example.invalid/spec)를 `mora check`로 확인한다.\r\n",
+        encoding="utf-8",
+        newline="",
+    )
+    args = [
+        "contract",
+        "init",
+        str(draft),
+        "--reader",
+        "배포를 결정할 운영자",
+        "--goal",
+        "예산과 명세를 확인한다",
+    ]
+    python, node = runBoth(args)
+    assert python.returncode == node.returncode == 0, node.stderr
+    assert python.stdout == node.stdout
+    assert json.loads(python.stdout)["facts"] == [
+        "# 예산 2026",
+        "[명세](https://example.invalid/spec)를 `mora check`로 확인한다.",
+    ]
+
+    plain = tmp_path / "plain.md"
+    plain.write_text("보호할 표면이 없는 글입니다.\n", encoding="utf-8")
+    for invalidArgs in (
+        ["contract", "init", str(plain), "--reader", "독자", "--goal", "내용을 읽는다"],
+        ["contract", "init", str(draft), "--reader", "7명의 운영자", "--goal", "예산을 확인한다"],
+    ):
+        python, node = runBoth(invalidArgs)
+        assert python.returncode == node.returncode == 2
+        assert python.stderr == node.stderr
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testConfigLabelAgreesWhenConfigIsOutsideTheWorkingFolder(tmp_path):
     """설정이 작업 폴더 밖에 있고 경로를 슬래시로 줘도 두 판의 첫 줄과 JSON config 값이 같다.
 

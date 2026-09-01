@@ -5,6 +5,13 @@ const NUMBER_ATOM = /(?<!\p{Nd})(?:\p{Nd}{1,3}(?:,\p{Nd}{3})+|\p{Nd}+)(?:\.\p{Nd
 const URL = /https?:\/\/[^\s)>\]]*[\p{L}\p{N}_\/#=%&+~-]/gu;
 const INLINE_CODE = /`([^`\n]+)`/gu;
 const LINK_DESTINATION = /\[[^\u005D]*\]\(([^)]+)\)/gu;
+const FACT_FIELDS = [
+  ["unexpectedNumbers", "{}"],
+  ["unexpectedUrls", "{}"],
+  ["unexpectedCode", "`{}`"],
+  ["unexpectedLinks", "[]({})"],
+];
+const UNEXPECTED_FIELDS = FACT_FIELDS.map(([field]) => field);
 const DECIMAL_ZEROS = [
   0x0030, 0x0660, 0x06f0, 0x07c0, 0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6,
   0x0c66, 0x0ce6, 0x0d66, 0x0de6, 0x0e50, 0x0ed0, 0x0f20, 0x1040, 0x1090, 0x17e0,
@@ -86,4 +93,69 @@ export function surfaceDiff(contractText, text, numbers = null) {
 /** @param {ReturnType<typeof surfaceDiff>} diff */
 export function surfaceViolationCount(diff) {
   return Object.values(diff).reduce((total, values) => total + values.length, 0);
+}
+
+/** 원문의 보호 표면을 모두 덮는 Contract 사실 후보 줄. @param {string} text */
+export function factLines(text) {
+  const surfaceText = text.normalize("NFC");
+  const seen = new Set();
+  /** @type {{ text: string, atoms: Set<string> }[]} */
+  const candidates = [];
+  for (const line of surfaceText.split(/\r\n|[\n\v\f\r\x1c-\x1e\x85\u2028\u2029]/u)) {
+    const candidate = line.trim();
+    if (!candidate || seen.has(candidate)) continue;
+    seen.add(candidate);
+    const diff = surfaceDiff("", candidate);
+    const atoms = new Set(
+      UNEXPECTED_FIELDS.flatMap((field) =>
+        diff[/** @type {keyof typeof diff} */ (field)].map((value) => `${field}\u0000${value}`),
+      ),
+    );
+    if (atoms.size) candidates.push({ text: candidate, atoms });
+  }
+
+  const fullDiff = surfaceDiff("", surfaceText);
+  const uncovered = new Set(
+    UNEXPECTED_FIELDS.flatMap((field) =>
+      fullDiff[/** @type {keyof typeof fullDiff} */ (field)].map((value) => `${field}\u0000${value}`),
+    ),
+  );
+  if (!uncovered.size) {
+    throw new Error("원문에 자동으로 보호할 숫자, URL, 인라인 코드, 링크 목적지가 없다. facts를 직접 작성한다");
+  }
+
+  const selected = new Set();
+  while (uncovered.size) {
+    let best = -1;
+    let bestGain = 0;
+    for (let index = 0; index < candidates.length; index += 1) {
+      if (selected.has(index)) continue;
+      const gain = [...candidates[index].atoms].filter((atom) => uncovered.has(atom)).length;
+      if (gain > bestGain) {
+        best = index;
+        bestGain = gain;
+      }
+    }
+    if (!bestGain) break;
+    selected.add(best);
+    for (const atom of candidates[best].atoms) uncovered.delete(atom);
+  }
+
+  const facts = candidates.filter((_, index) => selected.has(index)).map((candidate) => candidate.text);
+  const factSet = new Set(facts);
+  for (const [field, template] of FACT_FIELDS) {
+    const prefix = `${field}\u0000`;
+    const values = [...uncovered]
+      .filter((atom) => atom.startsWith(prefix))
+      .map((atom) => atom.slice(prefix.length))
+      .sort(compareText);
+    for (const value of values) {
+      const candidate = template.replace("{}", value);
+      if (!factSet.has(candidate)) {
+        facts.push(candidate);
+        factSet.add(candidate);
+      }
+    }
+  }
+  return facts;
 }

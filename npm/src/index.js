@@ -20,7 +20,7 @@ import { parseMarkdown } from "./document/parseMarkdown.js";
 import { applyFixes } from "./edit/applyFixes.js";
 import { buildFingerprint } from "./fingerprint/build.js";
 import { fingerprintDict } from "./report/fingerprintJson.js";
-import { CheckResult, PatchResult, check, verifyPatch } from "./guard/contract.js";
+import { CheckResult, PatchResult, check, contractFromText, verifyPatch } from "./guard/contract.js";
 import { ruleDoc, ruleNames, ruleSummary, runAll } from "./rules/registry.js";
 
 export {
@@ -30,6 +30,7 @@ export {
   PatchResult,
   applyFixes,
   check,
+  contractFromText,
   configFromMapping,
   defaultConfig,
   fingerprintDict,

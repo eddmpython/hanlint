@@ -11,7 +11,7 @@ from ..config import Config, Contract, Patch
 from ..document import parseMarkdown
 from ..fingerprint import buildFingerprint
 from ..rules import Finding, runAll
-from .surface import SurfaceDiff, surfaceDiff
+from .surface import SurfaceDiff, factLines, surfaceDiff
 
 CHECK_MEANING = (
     "violationCount는 선언한 보호 원자와 hanlint error의 수다. "
@@ -112,6 +112,21 @@ class PatchResult:
             "newErrors": [finding.asDict() for finding in self.newErrors],
             "meaning": PATCH_MEANING,
         }
+
+
+def contractFromText(text: str, reader: str, goal: str) -> Contract:
+    """원문의 보호 표면을 모두 덮는 version 1 Contract 초안을 만든다."""
+    contract = Contract(reader, goal, factLines(text))
+    result = surfaceDiff(contract.text, text)
+    missing = []
+    for kind in ("missingNumbers", "missingUrls", "missingCode", "missingLinks"):
+        missing.extend(f"{kind}={value}" for value in getattr(result, kind))
+    if missing:
+        raise ValueError("reader 또는 goal이 원문에 없는 보호 원자를 넣었다: " + ", ".join(missing))
+    if result.violationCount:
+        issues = [f"{kind}={value}" for kind, values in result.asDict().items() for value in values]
+        raise RuntimeError("계약 초안이 원문의 보호 표면을 모두 담지 못했다: " + ", ".join(issues))
+    return contract
 
 
 def check(
@@ -221,5 +236,6 @@ __all__ = [
     "CheckResult",
     "PatchResult",
     "check",
+    "contractFromText",
     "verifyPatch",
 ]

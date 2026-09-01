@@ -82,7 +82,7 @@ from .entailment import (
 )
 from .evidence import EvidenceLedgerResult, evidenceLedger
 from .fingerprint import DocumentPrint, buildFingerprint
-from .guard import CheckResult, GuardResult, PatchResult, check, guardFile, guardText, verifyPatch
+from .guard import CheckResult, GuardResult, PatchResult, check, contractFromText, guardFile, guardText, verifyPatch
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
 from .report import buildBriefWritingPacket, buildWritingPacket
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
@@ -131,6 +131,7 @@ __all__ = [
     "checkedPanelAssignment",
     "checkedPanelTrialSet",
     "check",
+    "contractFromText",
     "evidenceLedger",
     "entailmentCases",
     "evaluateEntailment",
