@@ -14,5 +14,6 @@ status: curated
 
 1. [`start.hanlintSkillOs`](hanlintSkillOs.md) 이 저장소가 소유하는 것과 어디로 가야 하는지
 2. [`start.product`](product.md) 무엇을 잡고 무엇을 잡지 않는가
+3. [`start.readerContract`](readerContract.md) Contract, Finding, Patch의 공개 프로토콜
 
 그다음 할 일이 규칙 추가면 `operation.addingARule` 로 간다.

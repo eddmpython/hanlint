@@ -35,8 +35,14 @@ def tableRows() -> list[tuple[str, bool]]:
 def testTableCoversEveryPythonCommand():
     commands = {path.stem for path in (ROOT / "src" / "hanlint" / "cli" / "commands").glob("*.py")}
     commands -= {"__init__", "shared"}
-    # 파일 이름이 명령 이름과 다른 셋. 파이썬 예약어와 겹쳐 뒤에 Command 를 붙였다.
-    renamed = {"baselineCommand": "baseline", "mapCommand": "map", "patternsCommand": "patterns", "printFingerprint": "print"}
+    # 파일 이름이 명령 이름과 다른 것. 파이썬 예약어와 camelCase 파일 이름을 CLI 계약에 맞춘다.
+    renamed = {
+        "baselineCommand": "baseline",
+        "mapCommand": "map",
+        "patternsCommand": "patterns",
+        "printFingerprint": "print",
+        "verifyPatch": "verify-patch",
+    }
     commands = {renamed.get(name, name) for name in commands}
     listed = {command for command, _ in tableRows()}
     assert not commands - listed, f"README 명령 표에 없는 명령: {sorted(commands - listed)}"
