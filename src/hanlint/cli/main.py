@@ -78,6 +78,7 @@ from .commands import (
     verifyPatch as verifyPatchCommand,
 )
 from .commands.shared import nearNames
+from .help import rootHelp
 from .welcome import welcome
 
 COMMANDS = {
@@ -154,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
     given = list(sys.argv[1:] if argv is None else argv)
     if not given:
         print(welcome(__version__))
+        return 0
+    if given in (["-h"], ["--help"]):
+        print(rootHelp())
         return 0
     try:
         args = buildParser().parse_args(normalizeArgv(given))

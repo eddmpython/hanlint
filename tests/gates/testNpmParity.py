@@ -437,6 +437,23 @@ def testReaderContractInitGivesTheSameDraft(tmp_path):
         "[명세](https://example.invalid/spec)를 `mora check`로 확인한다.",
     ]
 
+    outlineArgs = [*args, "--outline", "h1", "--fact", "사람이 확인한 사실이다."]
+    python, node = runBoth(outlineArgs)
+    assert python.returncode == node.returncode == 0, node.stderr
+    assert python.stdout == node.stdout
+    contractData = json.loads(python.stdout)
+    assert contractData["version"] == 2
+    assert contractData["facts"] == ["사람이 확인한 사실이다."]
+    assert contractData["outline"] == {"level": 1, "headings": ["예산 2026"]}
+    versionTwo = tmp_path / "contractV2.json"
+    versionTwo.write_text(python.stdout, encoding="utf-8")
+    changed = tmp_path / "changed.md"
+    changed.write_text(draft.read_text(encoding="utf-8").replace("# 예산 2026", "# 일정 2026"), encoding="utf-8")
+    python, node = runBoth(["check", str(versionTwo), str(changed), "--format", "text"])
+    assert python.returncode == node.returncode == 1, node.stderr
+    assert python.stdout == node.stdout
+    assert "기대 `예산 2026`, 실제 `일정 2026`" in python.stdout
+
     plain = tmp_path / "plain.md"
     plain.write_text("보호할 표면이 없는 글입니다.\n", encoding="utf-8")
     for invalidArgs in (

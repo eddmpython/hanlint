@@ -127,6 +127,13 @@ def testAuditReportHasNumbersAndNoScore():
     assert "점수" not in text and "등급" not in text
 
 
+def testAuditReportKeepsLongSectionTitlesWhole():
+    title = "아주 긴 데이터프레임 라이브러리 제목을 끝까지 보여 준다"
+    source = f"## {title}\n\n본문입니다.\n"
+    text = renderAudit(fingerprint(source), lintText(source), auditText(source), color=False)
+    assert title in text
+
+
 def testJsonReportCarriesSafeOperationOutsideFindings():
     text = "첫 렌더 결과입니다."
     config = Config.fromMapping({"operations": [{"before": "렌더", "after": "렌더링", "presets": ["blog"]}]})

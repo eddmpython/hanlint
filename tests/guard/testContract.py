@@ -3,7 +3,7 @@ import json
 import pytest
 
 from hanlint import Config, Contract, Patch, check, contractFromText, ruleNames, verifyPatch
-from hanlint.guard import CHECK_MEANING, PATCH_MEANING
+from hanlint.guard import CHECK_MEANING, PATCH_MEANING, contractFromTextV2, renderCheck
 
 
 def contract() -> Contract:
@@ -67,6 +67,52 @@ def testCheckReturnsAStableReceiptWithoutAQualityVerdict():
     assert "pass" not in json.dumps(data, ensure_ascii=False).casefold()
 
 
+def testVersionTwoSeparatesApprovedFactsAutomaticSurfaceAndExactOutline():
+    text = """# 데이터프레임 라이브러리 2가지
+
+## pandas
+
+문서는 [여기](https://example.invalid/pandas)에서 보고 `import pandas`를 실행한다.
+
+## Polars
+
+2개 라이브러리를 비교한다.
+"""
+    contractV2 = contractFromTextV2(text, "데이터 도구를 고르는 개발자", "용도별 라이브러리를 비교한다")
+    assert contractV2.facts == ()
+    assert contractV2.outline.headings == ("pandas", "Polars")
+    assert contractV2.surface.numbers == ("2",)
+    assert contractV2.surface.code == ("import pandas",)
+    assert contractV2.surface.links == ("https://example.invalid/pandas",)
+    assert check(text, contractV2, surfaceConfig()).violationCount == 0
+
+
+@pytest.mark.parametrize(
+    ("body", "actual"),
+    [
+        ("## pandas\n\n본문", ["pandas"]),
+        ("## pandas\n\n본문\n\n## DuckDB\n\n본문\n\n## Polars\n\n본문", ["pandas", "DuckDB", "Polars"]),
+        ("## Polars\n\n본문\n\n## pandas\n\n본문", ["Polars", "pandas"]),
+    ],
+)
+def testVersionTwoCatchesMissingExtraAndReorderedHeadings(body, actual):
+    source = "## pandas\n\n본문\n\n## Polars\n\n본문"
+    contractV2 = contractFromTextV2(source, "개발자", "비교한다")
+    result = check(body, contractV2, surfaceConfig())
+    assert result.outline.actual == tuple(actual)
+    assert result.outline.violationCount > 0
+    assert result.violationCount == result.outline.violationCount
+
+
+def testTextReceiptKeepsFullHeadingsAndNamesTheNextAction():
+    source = "## 아주 긴 데이터프레임 라이브러리 제목을 자르지 않는다\n\n본문"
+    contractV2 = contractFromTextV2(source, "개발자", "비교한다")
+    receipt = renderCheck(check(source, contractV2, surfaceConfig()))
+    assert "계약 위반 없음" in receipt
+    assert "아주 긴 데이터프레임 라이브러리 제목을 자르지 않는다" in receipt
+    assert "다음:" in receipt
+
+
 def testPatchMustNameAndReduceAnExistingViolation():
     text = "예산은 400,000원이다. 명세는 https://example.invalid/check 에 있다. `mora check`로 확인한다."
     patch = Patch("unexpectedNumbers", "400,000", "380,000")
@@ -105,6 +151,17 @@ def testPatchRejectsANewProtectedAtomViolation():
     result = verifyPatch(text, patch, contract(), surfaceConfig())
     assert not result.verified
     assert result.newSurfaceIssues == (("unexpectedNumbers", "500000"),)
+
+
+def testVersionTwoPatchRejectsANewOutlineViolation():
+    source = "3개를 비교한다.\n\n## pandas\n\n본문\n\n## Polars\n\n본문"
+    contractV2 = contractFromTextV2("2개를 비교한다." + source[source.index("\n\n") :], "개발자", "비교한다")
+    patch = Patch("unexpectedNumbers", "3개를 비교한다.\n\n## pandas", "2개를 비교한다.\n\n## DuckDB")
+    result = verifyPatch(source, patch, contractV2, surfaceConfig())
+    assert not result.verified
+    assert result.reasonReduced
+    assert result.newContractIssues == (("outline", "1:pandas:DuckDB"),)
+    assert result.asDict()["newContractIssues"] == [{"kind": "outline", "value": "1:pandas:DuckDB"}]
 
 
 def testPatchMappingIsClosedAndDeterministicallyHashed():

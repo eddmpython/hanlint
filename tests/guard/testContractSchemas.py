@@ -27,3 +27,13 @@ def testReceiptSchemasNameEveryPublishedTopLevelField():
     assert set(patchSchema["required"]) == set(suite["patches"][0]["expected"])
     assert checkSchema["properties"]["kind"]["const"] == "hanlint.checkResult"
     assert patchSchema["properties"]["kind"]["const"] == "hanlint.patchResult"
+
+
+def testVersionTwoSchemasAreClosedAndSeparateStructureFromSurface():
+    contractSchema = read("readerContractV2.schema.json")
+    checkSchema = read("checkResultV2.schema.json")
+    patchSchema = read("patchResultV2.schema.json")
+    assert set(contractSchema["required"]) == {"version", "reader", "goal", "facts", "surface", "outline"}
+    assert set(checkSchema["required"]) >= {"surface", "outline", "document"}
+    assert "newContractIssues" in patchSchema["required"]
+    assert all(schema["additionalProperties"] is False for schema in (contractSchema, checkSchema, patchSchema))

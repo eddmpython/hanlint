@@ -27,7 +27,7 @@ writeFileSync(clean, CLEAN, "utf-8");
 test("lint exit codes and text", () => {
   const result = run([bad, "--no-color"]);
   assert.equal(result.code, 1);
-  assert.ok(result.out.startsWith("설정: 기본값\n"));
+  assert.ok(result.out.startsWith("설정: 기본값, 프리셋 blog\n"));
   assert.ok(result.out.includes(`${bad}:3  [cliche]`));
   const ok = run([clean, "--quiet"]);
   assert.equal(ok.code, 0);
@@ -188,6 +188,13 @@ test("contract init refuses a draft without protected surface", () => {
   const result = run(["contract", "init", draft, "--reader", "독자", "--goal", "내용을 읽는다"]);
   assert.equal(result.code, 2);
   assert.ok(result.err.includes("facts를 직접 작성"));
+});
+
+test("root help groups commands by user goal", () => {
+  const result = run(["--help"]);
+  assert.equal(result.code, 0);
+  assert.ok(result.out.includes("일상 검사") && result.out.includes("요구사항 잠금") && result.out.includes("설정과 이해"));
+  assert.ok(result.out.includes("--outline h2"));
 });
 
 test("welcome screen when no arguments", () => {

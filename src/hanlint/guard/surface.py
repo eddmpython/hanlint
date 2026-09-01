@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from unicodedata import normalize
 
-from ..config import numberValues
+from ..config import ProtectedSurface, numberValues
 from ..data.operations import INLINE_CODE, LINK_DESTINATION, URL
 
 FACT_FIELDS = (
@@ -93,6 +93,17 @@ def surfaceDiff(contractText: str, text: str, numbers: Iterable[str] | None = No
     )
 
 
+def protectedSurface(text: str) -> ProtectedSurface:
+    """원문의 보호 원자를 뜻 없는 정렬 집합으로 분리한다."""
+    surfaceText = normalize("NFC", text)
+    return ProtectedSurface(
+        numbers=numberValues(surfaceText),
+        urls=valuesOf(URL, surfaceText),
+        code=valuesOf(INLINE_CODE, surfaceText),
+        links=valuesOf(LINK_DESTINATION, surfaceText),
+    )
+
+
 def factLines(text: str) -> tuple[str, ...]:
     """원문의 보호 표면을 모두 덮는 Contract 사실 후보 줄."""
     surfaceText = normalize("NFC", text)
@@ -132,4 +143,4 @@ def factLines(text: str) -> tuple[str, ...]:
     return tuple(facts)
 
 
-__all__ = ["SurfaceDiff", "factLines", "surfaceDiff", "valuesOf"]
+__all__ = ["SurfaceDiff", "factLines", "protectedSurface", "surfaceDiff", "valuesOf"]

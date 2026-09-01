@@ -45,6 +45,10 @@ def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult,
     if audit.valleys:
         spots = ", ".join(f"{v.line}행" for v in audit.valleys)
         lines.append(f"흐름 골짜기 {spots} (앞 문단과 화제어 겹침 0)")
-    lines.append("절          " + "  ".join(f"{s.title[:10]}: 문단 {s.paragraphs} 코드 {s.codeBlocks}" for s in audit.sections))
+    lines.append("절")
+    lines.extend(
+        f"  {index}. {section.title or '(도입)'}: 문단 {section.paragraphs}, 코드 {section.codeBlocks}"
+        for index, section in enumerate(audit.sections, start=1)
+    )
     lines.append(f"제목 수준   {' '.join(f'H{level}' for level in audit.headingLevels)}")
     return "\n".join(lines)

@@ -41,7 +41,7 @@ def testLintExitCodesAndText(tmp_path, capsys):
     bad = write(tmp_path, "bad.md", BAD)
     assert main([str(bad), "--no-color"]) == 1
     out = capsys.readouterr().out
-    assert out.startswith("설정: 기본값\n")
+    assert out.startswith("설정: 기본값, 프리셋 blog\n")
     assert f"{bad}:3  [cliche]" in out
     clean = write(tmp_path, "clean.md", CLEAN)
     assert main([str(clean), "--quiet"]) == 0
@@ -358,6 +358,37 @@ def testContractInitRefusesAContractWithoutProtectedSurface(tmp_path, capsys):
     draft = write(tmp_path, "plainDraft.md", "보호할 표면이 없는 글입니다.\n")
     assert main(["contract", "init", str(draft), "--reader", "독자", "--goal", "내용을 읽는다"]) == 2
     assert "facts를 직접 작성" in capsys.readouterr().err
+
+
+def testVersionTwoContractInitAndTextCheckAreOneReadableFlow(tmp_path, capsys):
+    draft = write(tmp_path, "libraries.md", "# 2가지\n\n## pandas\n\n본문\n\n## Polars\n\n본문\n")
+    contract = tmp_path / "contract.json"
+    assert (
+        main(
+            [
+                "contract",
+                "init",
+                str(draft),
+                "--reader",
+                "개발자",
+                "--goal",
+                "비교한다",
+                "--outline",
+                "h2",
+                "--output",
+                str(contract),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    data = json.loads(contract.read_text(encoding="utf-8"))
+    assert data["version"] == 2 and data["facts"] == []
+    assert data["outline"] == {"level": 2, "headings": ["pandas", "Polars"]}
+    draft.write_text(draft.read_text(encoding="utf-8").replace("## Polars", "## DuckDB"), encoding="utf-8")
+    assert main(["check", str(contract), str(draft), "--format", "text"]) == 1
+    receipt = capsys.readouterr().out
+    assert "계약 위반" in receipt and "기대 `Polars`, 실제 `DuckDB`" in receipt and "다음:" in receipt
 
 
 def testArenaBlindRecordRevealAndAggregate(tmp_path, capsys):
@@ -985,12 +1016,19 @@ def testPresetFlagWorksWithoutAConfigFile(tmp_path, capsys):
     assert docs.startswith("설정: 기본값, 프리셋 docs\n")
 
 
-def testHeaderNamesThePresetOnlyWhenItIsNotTheDefault(tmp_path, capsys):
+def testHeaderAlwaysNamesTheActivePreset(tmp_path, capsys):
     doc = write(tmp_path, "초안.md", CLEAN)
     main([str(doc), "--format", "compact"])
-    assert capsys.readouterr().out.startswith("설정: 기본값\n")
+    assert capsys.readouterr().out.startswith("설정: 기본값, 프리셋 blog\n")
     main([str(doc), "--preset", "report", "--format", "compact"])
     assert capsys.readouterr().out.startswith("설정: 기본값, 프리셋 report\n")
+
+
+def testRootHelpGroupsCommandsByUserGoal(capsys):
+    assert main(["--help"]) == 0
+    out = capsys.readouterr().out
+    assert "일상 검사" in out and "요구사항 잠금" in out and "설정과 이해" in out
+    assert "contract init" in out and "--outline h2" in out
 
 
 def testUnknownPresetIsRefused(tmp_path, capsys):

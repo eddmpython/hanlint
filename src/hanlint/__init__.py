@@ -71,7 +71,24 @@ from .arena import (
 )
 from .audit import AuditResult, auditDocument
 from .blueprint import STRATEGIES, STRATEGY_ID, blueprintFor, rhetoricalBlueprint
-from .config import AtomicFact, Config, Contract, EvidenceRecord, Patch, WritingBrief, loadConfig, loadContract, loadWritingBrief
+from .config import (
+    CONTRACT_VERSION,
+    CONTRACT_VERSIONS,
+    LATEST_CONTRACT_VERSION,
+    AtomicFact,
+    Config,
+    Contract,
+    ContractV2,
+    EvidenceRecord,
+    Outline,
+    Patch,
+    ProtectedSurface,
+    WritingBrief,
+    loadConfig,
+    loadContract,
+    loadWritingBrief,
+    parseContract,
+)
 from .document import parseMarkdown
 from .entailment import (
     EntailmentEvaluationResult,
@@ -82,7 +99,18 @@ from .entailment import (
 )
 from .evidence import EvidenceLedgerResult, evidenceLedger
 from .fingerprint import DocumentPrint, buildFingerprint
-from .guard import CheckResult, GuardResult, PatchResult, check, contractFromText, guardFile, guardText, verifyPatch
+from .guard import (
+    CheckResult,
+    GuardResult,
+    PatchResult,
+    check,
+    contractFromText,
+    contractFromTextV2,
+    guardFile,
+    guardText,
+    renderCheck,
+    verifyPatch,
+)
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
 from .report import buildBriefWritingPacket, buildWritingPacket
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
@@ -94,8 +122,11 @@ __all__ = [
     "AtomicFact",
     "BlindEvaluation",
     "CONTENT_CHOICES",
+    "CONTRACT_VERSION",
+    "CONTRACT_VERSIONS",
     "Config",
     "Contract",
+    "ContractV2",
     "DocumentPrint",
     "EvidenceLedgerResult",
     "EvidenceRecord",
@@ -109,8 +140,11 @@ __all__ = [
     "EVALUATOR_GROUPS",
     "LearnedExemplar",
     "LearnedOperation",
+    "LATEST_CONTRACT_VERSION",
     "Patch",
     "PatchResult",
+    "ProtectedSurface",
+    "Outline",
     "WritingBrief",
     "WritingTrial",
     "PANEL_DIMENSIONS",
@@ -132,6 +166,7 @@ __all__ = [
     "checkedPanelTrialSet",
     "check",
     "contractFromText",
+    "contractFromTextV2",
     "evidenceLedger",
     "entailmentCases",
     "evaluateEntailment",
@@ -147,6 +182,7 @@ __all__ = [
     "loadContract",
     "loadPanelTrialSet",
     "loadWritingBrief",
+    "parseContract",
     "prepareBlind",
     "preparePanelJudgeCases",
     "preparePanelAssignment",
@@ -157,6 +193,7 @@ __all__ = [
     "recordPanelReviewBatch",
     "recordPanelAssignmentReview",
     "revealPanel",
+    "renderCheck",
     "renderPanelReviewHtml",
     "summarizePanelJudgeConsistency",
     "rhetoricalBlueprint",

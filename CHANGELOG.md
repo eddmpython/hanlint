@@ -13,6 +13,18 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   낸다. `Patch`는 reason, before, after만 받으며 `verifyPatch`가 원문 한 자리, reason 감소, 새 보호
   원자 위반과 새 error 부재를 확인한다. Python과 npm의 라이브러리 및 `check`, `verify-patch` CLI가 같은
   결과를 내며 세 입력 개념, 두 영수증, 고정 적합성 사례를 배포 데이터로 싣는다
+- **Reader Contract version 2가 글의 구조까지 잠근다.** 사람이 승인한 facts, 원문에서 자동으로 모은
+  surface, 한 수준의 정확한 outline을 분리한다. `contract init --outline h2`로 만들고
+  `check --format text` 한 번에서 보호 원자, 제목 누락과 추가와 재배열, 전체 절 제목, lint와 다음 행동을
+  읽는다. Patch 검증도 새 outline 위반을 거부한다. Python과 npm의 공개 API, CLI, 스키마가 같은 결과를 낸다
+
+### Changed
+
+- **사용성을 제품의 최상위 원칙으로 올렸다.** 루트 도움말을 일상 검사, 요구사항 잠금, 설정과 이해,
+  프로젝트와 평가 흐름으로 묶었다. 매 검사에서 기본값을 포함한 적용 프리셋을 표시하고 audit와 v2 check는
+  긴 절 제목을 자르지 않는다
+- **설치명과 import 이름의 일대다 관계를 지원한다.** `cv2`의 네 공식 OpenCV 배포판과 `cudf`의 CUDA 12,
+  CUDA 13 배포명을 모두 인정한다. 하나의 설치명만 강제하던 자료와 규칙을 허용 이름 집합으로 바꿨다
 
 ## [0.0.9] - 2026-09-01
 

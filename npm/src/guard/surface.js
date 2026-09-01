@@ -1,6 +1,18 @@
 // @ts-check
 /** 계약 본문과 결과 글 사이의 보호 원자 차이. */
 
+/**
+ * @typedef {object} SurfaceDiff
+ * @property {string[]} missingNumbers
+ * @property {string[]} unexpectedNumbers
+ * @property {string[]} missingUrls
+ * @property {string[]} unexpectedUrls
+ * @property {string[]} missingCode
+ * @property {string[]} unexpectedCode
+ * @property {string[]} missingLinks
+ * @property {string[]} unexpectedLinks
+ */
+
 const NUMBER_ATOM = /(?<!\p{Nd})(?:\p{Nd}{1,3}(?:,\p{Nd}{3})+|\p{Nd}+)(?:\.\p{Nd}+)*(?!\p{Nd})/gu;
 const URL = /https?:\/\/[^\s)>\]]*[\p{L}\p{N}_\/#=%&+~-]/gu;
 const INLINE_CODE = /`([^`\n]+)`/gu;
@@ -65,7 +77,7 @@ function difference(expected, actual) {
   return expected.filter((value) => !other.has(value)).sort(compareText);
 }
 
-/** @param {string} contractText @param {string} text @param {string[] | null} [numbers] */
+/** @param {string} contractText @param {string} text @param {string[] | null} [numbers] @returns {SurfaceDiff} */
 export function surfaceDiff(contractText, text, numbers = null) {
   const surfaceText = text.normalize("NFC");
   const expectedNumbers = numbers === null ? numberValues(contractText) : [...new Set(numbers)].sort(compareText);
@@ -93,6 +105,17 @@ export function surfaceDiff(contractText, text, numbers = null) {
 /** @param {ReturnType<typeof surfaceDiff>} diff */
 export function surfaceViolationCount(diff) {
   return Object.values(diff).reduce((total, values) => total + values.length, 0);
+}
+
+/** 원문의 보호 원자를 뜻 없는 정렬 집합으로 분리한다. @param {string} text */
+export function protectedSurface(text) {
+  const surfaceText = text.normalize("NFC");
+  return {
+    numbers: numberValues(surfaceText),
+    urls: valuesOf(URL, surfaceText),
+    code: valuesOf(INLINE_CODE, surfaceText),
+    links: valuesOf(LINK_DESTINATION, surfaceText),
+  };
 }
 
 /** 원문의 보호 표면을 모두 덮는 Contract 사실 후보 줄. @param {string} text */

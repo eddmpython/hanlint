@@ -10,7 +10,8 @@ npx hanlint 글.md
 npx hanlint fix 글.md
 npx hanlint 글.md --format compact --errors-only
 npx hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산을 확인한다"
-npx hanlint check contract.json 초안.md
+npx hanlint contract init 초안.md --reader "개발자" --goal "섹션별로 비교한다" --outline h2
+npx hanlint check contract.json 초안.md --format text
 npx hanlint verify-patch contract.json 초안.md patch.json
 ```
 
@@ -37,13 +38,15 @@ npx hanlint verify-patch contract.json 초안.md patch.json
 `npx hanlint rules` 가 지금 도는 목록을 낸다.
 
 ```js
-import { Contract, Patch, check, contractFromText, lintFile, verifyPatch } from "hanlint";
+import { Contract, Patch, check, contractFromText, contractFromTextV2, lintFile, renderCheck, verifyPatch } from "hanlint";
 
 for (const finding of lintFile("글.md")) console.log(finding.line, finding.rule, finding.why);
 
 const draftContract = contractFromText(text, "배포를 결정할 운영자", "예산을 확인한다");
+const structuredContract = contractFromTextV2(text, "개발자", "섹션별로 비교한다", 2);
 const contract = new Contract("배포를 결정할 운영자", "예산을 확인한다", ["예산은 380,000원이다."]);
 const receipt = check(text, contract);
+console.log(renderCheck(check(text, structuredContract)));
 const patch = new Patch("unexpectedNumbers", "400,000", "380,000");
 const verified = verifyPatch(text, patch, contract);
 ```
@@ -51,9 +54,13 @@ const verified = verifyPatch(text, patch, contract);
 Reader Contract는 `reader`, `goal`, `facts`에서 숫자, URL, 인라인 코드와 링크 목적지를 자동으로 보호한다.
 `contractFromText`와 `contract init`은 보호 원자를 많이 덮는 원문 줄부터 골라 facts 후보를 줄인다.
 사실의 진실과 보호 원자가 없는 의미는 추측하지 않으므로 사람이 초안을 확인한다.
+제목 수와 순서가 요구사항이면 `contractFromTextV2` 또는 `contract init --outline h2`를 쓴다. version 2는
+사람이 승인한 facts, 자동으로 모은 surface, 한 수준의 정확한 outline을 분리한다. `check --format text`는
+보호 원자, 제목 구조, 전체 절 제목, lint와 다음 행동을 한 화면에 보여 준다.
 check 결과는 Contract와 초안 해시, 보호 원자 차이와 기존 Finding을 담는다. Patch는 원문 한 자리에 정확히
 맞고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않을 때만 검증된다. 이 조건은 의미나
-진실, 자연스러움의 승인이 아니다. Python과 npm은 배포물의 같은 적합성 JSON을 독립 실행한다.
+진실, 자연스러움의 승인이 아니다. version 2 Patch는 새 outline 위반도 거부한다. Python과 npm은 배포물의
+같은 version 1 적합성 JSON을 독립 실행하고 version 2 결과도 동등성 게이트로 견준다.
 
 파이썬 패키지 (`pip install hanlint`) 와 같은 규칙, 같은 fixture, 같은 출력이다. 지문 지도 (`audit`, `map`),
 문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`) 은 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는

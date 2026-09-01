@@ -7,7 +7,7 @@ import os
 import sys
 from pathlib import Path, PurePath
 
-from ...config import DEFAULT_PRESET, PRESET_NAMES, Config, loadConfig
+from ...config import PRESET_NAMES, Config, loadConfig
 from ...data import patternsAvoiding
 from ...edit import applyFixes
 from ...rules import Finding, ruleNames
@@ -160,9 +160,9 @@ def configLabel(config: Config) -> str:
 
 
 def header(config: Config) -> str:
-    """설정 출처와 지금 도는 프리셋. 기본 프리셋이면 이름을 빼서 줄이 길어지지 않게 한다."""
+    """설정 출처와 지금 도는 프리셋. 기본값도 숨기지 않는다."""
     where = configLabel(config)
-    return f"설정: {where}" if config.preset == DEFAULT_PRESET else f"설정: {where}, 프리셋 {config.preset}"
+    return f"설정: {where}, 프리셋 {config.preset}"
 
 
 def summary(results: dict[str, list[Finding]]) -> str:

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/checkResultV2.schema.json",
+  "title": "hanlint Check Result v2",
+  "description": "A deterministic receipt for protected surface atoms, an exact heading outline, document shape, and lint findings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "kind",
+    "violationCount",
+    "contractSha256",
+    "draftSha256",
+    "surface",
+    "lint",
+    "meaning",
+    "outline",
+    "document"
+  ],
+  "properties": {
+    "version": { "const": 2 },
+    "kind": { "const": "hanlint.checkResult" },
+    "violationCount": { "type": "integer", "minimum": 0 },
+    "contractSha256": { "$ref": "#/$defs/sha256" },
+    "draftSha256": { "$ref": "#/$defs/sha256" },
+    "surface": { "$ref": "checkResult.schema.json#/properties/surface" },
+    "lint": { "$ref": "checkResult.schema.json#/properties/lint" },
+    "meaning": { "type": "string", "minLength": 1 },
+    "outline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["matches", "level", "expected", "actual", "mismatches"],
+      "properties": {
+        "matches": { "type": "boolean" },
+        "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "expected": { "$ref": "#/$defs/strings" },
+        "actual": { "$ref": "#/$defs/strings" },
+        "mismatches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["position", "expected", "actual"],
+            "properties": {
+              "position": { "type": "integer", "minimum": 1 },
+              "expected": { "type": ["string", "null"] },
+              "actual": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sentenceCount",
+        "paragraphCount",
+        "sectionCount",
+        "wordCount",
+        "questionCount",
+        "readerCallCount",
+        "sections"
+      ],
+      "properties": {
+        "sentenceCount": { "type": "integer", "minimum": 0 },
+        "paragraphCount": { "type": "integer", "minimum": 0 },
+        "sectionCount": { "type": "integer", "minimum": 0 },
+        "wordCount": { "type": "integer", "minimum": 0 },
+        "questionCount": { "type": "integer", "minimum": 0 },
+        "readerCallCount": { "type": "integer", "minimum": 0 },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["heading", "line", "paragraphCount", "codeBlockCount"],
+            "properties": {
+              "heading": { "type": "string" },
+              "line": { "type": "integer", "minimum": 1 },
+              "paragraphCount": { "type": "integer", "minimum": 0 },
+              "codeBlockCount": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "strings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

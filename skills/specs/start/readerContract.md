@@ -2,14 +2,14 @@
 id: start.readerContract
 title: Reader Contract 프로토콜
 category: start
-purpose: 모델에 독립적인 산문 검사 입력과 Finding, 정확 Patch, 결정적 검증 영수증의 버전 1 계약을 정한다.
+purpose: 모델에 독립적인 산문 검사 입력과 Finding, 정확 Patch, 결정적 검증 영수증의 버전 1과 2 계약을 정한다.
 whenToUse:
   - AI 산문을 타입 검사하려면 무엇을 주나
   - Contract Finding Patch가 무엇인가
   - 다른 언어나 편집기에서 hanlint 계약을 구현하려면
   - check와 verifyPatch 결과가 무엇을 보장하나
 verify:
-  - uv run --no-project pytest tests/guard/testContract.py tests/guard/testConformance.py tests/guard/testContractSchemas.py -q
+  - uv run --no-sync python -X utf8 -B -m pytest tests/guard/testContract.py tests/guard/testConformance.py tests/guard/testContractSchemas.py -q
   - node --test npm/test/contract.test.js
 status: curated
 ---
@@ -20,7 +20,7 @@ hanlint의 모델 독립적 전면 계약은 `Contract`, `Finding`, `Patch` 세 
 편집기는 이 프로토콜 밖에 있다. 같은 UTF-8 입력, 같은 설정, 같은 규칙 판이면 Python과 npm이 같은
 JSON 영수증을 낸다.
 
-## Contract
+## Contract version 1
 
 [version 1 스키마](../../../src/hanlint/data/readerContract.schema.json)는 닫힌 네 필드만 받는다.
 `version`은 프로토콜 필드이고 의미 필드는 셋이다.
@@ -74,6 +74,46 @@ npx hanlint contract init 글.md --reader "배포를 결정할 운영자" --goal
 기본 출력은 stdout이고 `--output`은 기존 파일을 덮지 않는다. 같은 경로를 덮으려면 `--force`가 필요하다.
 초안의 facts는 자동 추출 후보이므로 사람이 사실과 빠진 의미를 확인한 뒤 check에 넣는다.
 
+## Contract version 2
+
+[version 2 스키마](../../../src/hanlint/data/readerContractV2.schema.json)는 의미, 자동 표면, 제목 구조를
+서로 다른 필드로 둔다.
+
+```json
+{
+  "version": 2,
+  "reader": "데이터 도구를 고르는 개발자",
+  "goal": "용도별 라이브러리를 비교한다",
+  "facts": [],
+  "surface": {
+    "numbers": ["12"],
+    "urls": [],
+    "code": [],
+    "links": []
+  },
+  "outline": {
+    "level": 2,
+    "headings": ["pandas", "Polars", "DuckDB"]
+  }
+}
+```
+
+`facts`는 사람이 승인한 사실만 담으며 빈 배열일 수 있다. `surface`는 원문에서 자동으로 뽑은 숫자, URL,
+인라인 코드, 링크 목적지의 정렬된 집합이다. `outline`은 H1부터 H6 가운데 한 수준과 비지 않은 제목 순서를
+정확히 잠근다. 제목은 NFC, 양끝 공백 없음, 중복 없음 조건을 지킨다. 모르는 필드는 어느 객체에서도 거부한다.
+
+```console
+hanlint contract init 글.md --reader "데이터 도구를 고르는 개발자" --goal "용도별 라이브러리를 비교한다" --outline h2
+npx hanlint contract init 글.md --reader "데이터 도구를 고르는 개발자" --goal "용도별 라이브러리를 비교한다" --outline h2
+```
+
+`contractFromTextV2(text, reader, goal, outlineLevel, facts)`는 원문의 보호 표면과 지정한 수준의 제목을 읽는다.
+원문에 없는 제목이나 사실을 추측하지 않는다. 따라서 "라이브러리마다 H2 하나"처럼 원하는 구조가 이미
+정해졌다면 먼저 사람이 승인한 제목 골격을 만들거나 생성된 JSON의 outline을 검토해야 한다.
+
+version 2 해시는 version 1과 같은 정렬 JSON, UTF-8, SHA-256 규칙을 쓴다. version 1의 필드, 해시, 영수증과
+고정 적합성 사례는 바꾸지 않는다.
+
 ## Finding과 check
 
 `check(text, contract)`는 보호 원자 차이와 기존 hanlint `Finding`을 한 번 계산한다. 출력은
@@ -86,6 +126,15 @@ npx hanlint contract init 글.md --reader "배포를 결정할 운영자" --goal
 
 영수증에는 Contract와 원문 해시가 있고 시각, 호스트, 모델 이름은 없다. 같은 입력을 다시 검사하면 같은
 영수증이 나온다.
+
+version 2 결과는 [checkResultV2 스키마](../../../src/hanlint/data/checkResultV2.schema.json)에 맞는다.
+기존 surface와 lint에 `outline`과 `document`를 더한다. outline은 기대 제목과 실제 제목, 위치별 어긋남을
+내고 document는 문장, 문단, 절, 어절, 질문, 독자 호출 수와 잘리지 않은 절 제목을 낸다. version 2의
+`violationCount`는 보호 원자 차이, 제목 위치 어긋남, error Finding의 합이다.
+
+CLI의 기본 JSON은 자동화용 결정적 영수증이다. `check --format text`는 같은 결과를 결론, 근거, 다음 행동
+순서로 렌더링한다. 별도 lint와 audit를 다시 실행한 결과를 합치는 기능이 아니라 check가 한 번 만든 같은
+지문을 사람이 읽기 쉽게 보여 주는 표현이다.
 
 ## Patch와 verifyPatch
 
@@ -100,7 +149,12 @@ npx hanlint contract init 글.md --reader "배포를 결정할 운영자" --goal
 3. 바꾸기 전에 없던 보호 원자 차이가 생기지 않는다.
 4. 규칙 이름과 인용이 같은 error의 다중집합을 기준으로 새 error가 생기지 않는다.
 
-결과는 [patchResult 스키마](../../../src/hanlint/data/patchResult.schema.json)에 맞는다. `verified`는 이 네
+version 2에서는 바꾸기 전에 없던 outline 어긋남도 3번의 계약 위반에 포함한다. `reason`으로 `outline`을
+주면 기존 제목 어긋남 수가 줄어야 한다.
+
+version 1 결과는 [patchResult 스키마](../../../src/hanlint/data/patchResult.schema.json), version 2 결과는
+[patchResultV2 스키마](../../../src/hanlint/data/patchResultV2.schema.json)에 맞는다. version 2는
+`newSurfaceIssues` 대신 표면과 outline을 함께 담는 `newContractIssues`를 쓴다. `verified`는 이 네
 기계 조건을 만족했다는 사실일 뿐 의미, 진실, 자연스러움의 승인이 아니다. reason이 없는 수정은 검증되지
 않는다. 따라서 공개 수정 원칙은 `Finding이 없으면 Patch도 없다`다.
 
@@ -124,4 +178,5 @@ Reader Contract는 그 기능을 없애지 않는다. 일반 편집기와 에이
 필요하면 별도 평가 결과로 두고 `violationCount`에 섞지 않는다.
 
 되돌릴 때는 공개 `check`와 `verifyPatch` 진입점과 Reader Contract 관련 스키마를 함께 제거하고 기존 `WritingBrief`와
-`guard`로 돌아간다. 배포한 version 1 스키마의 필드나 뜻을 같은 버전에서 바꾸지 않는다.
+`guard`로 돌아간다. 배포한 version 1 스키마의 필드나 뜻을 같은 버전에서 바꾸지 않는다. version 2도
+배포한 뒤에는 같은 원칙을 따른다.

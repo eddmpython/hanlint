@@ -5,7 +5,19 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { Contract, Patch, check, contractFromText, defaultConfig, ruleNames, verifyPatch } from "../src/index.js";
+import {
+  Contract,
+  ContractV2,
+  Patch,
+  check,
+  contractFromText,
+  contractFromTextV2,
+  defaultConfig,
+  parseContract,
+  renderCheck,
+  ruleNames,
+  verifyPatch,
+} from "../src/index.js";
 
 function contract() {
   return new Contract("배포를 결정할 운영자", "예산과 명세를 확인한다", [
@@ -71,6 +83,31 @@ test("check compiles protected atoms from the contract", () => {
   assert.deepEqual(result.surface.unexpectedNumbers, ["400000"]);
   assert.equal(result.violationCount, 2);
   assert.equal(result.kind, "hanlint.checkResult");
+});
+
+test("version two separates surface and catches exact outline changes", () => {
+  const source = "# 데이터프레임 라이브러리 2가지\n\n## pandas\n\n본문\n\n## Polars\n\n본문\n";
+  const selectedContract = contractFromTextV2(source, "개발자", "비교한다");
+  assert.ok(selectedContract instanceof ContractV2);
+  assert.deepEqual(selectedContract.facts, []);
+  assert.deepEqual(selectedContract.outline.headings, ["pandas", "Polars"]);
+  assert.deepEqual(selectedContract.surface.numbers, ["2"]);
+  assert.equal(parseContract(selectedContract.asDict()).digest, selectedContract.digest);
+  const changed = check(source.replace("## Polars", "## DuckDB"), selectedContract, surfaceConfig());
+  assert.equal(changed.outline.matches, false);
+  assert.deepEqual(changed.outline.mismatches, [{ position: 2, expected: "Polars", actual: "DuckDB" }]);
+  assert.match(renderCheck(changed), /기대 `Polars`, 실제 `DuckDB`/u);
+});
+
+test("version two rejects a patch that introduces an outline violation", () => {
+  const expected = "2개를 비교한다.\n\n## pandas\n\n본문\n\n## Polars\n\n본문";
+  const source = expected.replace("2개", "3개");
+  const selectedContract = contractFromTextV2(expected, "개발자", "비교한다");
+  const patch = new Patch("unexpectedNumbers", "3개를 비교한다.\n\n## pandas", "2개를 비교한다.\n\n## DuckDB");
+  const result = verifyPatch(source, patch, selectedContract, surfaceConfig());
+  assert.equal(result.verified, false);
+  assert.equal(result.reasonReduced, true);
+  assert.deepEqual(result.newContractIssues, [["outline", "1:pandas:DuckDB"]]);
 });
 
 test("patch must name and reduce an existing violation", () => {

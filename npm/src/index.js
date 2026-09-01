@@ -13,28 +13,48 @@
 import { readFileSync } from "node:fs";
 
 import { loadConfig } from "./config/loadConfig.js";
-import { Contract, Patch } from "./config/readerContract.js";
+import { Patch } from "./config/patch.js";
+import {
+  CONTRACT_VERSION,
+  CONTRACT_VERSIONS,
+  LATEST_CONTRACT_VERSION,
+  Contract,
+  ContractV2,
+  Outline,
+  ProtectedSurface,
+  parseContract,
+} from "./config/readerContract.js";
 import { configFromMapping, defaultConfig } from "./config/settings.js";
 import { loadVersion } from "./data/load.js";
 import { parseMarkdown } from "./document/parseMarkdown.js";
 import { applyFixes } from "./edit/applyFixes.js";
 import { buildFingerprint } from "./fingerprint/build.js";
 import { fingerprintDict } from "./report/fingerprintJson.js";
-import { CheckResult, PatchResult, check, contractFromText, verifyPatch } from "./guard/contract.js";
+import { check, contractFromText, contractFromTextV2, verifyPatch } from "./guard/contract.js";
+import { CheckResult, PatchResult, renderCheck } from "./guard/receipt.js";
 import { ruleDoc, ruleNames, ruleSummary, runAll } from "./rules/registry.js";
 
 export {
   CheckResult,
+  CONTRACT_VERSION,
+  CONTRACT_VERSIONS,
   Contract,
+  ContractV2,
+  LATEST_CONTRACT_VERSION,
+  Outline,
   Patch,
   PatchResult,
+  ProtectedSurface,
   applyFixes,
   check,
   contractFromText,
+  contractFromTextV2,
   configFromMapping,
   defaultConfig,
   fingerprintDict,
   loadConfig,
+  parseContract,
+  renderCheck,
   ruleDoc,
   ruleNames,
   ruleSummary,

@@ -3,7 +3,16 @@ from pathlib import Path
 
 import pytest
 
-from hanlint.config import CONTRACT_VERSION, Contract, loadContract
+from hanlint.config import (
+    CONTRACT_VERSION,
+    LATEST_CONTRACT_VERSION,
+    Contract,
+    ContractV2,
+    Outline,
+    ProtectedSurface,
+    loadContract,
+    parseContract,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -59,3 +68,53 @@ def testPublishedSchemaNamesTheSameClosedSurface():
     assert schema["properties"]["version"]["const"] == CONTRACT_VERSION
     assert set(schema["required"]) == set(mapping())
     assert schema["additionalProperties"] is False
+
+
+def testLoadsVersionTwoWithSeparatedSurfaceAndOutline(tmp_path):
+    data = {
+        "version": 2,
+        "reader": "데이터 도구를 고르는 개발자",
+        "goal": "용도별 라이브러리를 비교한다",
+        "facts": [],
+        "surface": {
+            "numbers": ["12"],
+            "urls": ["https://example.invalid/data"],
+            "code": ["import polars"],
+            "links": [],
+        },
+        "outline": {"level": 2, "headings": ["pandas", "Polars"]},
+    }
+    path = tmp_path / "contract.json"
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    loaded = loadContract(path)
+    assert loaded == ContractV2(
+        reader=data["reader"],
+        goal=data["goal"],
+        facts=(),
+        surface=ProtectedSurface(numbers=("12",), urls=("https://example.invalid/data",), code=("import polars",)),
+        outline=Outline(2, ("pandas", "Polars")),
+    )
+    assert loaded.version == LATEST_CONTRACT_VERSION
+    assert parseContract(data).digest == loaded.digest
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        (lambda data: data["surface"].update(extra=[]), "모르는 키"),
+        (lambda data: data["outline"].update(level=7), "1~6"),
+        (lambda data: data["outline"].update(headings=[]), "비지 않은 문자열 배열"),
+    ],
+)
+def testRejectsAmbiguousVersionTwoContracts(change, message):
+    data = {
+        "version": 2,
+        "reader": "독자",
+        "goal": "목표",
+        "facts": [],
+        "surface": {"numbers": [], "urls": [], "code": [], "links": []},
+        "outline": {"level": 2, "headings": ["첫 절"]},
+    }
+    change(data)
+    with pytest.raises(ValueError, match=message):
+        parseContract(data)

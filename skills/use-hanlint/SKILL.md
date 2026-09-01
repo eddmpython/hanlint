@@ -63,6 +63,24 @@ hanlint 보고서.md --preset report
 `hanlint baseline 글들/` 로 잠그고 새로 쓰는 것만 막는 것 가운데 무엇을 할지는 사용자가 정한다.
 잠근 뒤에는 검사에 `--baseline` 을 붙인다. 잠긴 문장을 고치면 그 자리는 다시 지적으로 나온다.
 
+## 섹션 구조가 요구사항일 때
+
+"데이터프레임 라이브러리 N가지"처럼 섹션 수, 이름, 순서가 요구사항이면 lint만 돌리지 않는다. 먼저 사람이
+승인한 제목 골격을 만든 뒤 version 2 Reader Contract로 잠근다.
+
+```powershell
+hanlint contract init 글.md --reader "데이터 도구를 고르는 개발자" --goal "용도별 라이브러리를 비교한다" --outline h2 --output contract.json
+hanlint check contract.json 글.md --format text
+```
+
+`contract init`은 현재 글의 제목을 읽을 뿐 원하는 제목을 추측하지 않는다. 초안의 구조가 이미 틀렸다면
+그대로 잠그지 말고 제목 골격이나 생성된 `outline.headings`를 먼저 사람이 고친다. facts는 사람이 확인한
+사실만 `--fact`로 더한다. 숫자, URL, 인라인 코드, 링크 목적지는 `surface`로 자동 분리된다.
+
+이후 수정마다 `check --format text` 한 번을 쓴다. 보호 원자, 제목 누락과 추가와 재배열, 잘리지 않은 전체
+절 제목, lint 요약과 다음 행동이 같은 영수증에 나온다. 기계가 읽으면 기본 JSON을 쓴다. 계약 위반이 0이어도
+사실의 진실, 빠진 의미, 독자 효용과 자연스러움은 사람이나 LLM이 평가한다.
+
 ## 순서
 
 1. 글을 쓰거나 고친다.

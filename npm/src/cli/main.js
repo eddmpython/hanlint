@@ -21,10 +21,24 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
-import { Contract, Patch, check, contractFromText, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, verifyPatch, version } from "../index.js";
+import {
+  Patch,
+  check,
+  contractFromText,
+  contractFromTextV2,
+  fingerprint,
+  lintText,
+  parseContract,
+  renderCheck,
+  ruleDoc,
+  ruleNames,
+  ruleSummary,
+  verifyPatch,
+  version,
+} from "../index.js";
 import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
 import { loadConfig } from "../config/loadConfig.js";
-import { DEFAULT_PRESET, defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
+import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
@@ -32,6 +46,7 @@ import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
 import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleMechanism, runAll } from "../rules/registry.js";
 import { MARKDOWN, SKIPPED_FOLDERS, markdownUnder } from "./walk.js";
 import { welcome } from "./welcome.js";
+import { rootHelp } from "./help.js";
 import { renderCompact } from "../report/compactReport.js";
 import { LAYERS, renderFingerprintJson } from "../report/fingerprintJson.js";
 import { renderGithub } from "../report/githubReport.js";
@@ -83,26 +98,7 @@ const THRESHOLD_FIELDS = [
 ];
 const FLOAT_FIELDS = new Set(["headingUniformRatio", "factListMaxMeanLength"]);
 
-const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|json|github] [--severity all|error|notice] [--errors-only]
-                [--config 파일] [--preset blog|report|docs] [--disable 규칙] [--baseline [파일]] [--output 파일] [--quiet]
-                [--path 이름 (stdin 의 이름)]
-        hanlint fix 글.md [--dry-run]
-        hanlint print 글.md [--layer all|sentences|paragraphs|sections|document]
-        hanlint rules [--names]
-        hanlint explain <규칙>
-        hanlint patterns [--rule 규칙]
-        hanlint baseline 글들/ [--prune] [--output 파일]
-        hanlint doctor
-        hanlint init [--output hanlint.toml] [--preset blog|report|docs] [--force]
-        hanlint contract init 글.md --reader "독자" --goal "목표" [--output contract.json]
-        hanlint check contract.json 글.md [--format json]
-        hanlint verify-patch contract.json 글.md patch.json [--format json]
-        hanlint --version
-
-파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다 (점으로 시작하는 폴더와 node_modules 는 건너뛴다).
-인자가 없으면 첫 화면이 나온다.
-한국어 글에서 반복되는 결함을 결정적으로 잡는다. 종료 코드는 0 (지적 없음), 1 (error 지적), 2 (파일이나 설정 문제).
-${PYTHON_ONLY.join(", ")} 는 파이썬 패키지 (pip install hanlint) 에 있다.`;
+const USAGE = rootHelp();
 
 /** @type {Record<string, "value" | "list" | "flag">} */
 const OPTION_KINDS = {
@@ -122,6 +118,8 @@ const OPTION_KINDS = {
   "--force": "flag",
   "--reader": "value",
   "--goal": "value",
+  "--outline": "value",
+  "--fact": "list",
   "--preset": "value",
   "--rule": "value",
   "--register": "value",
@@ -248,11 +246,10 @@ function configLabel(config) {
   return label.split(sep).join("/");
 }
 
-/** 설정 출처와 지금 도는 프리셋. 기본 프리셋이면 이름을 빼서 줄이 길어지지 않게 한다.
- * @param {import("../config/settings.js").Config} config */
+/** 설정 출처와 지금 도는 프리셋. @param {import("../config/settings.js").Config} config */
 function header(config) {
   const where = configLabel(config);
-  return config.preset === DEFAULT_PRESET ? `설정: ${where}` : `설정: ${where}, 프리셋 ${config.preset}`;
+  return `설정: ${where}, 프리셋 ${config.preset}`;
 }
 
 /** @param {Map<string, import("../rules/finding.js").Finding[]>} results */
@@ -402,12 +399,13 @@ function readJson(path) {
 function runCheck(args) {
   const { options, positionals } = parseArgs(args);
   if (positionals.length !== 2) throw new UsageError("Reader Contract JSON과 검사할 마크다운 파일이 필요하다");
-  choose(/** @type {string} */ (options["--format"] ?? "json"), ["json"], "--format");
+  const format = choose(/** @type {string} */ (options["--format"] ?? "json"), ["json", "text"], "--format");
   const [contractPath, path] = positionals;
-  const contract = Contract.fromMapping(readJson(contractPath));
+  const contract = parseContract(readJson(contractPath));
   const config = configFrom(options, [path]);
   const result = check(readOne(path), contract, config, path);
-  emit(JSON.stringify(result.asDict(), null, 2), /** @type {string | undefined} */ (options["--output"]));
+  const rendered = format === "text" ? renderCheck(result) : JSON.stringify(result.asDict(), null, 2);
+  emit(rendered, /** @type {string | undefined} */ (options["--output"]));
   return result.violationCount === 0 ? 0 : 1;
 }
 
@@ -426,7 +424,16 @@ function runContract(args) {
   if (typeof output === "string" && existsSync(output) && !options["--force"]) {
     throw new Error(`${output} 가 이미 있다. 덮어쓰려면 --force`);
   }
-  const contract = contractFromText(readOne(positionals[1]), reader, goal);
+  const outline = options["--outline"];
+  const facts = /** @type {string[]} */ (options["--fact"] ?? []);
+  let contract;
+  if (outline !== undefined) {
+    const selected = choose(/** @type {string} */ (outline), ["h1", "h2", "h3", "h4", "h5", "h6"], "--outline");
+    contract = contractFromTextV2(readOne(positionals[1]), reader, goal, Number(selected.slice(1)), facts);
+  } else {
+    if (facts.length) throw new UsageError("--fact는 --outline과 함께 version 2 계약에서 쓴다");
+    contract = contractFromText(readOne(positionals[1]), reader, goal);
+  }
   emit(JSON.stringify(contract.asDict(), null, 2), typeof output === "string" ? output : undefined);
   return 0;
 }
@@ -437,7 +444,7 @@ function runVerifyPatch(args) {
   if (positionals.length !== 3) throw new UsageError("Reader Contract JSON, 수정 전 마크다운, Patch JSON이 필요하다");
   choose(/** @type {string} */ (options["--format"] ?? "json"), ["json"], "--format");
   const [contractPath, path, patchPath] = positionals;
-  const contract = Contract.fromMapping(readJson(contractPath));
+  const contract = parseContract(readJson(contractPath));
   const patch = Patch.fromMapping(readJson(patchPath));
   const config = configFrom(options, [path]);
   const result = verifyPatch(readOne(path), patch, contract, config, path);

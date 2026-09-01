@@ -7,8 +7,9 @@
 [![License](https://img.shields.io/badge/license-details-blue)](#라이선스)
 
 **AI 산문을 위한 한국어 타입 검사기 (Korean prose type checker).** `Contract`, `Finding`, `Patch`라는
-작은 공개 계약으로 초안이 선언하지 않은 수치와 링크를 보태거나, 필요한 원자를 잃거나, 이유 없이
-재작성되는 일을 결정적으로 드러낸다. 같은 입력은 모델과 편집기가 달라도 같은 JSON 영수증을 만든다.
+작은 공개 계약으로 초안이 선언하지 않은 수치와 링크를 보태거나, 필요한 원자를 잃거나, 승인한 제목
+구조를 바꾸거나, 이유 없이 재작성되는 일을 결정적으로 드러낸다. 같은 입력은 모델과 편집기가 달라도
+같은 영수증을 만든다.
 
 자유 형식 마크다운에서는 번역투, 명사 나열, 이중 피동, 가리킬 것 없는 지시어, 조각난 문단처럼
 **세면 확정되는 결함**을 찾아 자리와 이유와 다시 쓴 본보기를 준다. 맞춤법 검사기가 아니다. 맞춤법이
@@ -54,6 +55,7 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 | 이 글에 무엇이 잘못됐나 | `hanlint 글.md` |
 | 기계가 고칠 수 있는 것은 먼저 고쳐 줘 | `hanlint fix 글.md` |
 | Python에서 쓰는 동안 계속 봐 줘 | `hanlint watch 글.md` |
+| 섹션 수와 순서를 요구사항대로 잠가 줘 | `hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2` |
 
 필요한 내용부터 바로 읽을 수 있다.
 
@@ -66,8 +68,27 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 
 ## Contract, Finding, Patch
 
-모델에 장문의 작법 프롬프트를 주기 전에 독자, 목표, 사실을 닫힌 JSON으로 선언한다.
-[Reader Contract 스키마](src/hanlint/data/readerContract.schema.json)는 의미 필드 셋 외의 입력을 거부한다.
+모델에 장문의 작법 프롬프트를 주기 전에 독자, 목표, 사실과 필요한 구조를 닫힌 JSON으로 선언한다.
+계약은 용도에 따라 고른다.
+
+| 계약 | 언제 쓰나 | 무엇을 잠그나 |
+|---|---|---|
+| version 1 | 기존 자동화와 최소 표면 계약 | reader, goal, facts에서 나온 숫자, URL, 코드, 링크 |
+| version 2 | 제목 수와 순서가 요구사항인 글 | 사람이 승인한 facts, 자동 surface, 한 수준의 정확한 outline |
+
+예를 들어 "라이브러리마다 H2 하나"가 요구사항이면 먼저 승인한 H2 골격을 만들고 그 순서를 잠근다.
+`contract init`은 현재 글의 제목을 읽을 뿐 원하는 라이브러리 이름을 추측하지 않는다.
+
+```console
+hanlint contract init 초안.md --reader "데이터 도구를 고르는 개발자" --goal "용도별 라이브러리를 비교한다" --outline h2 --output contract.json
+hanlint check contract.json 초안.md --format text
+```
+
+사람이 읽는 text 영수증 하나에 보호 표면, 제목 누락과 추가와 재배열, 전체 절 제목, lint 요약과 다음 행동이
+나온다. 자동화에서는 기본 JSON을 그대로 쓴다. Python과 npm 명령이 같다.
+
+[version 1 스키마](src/hanlint/data/readerContract.schema.json)와
+[version 2 스키마](src/hanlint/data/readerContractV2.schema.json)는 모르는 입력을 거부한다.
 
 기존 글에서는 독자와 목표만 적어 계약 초안을 만든다. 숫자, URL, 인라인 코드와 링크 목적지를 많이 덮는
 원문 줄부터 골라 facts 후보를 줄이며, 사실의 진실과 빠진 의미는 사람이 확인한다.
@@ -100,9 +121,10 @@ npx hanlint check contract.json 초안.md
 ```
 
 ```python
-from hanlint import Contract, Patch, check, contractFromText, verifyPatch
+from hanlint import Contract, Patch, check, contractFromText, contractFromTextV2, renderCheck, verifyPatch
 
 draftContract = contractFromText(text, "배포를 결정할 운영자", "예산과 명세를 확인한다")
+structuredContract = contractFromTextV2(text, "개발자", "라이브러리를 비교한다", outlineLevel=2)
 
 contract = Contract(
     reader="배포를 결정할 운영자",
@@ -110,6 +132,7 @@ contract = Contract(
     facts=["예산은 380,000원이다.", "확인 명령은 `mora check`다."],
 )
 receipt = check(text, contract)
+print(renderCheck(check(text, structuredContract)))
 
 patch = Patch(reason="unexpectedNumbers", before="400,000", after="380,000")
 verified = verifyPatch(text, patch, contract)
@@ -118,7 +141,7 @@ verified = verifyPatch(text, patch, contract)
 [Patch 스키마](src/hanlint/data/patch.schema.json)는 `reason`, `before`, `after`만 받는다. 원문 한 자리에
 정확히 맞고, check에 실제로 있던 reason을 줄이며, 새 보호 원자 위반과 새 error를 만들지 않을 때만
 `verified`가 참이다. 이는 국소 기계 조건을 확인했다는 뜻이지 고친 문장이 참이거나 아름답다는 승인이
-아니다. **Finding이 없으면 Patch도 없다.**
+아니다. version 2에서는 새 제목 구조 위반도 함께 막는다. **Finding이 없으면 Patch도 없다.**
 
 Python과 npm은 [같은 적합성 사례](src/hanlint/data/readerContractConformanceV1.json)를 독립 실행한다.
 교환 형식의 정확한 뜻과 해시 규칙은 [Reader Contract 프로토콜](skills/specs/start/readerContract.md)에
@@ -155,7 +178,7 @@ hanlint 는 그 셀 수 있는 것만 맡는다. 재미있는지, 설득력이 �
 지적마다 **자리, 이유, 그리고 이렇게 쓴다는 본보기**를 준다. 세 번째가 이 도구의 핵심이다.
 
 ```text
-설정: 기본값
+설정: 기본값, 프리셋 blog
 
 글.md  집은 자리 2
 
@@ -666,8 +689,9 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 |---|---|---|
 | `hanlint` | 첫 화면. 이 폴더의 파일 이름으로 만든 예시와 다음 걸음 | 예 |
 | `hanlint 글.md` 또는 `hanlint 글들/` | 검사한다. 폴더면 그 아래 마크다운 전부 | 예 |
-| `hanlint contract init 글.md --reader "독자" --goal "목표"` | 기존 글의 보호 표면에서 Reader Contract 초안을 만든다 | 예 |
-| `hanlint check contract.json 글.md` | Reader Contract의 보호 원자와 Finding을 결정적 영수증으로 묶는다 | 예 |
+| `hanlint contract init 글.md --reader "독자" --goal "목표"` | 기존 글의 보호 표면에서 호환용 version 1 계약을 만든다 | 예 |
+| `hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2` | 자동 surface와 현재 H2 순서를 분리한 version 2 계약을 만든다 | 예 |
+| `hanlint check contract.json 글.md --format text` | 보호 표면, 제목 구조, Finding, 글 요약과 다음 행동을 한 영수증으로 본다 | 예 |
 | `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
 | `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
@@ -734,7 +758,8 @@ for finding in lintText(text):
     print(finding.line, finding.rule, finding.why)
 ```
 
-`Contract`, `Patch`, `check`, `verifyPatch`, `lintFile`, `auditText`, `fingerprint`도 같은 자리에 있다.
+`Contract`, `ContractV2`, `Patch`, `check`, `contractFromTextV2`, `renderCheck`, `verifyPatch`, `lintFile`,
+`auditText`, `fingerprint`도 같은 자리에 있다.
 
 ## CI 게이트로 물린다: pre-commit, GitHub Actions
 
@@ -771,7 +796,9 @@ pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-com
 hanlint is a type checker for Korean prose in Markdown. Its model-independent front door is three concepts:
 `Contract`, `Finding`, and `Patch`. A Reader Contract declares a reader, a goal, and facts. `check` derives protected
 numbers, URLs, inline code, and link destinations, then emits a deterministic receipt with regular lint findings.
-`contractFromText` and `hanlint contract init` derive a reviewable version 1 draft from an existing Markdown file.
+`contractFromText` derives a reviewable version 1 draft. `contractFromTextV2`, or `contract init --outline h2`,
+separates human-approved facts from an automatically captured surface and locks one exact heading level.
+`check --format text` combines protected atoms, outline mismatches, lint findings, a full section summary, and a next action.
 `verifyPatch` accepts only an exact local replacement tied to a named existing issue and rejects new protected-atom
 violations or new errors.
 

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/readerContractV2.schema.json",
+  "title": "hanlint Reader Contract v2",
+  "description": "A closed prose contract that separates reviewed facts, protected surface atoms, and an exact heading outline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "reader", "goal", "facts", "surface", "outline"],
+  "properties": {
+    "version": { "const": 2 },
+    "reader": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "facts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["numbers", "urls", "code", "links"],
+      "properties": {
+        "numbers": { "$ref": "#/$defs/strings" },
+        "urls": { "$ref": "#/$defs/strings" },
+        "code": { "$ref": "#/$defs/strings" },
+        "links": { "$ref": "#/$defs/strings" }
+      }
+    },
+    "outline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "headings"],
+      "properties": {
+        "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "headings": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "strings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

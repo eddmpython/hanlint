@@ -3,7 +3,18 @@
 from __future__ import annotations
 
 from .loadConfig import loadConfig
-from .readerContract import CONTRACT_VERSION, Contract, Patch, loadContract, loadPatch
+from .patch import Patch, loadPatch
+from .readerContract import (
+    CONTRACT_VERSION,
+    CONTRACT_VERSIONS,
+    LATEST_CONTRACT_VERSION,
+    Contract,
+    ContractV2,
+    Outline,
+    ProtectedSurface,
+    loadContract,
+    parseContract,
+)
 from .settings import DEFAULT_PRESET, PRESET_NAMES, PRESETS, PROFILE_OF, Config
 from .writingBrief import (
     BRIEF_VERSION,
@@ -19,6 +30,7 @@ from .writingBrief import (
 __all__ = [
     "BRIEF_VERSION",
     "CONTRACT_VERSION",
+    "CONTRACT_VERSIONS",
     "DEFAULT_PRESET",
     "EVIDENCE_BRIEF_VERSION",
     "PRESETS",
@@ -28,12 +40,17 @@ __all__ = [
     "EvidenceRecord",
     "Config",
     "Contract",
+    "ContractV2",
+    "LATEST_CONTRACT_VERSION",
+    "Outline",
     "Patch",
+    "ProtectedSurface",
     "WritingBrief",
     "REVIEW_STATUSES",
     "loadConfig",
     "loadContract",
     "loadPatch",
+    "parseContract",
     "loadWritingBrief",
     "numberValues",
 ]

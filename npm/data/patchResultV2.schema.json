@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/patchResultV2.schema.json",
+  "title": "hanlint Patch Result v2",
+  "description": "A deterministic verification receipt for a version 2 Reader Contract patch.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "kind",
+    "verified",
+    "violationCount",
+    "contractSha256",
+    "sourceSha256",
+    "patchSha256",
+    "resultSha256",
+    "matchCount",
+    "reason",
+    "newContractIssues",
+    "newErrors",
+    "meaning"
+  ],
+  "properties": {
+    "version": { "const": 2 },
+    "kind": { "const": "hanlint.patchResult" },
+    "verified": { "type": "boolean" },
+    "violationCount": { "type": "integer", "minimum": 0 },
+    "contractSha256": { "$ref": "patchResult.schema.json#/$defs/sha256" },
+    "sourceSha256": { "$ref": "patchResult.schema.json#/$defs/sha256" },
+    "patchSha256": { "$ref": "patchResult.schema.json#/$defs/sha256" },
+    "resultSha256": {
+      "oneOf": [
+        { "$ref": "patchResult.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "matchCount": { "type": "integer", "minimum": 0 },
+    "reason": { "$ref": "patchResult.schema.json#/properties/reason" },
+    "newContractIssues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "value"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "missingNumbers",
+              "unexpectedNumbers",
+              "missingUrls",
+              "unexpectedUrls",
+              "missingCode",
+              "unexpectedCode",
+              "missingLinks",
+              "unexpectedLinks",
+              "outline"
+            ]
+          },
+          "value": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "newErrors": {
+      "type": "array",
+      "items": { "$ref": "finding.schema.json" }
+    },
+    "meaning": { "type": "string", "minLength": 1 }
+  }
+}
