@@ -8,7 +8,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from scripts.exportData import render as renderNpmData
+from scripts.derive.npmData import render as renderNpmData
 
 from hanlint import checkedPanelAssignment, loadPanelTrialSet, preparePanelAssignment, preparePanelSuite, renderPanelReviewHtml
 

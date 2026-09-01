@@ -62,6 +62,8 @@ SUBJECT_FORM = re.compile(r"^([^:\n]+):\s(\S.*)$")
 
 @dataclass(frozen=True)
 class Violation:
+    """어긴 규칙 하나. code 로 단정하고 message 로 사람에게 말한다."""
+
     code: str
     message: str
 
@@ -91,6 +93,7 @@ def checkCommitMessage(raw: str) -> list[Violation]:
     violations: list[Violation] = []
 
     def fail(code: str, message: str) -> None:
+        """위반 하나를 적는다."""
         violations.append(Violation(code, message))
 
     text = "\n".join(lines)
@@ -147,6 +150,7 @@ def checkCommitMessage(raw: str) -> list[Violation]:
 
 
 def main(argv: list[str]) -> int:
+    """commit-msg 훅의 진입점. 메시지 파일 하나를 받아 위반이 있으면 1 로 끝난다."""
     if len(argv) < 2:
         print("blocked: 커밋 메시지 파일 인자가 없다", file=sys.stderr)
         return 1

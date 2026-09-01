@@ -1,4 +1,4 @@
-"""커밋 메시지 판정기의 양성과 음성 fixture. 판정 정본은 scripts/commitMessage.py.
+"""커밋 메시지 판정기의 양성과 음성 fixture. 판정 정본은 hooks/commitMessage.py.
 
 통과해야 할 메시지가 통과하고, 어겨야 할 메시지가 정확한 코드로 걸리는지 본다. 코드로 단정하므로
 문구가 바뀌어도 시험이 흔들리지 않는다.
@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from scripts.commitMessage import checkCommitMessage, normalizeMessage
+from hooks.commitMessage import checkCommitMessage, normalizeMessage
 
 GOOD = (
     "규칙: 이중 피동을 잡는다\n"

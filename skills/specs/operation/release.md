@@ -38,7 +38,7 @@ status: curated
 
 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전을 손으로 적는 곳은 `src/hanlint/__init__.py` 의
 `__version__` 과 `npm/package.json` 둘뿐이다. `pyproject.toml` 은 hatch 가 `__version__` 을 읽고 (dynamic),
-`npm/data/version.json` 은 투영이라 `python scripts/exportData.py` 를 같은 커밋에서 돌린다.
+`npm/data/version.json` 은 투영이라 `python scripts/derive/npmData.py` 를 같은 커밋에서 돌린다.
 `npm/package-lock.json`도 `npm install --package-lock-only --ignore-scripts`로 갱신하는 투영이다. 워크플로가
 `__version__`, `package.json`, 태그를 대조하고 `tests/gates/testVersion.py` 가 로컬에서 버전 투영까지 강제한다.
 0.0.2 에서 pyproject 만 올리고 `__version__` 을 빼먹어 `--version` 이 낡은 채 게시된 것이 이 구조의 이유다.
@@ -55,7 +55,7 @@ tag는 이 파일을 `--cleanup=verbatim -F`로 읽는다. 기본 정리 방식�
 ```powershell
 # src/hanlint/__init__.py 의 __version__ 과 npm/package.json 의 version 을 올리고
 # CHANGELOG 의 Unreleased 를 버전 절로 내리고 정확한 Git 범위를 대조한 뒤
-.venv/Scripts/python.exe -X utf8 -B scripts/exportData.py
+.venv/Scripts/python.exe -X utf8 -B scripts/derive/npmData.py
 Push-Location npm
 npm install --package-lock-only --ignore-scripts
 Pop-Location
@@ -72,7 +72,7 @@ git push origin main v0.0.x
 
 ## 워크플로가 하는 일
 
-1. `ci.yml` 의 게이트 전부 (세 운영체제와 파이썬 조합, ruff, pytest, npm 테스트, 투영 검사, 쓰기 훅 자기 검사).
+1. `ci.yml` 의 게이트 전부 (세 운영체제와 파이썬 조합, ruff, pytest, npm 테스트, 투영 검사).
 2. 세 버전 일치 검증. wheel 과 sdist 빌드. 그 wheel 을 격리 venv 에 설치해 Requires 가 비어 있는지, 데이터가
    동봉됐는지, `hanlint README.md` 가 통과하는지 본다.
 3. `publish-pypi` (environment `pypi`, OIDC) 와 `publish-npm` (OIDC, npm 11 이상) 이 나란히 올린다.

@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 CATALOGUE_PATH = REPO / "corpus" / "catalogue.toml"
 USER_AGENT = "hanlint-corpus/0.0.7 corpus research contact github.com/eddmpython/hanlint"
 KOREAN = re.compile(r"[가-힣]")

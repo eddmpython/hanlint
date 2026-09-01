@@ -49,7 +49,7 @@ status: curated
 - **code 부류** (inputFileSource, installImport, platformApi): 읽기와 쓰기 함수, 모듈과 패키지 대응, 숨은
   의존성, 플랫폼 API 는 각각 규칙 파일의 정규식과 `data/pythonPackages.txt`, `data/hiddenDeps.txt`,
   `data/platformApis.txt` 가 정본이다.
-- 정본 data 를 고쳤으면 `python scripts/exportData.py` 로 npm 투영을 다시 만든다. 규칙을 더하거나 옮기면
+- 정본 data 를 고쳤으면 `python scripts/derive/npmData.py` 로 npm 투영을 다시 만든다. 규칙을 더하거나 옮기면
   `ruleCategories.json` 도 같이 바뀐다.
 - **한 종류의 글에만 안 맞는 규칙은 빼지 말고 프리셋에 넣는다.** 참고 문서에 `noQuestion` 이 도는 것은
   규칙이 틀린 것이 아니라 글의 종류가 다른 것이다. `config/settings.py` 의 `PRESETS` 에 그 규칙 이름을

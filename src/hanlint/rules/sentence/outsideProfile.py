@@ -37,7 +37,7 @@ def outsideProfile(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         수는 그 독자가 그 종류에서 겪지 않던 부담이다. 좋다 나쁘다가 아니라 자리가 어디인지를 말한다.
     어디서: 실측. 기준 말뭉치 390편에서 30어절을 넘는 문장이 안내서 0.16%, 기술 문서 0.87%, 뉴스 6.7%, 1930년대 수필
         8.3% 였다. 임계 하나가 종류마다 열 배씩 다르게 잡는다 (2026-08-29). 종류별 norms 를 백분위로 보이는 것은
-        Coh-Metrix 가 영어에서 한 방식이고 한국어에는 없었다. 프로파일은 data/profiles.json (scripts/buildProfiles.py
+        Coh-Metrix 가 영어에서 한 방식이고 한국어에는 없었다. 프로파일은 data/profiles.json (scripts/derive/profiles.py
         가 corpus/catalogue.toml 의 말뭉치에서 만든다). 백분위 임계는 config.profilePercentile. 처음 나온 화제어는 독자
         상태 (fingerprint/readerState.py) 의 known 으로 센다.
     고치기: 문장을 나누거나 쉼표 절을 문장으로 세운다. 처음 나온 화제어가 많으면 앞 문장에서 하나씩 먼저 세운다.

@@ -8,6 +8,7 @@ whenToUse:
   - 어디를 봐야 하나
   - 경계
   - 폴더 구조
+  - cinch 와 어떻게 맞물리나
 status: curated
 ---
 
@@ -20,8 +21,13 @@ status: curated
 | 경로 | 무엇 |
 |---|---|
 | `src/hanlint/` | 코어. 층 구조는 `operation.moduleLayers` 가 정본이다 |
-| `tests/` | 양방향 테스트와 구조 게이트 |
+| `npm/` | 파이썬의 투영. 순수 ESM, 빌드 0. `npm/src` 가 제품, `npm/test` 가 테스트, `npm/data` 는 `scripts/derive/npmData.py` 가 만든다 |
+| `tests/` | 양방향 테스트와 구조 게이트. `tests/_attempts/` 는 실험 기록 |
+| `hooks/` | 훅 판정기. `writeGate.py` 는 Claude 쓰기 훅이, `commitMessage.py` 는 git commit-msg 훅이 부른다. 얇은 셸은 `.githooks/`, 등록은 `.claude/settings.json` |
+| `scripts/` | 도구. 도메인 셋이다. `derive/` 는 정본에서 파생 자료를 만들고, `fetch/` 는 외부 자료를 받고, `measure/` 는 실측 탐침이다 |
+| `corpus/` | 기준 말뭉치의 카탈로그와 고정 판. 원문은 저장소 밖에 받는다 |
 | `skills/` | 운영 정본과 AI 사용 스킬 |
+| `.cinch.json` | cinch 선언. 켠 스위치와 코드 뿌리의 역할. 설치된 Stop 게이트가 판정하고 `cinch status` 가 보여 준다 |
 | `mainPlan/` | 끝나지 않은 기획 (추적하지 않음) |
 | `memory/` | 세션 간 약속 (추적하지 않음) |
 
@@ -48,6 +54,19 @@ status: curated
 | AI 에게 검사를 시키는 법 | `skills/use-hanlint/SKILL.md` |
 | 바깥을 향한 소개 | 루트 `README.md` |
 | 지금 진행 중인 기획 | `mainPlan/` |
+
+## cinch 문서 역할과의 대응
+
+cinch 는 저장소 문서를 여섯 역할로 읽는다. 이 저장소는 새 문서 나무를 만들지 않고 있는 자리를 그 역할에 댄다.
+
+| cinch 역할 | 이 저장소의 정본 |
+|---|---|
+| North Star | [`start.product`](product.md) |
+| 기술 명세 | [`start.readerContract`](readerContract.md), `operation.moduleLayers`, 코드 계약 (`tests/gates/layerContract.py`, `src/hanlint/data/*.schema.json`) |
+| 운영 명세 | `skills/specs/operation/` |
+| 이니셔티브 | `mainPlan/` (추적하지 않음. 끝나면 폴더째 지운다) |
+| 세션 메모리 | `memory/` (추적하지 않음. 정본을 덮지 않는다) |
+| 이벤트 원장 | Git 커밋. 형식은 `operation.sourceControl` |
 
 ## 이 저장소의 실패 방식
 

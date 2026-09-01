@@ -1,4 +1,4 @@
-from scripts.fetchCorpus import normalizeKubernetes, normalizeMdn, normalizeWikitext
+from scripts.fetch.corpus import normalizeKubernetes, normalizeMdn, normalizeWikitext
 
 
 def testWikitextListsAndHeadingsBecomeMarkdown():

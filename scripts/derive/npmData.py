@@ -2,7 +2,7 @@
 
 정본은 src/hanlint/data 와 규칙 파일의 docstring, 루트와 data 의 라이선스 전문이다. txt 는 그대로,
 toml 은 json 으로, docstring 은 ruleDocs.json 으로 간다. 만든 것을 손으로 고치지 않는다.
-tests/gates/testNpmData.py 가 투영이 정본과 같은지 본다. `python scripts/exportData.py --check` 가 같은
+tests/gates/testNpmData.py 가 투영이 정본과 같은지 본다. `python scripts/derive/npmData.py --check` 가 같은
 검사다.
 """
 
@@ -13,7 +13,7 @@ import sys
 import tomllib
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src" / "hanlint" / "data"
 TARGET = ROOT / "npm" / "data"
 LICENSE_PROJECTIONS = (
@@ -76,7 +76,7 @@ def main(argv: list[str]) -> int:
     if "--check" in argv:
         stale = staleFiles(files)
         if stale:
-            print("npm/data 가 정본과 다르다. python scripts/exportData.py 를 돌린다: " + ", ".join(stale))
+            print("npm/data 가 정본과 다르다. python scripts/derive/npmData.py 를 돌린다: " + ", ".join(stale))
             return 1
         print("npm/data 가 정본과 같다")
         return 0

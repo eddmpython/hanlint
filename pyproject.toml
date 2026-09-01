@@ -38,12 +38,15 @@ classifiers = [
   "Topic :: Text Processing :: Linguistic",
   "Topic :: Text Processing :: Markup :: Markdown",
 ]
-# 런타임 의존성 0. extra 는 개발 도구뿐이다.
+# 런타임 의존성 0. 개발 도구는 아래 dependency-groups 에만 있다.
 dependencies = []
 
-[project.optional-dependencies]
+# 개발 도구는 PEP 735 dependency group 이다. extra 로 두면 배포 메타데이터가 사용자에게 `hanlint[dev]` 를 광고하고
+# `uv sync` 는 extra 를 기본으로 깔지 않는다. group 은 배포물에 실리지 않고 `uv sync` 가 dev 를 기본으로 깐다.
+# 정확 버전은 uv.lock 이 잠근다.
+[dependency-groups]
 dev = ["pytest>=8", "ruff>=0.5"]
-# 말뭉치의 지문 표 (Parquet) 를 만들고 묻는 개발 도구. 제품은 읽지 않는다.
+# 말뭉치의 지문 표 (Parquet) 를 만들고 묻는 개발 도구. 제품은 읽지 않는다. `uv sync --group corpus` 로 깐다.
 corpus = ["polars>=1"]
 
 [project.urls]
@@ -74,6 +77,9 @@ exclude = [
   ".githooks",
   "mainPlan",
   "memory",
+  # 저장소 환경 선언과 개발 잠금은 배포물이 아니다.
+  ".cinch.json",
+  "uv.lock",
 ]
 
 [tool.pytest.ini_options]
@@ -82,15 +88,15 @@ testpaths = ["tests"]
 python_files = ["test*.py"]
 python_functions = ["test*"]
 pythonpath = ["src", "."]
-# 캐시는 저장소 밖 형제 폴더로. 저장소 안에 임시 산출물을 두지 않는다 (강행규칙).
-cache_dir = "../hanlint.out/pytestCache"
+# 캐시는 저장소 안에도 옆에도 두지 않는다 (강행규칙, 전역 development-hygiene). pytest 는 ~ 를 풀어 준다.
+cache_dir = "~/.cache/hanlint/pytest"
 
 [tool.ruff]
 # ruff 는 표시 폭으로 센다. 한글은 2칸이라 110 이면 한국어 docstring 이 55자에서 걸린다. 130 은 한글 65자다.
 line-length = 130
 target-version = "py311"
 src = ["src", "tests", "hooks", "scripts"]
-cache-dir = "../hanlint.out/ruffCache"
+cache-dir = "~/.cache/hanlint/ruff"
 
 [tool.ruff.lint]
 # N (pep8-naming) 은 선택하지 않는다. camelCase 와 충돌한다. 이름은 tests/gates/testNaming.py 가 본다.

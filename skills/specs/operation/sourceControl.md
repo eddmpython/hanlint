@@ -2,7 +2,7 @@
 id: operation.sourceControl
 title: 소스 관리
 category: operation
-purpose: 브랜치, 커밋 메시지, 커밋 단위, push, 릴리즈, 훅. 판정 정본은 scripts/commitMessage.py 이고 이 문서는 뜻과 절차를 설명한다.
+purpose: 브랜치, 커밋 메시지, 커밋 단위, push, 릴리즈, 훅. 판정 정본은 hooks/commitMessage.py 이고 이 문서는 뜻과 절차를 설명한다.
 whenToUse:
   - 커밋 메시지를 어떻게 쓰나
   - 분류에 무엇을 적나
@@ -44,7 +44,7 @@ status: curated
 - em 대시를 넣지 않는다.
 - `git` 이 스스로 만드는 제목 (Merge, Revert, fixup) 은 형식 검사 밖이고 흔적 검사만 남는다.
 
-판정 정본은 `scripts/commitMessage.py` 이고 `.githooks/commit-msg` 가 부른다. 훅은 얇다. 판정을 sh 와
+판정 정본은 `hooks/commitMessage.py` 이고 `.githooks/commit-msg` 가 부른다. 훅은 얇다. 판정을 sh 와
 파이썬에 이중화하면 두 판정이 표류한다. `tests/gates/testCommitMessage.py` 가 양성·음성 fixture 로
 판정기의 이빨을 매 실행마다 증명한다.
 
@@ -85,9 +85,11 @@ status: curated
 | `pre-commit` | staged 텍스트 파일의 em 대시와 en 대시와 제어 문자, `src` `tests` `hooks` `scripts` 아래 snake_case 파일 이름 |
 | `pre-push` | main 과 버전 태그 (v*) 가 아닌 ref, 태그 이름과 그 커밋 `__version__` 의 불일치, `pytest` 실패 |
 
-새 클론에서 한 번 켠다.
+새 클론에서 한 번 한다. 개발 환경은 `uv sync` 하나가 만든다. `uv.lock` 이 정확 버전을 잠그고 `.venv/` 에 깐다.
+pip 로 따로 깔지 않는다.
 
 ```powershell
+uv sync
 git config core.hooksPath .githooks
 ```
 
@@ -97,7 +99,7 @@ git config core.hooksPath .githooks
 ## Claude 훅
 
 `.claude/settings.json` 이 `hooks/writeGate.py` 를 Write, Edit 앞에 건다. snake_case 파일 이름과 em 대시와
-저장소 안 임시 산출물 경로를 쓰기 전에 막는다. 자기 검사는 `hooks/tests/checkWriteGate.py` 다.
+저장소 안 임시 산출물 경로를 쓰기 전에 막는다. 자기 검사는 `tests/gates/testWriteGate.py` 다.
 `settings.json` 은 로컬 상태가 아니라 강행 계약이라 추적한다.
 
 ## 되돌리기

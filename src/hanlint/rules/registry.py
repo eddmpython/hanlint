@@ -91,7 +91,7 @@ def ruleCategory(name: str) -> str:
 
 
 def ruleCategories() -> dict[str, str]:
-    """규칙 이름 → 부류. npm 투영 (`scripts/exportData.py`) 이 이것을 그대로 쓴다."""
+    """규칙 이름 → 부류. npm 투영 (`scripts/derive/npmData.py`) 이 이것을 그대로 쓴다."""
     return {name: ruleCategory(name) for name in ruleNames()}
 
 
@@ -104,7 +104,7 @@ def ruleMechanism(name: str) -> str:
 
 
 def ruleMechanisms() -> dict[str, str]:
-    """규칙 이름 → 기제. npm 투영 (`scripts/exportData.py`) 이 이것을 그대로 쓴다."""
+    """규칙 이름 → 기제. npm 투영 (`scripts/derive/npmData.py`) 이 이것을 그대로 쓴다."""
     return {name: ruleMechanism(name) for name in ruleNames()}
 
 

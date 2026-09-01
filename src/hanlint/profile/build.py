@@ -1,6 +1,6 @@
 """글 여러 편의 지문에서 프로파일을 만든다. 자료형과 읽기는 data/profiles.py 가, 견줌은 규칙 outsideProfile 이 한다.
 
-종류별 프로파일 (scripts/buildProfiles.py) 과 사용자 프로파일 (hanlint profile build) 이 같은 함수로 만들어지므로 같은
+종류별 프로파일 (scripts/derive/profiles.py) 과 사용자 프로파일 (hanlint profile build) 이 같은 함수로 만들어지므로 같은
 글에 같은 표가 나온다. 처음 나온 화제어의 셈은 독자 상태 (fingerprint/readerState.py) 의 known 과 같은 정의다.
 """
 

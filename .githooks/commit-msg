@@ -1,5 +1,5 @@
 #!/bin/sh
-# 커밋 메시지 규칙 집행. 판정 정본은 scripts/commitMessage.py, 규칙 문장은 skills/specs/operation/sourceControl.md.
+# 커밋 메시지 규칙 집행. 판정 정본은 hooks/commitMessage.py, 규칙 문장은 skills/specs/operation/sourceControl.md.
 # 이 훅은 얇게 유지한다. 판정을 sh 와 파이썬에 이중화하면 두 판정이 표류한다.
 message_file="$1"
 
@@ -19,4 +19,4 @@ if [ -z "$python_bin" ]; then
   exit 1
 fi
 
-exec "$python_bin" -X utf8 "$repo_root/scripts/commitMessage.py" "$message_file"
+exec "$python_bin" -X utf8 "$repo_root/hooks/commitMessage.py" "$message_file"

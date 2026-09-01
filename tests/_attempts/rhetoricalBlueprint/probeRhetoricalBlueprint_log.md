@@ -10,7 +10,7 @@
 
 ## 데이터 경계
 
-`scripts/buildBlueprints.py`는 catalogue의 출처와 라이선스, 고정 manifest, 외부 metadata, 실제 1,600개
+`scripts/derive/blueprints.py`는 catalogue의 출처와 라이선스, 고정 manifest, 외부 metadata, 실제 1,600개
 원문 해시가 모두 일치할 때만 집계한다. 배포 `blueprints.json`에는 종류별 문서 수, 출처 ID, 말뭉치 파일
 해시와 절 수, 절별 문단·문장 수, 문단·문장 글자 수, 인접 문장 길이 차이 및 도입·마무리 위치의
 p10·p25·p50·p75·p90만 남긴다. 원문, 제목, URL, 문장과 표현은 없다. 게이트는 값의 문자열을 출처 ID

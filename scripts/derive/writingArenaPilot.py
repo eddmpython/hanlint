@@ -11,7 +11,7 @@ import sys
 from hashlib import sha256
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / "src" / "hanlint" / "data" / "writingArenaPilotV1.json"
 MODEL_ID = "hanlint.protocolFixture"
 MODEL_SHA = sha256(b"hanlint.protocolFixture.v1").hexdigest()

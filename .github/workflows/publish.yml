@@ -118,7 +118,7 @@ jobs:
       # trusted publishing 은 npm >= 11.5.1 에서만 동작한다 (node 22 번들은 10.x).
       - run: npm install -g npm@11.19.0
       # npm/data 는 파이썬 정본의 투영이다. 낡은 투영을 올리지 않는다.
-      - run: python -X utf8 -B scripts/exportData.py --check
+      - run: python -X utf8 -B scripts/derive/npmData.py --check
       - run: node --test "npm/test/*.test.js"
       # 첫 판 (0.0.1) 은 운영자 기계에서 올라간다 (Trusted Publisher 등록에 패키지가 먼저 있어야 한다).
       # 그 뒤 같은 태그를 밀어도 이미 있는 버전은 건너뛴다. PyPI 의 skip-existing 과 같은 뜻이다.

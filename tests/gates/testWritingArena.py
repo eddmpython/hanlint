@@ -5,8 +5,8 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from scripts.buildWritingArenaPilot import render as renderPilot
-from scripts.exportData import render as renderNpmData
+from scripts.derive.npmData import render as renderNpmData
+from scripts.derive.writingArenaPilot import render as renderPilot
 
 from hanlint import checkedPanelTrialSet, preparePanelSuite
 

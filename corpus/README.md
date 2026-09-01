@@ -12,12 +12,12 @@
 옛 문학은 제 종류의 프로파일만 갖고 현대 글의 기준이 되지 않는다. 모든 자료원은 재사용 조건을
 명시하며 Git 커밋이나 위키의 옛 판 번호로 글자를 고정한다.
 
-`scripts/fetchCorpus.py --refresh-manifest` 는 카탈로그의 조건으로 문서를 고르게 뽑아 판본과 해시를
+`scripts/fetch/corpus.py --refresh-manifest` 는 카탈로그의 조건으로 문서를 고르게 뽑아 판본과 해시를
 `documents.json` 에 기록한다. 평소에는 아래 명령으로 이미 고정된 판을 받는다.
 
 ```powershell
-.venv/Scripts/python.exe -X utf8 -B scripts/fetchCorpus.py
-.venv/Scripts/python.exe -X utf8 -B scripts/fetchCorpus.py --check
+.venv/Scripts/python.exe -X utf8 -B scripts/fetch/corpus.py
+.venv/Scripts/python.exe -X utf8 -B scripts/fetch/corpus.py --check
 ```
 
 수집기는 저장소 안에 원문이나 임시 압축 파일을 두지 않는다. 내려받는 동안 필요한 파일은 공통 실행
@@ -26,18 +26,18 @@
 
 ## 지문 표와 프로파일
 
-`scripts/buildPrints.py` 는 말뭉치의 문장, 문단, 글을 한 행씩 Parquet 로 저장소 밖 `prints/` 에 둔다 (개발 extra
-`corpus`). 탐침이 글을 다시 세지 않고 이것을 묻는다. `scripts/buildProfiles.py` 는 종류마다 문장 지표의 히스토그램과
+`scripts/derive/prints.py` 는 말뭉치의 문장, 문단, 글을 한 행씩 Parquet 로 저장소 밖 `prints/` 에 둔다 (dependency group
+`corpus`, `uv sync --group corpus` 로 깐다). 탐침이 글을 다시 세지 않고 이것을 묻는다. `scripts/derive/profiles.py` 는 종류마다 문장 지표의 히스토그램과
 백분위를 세어 `src/hanlint/data/profiles.json` 에 쓴다. 제품이 싣는 것은 이 파일뿐이고 규칙 outsideProfile 이 읽는다.
 
-`scripts/buildBlueprints.py`는 같은 1,600편에서 절 수, 절별 문단·문장·산문 글자 수, 문단과 문장 길이,
+`scripts/derive/blueprints.py`는 같은 1,600편에서 절 수, 절별 문단·문장·산문 글자 수, 문단과 문장 길이,
 인접 문장의 글자 수 차이, 첫 절과 마지막 절의 위치 비율만 집계해 `src/hanlint/data/blueprints.json`에 쓴다. 빌더는 카탈로그의
 라이선스, manifest, 외부 metadata와 실제 원문 해시가 모두 같아야 돈다. 배포 파일에는 원문·제목·URL을
 싣지 않고 허가된 출처 ID, 고정 판 해시와 숫자 백분위만 둔다.
 
 ```powershell
-.venv/Scripts/python.exe -X utf8 -B scripts/buildBlueprints.py
-.venv/Scripts/python.exe -X utf8 -B scripts/buildBlueprints.py --check
+.venv/Scripts/python.exe -X utf8 -B scripts/derive/blueprints.py
+.venv/Scripts/python.exe -X utf8 -B scripts/derive/blueprints.py --check
 ```
 
 ## 측정

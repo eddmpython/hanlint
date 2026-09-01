@@ -24,9 +24,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT))
 
-import measureCoverage as mc  # noqa: E402
+from scripts.measure import coverage as mc  # noqa: E402
+
 from hanlint import Config  # noqa: E402
 from hanlint.coverage import coverageOf  # noqa: E402
 from hanlint.document import parseMarkdown  # noqa: E402

@@ -15,7 +15,7 @@ import urllib.request
 from collections import Counter
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 METADATA = ROOT / "src" / "hanlint" / "data" / "learningVocabularySource.toml"
 TARGET = ROOT / "src" / "hanlint" / "data" / "learningVocabulary.tsv"
 HEADERS = ("순위", "단어", "품사", "풀이", "등급")

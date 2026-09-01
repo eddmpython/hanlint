@@ -8,7 +8,7 @@
 무엇을 못 막나. 식별자의 snake_case 는 파일 조각만 보는 훅이 오판하기 쉬워 tests/gates/testNaming.py
 가 ast 로 본다. 이 훅은 쓰기 전에 잡을 수 있는 확실한 것만 잡는다.
 
-판정은 순수 함수 `problemsIn` 이고 hooks/tests/checkWriteGate.py 가 양성과 음성으로 부른다.
+판정은 순수 함수 `problemsIn` 이고 tests/gates/testWriteGate.py 가 양성과 음성으로 부른다.
 페이로드를 못 읽으면 막지 않는다. 이것은 검사기이지 통행로가 아니다.
 표준 라이브러리만 쓴다. python -X utf8 로 실행한다.
 """

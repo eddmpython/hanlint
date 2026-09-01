@@ -38,6 +38,13 @@ build/
 node_modules/
 *.tgz
 
+# cinch 가 모든 저장소에 요구하는 공통 무시 (cinch status 의 repository:ignore). coverage 는 뿌리에 고정한다.
+# 고정하지 않으면 src/hanlint/coverage/ 와 tests/coverage/ 가 무시되어 ruff 가 그 둘을 건너뛴다.
+target/
+/coverage/
+*.log
+local/
+
 # 운영체제
 .DS_Store
 Thumbs.db

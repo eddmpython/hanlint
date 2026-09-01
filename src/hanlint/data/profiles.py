@@ -1,6 +1,6 @@
 """참조 분포 (프로파일) 의 자료형과 읽기. 같은 종류의 글 여러 편에서 문장과 문단의 정수 지표를 값마다 세어 둔 표다.
 
-hanlint 가 싣는 종류별 프로파일 (`profiles.json`, `scripts/buildProfiles.py` 가 기준 말뭉치에서 만든다) 과 사용자가
+hanlint 가 싣는 종류별 프로파일 (`profiles.json`, `scripts/derive/profiles.py` 가 기준 말뭉치에서 만든다) 과 사용자가
 `hanlint profile build 글들/` 로 만드는 파일이 같은 꼴이다. 정수 지표는 정확한 계수 히스토그램이라 오차가 없고 백분위는
 그 히스토그램에서 나온다. 만드는 쪽은 `profile/build.py` 이고 견주는 쪽은 규칙 outsideProfile 이다.
 """

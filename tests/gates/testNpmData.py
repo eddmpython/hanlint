@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.exportData import TARGET, render, staleFiles
+from scripts.derive.npmData import TARGET, render, staleFiles
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -14,7 +14,7 @@ def testNpmDataMatchesSource():
     files = render()
     assert "cliches.json" in files and "josa.txt" in files and "ruleDocs.json" in files
     assert "coverageTypes.txt" not in files
-    assert TARGET.exists(), "npm/data 가 없다. python scripts/exportData.py 를 돌린다"
+    assert TARGET.exists(), "npm/data 가 없다. python scripts/derive/npmData.py 를 돌린다"
     assert not (TARGET / "coverageTypes.txt").exists()
     assert staleFiles(files) == []
 

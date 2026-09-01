@@ -1,0 +1,28 @@
+{
+  "$schema": "https://eddmpython.github.io/cinch/schemas/cinch.schema.json",
+  "schemaVersion": 2,
+  "lint": {
+    "camelCase": true
+  },
+  "write": {
+    "emDash": false
+  },
+  "work": {
+    "scratchDirs": false
+  },
+  "layout": {
+    "schemaVersion": 1,
+    "roots": [
+      { "path": "src", "role": "product" },
+      { "path": "npm/src", "role": "product" },
+      { "path": "hooks", "role": "runtime" },
+      { "path": "scripts", "role": "tooling", "domains": ["derive", "fetch", "measure"] },
+      { "path": "tests", "role": "tests" },
+      { "path": "npm/test", "role": "tests" }
+    ],
+    "entrypoints": [
+      { "path": "npm/bin/hanlint.js", "owner": "npm/src/cli/main.js" }
+    ],
+    "contracts": []
+  }
+}

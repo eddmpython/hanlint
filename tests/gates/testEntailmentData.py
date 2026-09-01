@@ -5,7 +5,8 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from scripts.exportData import render
+from scripts.derive import entailmentBenchmark
+from scripts.derive.npmData import render
 
 from hanlint.entailment import (
     BENCHMARK_ID,
@@ -16,7 +17,6 @@ from hanlint.entailment import (
     entailmentCases,
     shippedBenchmark,
 )
-from scripts import buildEntailmentBenchmark
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -33,8 +33,8 @@ def testEntailmentDataBoundaryIsClosed():
 def testEntailmentBuilderProjectionAndPackageLicenseStayPinned():
     benchmark = shippedBenchmark()
     assert benchmark["benchmarkId"] == BENCHMARK_ID and benchmark["contentSha256"] == BENCHMARK_SHA256
-    assert buildEntailmentBenchmark.SOURCE_REVISION == SOURCE_REVISION
-    assert buildEntailmentBenchmark.SOURCE_SHA256 == SOURCE_SHA256
+    assert entailmentBenchmark.SOURCE_REVISION == SOURCE_REVISION
+    assert entailmentBenchmark.SOURCE_SHA256 == SOURCE_SHA256
     projected = render()
     assert "evidenceEntailmentV1.json" not in projected
     assert "entailmentPredictions.schema.json" in projected and "evidenceEntailmentBenchmark.schema.json" in projected
