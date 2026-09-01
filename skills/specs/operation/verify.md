@@ -54,7 +54,7 @@ node --test npm/test/*.test.js
 ## 자기 검사
 
 이 저장소의 문서는 hanlint 자신이 검사한다. 설정은 루트 `hanlint.toml` 이고 참고 문서라 `preset = "docs"`
-하나로 여덟 규칙이 꺼진다. 무엇이 꺼졌는지는 `hanlint doctor` 가 답한다. 문서를 고쳤으면
+하나가 참고 문서에 맞지 않는 규칙을 끈다. 무엇이 꺼졌는지는 `hanlint doctor` 가 답한다. 문서를 고쳤으면
 `hanlint README.md` 로 먼저 본다.
 
 ## 표면 검증
