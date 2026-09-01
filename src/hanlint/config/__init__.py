@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .loadConfig import loadConfig
+from .readerContract import CONTRACT_VERSION, Contract, loadContract
 from .settings import DEFAULT_PRESET, PRESET_NAMES, PRESETS, PROFILE_OF, Config
 from .writingBrief import (
     BRIEF_VERSION,
@@ -17,6 +18,7 @@ from .writingBrief import (
 
 __all__ = [
     "BRIEF_VERSION",
+    "CONTRACT_VERSION",
     "DEFAULT_PRESET",
     "EVIDENCE_BRIEF_VERSION",
     "PRESETS",
@@ -25,9 +27,11 @@ __all__ = [
     "AtomicFact",
     "EvidenceRecord",
     "Config",
+    "Contract",
     "WritingBrief",
     "REVIEW_STATUSES",
     "loadConfig",
+    "loadContract",
     "loadWritingBrief",
     "numberValues",
 ]

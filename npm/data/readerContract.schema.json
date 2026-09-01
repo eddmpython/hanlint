@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hanlint.dev/schemas/readerContract.schema.json",
+  "title": "hanlint Reader Contract",
+  "description": "A closed, model-independent contract for a prose reader, goal, and declared facts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "reader", "goal", "facts"],
+  "properties": {
+    "version": { "const": 1 },
+    "reader": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "facts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

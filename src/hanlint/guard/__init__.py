@@ -9,24 +9,16 @@ from hashlib import sha256
 from pathlib import Path
 from unicodedata import normalize
 
-from ..config import Config, WritingBrief, numberValues
-from ..data.operations import INLINE_CODE, LINK_DESTINATION, URL
+from ..config import Config, WritingBrief
 from ..document import parseMarkdown
 from ..fingerprint import buildFingerprint
 from ..rules import Finding, runAll
+from .surface import surfaceDiff
 
 GUARD_MEANING = (
     "contractSatisfied는 명시한 표면과 자동 error가 맞는다는 뜻뿐이다. "
     "원자 사실의 관계와 진실, 빠진 의미, 금지 주장의 바꿔 말하기, 독자 효용과 자연스러움은 보장하지 않는다"
 )
-
-
-def valuesOf(pattern, text: str) -> tuple[str, ...]:
-    values = set()
-    for match in pattern.finditer(text):
-        values.add(match.group(1) if match.lastindex else match.group(0))
-    return tuple(sorted(values))
-
 
 @dataclass(frozen=True)
 class GuardResult:
@@ -134,28 +126,19 @@ def guardText(
     selectedConfig.preset = brief.preset
     findings = tuple(runAll(buildFingerprint(parseMarkdown(text, path=path), selectedConfig), selectedConfig))
     surfaceText = normalize("NFC", text)
-    expectedNumbers = set(brief.allowedNumbers)
-    actualNumbers = set(numberValues(surfaceText))
-    expectedUrls = set(valuesOf(URL, brief.text))
-    actualUrls = set(valuesOf(URL, surfaceText))
-    expectedCode = set(valuesOf(INLINE_CODE, brief.text))
-    actualCode = set(valuesOf(INLINE_CODE, surfaceText))
-    expectedLinks = set(valuesOf(LINK_DESTINATION, brief.text))
-    actualLinks = set(valuesOf(LINK_DESTINATION, surfaceText))
-    allowedCode = expectedCode | {value for value in actualCode if value in brief.text}
-    allowedLinks = expectedLinks | {value for value in actualLinks if value in brief.text}
+    atomDiff = surfaceDiff(brief.text, text, brief.allowedNumbers)
     return GuardResult(
         briefSha256=brief.digest,
         draftSha256=sha256(text.encode()).hexdigest(),
         missingRequired=tuple(literal for literal in brief.mustInclude if literal not in surfaceText),
-        missingNumbers=tuple(sorted(expectedNumbers - actualNumbers)),
-        unexpectedNumbers=tuple(sorted(actualNumbers - expectedNumbers)),
-        missingUrls=tuple(sorted(expectedUrls - actualUrls)),
-        unexpectedUrls=tuple(sorted(actualUrls - expectedUrls)),
-        missingCode=tuple(sorted(expectedCode - actualCode)),
-        unexpectedCode=tuple(sorted(actualCode - allowedCode)),
-        missingLinks=tuple(sorted(expectedLinks - actualLinks)),
-        unexpectedLinks=tuple(sorted(actualLinks - allowedLinks)),
+        missingNumbers=atomDiff.missingNumbers,
+        unexpectedNumbers=atomDiff.unexpectedNumbers,
+        missingUrls=atomDiff.missingUrls,
+        unexpectedUrls=atomDiff.unexpectedUrls,
+        missingCode=atomDiff.missingCode,
+        unexpectedCode=atomDiff.unexpectedCode,
+        missingLinks=atomDiff.missingLinks,
+        unexpectedLinks=atomDiff.unexpectedLinks,
         forbiddenHits=tuple(literal for literal in brief.forbidden if literal in surfaceText),
         # NFC 로 세지 않으면 한글 한 글자가 자모 두세 개로 세어져 길이 계약이 뒤집힌다. 나머지 표면 검사는
         # 전부 surfaceText 를 쓰는데 여기만 원문을 쓰고 있었다 (2026-08-31).
