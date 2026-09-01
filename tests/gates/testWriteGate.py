@@ -1,4 +1,4 @@
-"""hooks/writeGate.py 의 양성과 음성. 막아야 할 것과 막지 말아야 할 것을 같은 수로 본다.
+"""hooks/writeGate.py 의 양성과 음성. 막아야 할 것과 막지 말아야 할 것을 짝으로 본다.
 
 판정은 순수 함수 `problemsIn` 이고 실제 실행은 stdin 페이로드와 종료 코드로 본다. 페이로드를 못 읽으면 막지
 않는다. 검사기이지 통행로가 아니다.
@@ -28,6 +28,14 @@ BLOCKED = {
     "임시 산출물 로그": {"file_path": f"{ROOT}/run.log", "content": "x"},
     "snake 파일 npm js": {"file_path": f"{ROOT}/npm/src/document/parse_markdown.js", "content": ""},
     "npm node_modules": {"file_path": f"{ROOT}/npm/node_modules/x/index.js", "content": ""},
+    "임시 산출물 build": {"file_path": f"{ROOT}/build/lib/x.py", "content": "x"},
+    "임시 산출물 pycache": {"file_path": f"{ROOT}/src/hanlint/__pycache__/x.pyc", "content": "x"},
+    "임시 산출물 pytest 캐시": {"file_path": f"{ROOT}/.pytest_cache/v/x", "content": "x"},
+    "임시 산출물 ruff 캐시": {"file_path": f"{ROOT}/.ruff_cache/x", "content": "x"},
+    "임시 산출물 mypy 캐시": {"file_path": f"{ROOT}/.mypy_cache/x", "content": "x"},
+    "임시 산출물 pyc": {"file_path": f"{ROOT}/src/hanlint/x.pyc", "content": "x"},
+    "임시 산출물 tmp": {"file_path": f"{ROOT}/notes.tmp", "content": "x"},
+    "소문자 드라이브 snake": {"file_path": "c:/repo/hanlint/src/hanlint/a_b.py", "content": ""},
 }
 """막아야 할 쓰기 요청."""
 
@@ -35,6 +43,7 @@ SPARED = {
     "camel 파일": {"file_path": f"{ROOT}/src/hanlint/parseMarkdown.py", "content": ""},
     "__init__": {"file_path": f"{ROOT}/src/hanlint/__init__.py", "content": ""},
     "conftest": {"file_path": f"{ROOT}/tests/conftest.py", "content": ""},
+    "__main__": {"file_path": f"{ROOT}/src/hanlint/__main__.py", "content": ""},
     "camel js": {"file_path": f"{ROOT}/npm/src/document/parseMarkdown.js", "content": ""},
     "node test 파일": {"file_path": f"{ROOT}/npm/test/rules.test.js", "content": ""},
     "코드 폴더 밖 snake": {"file_path": f"{ROOT}/docs/some_note.md", "content": ""},

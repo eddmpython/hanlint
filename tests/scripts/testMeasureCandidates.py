@@ -8,7 +8,7 @@ SCRIPT = ROOT / "scripts" / "measure" / "candidates.py"
 
 
 def loadScript():
-    spec = importlib.util.spec_from_file_location("measureCandidates", SCRIPT)
+    spec = importlib.util.spec_from_file_location("candidates", SCRIPT)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
