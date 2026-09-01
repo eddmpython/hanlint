@@ -20,7 +20,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
-import { fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, version } from "../index.js";
+import { Contract, Patch, check, fingerprint, lintText, ruleDoc, ruleNames, ruleSummary, verifyPatch, version } from "../index.js";
 import { Baseline, build as buildBaseline, DEFAULT_NAME as DEFAULT_BASELINE, load as loadBaseline, prune as pruneBaseline, render as renderBaseline } from "../baseline/store.js";
 import { loadConfig } from "../config/loadConfig.js";
 import { DEFAULT_PRESET, defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
@@ -38,7 +38,7 @@ import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init", "check", "verify-patch"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -93,6 +93,8 @@ const USAGE = `사용법: hanlint 글.md [다른.md ...] [--format text|compact|
         hanlint baseline 글들/ [--prune] [--output 파일]
         hanlint doctor
         hanlint init [--output hanlint.toml] [--preset blog|report|docs] [--force]
+        hanlint check contract.json 글.md [--format json]
+        hanlint verify-patch contract.json 글.md patch.json [--format json]
         hanlint --version
 
 파일 자리에 폴더를 주면 그 아래 마크다운을 전부 검사한다 (점으로 시작하는 폴더와 node_modules 는 건너뛴다).
@@ -380,6 +382,43 @@ function runBaseline(args) {
       "다음: 검사할 때 --baseline 을 붙이거나 설정에 baseline 을 적는다. 잠긴 자리를 고치면 새 지적으로 다시 나온다\n",
   );
   return 0;
+}
+
+/** @param {string} path */
+function readJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, "utf-8"));
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error(`${path} JSON을 읽지 못했다: ${error.message}`);
+    throw error;
+  }
+}
+
+/** @param {string[]} args */
+function runCheck(args) {
+  const { options, positionals } = parseArgs(args);
+  if (positionals.length !== 2) throw new UsageError("Reader Contract JSON과 검사할 마크다운 파일이 필요하다");
+  choose(/** @type {string} */ (options["--format"] ?? "json"), ["json"], "--format");
+  const [contractPath, path] = positionals;
+  const contract = Contract.fromMapping(readJson(contractPath));
+  const config = configFrom(options, [path]);
+  const result = check(readOne(path), contract, config, path);
+  emit(JSON.stringify(result.asDict(), null, 2), /** @type {string | undefined} */ (options["--output"]));
+  return result.violationCount === 0 ? 0 : 1;
+}
+
+/** @param {string[]} args */
+function runVerifyPatch(args) {
+  const { options, positionals } = parseArgs(args);
+  if (positionals.length !== 3) throw new UsageError("Reader Contract JSON, 수정 전 마크다운, Patch JSON이 필요하다");
+  choose(/** @type {string} */ (options["--format"] ?? "json"), ["json"], "--format");
+  const [contractPath, path, patchPath] = positionals;
+  const contract = Contract.fromMapping(readJson(contractPath));
+  const patch = Patch.fromMapping(readJson(patchPath));
+  const config = configFrom(options, [path]);
+  const result = verifyPatch(readOne(path), patch, contract, config, path);
+  emit(JSON.stringify(result.asDict(), null, 2), /** @type {string | undefined} */ (options["--output"]));
+  return result.verified ? 0 : 1;
 }
 
 /** @param {string[]} args */
@@ -793,6 +832,8 @@ function dispatch(argv) {
     throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 ${COMMANDS.join(", ")} 을 제공한다`);
   }
   if (command === "lint") return runLint(rest);
+  if (command === "check") return runCheck(rest);
+  if (command === "verify-patch") return runVerifyPatch(rest);
   if (command === "fix") return runFix(rest);
   if (command === "print") return runPrint(rest);
   if (command === "rules") return runRules(rest);

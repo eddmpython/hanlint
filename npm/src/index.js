@@ -13,15 +13,32 @@
 import { readFileSync } from "node:fs";
 
 import { loadConfig } from "./config/loadConfig.js";
+import { Contract, Patch } from "./config/readerContract.js";
 import { configFromMapping, defaultConfig } from "./config/settings.js";
 import { loadVersion } from "./data/load.js";
 import { parseMarkdown } from "./document/parseMarkdown.js";
 import { applyFixes } from "./edit/applyFixes.js";
 import { buildFingerprint } from "./fingerprint/build.js";
 import { fingerprintDict } from "./report/fingerprintJson.js";
+import { CheckResult, PatchResult, check, verifyPatch } from "./guard/contract.js";
 import { ruleDoc, ruleNames, ruleSummary, runAll } from "./rules/registry.js";
 
-export { applyFixes, configFromMapping, defaultConfig, fingerprintDict, loadConfig, ruleDoc, ruleNames, ruleSummary };
+export {
+  CheckResult,
+  Contract,
+  Patch,
+  PatchResult,
+  applyFixes,
+  check,
+  configFromMapping,
+  defaultConfig,
+  fingerprintDict,
+  loadConfig,
+  ruleDoc,
+  ruleNames,
+  ruleSummary,
+  verifyPatch,
+};
 export const version = loadVersion();
 
 /**

@@ -291,6 +291,34 @@ def testGuardExitCodesJsonAndPresetConflict(tmp_path, capsys):
     assert "brief preset report" in capsys.readouterr().err
 
 
+def testCheckAndVerifyPatchEmitDeterministicReceipts(tmp_path, capsys):
+    contract = write(
+        tmp_path,
+        "contract.json",
+        json.dumps(
+            {
+                "version": 1,
+                "reader": "배포를 결정할 운영자",
+                "goal": "예산을 확인한다",
+                "facts": ["예산은 380,000원이다."],
+            },
+            ensure_ascii=False,
+        ),
+    )
+    draft = write(tmp_path, "draft.md", "예산은 400,000원이다.")
+    patch = write(
+        tmp_path,
+        "patch.json",
+        json.dumps({"reason": "unexpectedNumbers", "before": "400,000", "after": "380,000"}, ensure_ascii=False),
+    )
+    assert main(["check", str(contract), str(draft), "--disable", "numberOrphan"]) == 1
+    checked = json.loads(capsys.readouterr().out)
+    assert checked["kind"] == "hanlint.checkResult" and checked["violationCount"] == 2
+    assert main(["verify-patch", str(contract), str(draft), str(patch), "--disable", "numberOrphan"]) == 0
+    verified = json.loads(capsys.readouterr().out)
+    assert verified["kind"] == "hanlint.patchResult" and verified["verified"] is True
+
+
 def testArenaBlindRecordRevealAndAggregate(tmp_path, capsys):
     baselineText = "# 결정\n\n해솔 계획은 2026년 8월 31일 시작하며 예산은 380,000원이다. 운영자는 다음 확인 순서를 정한다.\n"
     candidateText = "# 결정\n\n운영자는 해솔 계획의 2026년 8월 31일 시작과 380,000원 예산을 확인하고 다음 순서를 정한다.\n"

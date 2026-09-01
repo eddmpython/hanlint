@@ -382,6 +382,37 @@ def testCommandSetsAgree():
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testReaderContractCommandsGiveTheSameReceipts(tmp_path):
+    contract = tmp_path / "contract.json"
+    draft = tmp_path / "draft.md"
+    patch = tmp_path / "patch.json"
+    contract.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "reader": "배포를 결정할 운영자",
+                "goal": "예산과 명세를 확인한다",
+                "facts": ["예산은 380,000원이다.", "확인 명령은 `mora check`다."],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    draft.write_text("예산은 400,000원이다. `mora check`로 확인한다.", encoding="utf-8")
+    patch.write_text(
+        json.dumps({"reason": "unexpectedNumbers", "before": "400,000", "after": "380,000"}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    for args in (
+        ["check", str(contract), str(draft), "--disable", "numberOrphan"],
+        ["verify-patch", str(contract), str(draft), str(patch), "--disable", "numberOrphan"],
+    ):
+        python, node = runBoth(args)
+        assert python.returncode == node.returncode, node.stderr
+        assert python.stdout == node.stdout, args
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testConfigLabelAgreesWhenConfigIsOutsideTheWorkingFolder(tmp_path):
     """설정이 작업 폴더 밖에 있고 경로를 슬래시로 줘도 두 판의 첫 줄과 JSON config 값이 같다.
 
