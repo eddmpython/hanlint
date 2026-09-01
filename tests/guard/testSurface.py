@@ -2,11 +2,7 @@ from hanlint.guard.surface import surfaceDiff
 
 
 def testCompilesProtectedAtomsFromTheContractWithoutDuplicateLists():
-    contract = (
-        "2026년 운영자\n"
-        "[명세](https://example.invalid/spec)를 읽는다\n"
-        "예산은 380,000원이고 `mora check`로 확인한다"
-    )
+    contract = "2026년 운영자\n[명세](https://example.invalid/spec)를 읽는다\n예산은 380,000원이고 `mora check`로 확인한다"
     text = "2026년 예산은 380,000원이다. [명세](https://example.invalid/spec)는 `mora check`로 확인한다."
     assert surfaceDiff(contract, text).violationCount == 0
 

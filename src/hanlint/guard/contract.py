@@ -85,12 +85,7 @@ class PatchResult:
 
     @property
     def violationCount(self) -> int:
-        return (
-            (self.matchCount != 1)
-            + (not self.reasonReduced)
-            + len(self.newSurfaceIssues)
-            + len(self.newErrors)
-        )
+        return (self.matchCount != 1) + (not self.reasonReduced) + len(self.newSurfaceIssues) + len(self.newErrors)
 
     @property
     def verified(self) -> bool:
@@ -113,9 +108,7 @@ class PatchResult:
                 "after": self.reasonAfter,
                 "reduced": self.reasonReduced,
             },
-            "newSurfaceIssues": [
-                {"kind": kind, "value": value} for kind, value in self.newSurfaceIssues
-            ],
+            "newSurfaceIssues": [{"kind": kind, "value": value} for kind, value in self.newSurfaceIssues],
             "newErrors": [finding.asDict() for finding in self.newErrors],
             "meaning": PATCH_MEANING,
         }
@@ -143,11 +136,7 @@ def check(
 
 
 def surfaceIssues(result: CheckResult) -> set[tuple[str, str]]:
-    return {
-        (kind, value)
-        for kind, values in result.surface.asDict().items()
-        for value in values
-    }
+    return {(kind, value) for kind, values in result.surface.asDict().items() for value in values}
 
 
 def reasonCount(result: CheckResult, reason: str) -> int:

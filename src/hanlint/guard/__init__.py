@@ -21,6 +21,7 @@ GUARD_MEANING = (
     "원자 사실의 관계와 진실, 빠진 의미, 금지 주장의 바꿔 말하기, 독자 효용과 자연스러움은 보장하지 않는다"
 )
 
+
 @dataclass(frozen=True)
 class GuardResult:
     briefSha256: str
