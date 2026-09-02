@@ -465,7 +465,7 @@ hanlint init --preset docs         # 저장소에 고정할 때
 | `fiction` | 소설 | 6개 | 소설 |
 | `docs` | 참고 문서, 명세, README | 9개 | 기술 문서 |
 | `encyclopedia` | 백과 항목 | 10개 | 백과 |
-| `chat` | 대화 답변. 글의 짜임을 재는 규칙을 끈다 | 16개 | 없음 |
+| `chat` | 대화 답변. 글의 짜임을 재는 규칙을 끈다 | 17개 | 없음 |
 
 어느 규칙이 꺼지는지는 여기 옮겨 적지 않는다. `hanlint rules --preset docs` 가 지금 도는 목록에
 꺼진 것을 표시해 보여 준다.

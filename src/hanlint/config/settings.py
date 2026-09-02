@@ -76,6 +76,7 @@ CONVERSATION = (
     "introLong",
     "keywordMissing",
     "noQuestion",
+    "outsideProfile",
     "paraFragment",
     "platformApi",
     "promiseRecall",
@@ -86,7 +87,8 @@ CONVERSATION = (
 
 목록은 cinch 의 replyHanlint 훅이 실제 답변에 맞춰 고른 것을 옮겨 왔다. 실측 (2026-08-28): 답변 8건에 문장 규칙만
 남기니 2건이 걸렸고 둘 다 운영자가 따로 읽기 힘들다고 한 문장이었다. countMismatch 는 답변 하나에 서로 다른
-나열이 여럿이라 단위를 한 약속으로 읽어 끈다. 견줄 답변 말뭉치가 없어 프로파일은 없다."""
+나열이 여럿이라 단위를 한 약속으로 읽어 끈다. 견줄 답변 말뭉치가 없어 프로파일은 없고, 그래서 어차피 침묵하는
+outsideProfile 도 끈 것으로 적는다. 켜진 것처럼 보이는 규칙이 잡히지 않는 것보다 정직하다."""
 PRESETS["guide"] = PRESETS["blog"] + REFERENCE
 PRESETS["essay"] = PRESETS["report"] + NARRATIVE
 PRESETS["fiction"] = PRESETS["report"] + NARRATIVE

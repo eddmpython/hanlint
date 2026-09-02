@@ -47,5 +47,5 @@ hanlint 는 한국어 글에서 AI 와 사람이 반복해서 어기는 결함�
 
 절 구조가 요구사항이면 Reader Contract (`hanlint contract init`, `hanlint check`), 조직 문체와 견주려면
 `hanlint profile build`, 한국어 학습자 독자면 `hanlint terms`, 승인한 고침을 다음 글에 남기려면 `hanlint learn`.
-절차는 `skills/specs/start/readerContract.md` 와 `skills/specs/operation/writingAxis.md`, 옵션은
-`hanlint <명령> --help` 가 소유한다.
+절차는 `skills/specs/start/readerContract.md` 와 `skills/specs/operation/writingAxis.md` 가 소유한다. 옵션은 파이썬 판의
+`hanlint <명령> --help` 와 README 의 명령 표에 있다 (npm 판은 루트 `hanlint --help` 만 낸다).

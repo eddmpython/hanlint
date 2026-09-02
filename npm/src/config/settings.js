@@ -52,6 +52,7 @@ const CONVERSATION = [
   "introLong",
   "keywordMissing",
   "noQuestion",
+  "outsideProfile",
   "paraFragment",
   "platformApi",
   "promiseRecall",
