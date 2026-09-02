@@ -41,6 +41,9 @@
 .venv/Scripts/python.exe -X utf8 -B scripts/derive/blueprints.py --check
 ```
 
+파생 자료 둘은 코드가 바뀌면 낡는다. `.githooks/pre-push` 가 말뭉치가 있는 기계에서 두 `--check` 를 돌려 낡은 채
+올라가는 것을 막는다.
+
 ## 측정
 
 규칙별 발화 수와 사람이 읽은 정탐률, 활용형 범위, 후보 채택률은

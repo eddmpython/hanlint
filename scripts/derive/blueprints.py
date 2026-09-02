@@ -27,6 +27,17 @@ def fileSha(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
+def catalogueSha(path: Path) -> str:
+    """카탈로그 내용의 해시. 말뭉치가 어느 기계의 어디에 있는지 (corpus.root) 는 무엇을 잰 것인지와 무관하므로 뺀다.
+
+    파일 바이트를 그대로 해시하면 root 한 줄만 바뀌어도 청사진이 낡은 것으로 판정된다 (2026-09-02 실측). 자료원,
+    선택 조건, 라이선스만 정렬된 JSON 으로 고정한다.
+    """
+    catalogue = tomllib.loads(path.read_text(encoding="utf-8"))
+    catalogue["corpus"] = {key: value for key, value in catalogue["corpus"].items() if key != "root"}
+    return sha256(json.dumps(catalogue, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
 def percentiles(values: list[int]) -> dict[str, int]:
     ordered = sorted(values)
     if not ordered:
@@ -135,7 +146,7 @@ def render() -> str:
         "version": 1,
         "corpus": {
             "documents": len(metadata),
-            "catalogueSha256": fileSha(REPO / "corpus" / "catalogue.toml"),
+            "catalogueSha256": catalogueSha(REPO / "corpus" / "catalogue.toml"),
             "manifestSha256": fileSha(REPO / "corpus" / "documents.json"),
             "metadataSha256": fileSha(metadataPath),
             "containsSourceText": False,

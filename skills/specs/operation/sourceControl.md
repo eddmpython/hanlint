@@ -83,7 +83,7 @@ status: curated
 |---|---|
 | `commit-msg` | 메시지 형식, 검증 줄 부재, 도구 흔적, em 대시 |
 | `pre-commit` | staged 텍스트 파일의 em 대시와 en 대시와 제어 문자, `src` `tests` `hooks` `scripts` 아래 snake_case 파일 이름 |
-| `pre-push` | main 과 버전 태그 (v*) 가 아닌 ref, 태그 이름과 그 커밋 `__version__` 의 불일치, `pytest` 실패 |
+| `pre-push` | main 과 버전 태그 (v*) 가 아닌 ref, 태그 이름과 그 커밋 `__version__` 의 불일치, `pytest` 실패, 말뭉치가 있는 기계에서 파생 자료 (`profiles.json`, `blueprints.json`) 가 코드와 어긋난 것 |
 
 새 클론에서 한 번 한다. 개발 환경은 `uv sync` 하나가 만든다. `uv.lock` 이 정확 버전을 잠그고 `.venv/` 에 깐다.
 pip 로 따로 깔지 않는다.

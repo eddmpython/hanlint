@@ -48,6 +48,7 @@ node --test npm/test/*.test.js
 | `tests/gates/testNpmParity.py` | npm 구현이 파이썬과 다른 출력을 내는 것. 지적 출력, `print`, `fix`, 규칙 목록과 기술서, 첫 화면, 폴더 인자, 프리셋별 `init` 파일 | 규칙이나 진입점을 한쪽만 고치면 red. node 없으면 건너뛴다 |
 | `npm/test/rules.test.js` | npm 규칙이 같은 fixture 를 어기는 것. 규칙, fixture, 기술서, 파일의 넷이 짝인지 | fixture 로 양방향 |
 | `tests/gates/testWriteGate.py` | 쓰기 훅 `hooks/writeGate.py` 의 판정 | 양방향 |
+| `.githooks/pre-push` 의 `derive/profiles.py --check`, `derive/blueprints.py --check` | 말뭉치에서 다시 센 파생 자료가 커밋된 것과 다른 것. 말뭉치가 없는 기계는 건너뛴다고 말한다 | 코드를 바꾸고 파생 자료를 안 만들면 red. 2026-09-02 에 profiles.json 의 deixis 분포가 4일 낡은 채 잡혔다 |
 
 신설 게이트는 음성 시험으로 이빨을 증명하고서야 게이트다. 통과만 확인한 게이트는 없는 게이트보다 나쁘다.
 
