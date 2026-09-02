@@ -39,6 +39,17 @@ ENDING_LEGEND = (
 )
 WATCHED_RULES = ("endingRepeat", "outsideProfile", "factListParagraph", "paraFragment", "longSentence")
 """리듬과 관련해 세어 보는 규칙. 악보가 바꿀 것으로 기대하는 것과 나빠질 수도 있는 것."""
+ENDINGS_OF_REGISTER = {
+    "합니다": {"니다", "것이다", "의문", "명령"},
+    "한다": {"다", "것이다", "의문", "명령"},
+    "해요": {"요", "죠", "의문", "명령"},
+}
+"""문체마다 악보에 들 수 있는 끝맺음. 지문 표에는 끝맺음 니다 에 문체 한다 로 찍힌 문장이 있어 (technicalDocs 33개) 문체
+열만으로는 한다체 악보에 니다 문장이 섞였다."""
+SHAPE_SLACK = 3
+"""악보가 허용하는 어절 수 오차. 쓰는 법의 ±3 과 같은 값이다. 문장 길이 상한은 longSentenceMax 에서 이만큼 뺀다."""
+MAX_ATTEMPTS = 5000
+"""변동 계수 띠에 드는 문단 묶음을 찾는 뽑기 횟수 상한. 실측에서 수십 번 안에 찾았다."""
 
 
 def printsRoot() -> Path:
@@ -46,7 +57,14 @@ def printsRoot() -> Path:
 
 
 def paragraphShapes(
-    kind: str, register: str, minSentences: int, maxSentences: int, low: float, high: float
+    kind: str,
+    register: str,
+    minSentences: int,
+    maxSentences: int,
+    low: float,
+    high: float,
+    spreadBand: tuple[float, float] | None = None,
+    maxLength: int | None = None,
 ) -> tuple[list[dict], tuple[int, int]]:
     """그 종류와 문체의 편집 문단마다 (어절 수 목록, 끝맺음 목록) 과 문장 길이 경계. 문서와 문단 순서로 정렬해 결정적이다.
 
@@ -68,7 +86,11 @@ def paragraphShapes(
         .with_columns(pl.col("register").is_in([register, "없음"]).alias("fits"))
     )
     fitting = sentences.filter(pl.col("fits"))["length"]
-    bounds = (int(fitting.quantile(low)), int(fitting.quantile(high)))
+    upper = int(fitting.quantile(high))
+    if maxLength is not None:
+        # report 의 p95 는 33어절로 longSentenceMax 30 을 넘는다. 악보가 시키는 문장을 hanlint 가 잡으면 안 된다.
+        upper = min(upper, maxLength)
+    bounds = (int(fitting.quantile(low)), upper)
     grouped = sentences.group_by(["docId", "paragraphIndex"], maintain_order=True).agg(
         [pl.col("length").alias("lengths"), pl.col("ending").alias("endings"), pl.col("fits").all().alias("sameRegister")]
     )
@@ -76,29 +98,80 @@ def paragraphShapes(
         {"docId": row["docId"], "paragraphIndex": row["paragraphIndex"], "lengths": row["lengths"], "endings": row["endings"]}
         for row in grouped.iter_rows(named=True)
         if row["sameRegister"]
+        and set(row["endings"]) <= ENDINGS_OF_REGISTER[register]
         and minSentences <= len(row["lengths"]) <= maxSentences
         and all(bounds[0] <= length <= bounds[1] for length in row["lengths"])
     ]
     rows.sort(key=lambda row: (row["docId"], row["paragraphIndex"]))
+    if spreadBand is not None:
+        # 2회차에서 꼬리를 자르자 다양성도 잘렸다 (변동 계수 0.31, 사람 띠 0.36~0.51). 문단 안 문장 길이의 퍼짐 (표준편차) 이
+        # 그 종류 문단들 가운데 가운데 띠에 드는 문단만 남겨, 고른 문단도 들쭉날쭉한 문단도 빼고 전형적인 퍼짐을 준다.
+        spreads = sorted(statistics.pstdev(row["lengths"]) for row in rows)
+        lowSpread = spreads[int(spreadBand[0] * (len(spreads) - 1))]
+        highSpread = spreads[int(spreadBand[1] * (len(spreads) - 1))]
+        rows = [row for row in rows if lowSpread <= statistics.pstdev(row["lengths"]) <= highSpread]
     return rows, bounds
 
 
-def renderScore(shapes: list[dict], preset: str, register: str, bounds: tuple[int, int]) -> str:
+def documentCvBand(kind: str, register: str, minSentences: int = 8) -> tuple[float, float]:
+    """편집된 문서들의 문장 길이 변동 계수 25~75 백분위. 사람 띠다.
+
+    문단 하나의 퍼짐을 가운데 띠로 맞춰도 (spreadBand) 악보 전체의 변동 계수는 사람 띠 아래였다 (3회차 악보 여섯 가운데
+    넷이 0.19~0.30). 변동 계수는 문단 사이의 차이에서도 나오므로 뽑은 문단 묶음 전체를 이 띠에 맞춘다.
+    """
+    import polars as pl
+
+    root = printsRoot()
+    docs = pl.read_parquet(root / "documents.parquet").filter((pl.col("type") == kind) & (pl.col("register") == register))
+    perDoc = (
+        pl.read_parquet(root / "sentences.parquet")
+        .filter(pl.col("docId").is_in(docs["docId"].to_list()) & (pl.col("ending") != "없음"))
+        .group_by("docId")
+        .agg([pl.col("length").std(ddof=0).alias("sd"), pl.col("length").mean().alias("mean"), pl.len().alias("n")])
+        .filter(pl.col("n") >= minSentences)
+    )
+    cvs = sorted((perDoc["sd"] / perDoc["mean"]).to_list())
+    return cvs[int(0.25 * (len(cvs) - 1))], cvs[int(0.75 * (len(cvs) - 1))]
+
+
+def fillBudget(shapes: list[dict], budget: float, rng: random.Random) -> list[dict]:
+    """요구 길이를 어절 예산으로 바꿔 채워질 때까지 문단을 뽑는다. 2회차에서 문단 다섯을 고정하자 한 편이 요구 길이를 넘었다."""
+    pool = shapes[:]
+    rng.shuffle(pool)
+    picked: list[dict] = []
+    total = 0
+    for shape in pool:
+        if total >= budget:
+            break
+        picked.append(shape)
+        total += sum(shape["lengths"])
+    # 넘치는 쪽으로만 맞추면 예산을 크게 넘는다 (첫 생성에서 blog 한 악보가 202/125). 마지막 문단을 넣어 넘친 폭이
+    # 빼서 모자란 폭보다 크면 뺀다.
+    last = sum(picked[-1]["lengths"])
+    if len(picked) > 1 and total - budget > budget - (total - last):
+        picked.pop()
+    return picked
+
+
+def renderScore(shapes: list[dict], preset: str, register: str, bounds: tuple[int, int], targetChars: int | None = None) -> str:
     """모델이 읽는 악보. 문단마다 한 줄, 문장마다 어절 수와 끝맺음."""
+    words = sum(sum(shape["lengths"]) for shape in shapes)
     lines = [
         f"리듬 악보 ({preset} 종류, {register}체). 편집된 실제 글에서 뽑은 문단 {len(shapes)}개의 모양이다. "
         f"내용은 없고 문장마다 어절 수와 끝맺음만 있다. 문장 길이는 이 종류의 흔한 범위 ({bounds[0]}~{bounds[1]}어절) 안이다.",
-        ENDING_LEGEND,
-        "",
     ]
+    if targetChars:
+        lines.append(f"문단 수와 총 어절 (약 {words}어절) 은 요구 길이 {targetChars}자에 맞춰 놓았다. 문단을 더 만들지 않는다.")
+    lines += [ENDING_LEGEND, ""]
     for number, shape in enumerate(shapes, start=1):
         beats = " · ".join(f"{length}어절 ({ending})" for length, ending in zip(shape["lengths"], shape["endings"], strict=True))
         lines.append(f"문단 {number}: {beats}")
     lines.append("")
     lines.append(
         "쓰는 법: 본문 문단을 이 순서의 모양으로 쓴다. 문단마다 문장 수를 맞추고, 문장 길이는 어절 수의 ±3 안에서 따르고, "
-        "끝맺음의 종류를 그 자리에 둔다. 문단이 더 필요하면 악보를 처음부터 다시 쓴다. "
-        "악보는 모양일 뿐이고 사실과 순서는 요구를 따른다."
+        "끝맺음의 종류를 그 자리에 둔다. "
+        + ("본문 문단은 악보의 문단 수와 같게 쓴다. " if targetChars else "문단이 더 필요하면 악보를 처음부터 다시 쓴다. ")
+        + "악보는 모양일 뿐이고 사실과 순서는 요구를 따른다."
     )
     return "\n".join(lines)
 
@@ -107,13 +180,38 @@ def score(args: argparse.Namespace) -> int:
     kind = PROFILE_OF[args.preset]
     if kind is None:
         raise SystemExit(f"{args.preset} 은 종류 프로파일이 없어 악보를 뽑을 수 없다")
-    shapes, bounds = paragraphShapes(kind, args.register, args.minSentences, args.maxSentences, args.low, args.high)
+    band = (args.spreadBand[0], args.spreadBand[1]) if args.spreadBand else None
+    maxLength = Config(preset=args.preset).longSentenceMax - SHAPE_SLACK
+    shapes, bounds = paragraphShapes(
+        kind, args.register, args.minSentences, args.maxSentences, args.low, args.high, band, maxLength
+    )
     if len(shapes) < args.paragraphs:
         raise SystemExit(f"{kind} {args.register} 문단이 {len(shapes)}개뿐이다. 요청 {args.paragraphs}")
-    picked = random.Random(args.seed).sample(shapes, args.paragraphs)
-    print(renderScore(picked, args.preset, args.register, bounds))
+    rng = random.Random(args.seed)
+    cvBand = None
+    if args.cvBand is not None:
+        cvBand = (args.cvBand[0], args.cvBand[1]) if args.cvBand else documentCvBand(kind, args.register)
+    attempts = 0
+    while True:
+        attempts += 1
+        if args.targetChars:
+            picked = fillBudget(shapes, args.targetChars / args.charsPerWord, rng)
+        else:
+            picked = rng.sample(shapes, args.paragraphs)
+        if cvBand is None:
+            break
+        lengths = [length for shape in picked for length in shape["lengths"]]
+        cv = statistics.pstdev(lengths) / statistics.mean(lengths)
+        if cvBand[0] <= cv <= cvBand[1]:
+            break
+        if attempts >= MAX_ATTEMPTS:
+            raise SystemExit(f"{MAX_ATTEMPTS}번 뽑아도 변동 계수 {cvBand[0]:.2f}~{cvBand[1]:.2f} 에 드는 묶음이 없다")
+    print(renderScore(picked, args.preset, args.register, bounds, args.targetChars))
     documents = len({shape["docId"] for shape in shapes})
-    note = f"(문장 길이 {bounds[0]}~{bounds[1]}어절 안 문단 {len(shapes)}개, 문서 {documents}편, seed {args.seed})"
+    note = f"(문장 길이 {bounds[0]}~{bounds[1]}어절 안 문단 {len(shapes)}개, 문서 {documents}편, seed {args.seed}"
+    if cvBand is not None:
+        note += f", 변동 계수 띠 {cvBand[0]:.2f}~{cvBand[1]:.2f} 에 {attempts}번째 뽑기"
+    note += ")"
     print(note, file=sys.stderr)
     return 0
 
@@ -170,6 +268,26 @@ def main() -> int:
     scoreParser.add_argument("--seed", type=int, default=42)
     scoreParser.add_argument("--low", type=float, default=0.10, help="문장 길이 하한 백분위. 1회차의 꼬리 전달을 막는다")
     scoreParser.add_argument("--high", type=float, default=0.90, help="문장 길이 상한 백분위")
+    scoreParser.add_argument(
+        "--spread-band", dest="spreadBand", type=float, nargs=2, help="문단 안 문장 길이 퍼짐의 백분위 띠. 예 0.25 0.75"
+    )
+    scoreParser.add_argument(
+        "--cv-band",
+        dest="cvBand",
+        type=float,
+        nargs="*",
+        help="뽑은 문단 묶음 전체의 문장 길이 변동 계수 띠. 값 없이 주면 그 종류 편집 문서의 25~75 백분위",
+    )
+    scoreParser.add_argument(
+        "--target-chars", dest="targetChars", type=int, help="요구 길이 (공백 포함 글자). 주면 문단 수를 여기서 역산한다"
+    )
+    scoreParser.add_argument(
+        "--chars-per-word",
+        dest="charsPerWord",
+        type=float,
+        default=6.0,
+        help="어절 하나가 차지하는 글자 수. 실측 초안 5.1~8.2, 말뭉치 report 4.6 blog 7.1 (코드 블록 포함)",
+    )
     scoreParser.set_defaults(run=score)
     measureParser = sub.add_parser("measure", help="초안 하나의 리듬 수를 JSON 한 줄로")
     measureParser.add_argument("file")
