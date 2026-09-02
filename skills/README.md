@@ -40,6 +40,8 @@ status: curated
 
 ## 스킬
 
+id 가 경로다. 표에 없는 절차는 아직 없는 것이다.
+
 | id | 무엇 |
 |---|---|
 | [`start.hanlintSkillOs`](specs/start/hanlintSkillOs.md) | 이 저장소가 소유하는 것과 어디로 가야 하는지 |
@@ -49,10 +51,12 @@ status: curated
 | [`operation.moduleLayers`](specs/operation/moduleLayers.md) | 층 구조와 import 방향. 순위 정본은 `tests/gates/layerContract.py` |
 | [`operation.codeStyle`](specs/operation/codeStyle.md) | 이름, 크기, 타입, docstring, 예외, 상수, 테스트, 도구 |
 | [`operation.sourceControl`](specs/operation/sourceControl.md) | 브랜치, 커밋 메시지, 커밋 단위, 릴리즈, 훅 |
-| [`use-hanlint`](use-hanlint/SKILL.md) | 이미 쓴 글의 결정적 지적을 없애고 평가 단계로 넘기는 절차 |
-| [`write-korean`](write-korean/SKILL.md) | 요구사항과 초안을 작문 패킷으로 컴파일해 쓰고 고치는 절차 |
-
-검증 절차 (`operation.verify`) 와 배포 (`operation.release`) 는 코어가 생기면서 같은 커밋에 만든다.
+| [`operation.verify`](specs/operation/verify.md) | 커밋 전에 돌리는 게이트와 각 게이트의 음성 시험 |
+| [`operation.release`](specs/operation/release.md) | PyPI 와 npm 에 같은 버전을 올리는 절차 |
+| [`operation.feedback`](specs/operation/feedback.md) | 오탐과 미탐과 제안을 받는 길 |
+| [`operation.writingAxis`](specs/operation/writingAxis.md) | 보류 중인 작문 축 (brief, guard, packet, arena, learn) 의 절차 |
+| [`use-hanlint`](use-hanlint/SKILL.md) | 이미 쓴 글의 결정적 지적을 fix 와 후보로 0 으로 만들고 평가로 넘기는 일곱 단계 |
+| [`write-korean`](write-korean/SKILL.md) | primer 를 읽고 절마다 검사하며 처음부터 쓰는 다섯 단계 |
 
 ## 스킬 추가
 
