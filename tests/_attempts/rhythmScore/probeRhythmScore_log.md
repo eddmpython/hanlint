@@ -81,3 +81,64 @@ report 문단 1: 22(것이다) 15 15 15 9 / 2: 26 14 20 / 3: 10 16 3 6 7 / 4: 5 
 blog-plain 1e1791993cdc9a8  blog-score 5f393a1acca379c  docs-plain 28b422df0f9856b
 docs-score aedea961cb5a689  report-plain 05627fdae1b4cc0  report-score 8ef98a22b13e973
 ```
+
+# 리듬 악보 탐침 2회차 (2026-09-02, 커밋 691e625 뒤)
+
+1회차의 "다음 회차에 바꿀 것" 을 그대로 했다. 악보 문단을 그 종류 문장 길이의 p10~p90 안에서만 골랐고 (blog 7~23어절,
+docs 6~19, report 7~28), 요구 셋 × 조건 둘 × 2회로 열두 편을 썼다. 반복마다 악보를 다르게 줬다 (seed 42, 43).
+글쓴이와 측정은 1회차와 같다.
+
+## 결과
+
+열두 편의 첫 초안. 걸린 것 칸은 리듬 관련 규칙만 적었다 (error 전체 수는 error 칸).
+
+| 편 | 글자 | 문장 | 문단 | 길이 중앙값 | 변동 계수 | error | notice | 리듬 규칙 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| blog plain 1 | 847 | 14 | 7 | 7.5 | 0.338 | 1 | 2 | endingRepeat 1 |
+| blog plain 2 | 828 | 16 | 7 | 7.5 | 0.421 | 4 | 4 | endingRepeat 1, factListParagraph 1 |
+| blog 악보 1 | 877 | 15 | 5 | 10 | 0.337 | 2 | 2 | endingRepeat 1 |
+| blog 악보 2 | 972 | 15 | 5 | 13 | 0.300 | 2 | 3 | endingRepeat 2 |
+| docs plain 1 | 697 | 12 | 6 | 7 | 0.445 | 0 | 0 | |
+| docs plain 2 | 678 | 10 | 6 | 6.5 | 0.322 | 0 | 2 | endingRepeat 1, factListParagraph 1 |
+| docs 악보 1 | 767 | 13 | 5 | 11 | 0.182 | 0 | 0 | |
+| docs 악보 2 | 691 | 10 | 5 | 12.5 | 0.281 | 0 | 1 | endingRepeat 1 |
+| report plain 1 | 607 | 17 | 6 | 7 | 0.539 | 0 | 4 | endingRepeat 2, factListParagraph 2 |
+| report plain 2 | 639 | 21 | 6 | 6 | 0.301 | 0 | 6 | endingRepeat 3, factListParagraph 3 |
+| report 악보 1 | 780 | 13 | 5 | 16 | 0.349 | 1 | 1 | endingRepeat 1 |
+| report 악보 2 | 783 | 15 | 5 | 13 | 0.393 | 0 | 0 | |
+
+조건별 합계 (여섯 편씩). plain: 문장 길이 중앙값의 중앙값 7.0어절, 변동 계수 평균 0.394, error 5, notice 18
+(endingRepeat 8, factListParagraph 7), 글자 607~847. 악보: 중앙값 12.75어절, 변동 계수 평균 0.307, error 5, notice 7
+(endingRepeat 5, factListParagraph 0), 글자 691~972.
+
+## 관찰 (판정 아님)
+
+1. **문장 길이는 여섯 편 모두 사람 중앙값 (11~15) 으로 옮겨 갔다.** plain 여섯 편은 6~7.5어절로 회차를 넘어 한결같이
+   사람보다 짧다. 악보 여섯 편은 10~16 이다. 1회차와 같은 방향이고 열두 편에서도 예외가 없다.
+2. **꼬리를 자르니 다양성도 잘렸다.** 악보 편의 변동 계수 평균 0.307 은 사람 띠 (0.36~0.51) 아래고 docs 악보 1 은 0.18
+   이다. p10~p90 문단만 뽑으면 그 문단들이 사람 문단 가운데 고른 것들이다. 다음은 p5~p95 로 넓히거나, 문단의
+   문장 길이 퍼짐 (표준편차) 이 그 종류의 중앙값 근처인 문단을 고르는 쪽이 맞다.
+3. **notice 는 18 → 7 로 줄었고 factListParagraph 는 7 → 0 이다.** 악보가 문단을 2~5문장으로 고정하고 문장이 길어져
+   사실 나열 문단의 꼴 (짧은 문장 셋 이상, 인과 표지 없음) 이 사라진 것으로 보인다. endingRepeat 은 8 → 5 다.
+   error 는 5 → 5 로 같다. blog 의 error 는 두 조건에서 같은 것 (cliche `이 글에서는`, noQuestion, installImport 의
+   fastexcel) 이라 리듬이 아니라 내용과 종류의 문제다.
+4. **길이는 조금 늘었다.** 악보 편 평균 812자 (plain 716자), blog 악보 2 는 972자로 요구 상한 900 을 넘었다. 악보가
+   문단 다섯을 채우게 하니 요구 길이와 겨루는 것이다. 문단 수를 요구 길이에서 역산해 주는 것이 맞다.
+5. **모양 따르기는 1회차와 같다.** 열두 편 모두 지정 문단 수 (5) 를 그대로 냈고 plain 은 6~7 문단을 썼다.
+
+## 다음에 잴 것
+
+- 문단 고르기를 p5~p95 또는 퍼짐 중앙값 근처로 바꾸고 변동 계수가 사람 띠로 돌아오는지.
+- 문단 수를 요구 길이에서 역산 (종류의 문단당 글자 수 중앙값으로 나눔) 해 길이 초과가 사라지는지.
+- 위 둘이 되면 `hanlint score` 로 제품에 넣을지 정한다. 넣는다면 primer 의 짝이고 hook 의 쓰기 전 단계다.
+
+## 초안 지문
+
+열두 파일은 기록 뒤 지웠다. SHA-256 앞 16자리.
+
+```text
+blog-plain-1 aae377aa6b53bd6b  blog-plain-2 f54d765fd36ec7c6  blog-score-1 1f892731e65ce854  blog-score-2 18704ef1c4ea8973
+docs-plain-1 b25bbc74e74f638a  docs-plain-2 df33f5471ac2497b  docs-score-1 5bab6af6d97ae9a6  docs-score-2 a4c2a884c033fada
+report-plain-1 721c70127b4921d1  report-plain-2 1f072b6faf8a7913  report-score-1 4a7d4fc144fc6f7c  report-score-2 4138805d6449186f
+```
+

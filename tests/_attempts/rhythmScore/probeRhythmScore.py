@@ -45,8 +45,13 @@ def printsRoot() -> Path:
     return corpusRoot(readCatalogue()) / "prints"
 
 
-def paragraphShapes(kind: str, register: str, minSentences: int, maxSentences: int) -> list[dict]:
-    """그 종류와 문체의 편집 문단마다 (어절 수 목록, 끝맺음 목록). 문서와 문단 순서로 정렬해 결정적이다.
+def paragraphShapes(
+    kind: str, register: str, minSentences: int, maxSentences: int, low: float, high: float
+) -> tuple[list[dict], tuple[int, int]]:
+    """그 종류와 문체의 편집 문단마다 (어절 수 목록, 끝맺음 목록) 과 문장 길이 경계. 문서와 문단 순서로 정렬해 결정적이다.
+
+    1회차에서 악보에 든 꼬리 문장 (35어절) 이 그대로 옮겨져 error 를 만들었다. 그래서 그 종류 문장 길이의 low~high
+    백분위 안에 모든 문장이 드는 문단만 남긴다. 경계는 같은 문체의 문장 전체에서 잰다.
 
     문서의 다수 문체가 맞아도 다른 문체의 문단이 섞여 있다. 그 문단을 악보로 주면 문체를 바꾸라는 지시가 되므로
     평서문의 문체가 전부 요청한 문체인 문단만 남긴다 (의문과 명령은 문체가 없음 으로 찍힌다).
@@ -62,23 +67,27 @@ def paragraphShapes(kind: str, register: str, minSentences: int, maxSentences: i
         .sort(["docId", "index"])
         .with_columns(pl.col("register").is_in([register, "없음"]).alias("fits"))
     )
+    fitting = sentences.filter(pl.col("fits"))["length"]
+    bounds = (int(fitting.quantile(low)), int(fitting.quantile(high)))
     grouped = sentences.group_by(["docId", "paragraphIndex"], maintain_order=True).agg(
         [pl.col("length").alias("lengths"), pl.col("ending").alias("endings"), pl.col("fits").all().alias("sameRegister")]
     )
     rows = [
         {"docId": row["docId"], "paragraphIndex": row["paragraphIndex"], "lengths": row["lengths"], "endings": row["endings"]}
         for row in grouped.iter_rows(named=True)
-        if row["sameRegister"] and minSentences <= len(row["lengths"]) <= maxSentences
+        if row["sameRegister"]
+        and minSentences <= len(row["lengths"]) <= maxSentences
+        and all(bounds[0] <= length <= bounds[1] for length in row["lengths"])
     ]
     rows.sort(key=lambda row: (row["docId"], row["paragraphIndex"]))
-    return rows
+    return rows, bounds
 
 
-def renderScore(shapes: list[dict], preset: str, register: str) -> str:
+def renderScore(shapes: list[dict], preset: str, register: str, bounds: tuple[int, int]) -> str:
     """모델이 읽는 악보. 문단마다 한 줄, 문장마다 어절 수와 끝맺음."""
     lines = [
         f"리듬 악보 ({preset} 종류, {register}체). 편집된 실제 글에서 뽑은 문단 {len(shapes)}개의 모양이다. "
-        "내용은 없고 문장마다 어절 수와 끝맺음만 있다.",
+        f"내용은 없고 문장마다 어절 수와 끝맺음만 있다. 문장 길이는 이 종류의 흔한 범위 ({bounds[0]}~{bounds[1]}어절) 안이다.",
         ENDING_LEGEND,
         "",
     ]
@@ -98,13 +107,14 @@ def score(args: argparse.Namespace) -> int:
     kind = PROFILE_OF[args.preset]
     if kind is None:
         raise SystemExit(f"{args.preset} 은 종류 프로파일이 없어 악보를 뽑을 수 없다")
-    shapes = paragraphShapes(kind, args.register, args.minSentences, args.maxSentences)
+    shapes, bounds = paragraphShapes(kind, args.register, args.minSentences, args.maxSentences, args.low, args.high)
     if len(shapes) < args.paragraphs:
         raise SystemExit(f"{kind} {args.register} 문단이 {len(shapes)}개뿐이다. 요청 {args.paragraphs}")
     picked = random.Random(args.seed).sample(shapes, args.paragraphs)
-    print(renderScore(picked, args.preset, args.register))
+    print(renderScore(picked, args.preset, args.register, bounds))
     documents = len({shape["docId"] for shape in shapes})
-    print(f"(출처 문단 {len(shapes)}개 가운데 seed {args.seed} 로 뽑음. 문서 {documents}편)", file=sys.stderr)
+    note = f"(문장 길이 {bounds[0]}~{bounds[1]}어절 안 문단 {len(shapes)}개, 문서 {documents}편, seed {args.seed})"
+    print(note, file=sys.stderr)
     return 0
 
 
@@ -158,6 +168,8 @@ def main() -> int:
     scoreParser.add_argument("--min-sentences", dest="minSentences", type=int, default=2)
     scoreParser.add_argument("--max-sentences", dest="maxSentences", type=int, default=6)
     scoreParser.add_argument("--seed", type=int, default=42)
+    scoreParser.add_argument("--low", type=float, default=0.10, help="문장 길이 하한 백분위. 1회차의 꼬리 전달을 막는다")
+    scoreParser.add_argument("--high", type=float, default=0.90, help="문장 길이 상한 백분위")
     scoreParser.set_defaults(run=score)
     measureParser = sub.add_parser("measure", help="초안 하나의 리듬 수를 JSON 한 줄로")
     measureParser.add_argument("file")
