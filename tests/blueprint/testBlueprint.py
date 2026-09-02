@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from hanlint import STRATEGY_ID, WritingBrief, blueprintFor, rhetoricalBlueprint
-from hanlint.config import PRESET_NAMES
+from hanlint.config import PRESET_NAMES, PROFILE_OF
 from hanlint.data.blueprints import blueprintBoundaryViolations, shippedBlueprints
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,7 +28,7 @@ def brief(preset: str) -> WritingBrief:
     )
 
 
-@pytest.mark.parametrize("preset", PRESET_NAMES)
+@pytest.mark.parametrize("preset", [name for name in PRESET_NAMES if PROFILE_OF[name]])
 def testEveryPresetGetsAnExactBudgetWithoutFactMaterial(preset: str):
     result = rhetoricalBlueprint(brief(preset))
     assert result["strategyId"] == STRATEGY_ID and result["input"]["targetCharacters"] == 750
@@ -127,3 +127,8 @@ def testAConsumerCannotPoisonTheShippedBlueprintCache():
     freshCorpus, freshReferences = shippedBlueprints()
     assert freshCorpus["documents"] == 1600
     assert freshReferences["blog"].metrics["sections"]["p50"] == 5
+
+
+def testPresetWithoutProfileIsRefusedClearly():
+    with pytest.raises(ValueError, match="종류 프로파일이 없어"):
+        rhetoricalBlueprint(brief("chat"))

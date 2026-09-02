@@ -63,10 +63,35 @@ NARRATIVE = ("factListParagraph",)
 그 전제가 없다. 실측: 기준 말뭉치 표본에서 essay 11건이 전부 오탐이고 비-essay 9건이 전부 정탐이라
 교차표에 예외가 하나도 없었다. 끄고 다시 재니 표본이 전부 비-서사로 바뀌어 기본 판정이 정탐이 됐다
 (2026-08-31)."""
+CONVERSATION = (
+    "countMismatch",
+    "duplicateBlock",
+    "factListParagraph",
+    "firstResultDistance",
+    "headingSentence",
+    "headingSkip",
+    "headingUniform",
+    "inputFileSource",
+    "installImport",
+    "introLong",
+    "keywordMissing",
+    "noQuestion",
+    "paraFragment",
+    "platformApi",
+    "promiseRecall",
+    "sectionNoProse",
+)
+"""대화 답변에서 끄는 것. 글의 짜임을 재는 규칙 (도입, 제목, 절, 문단 나누기, 사실 나열, 코드 블록 대조, 두 자리 대조)
+은 글 한 편을 전제하고 답변 하나에는 그 전제가 없다.
+
+목록은 cinch 의 replyHanlint 훅이 실제 답변에 맞춰 고른 것을 옮겨 왔다. 실측 (2026-08-28): 답변 8건에 문장 규칙만
+남기니 2건이 걸렸고 둘 다 운영자가 따로 읽기 힘들다고 한 문장이었다. countMismatch 는 답변 하나에 서로 다른
+나열이 여럿이라 단위를 한 약속으로 읽어 끈다. 견줄 답변 말뭉치가 없어 프로파일은 없다."""
 PRESETS["guide"] = PRESETS["blog"] + REFERENCE
 PRESETS["essay"] = PRESETS["report"] + NARRATIVE
 PRESETS["fiction"] = PRESETS["report"] + NARRATIVE
 PRESETS["encyclopedia"] = PRESETS["docs"] + ENCYCLOPEDIC
+PRESETS["chat"] = CONVERSATION
 """글의 종류마다 처음부터 끄고 시작할 규칙. `preset` 키가 고르고 `disable` 이 그 위에 더한다.
 
 blog 는 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다.
@@ -89,9 +114,10 @@ PROFILE_OF = {
     "essay": "essay",
     "fiction": "fiction",
     "encyclopedia": "encyclopedia",
+    "chat": None,
 }
 """프리셋 → 견줄 프로파일의 종류. data/profiles.json 의 키이고 정본은 corpus/catalogue.toml 의 types 다. 규칙
-outsideProfile 이 읽는다."""
+outsideProfile 이 읽는다. chat 은 답변 말뭉치가 없어 None 이고 그 종류는 견주지 않는다."""
 
 PRESET_NAMES = tuple(PRESETS)
 DEFAULT_PRESET = PRESET_NAMES[0]

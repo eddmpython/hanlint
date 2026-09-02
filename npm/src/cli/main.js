@@ -10,6 +10,7 @@
  * hanlint rules                 규칙 목록을 부류로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
+ * hanlint primer --preset <종류> 쓰기 전에 읽는 한 장. 켜진 규칙의 고치는 법과 본보기 전후
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint doctor                설정과 꺼진 규칙
@@ -43,7 +44,7 @@ import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
-import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleMechanism, runAll } from "../rules/registry.js";
+import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runAll } from "../rules/registry.js";
 import { MARKDOWN, SKIPPED_FOLDERS, markdownUnder } from "./walk.js";
 import { welcome } from "./welcome.js";
 import { rootHelp } from "./help.js";
@@ -54,7 +55,7 @@ import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -716,6 +717,64 @@ function runPatterns(args) {
   return 0;
 }
 
+/** 여러 줄을 한 줄로. 줄바꿈은 ¶ 다. 파이썬 cli/commands/primer.py 의 flat 과 같다. @param {string} text */
+function flat(text) {
+  return text
+    .split("\n")
+    .map((line) => line.trim().split(/\s+/).filter(Boolean).join(" "))
+    .filter(Boolean)
+    .join(" ¶ ");
+}
+
+/**
+ * 설정에서 켜진 규칙마다 항목 하나. 부류 순서, 그 안은 이름 순서. 파이썬 primerEntries 와 같다.
+ * @param {import("../config/settings.js").Config} config @param {string} register
+ */
+function primerEntries(config, register) {
+  const off = new Set(offRules(config));
+  const entries = [];
+  for (const category of Object.keys(CATEGORY_TITLES)) {
+    for (const name of ruleNames()) {
+      if (ruleCategory(name) !== category || off.has(name)) continue;
+      const exemplar = exemplarFor(name, config.preset, config.exemplars);
+      if (!exemplar) throw new Error(`본보기가 없는 규칙: ${name}`);
+      const shown = exemplarInRegister(exemplar, register);
+      entries.push({ rule: name, category, fix: ruleFix(name), before: shown.before, after: shown.after });
+    }
+  }
+  return entries;
+}
+
+/** 사람과 AI 가 읽는 한 장. 파이썬 renderPrimer 와 글자 단위로 같다. @param {ReturnType<typeof primerEntries>} entries @param {string} preset @param {string} register */
+function renderPrimer(entries, preset, register) {
+  const lines = [
+    `hanlint primer  ${preset} 종류, ${register}체, 규칙 ${entries.length}개. 줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (같은 뜻으로 통과하는 글) 순서다. 본보기의 줄바꿈은 ¶ 다`,
+  ];
+  for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
+    const inside = entries.filter((entry) => entry.category === category);
+    if (!inside.length) continue;
+    lines.push("", `${title} (${inside.length})`);
+    for (const entry of inside) lines.push(`${entry.rule}  ${entry.fix}  전: ${flat(entry.before)}  후: ${flat(entry.after)}`);
+  }
+  lines.push("", "후는 전부 hanlint 를 error 0 으로 통과한다 (게이트가 확인한다). 규칙 하나를 깊게 보려면 hanlint explain <규칙>");
+  return lines.join("\n");
+}
+
+/** @param {string[]} args */
+function runPrimer(args) {
+  const { options } = parseArgs(args);
+  const config = configFrom(options, []);
+  const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
+  const entries = primerEntries(config, register);
+  const output = /** @type {string | undefined} */ (options["--output"]);
+  if (options["--format"] === "json") {
+    emit(JSON.stringify({ version: 1, preset: config.preset, register, rules: entries }, null, 2), output);
+    return 0;
+  }
+  emit(renderPrimer(entries, config.preset, register), output);
+  return 0;
+}
+
 /** 잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다. @param {import("../config/settings.js").Config} config */
 function baselineState(config) {
   if (!config.baseline) return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)";
@@ -871,6 +930,7 @@ function dispatch(argv) {
   if (command === "rules") return runRules(rest);
   if (command === "explain") return runExplain(rest);
   if (command === "patterns") return runPatterns(rest);
+  if (command === "primer") return runPrimer(rest);
   if (command === "baseline") return runBaseline(rest);
   if (command === "doctor") return runDoctor(rest);
   return runInit(rest);

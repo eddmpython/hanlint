@@ -19,6 +19,7 @@ export function rootHelp() {
   hanlint rules                          규칙을 부류별로 본다
   hanlint explain <규칙>                 규칙의 이유와 본보기를 본다
   hanlint patterns --rule <규칙>         다시 쓸 문장 틀을 본다
+  hanlint primer --preset <종류>         쓰기 전에 규칙의 고치는 법과 본보기를 한 장으로 본다
 
 추가 명령
   baseline, print

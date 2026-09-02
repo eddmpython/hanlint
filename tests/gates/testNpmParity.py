@@ -14,6 +14,8 @@ from pathlib import Path
 
 import pytest
 
+from hanlint.analysis.grammar import REGISTERS
+from hanlint.config import PRESET_NAMES
 from tests.conftest import expandTokens
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -123,6 +125,15 @@ def testRuleListsAgree():
     python, node = runBoth(["explain", "doublePasive"])
     assert python.returncode == node.returncode == 2
     assert "doubleNegative, doublePassive" in node.stderr
+
+    # 쓰기 전에 읽는 한 장. AI 가 두 판 어느 쪽으로 받아도 같은 글자를 읽어야 한다.
+    for preset in PRESET_NAMES:
+        for register in REGISTERS:
+            python, node = runBoth(["primer", "--preset", preset, "--register", register])
+            assert python.returncode == node.returncode == 0, node.stderr
+            assert python.stdout == node.stdout, (preset, register)
+    python, node = runBoth(["primer", "--preset", "chat", "--format", "json"])
+    assert python.stdout == node.stdout
 
     # 기계가 읽는 꼴. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 판이 같아야 한다.
     for args in (

@@ -115,6 +115,28 @@ def ruleDoc(name: str) -> str:
     return inspect.getdoc(REGISTRY[name]) or ""
 
 
+def docSection(doc: str, label: str) -> str:
+    """기술서에서 절 하나의 본문을 한 줄로. `고치기:` 처럼 표를 주면 그 줄부터 다음 절 표나 빈 줄 앞까지를 잇는다."""
+    collected: list[str] = []
+    inside = False
+    for raw in doc.splitlines():
+        line = raw.strip()
+        if not inside:
+            if line.startswith(label):
+                inside = True
+                collected.append(line[len(label) :].strip())
+            continue
+        if not line or any(line.startswith(other) for other in REQUIRED_SECTIONS):
+            break
+        collected.append(line)
+    return " ".join(part for part in collected if part)
+
+
+def ruleFix(name: str) -> str:
+    """규칙의 고치기 절 한 줄. primer 가 쓰기 전에 읽히는 그 문장이다."""
+    return docSection(ruleDoc(name), "고치기:")
+
+
 def ruleSummary(name: str) -> str:
     return ruleDoc(name).splitlines()[0]
 

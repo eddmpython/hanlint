@@ -33,6 +33,8 @@ def rhetoricalBlueprint(brief: WritingBrief | dict) -> dict:
     if isinstance(brief, dict):
         brief = WritingBrief.fromMapping(brief)
     kind = PROFILE_OF[brief.preset]
+    if kind is None:
+        raise ValueError(f"{brief.preset} 은 종류 프로파일이 없어 청사진을 만들 수 없다. 말뭉치가 있는 종류를 고른다")
     corpus, reference = referenceOf(kind)
     metrics = reference.metrics
     targetCharacters = (brief.minCharacters + brief.maxCharacters) // 2

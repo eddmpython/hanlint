@@ -154,6 +154,33 @@ export function ruleSummary(name) {
   return ruleDoc(name).split("\n")[0];
 }
 
+/** 기술서의 네 절 표. 파이썬 rules/registry.py 의 REQUIRED_SECTIONS 와 같다. */
+export const REQUIRED_SECTIONS = ["왜:", "어디서:", "고치기:", "안 잡는 것:"];
+
+/** 기술서에서 절 하나의 본문을 한 줄로. 파이썬 docSection 과 같다. @param {string} doc @param {string} label */
+export function docSection(doc, label) {
+  const collected = [];
+  let inside = false;
+  for (const raw of doc.split("\n")) {
+    const line = raw.trim();
+    if (!inside) {
+      if (line.startsWith(label)) {
+        inside = true;
+        collected.push(line.slice(label.length).trim());
+      }
+      continue;
+    }
+    if (!line || REQUIRED_SECTIONS.some((other) => line.startsWith(other))) break;
+    collected.push(line);
+  }
+  return collected.filter(Boolean).join(" ");
+}
+
+/** 규칙의 고치기 절 한 줄. primer 가 쓰기 전에 읽히는 그 문장이다. @param {string} name */
+export function ruleFix(name) {
+  return docSection(ruleDoc(name), "고치기:");
+}
+
 /**
  * 부류의 사람 이름. 파이썬 rules/registry.py 의 CATEGORY_TITLES 와 같은 값과 같은 순서다.
  * @type {Record<string, string>}

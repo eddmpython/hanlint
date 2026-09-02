@@ -465,6 +465,7 @@ hanlint init --preset docs         # 저장소에 고정할 때
 | `fiction` | 소설 | 6개 | 소설 |
 | `docs` | 참고 문서, 명세, README | 9개 | 기술 문서 |
 | `encyclopedia` | 백과 항목 | 10개 | 백과 |
+| `chat` | 대화 답변. 글의 짜임을 재는 규칙을 끈다 | 16개 | 없음 |
 
 어느 규칙이 꺼지는지는 여기 옮겨 적지 않는다. `hanlint rules --preset docs` 가 지금 도는 목록에
 꺼진 것을 표시해 보여 준다.
@@ -600,7 +601,8 @@ hanlint 글들/ --baseline        # 그다음부터 새로 생긴 지적만 나�
 `noQuestion` 이 독자를 부르는 자리를 세는데, 보고서와 참고 문서는 그 계약을 지지 않으므로 `report` 와
 `docs` 프리셋이 그것을 끈다.
 
-규칙 하나가 왜 있는지와 그 본보기는 `hanlint explain <규칙>` 이 전부 보여 준다.
+규칙 하나가 왜 있는지와 그 본보기는 `hanlint explain <규칙>` 이 전부 보여 준다. 글을 쓰기 전에 켜진 규칙 전부의
+고치는 법과 본보기를 한 장으로 읽으려면 `hanlint primer --preset <종류>` 다. AI 에게 글을 시킬 때 먼저 읽힌다.
 
 ### 다시 쓸 틀
 
@@ -697,10 +699,11 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |
+| `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
 | `hanlint 글들/ --baseline` | 잠근 것은 넘기고 새로 생긴 것만 막는다 | 예 |
-| `hanlint 글.md --preset docs` | 설정 파일 없이 이번 검사의 글 종류만 정한다. 종류는 blog, report, docs, guide, essay, fiction, encyclopedia 이고 규칙 묶음과 견줄 프로파일이 따라온다 | 예 |
+| `hanlint 글.md --preset docs` | 설정 파일 없이 이번 검사의 글 종류만 정한다. 종류는 blog, report, docs, guide, essay, fiction, encyclopedia, chat 이고 규칙 묶음이 따라온다. chat 을 뺀 일곱은 견줄 프로파일도 따라온다 | 예 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
 | `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. 스크립트가 쓴다 | 예 |

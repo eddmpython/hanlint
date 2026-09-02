@@ -38,6 +38,26 @@ PRESETS.guide = [...PRESETS.blog, ...REFERENCE];
 PRESETS.essay = [...PRESETS.report, ...NARRATIVE];
 PRESETS.fiction = [...PRESETS.report, ...NARRATIVE];
 PRESETS.encyclopedia = [...PRESETS.docs, ...ENCYCLOPEDIC];
+// 대화 답변에서 끄는 것. 글의 짜임을 재는 규칙은 글 한 편을 전제한다. 파이썬 settings.py 의 CONVERSATION 과 같다.
+const CONVERSATION = [
+  "countMismatch",
+  "duplicateBlock",
+  "factListParagraph",
+  "firstResultDistance",
+  "headingSentence",
+  "headingSkip",
+  "headingUniform",
+  "inputFileSource",
+  "installImport",
+  "introLong",
+  "keywordMissing",
+  "noQuestion",
+  "paraFragment",
+  "platformApi",
+  "promiseRecall",
+  "sectionNoProse",
+];
+PRESETS.chat = CONVERSATION;
 
 /** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
 export const PROFILE_OF = {
@@ -48,6 +68,7 @@ export const PROFILE_OF = {
   essay: "essay",
   fiction: "fiction",
   encyclopedia: "encyclopedia",
+  chat: null,
 };
 
 export const PRESET_NAMES = Object.keys(PRESETS);
