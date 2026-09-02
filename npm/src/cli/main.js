@@ -585,7 +585,8 @@ function runRules(args) {
   }
   const config = configFrom(options, []);
   const off = new Set(offRules(config));
-  if (options["--format"] === "json") {
+  const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
+  if (format === "json") {
     const rules = names.map((name) => {
       const exemplar = exemplarFor(name, config.preset, config.exemplars);
       /** @type {Record<string, unknown>} */
@@ -767,7 +768,8 @@ function runPrimer(args) {
   const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
   const entries = primerEntries(config, register);
   const output = /** @type {string | undefined} */ (options["--output"]);
-  if (options["--format"] === "json") {
+  const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
+  if (format === "json") {
     emit(JSON.stringify({ version: 1, preset: config.preset, register, rules: entries }, null, 2), output);
     return 0;
   }

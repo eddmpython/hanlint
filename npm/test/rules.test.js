@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import { configFromMapping, lintText, ruleNames } from "../src/index.js";
 import { loadRuleDocs, loadRuleMechanisms } from "../src/data/load.js";
-import { MECHANISMS, RULES } from "../src/rules/registry.js";
+import { MECHANISMS, RULES, docSection } from "../src/rules/registry.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(HERE, "..", "..", "tests", "fixtures", "rules");
@@ -56,4 +56,11 @@ test("every rule names one of the closed mechanisms and matches the python proje
   const mine = Object.fromEntries(RULES.map((rule) => [rule.name, rule.mechanism]).sort());
   assert.deepEqual(mine, loadRuleMechanisms());
   for (const mechanism of Object.values(mine)) assert.ok(mechanism in MECHANISMS, mechanism);
+});
+
+test("docSection stops at the next section label and joins continuation lines", () => {
+  const doc = "첫 줄.\n\n왜: 이유.\n어디서: 출처.\n고치기: 하나.\n    둘.\n안 잡는 것: 셋.";
+  assert.equal(docSection(doc, "고치기:"), "하나. 둘.");
+  assert.equal(docSection(doc, "안 잡는 것:"), "셋.");
+  assert.equal(docSection(doc, "왜:"), "이유.");
 });

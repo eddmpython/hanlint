@@ -14,7 +14,8 @@ from hanlint.analysis.grammar import REGISTERS
 from hanlint.cli.commands.primer import LINE_LIMIT, PrimerEntry, flat, primerEntries, renderPrimer
 from hanlint.cli.main import main
 from hanlint.config import PRESET_NAMES, Config
-from hanlint.rules import ruleNames
+from hanlint.rules import CATEGORY_TITLES, ruleNames
+from hanlint.rules.registry import REQUIRED_SECTIONS, docSection
 from tests.conftest import findingsOf
 
 
@@ -84,3 +85,29 @@ def testCliRendersTextAndJson(capsys) -> None:
     data = json.loads(capsys.readouterr().out)
     assert data["preset"] == "chat" and data["register"] == "한다"
     assert len(data["rules"]) == len(enabledRules(Config(preset="chat")))
+
+
+SAMPLE_DOC = "첫 줄.\n\n왜: 이유.\n어디서: 출처.\n고치기: 하나.\n    둘.\n안 잡는 것: 셋."
+"""네 절이 있는 기술서. 고치기 절은 두 줄이고 바로 뒤에 다음 절이 온다."""
+
+
+def testDocSectionStopsAtNextLabel() -> None:
+    assert docSection(SAMPLE_DOC, "고치기:") == "하나. 둘."
+    assert docSection(SAMPLE_DOC, "안 잡는 것:") == "셋."
+    assert docSection(SAMPLE_DOC, "왜:") == "이유."
+
+
+def testFixNeverCarriesAnotherSection() -> None:
+    for entry in primerEntries(Config(preset="blog")):
+        assert not any(label in entry.fix for label in REQUIRED_SECTIONS), entry.rule
+
+
+@pytest.mark.parametrize("preset", PRESET_NAMES)
+def testOnePageShape(preset: str) -> None:
+    """머리글 하나, 부류마다 빈 줄과 제목, 규칙마다 한 줄, 빈 줄과 꼬리글. 그 밖의 줄은 없다."""
+    entries = primerEntries(Config(preset=preset))
+    categories = {entry.category for entry in entries}
+    lines = renderPrimer(entries, preset, "합니다").splitlines()
+    assert len(lines) == 1 + 2 * len(categories) + len(entries) + 2
+    titles = set(CATEGORY_TITLES.values())
+    assert len([line for line in lines if line.rsplit(" (", 1)[0] in titles]) == len(categories)

@@ -134,6 +134,8 @@ def testRuleListsAgree():
             assert python.stdout == node.stdout, (preset, register)
     python, node = runBoth(["primer", "--preset", "chat", "--format", "json"])
     assert python.stdout == node.stdout
+    python, node = runBoth(["primer", "--format", "compact"])
+    assert python.returncode == node.returncode == 2
 
     # 기계가 읽는 꼴. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 판이 같아야 한다.
     for args in (
