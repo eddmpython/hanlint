@@ -1,7 +1,7 @@
 """기준 말뭉치의 지문 표. 글마다 지문을 한 번 만들어 문장, 문단, 글을 한 행씩 Parquet 로 둔다.
 
-기준선 (buildBaselines) 과 탐침이 글을 다시 세지 않고 이 표를 묻는다. 표는 저장소 밖 `../hanlint.out/corpus/prints/`
-에 두고 제품은 읽지 않는다. polars 는 `corpus` extra 다.
+기준선 (buildBaselines) 과 탐침이 글을 다시 세지 않고 이 표를 묻는다. 표는 말뭉치 뿌리 (`corpus/catalogue.toml` 의 `root`) 아래
+`prints/` 에 두고 제품은 읽지 않는다. polars 는 dependency group `corpus` 다.
 """
 
 from __future__ import annotations
@@ -15,10 +15,13 @@ import polars as pl
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
+sys.path.insert(0, str(REPO))
+
+from scripts.fetch.corpus import corpusRoot, readCatalogue  # noqa: E402
 
 from hanlint import Config, fingerprint  # noqa: E402
 
-CORPUS_ROOT = (REPO / "../hanlint.out/corpus").resolve()
+CORPUS_ROOT = corpusRoot(readCatalogue())
 PRINTS_ROOT = CORPUS_ROOT / "prints"
 TABLES = ("documents", "paragraphs", "sentences")
 

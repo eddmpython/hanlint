@@ -81,7 +81,9 @@ def manifestPath(catalogue: dict) -> Path:
 
 
 def corpusRoot(catalogue: dict) -> Path:
-    return (REPO / catalogue["corpus"]["root"]).resolve()
+    """말뭉치 원문이 사는 곳. 카탈로그의 root 가 정본이다. `~` 는 홈으로 풀고 상대 경로는 저장소 기준이다."""
+    root = Path(catalogue["corpus"]["root"]).expanduser()
+    return (root if root.is_absolute() else REPO / root).resolve()
 
 
 def request(url: str) -> bytes:

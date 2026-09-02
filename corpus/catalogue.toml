@@ -1,6 +1,6 @@
 [corpus]
 version = 1
-root = "../hanlint.out/corpus"
+root = "~/.cache/hanlint/corpus"
 manifest = "corpus/documents.json"
 minimumDocuments = 300
 types = ["blog", "technicalDocs", "report", "essay", "guide", "encyclopedia", "fiction"]

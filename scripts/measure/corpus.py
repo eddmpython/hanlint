@@ -18,11 +18,14 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
+sys.path.insert(0, str(REPO))
+
+from scripts.fetch.corpus import corpusRoot, readCatalogue  # noqa: E402
 
 from hanlint import Config, fingerprint, ruleNames  # noqa: E402
 from hanlint.rules import runAll  # noqa: E402
 
-CORPUS_ROOT = (REPO / "../hanlint.out/corpus").resolve()
+CORPUS_ROOT = corpusRoot(readCatalogue())
 ATTEMPT = REPO / "tests" / "_attempts" / "corpus"
 REVIEW_SAMPLE = ATTEMPT / "reviewSample.json"
 JUDGMENTS = ATTEMPT / "judgments.toml"

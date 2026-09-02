@@ -1,8 +1,9 @@
 # 기준 말뭉치
 
 형태 층, 문체 맞춤, 후보 엔진의 범위는 실제 글에서 잰다. 자료원과 선택 조건은
-`catalogue.toml`, 선택된 문서와 판본과 원문 해시는 `documents.json` 이 소유한다. 원문은 저장소 밖
-`../hanlint.out/corpus/` 에 받는다.
+`catalogue.toml`, 선택된 문서와 판본과 원문 해시는 `documents.json` 이 소유한다. 원문은 `catalogue.toml` 의 `root` 가
+가리키는 `~/.cache/hanlint/corpus/` 에 받는다. 저장소 안에도 옆에도 두지 않는다. 지워도 `scripts/fetch/corpus.py` 가 같은
+판을 다시 받는다.
 
 ## 자료원과 범위
 

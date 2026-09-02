@@ -5,7 +5,7 @@ MDN 한국어 문서 Git 이력에서 `hanlint learn`으로 찾고 뜻 보존을
 
 ```powershell
 .venv/Scripts/python.exe -X utf8 -B tests/_attempts/patchMemory/probePatchMemory.py prepare `
-  ../hanlint.out/corpus --output manifest.json
+  ~/.cache/hanlint/corpus --output manifest.json
 .venv/Scripts/python.exe -X utf8 -B tests/_attempts/patchMemory/probePatchMemory.py run manifest.json `
   --ollama-model qwen3:8b --output responses.json
 .venv/Scripts/python.exe -X utf8 -B tests/_attempts/patchMemory/probePatchMemory.py judgment-template `
