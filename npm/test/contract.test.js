@@ -110,6 +110,14 @@ test("version two rejects a patch that introduces an outline violation", () => {
   assert.deepEqual(result.newContractIssues, [["outline", "1:pandas:DuckDB"]]);
 });
 
+test("text receipt names reader debt already carried by findings", () => {
+  const source =
+    "예산은 380,000원이다. 명세는 https://example.invalid/check 에 있다. `mora check`로 확인하며 설치는 뒤에서 다루겠습니다.";
+  const receipt = renderCheck(check(source, contract()));
+  assert.match(receipt, /- 독자 부채: 1건/u);
+  assert.match(receipt, /\[promiseRecall\]/u);
+});
+
 test("patch must name and reduce an existing violation", () => {
   const result = verifyPatch(TEXT, new Patch("unexpectedNumbers", "400,000", "380,000"), contract(), surfaceConfig());
   assert.equal(result.verified, true);

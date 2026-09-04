@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ..audit import AuditResult
 from ..fingerprint import DocumentPrint
-from ..rules import Finding
+from ..rules import Finding, readerDebts
 from .mapText import renderMap
 
 
@@ -42,6 +42,9 @@ def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult,
         f"헤지 {d.hedges:.1f}, 수치 {d.numbers:.1f}"
     )
     lines.append(f"독자        질문 {audit.questionCount}, 독자 호출 {audit.readerCallCount}")
+    debts = readerDebts(findings)
+    lines.append(f"독자 부채   {len(debts)}건" if debts else "독자 부채   없음")
+    lines.extend(f"  {debt.line}행 [{debt.rule}] {debt.why}" for debt in debts)
     if audit.valleys:
         spots = ", ".join(f"{v.line}행" for v in audit.valleys)
         lines.append(f"흐름 골짜기 {spots} (앞 문단과 화제어 겹침 0)")

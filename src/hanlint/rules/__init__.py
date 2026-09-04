@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .finding import Candidate, Finding
+from .readerDebt import readerDebts
 from .registry import (
     CATEGORY_TITLES,
     MECHANISMS,
@@ -29,6 +30,7 @@ __all__ = [
     "ruleMechanism",
     "ruleMechanisms",
     "ruleNames",
+    "readerDebts",
     "ruleSummary",
     "runAll",
 ]

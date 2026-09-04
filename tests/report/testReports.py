@@ -127,6 +127,16 @@ def testAuditReportHasNumbersAndNoScore():
     assert "점수" not in text and "등급" not in text
 
 
+def testAuditNamesReaderFindingsAsDebtWithoutANewVerdict():
+    source = "설치는 뒤에서 다루겠습니다."
+    doc = fingerprint(source)
+    findings = lintText(source)
+    text = renderAudit(doc, findings, auditText(source), color=False)
+
+    assert "독자 부채   1건" in text
+    assert "1행 [promiseRecall]" in text
+
+
 def testAuditReportKeepsLongSectionTitlesWhole():
     title = "아주 긴 데이터프레임 라이브러리 제목을 끝까지 보여 준다"
     source = f"## {title}\n\n본문입니다.\n"

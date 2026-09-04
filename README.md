@@ -135,6 +135,10 @@ npx hanlint contract init 초안.md --reader "배포를 결정할 운영자" --g
 `allowedNumbers`를 다시 적지 않는다. 결과에는 Contract와 초안의 SHA-256, 빠진 원자와 선언 밖 원자,
 기존 hanlint `Finding`이 담긴다. 시각과 모델 이름은 들어가지 않는다.
 
+사람용 영수증과 `audit`은 reader 기제의 Finding을 **독자 부채**로 묶어 보인다. 앞에서 본 이름, 수치,
+파일이나 미룬 약속만으로 지금 요구를 해결할 수 없다는 뜻이다. 새 판정이나 스키마 필드가 아니며 JSON에서는
+기존 `lint.items`가 정본이다. notice 부채는 영수증에 남지만 계약 위반 수에는 더하지 않는다.
+
 ```console
 hanlint check contract.json 초안.md
 npx hanlint check contract.json 초안.md

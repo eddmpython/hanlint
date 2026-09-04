@@ -113,6 +113,17 @@ def testTextReceiptKeepsFullHeadingsAndNamesTheNextAction():
     assert "다음:" in receipt
 
 
+def testTextReceiptShowsReaderDebtAlreadyCarriedByFindings():
+    source = (
+        "예산은 380,000원이다. 명세는 https://example.invalid/check 에 있다. "
+        "`mora check`로 확인하며 설치는 뒤에서 다루겠습니다."
+    )
+    receipt = renderCheck(check(source, contract()))
+
+    assert "- 독자 부채: 1건" in receipt
+    assert "[promiseRecall]" in receipt
+
+
 def testPatchMustNameAndReduceAnExistingViolation():
     text = "예산은 400,000원이다. 명세는 https://example.invalid/check 에 있다. `mora check`로 확인한다."
     patch = Patch("unexpectedNumbers", "400,000", "380,000")

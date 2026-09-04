@@ -2,6 +2,7 @@
 /** Reader Contract 검사와 Patch 검증의 결정적 영수증. */
 
 import { findingAsDict } from "../rules/finding.js";
+import { readerDebts } from "../rules/readerDebt.js";
 import { compareText, surfaceViolationCount } from "./surface.js";
 
 export const CHECK_MEANING = "violationCount는 선언한 보호 원자와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
@@ -166,6 +167,9 @@ export function renderCheck(result) {
   if (result.errorCount) {
     lines.push(`  ${Object.entries(errorRules(result.findings)).map(([rule, count]) => `${rule} ${count}`).join(", ")}`);
   }
+  const debts = readerDebts(result.findings);
+  lines.push(debts.length ? `- 독자 부채: ${debts.length}건` : "- 독자 부채: 없음");
+  for (const debt of debts) lines.push(`  ${debt.line}행 [${debt.rule}] ${debt.why}`);
   if (result.violationCount) lines.push("\n다음: 계약과 글 가운데 틀린 쪽을 바로잡고 같은 check를 다시 실행한다");
   else if (result.noticeCount) lines.push("\n다음: notice를 읽고 고칠지 유지할지 판단한 뒤 사람과 LLM 평가로 넘어간다");
   else lines.push("\n다음: 세어서 잡히는 계약 위반이 없다. 사람과 LLM 평가로 넘어간다");

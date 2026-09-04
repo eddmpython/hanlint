@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 
-from ..rules import Finding
+from ..rules import Finding, readerDebts
 from .outline import DocumentSummary, OutlineDiff
 from .surface import SurfaceDiff
 
@@ -184,6 +184,9 @@ def renderCheck(result: CheckResult) -> str:
     if result.errorCount:
         rules = Counter(finding.rule for finding in result.findings if finding.severity == "error")
         lines.append("  " + ", ".join(f"{rule} {count}" for rule, count in sorted(rules.items())))
+    debts = readerDebts(result.findings)
+    lines.append(f"- 독자 부채: {len(debts)}건" if debts else "- 독자 부채: 없음")
+    lines.extend(f"  {debt.line}행 [{debt.rule}] {debt.why}" for debt in debts)
     if result.violationCount:
         lines.append("\n다음: 계약과 글 가운데 틀린 쪽을 바로잡고 같은 check를 다시 실행한다")
     elif result.noticeCount:

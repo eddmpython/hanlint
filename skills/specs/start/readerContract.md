@@ -136,6 +136,11 @@ CLI의 기본 JSON은 자동화용 결정적 영수증이다. `check --format te
 순서로 렌더링한다. 별도 lint와 audit를 다시 실행한 결과를 합치는 기능이 아니라 check가 한 번 만든 같은
 지문을 사람이 읽기 쉽게 보여 주는 표현이다.
 
+text 영수증은 reader 기제 Finding을 `독자 부채`로도 묶는다. 독자가 앞에서 받은 이름, 수치, 파일과 미룬
+약속만으로 현재 요구를 해결하지 못한 자리다. 독자 부채는 네 번째 공개 자료형이나 새 판정이 아니다. 같은 Finding을
+사람이 행동 단위로 읽게 한 투영이며 JSON 정본은 계속 `lint.items`다. notice는 부채 목록에는 보이지만
+`violationCount`에는 더하지 않는다.
+
 ## Patch와 verifyPatch
 
 [Patch 스키마](../../../src/hanlint/data/patch.schema.json)는 `reason`, `before`, `after`만 받는다.
