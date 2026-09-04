@@ -34,13 +34,14 @@ def sampleTexts() -> list[str]:
     return texts
 
 
-def runBoth(args: list[str]) -> tuple[subprocess.CompletedProcess, subprocess.CompletedProcess]:
+def runBoth(args: list[str], inputText: str | None = None) -> tuple[subprocess.CompletedProcess, subprocess.CompletedProcess]:
     python = subprocess.run(
         [sys.executable, "-X", "utf8", "-B", "-m", "hanlint", *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
         cwd=ROOT,
+        input=inputText,
     )
     node = subprocess.run(
         [str(NODE), str(NODE_CLI), *args],
@@ -48,8 +49,42 @@ def runBoth(args: list[str]) -> tuple[subprocess.CompletedProcess, subprocess.Co
         text=True,
         encoding="utf-8",
         cwd=ROOT,
+        input=inputText,
     )
     return python, node
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testHookGivesTheSameContextOrSilence(tmp_path):
+    bad = tmp_path / "초안.md"
+    bad.write_text("## 절\n\n핵심은 속도입니다.\n", encoding="utf-8")
+    payloads = (
+        (
+            ["hook"],
+            {
+                "hook_event_name": "PostToolUse",
+                "tool_name": "Write",
+                "tool_input": {"file_path": str(bad)},
+                "tool_response": {"success": True},
+            },
+        ),
+        (
+            ["hook", "--reply"],
+            {
+                "hook_event_name": "Stop",
+                "cwd": str(tmp_path),
+                "stop_hook_active": False,
+                "last_assistant_message": "결과가 저장되어집니다.",
+            },
+        ),
+        (["hook"], "not json"),
+    )
+    for args, payload in payloads:
+        raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
+        python, node = runBoth(args, raw)
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout
+        assert python.stderr == node.stderr == ""
 
 
 CHUNK = 40
@@ -143,9 +178,7 @@ def testRuleListsAgree():
         assert python.returncode == node.returncode == 0, node.stderr
         assert python.stdout == node.stdout, preset
     for register in REGISTERS:
-        python, node = runBoth(
-            ["spec", "--preset", "blog", "--register", register, "--chars", "800", "--format", "json"]
-        )
+        python, node = runBoth(["spec", "--preset", "blog", "--register", register, "--chars", "800", "--format", "json"])
         assert python.returncode == node.returncode == 0, node.stderr
         assert python.stdout == node.stdout, register
     python, node = runBoth(["spec", "--preset", "chat"])

@@ -18,6 +18,13 @@ function run(args) {
   return { code: result.status, out: result.stdout, err: result.stderr };
 }
 
+/** @param {string[]} args @param {unknown} payload */
+function runHook(args, payload) {
+  const input = typeof payload === "string" ? payload : JSON.stringify(payload);
+  const result = spawnSync(process.execPath, [BIN, "hook", ...args], { encoding: "utf-8", input });
+  return { code: result.status, out: result.stdout, err: result.stderr };
+}
+
 const dir = mkdtempSync(join(tmpdir(), "hanlintCli-"));
 const bad = join(dir, "bad.md");
 const clean = join(dir, "clean.md");
@@ -32,6 +39,38 @@ test("lint exit codes and text", () => {
   const ok = run([clean, "--quiet"]);
   assert.equal(ok.code, 0);
   assert.ok(ok.out.includes("집은 자리 없음") && !ok.out.includes("설정:"));
+});
+
+test("hook returns non-blocking context only for findings", () => {
+  const badPayload = {
+    hook_event_name: "PostToolUse",
+    tool_name: "Write",
+    tool_input: { file_path: bad },
+    tool_response: { success: true },
+  };
+  const result = runHook([], badPayload);
+  assert.equal(result.code, 0);
+  assert.equal(result.err, "");
+  const output = JSON.parse(result.out).hookSpecificOutput;
+  assert.equal(output.hookEventName, "PostToolUse");
+  assert.ok(output.additionalContext.includes(`${bad}:3 [cliche]`));
+
+  const reply = runHook(["--reply"], {
+    hook_event_name: "Stop",
+    cwd: dir,
+    stop_hook_active: false,
+    last_assistant_message: "결과가 저장되어집니다.",
+  });
+  assert.equal(reply.code, 0);
+  assert.ok(JSON.parse(reply.out).hookSpecificOutput.additionalContext.includes("<assistant>:1 [doublePassive]"));
+
+  const silent = [
+    runHook([], { ...badPayload, tool_input: { file_path: clean } }),
+    runHook([], { ...badPayload, tool_name: "Read" }),
+    runHook(["--reply"], { hook_event_name: "Stop", stop_hook_active: true, last_assistant_message: "결과가 저장되어집니다." }),
+    runHook([], "not json"),
+  ];
+  for (const item of silent) assert.deepEqual(item, { code: 0, out: "", err: "" });
 });
 
 test("severity, compact, stdin, summary", () => {

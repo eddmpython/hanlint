@@ -11,6 +11,7 @@ def rootHelp() -> str:
   hanlint 글.md                         글을 검사한다
   hanlint fix 글.md                     안전한 고침만 적용한다
   hanlint watch 글.md                   저장할 때마다 다시 검사한다
+  hanlint hook                          AI가 저장한 마크다운을 같은 턴에 검사한다
   hanlint audit 글.md                   글의 구조와 분포를 함께 본다
 
 요구사항 잠금

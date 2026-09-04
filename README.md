@@ -56,6 +56,7 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 | 기계가 고칠 수 있는 것은 먼저 고쳐 줘 | `hanlint fix 글.md` |
 | 쓰기 전에 이 종류의 숫자 사양을 줘 | `hanlint spec --preset blog --chars 800` |
 | Python에서 쓰는 동안 계속 봐 줘 | `hanlint watch 글.md` |
+| AI가 저장하거나 답한 자리에서 바로 봐 줘 | `hanlint hook`, `hanlint hook --reply` |
 | 섹션 수와 순서를 요구사항대로 잠가 줘 | `hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2` |
 
 필요한 내용부터 바로 읽을 수 있다.
@@ -85,6 +86,38 @@ npx hanlint spec --preset blog --register 합니다 --chars 800 --format json
 현재 검사 요구라서 둘이 어긋날 수 있다. 그때는 어긋남을 숨기지 않고 켜진 규칙을 따른다고 적는다. `chat`은 견줄
 말뭉치가 없으므로 사양을 꾸며 내지 않고 오류를 낸다. 이 사양은 좋은 글의 판정이 아니며, 쓴 뒤 같은 프리셋으로
 `hanlint 글.md`를 실행해야 한다.
+
+## 같은 턴 폐루프 훅
+
+`hook`은 Claude Code의 명령 훅 JSON을 stdin으로 받아 방금 쓴 `.md` 또는 `.markdown` 한 파일만 검사한다.
+Finding이 있으면 Claude가 다음 모델 요청에서 읽는 `additionalContext` JSON을 내고, 없으면 아무것도 내지 않는다.
+입력이 깨졌거나 파일을 읽지 못해도 종료 코드 0이라 파일 쓰기와 답변을 막지 않는다. `--reply`는 Stop의
+`last_assistant_message`를 `chat` 프리셋으로 보고, `stop_hook_active` 재진입에서는 침묵해 한 번만 고칠 기회를 준다.
+
+프로젝트의 `.claude/settings.json`에는 다음 두 항목을 둘 수 있다. 명령 훅 입력과 `additionalContext`의 현재 계약은
+[Claude Code hooks reference](https://code.claude.com/docs/en/hooks)를 따른다.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "uvx", "args": ["hanlint", "hook"] }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{ "type": "command", "command": "uvx", "args": ["hanlint", "hook", "--reply"] }]
+      }
+    ]
+  }
+}
+```
+
+Node만 있는 프로젝트는 `command`를 `npx`, `args`를 각각 `["hanlint", "hook"]`,
+`["hanlint", "hook", "--reply"]`로 바꾼다. 저장 훅은 쓴 파일에서 찾은 저장소 설정과 baseline을 따르고,
+답변 훅은 같은 설정 위에서 프리셋만 `chat`으로 고정한다.
 
 ## Contract, Finding, Patch
 
@@ -688,7 +721,8 @@ hanlint 글.md --format json
 확실하지 않은 문장을 그대로 둔다.
 
 에이전트에 붙일 때는 [skills/use-hanlint/SKILL.md](skills/use-hanlint/SKILL.md) 를 스킬 폴더에 둔다.
-글을 쓴 직후 스스로 검사하고 error 가 0 이 될 때까지 고친 뒤에 사람에게 넘긴다.
+글을 쓴 직후 스스로 검사하고 error 가 0 이 될 때까지 고친 뒤에 사람에게 넘긴다. Claude Code에서는 위의
+비차단 훅이 저장 직후 같은 루프를 자동으로 돌려준다.
 
 ## 평가 루프에서의 자리
 
@@ -720,6 +754,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint check contract.json 글.md --format text` | 보호 표면, 제목 구조, Finding, 글 요약과 다음 행동을 한 영수증으로 본다 | 예 |
 | `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
+| `hanlint hook`, `hanlint hook --reply` | Claude Code가 저장한 마크다운과 마지막 답변을 같은 턴에 비차단 검사한다 | 예 |
 | `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |

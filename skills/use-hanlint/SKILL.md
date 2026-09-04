@@ -9,6 +9,8 @@ hanlint 는 한국어 글에서 AI 와 사람이 반복해서 어기는 결함�
 않는다. 글쓰기 규칙의 정본은 사용자 저장소의 글쓰기 스킬이고 hanlint 는 그중 기계가 잡을 수 있는 것을 집행한다.
 
 설치는 없다. 파이썬이 있으면 `uvx hanlint`, Node 만 있으면 `npx hanlint` 다. 아래의 `hanlint` 를 그것으로 읽는다.
+Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --reply`를 연결할 수 있다. 둘 다 Finding만
+다음 모델 요청에 돌려주고 종료 코드 0으로 작업을 막지 않는다. 설정 JSON은 README의 같은 턴 폐루프 훅 절에 있다.
 
 ## 결과
 

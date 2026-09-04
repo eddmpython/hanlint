@@ -11,6 +11,7 @@
  * hanlint explain <규칙>        규칙의 기술서
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
  * hanlint primer --preset <종류> 쓰기 전에 읽는 한 장. 켜진 규칙의 고치는 법과 본보기 전후
+ * hanlint hook                  Claude Code가 쓴 마크다운을 같은 턴에 비차단 검사
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint doctor                설정과 꺼진 규칙
@@ -20,7 +21,7 @@
  * audit, guard, arena, blueprint, evidence, entailment 같은 확장 명령은 파이썬 패키지에 있다.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import {
   Patch,
@@ -56,7 +57,7 @@ import { renderText } from "../report/textReport.js";
 import { renderWritingSpec, writingSpec } from "../report/writingSpec.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "hook", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -118,6 +119,7 @@ const OPTION_KINDS = {
   "--dry-run": "flag",
   "--names": "flag",
   "--force": "flag",
+  "--reply": "flag",
   "--reader": "value",
   "--goal": "value",
   "--outline": "value",
@@ -231,8 +233,8 @@ function checkDisabled(config) {
 }
 
 /** @param {Record<string, string | string[] | boolean>} options @param {string[]} paths */
-function configFrom(options, paths) {
-  const config = loadConfig(/** @type {string | undefined} */ (options["--config"]) ?? null, startFolder(paths));
+function configFrom(options, paths, start = null) {
+  const config = loadConfig(/** @type {string | undefined} */ (options["--config"]) ?? null, start ?? startFolder(paths));
   if (options["--preset"]) config.preset = choose(/** @type {string} */ (options["--preset"]), PRESET_NAMES, "--preset");
   for (const rule of /** @type {string[]} */ (options["--disable"] ?? [])) config.disable.add(rule);
   if (options["--profile"]) config.profile = /** @type {string} */ (options["--profile"]);
@@ -797,6 +799,59 @@ function runSpec(args) {
   return 0;
 }
 
+/** Claude Code가 다음 모델 요청에 넣는 비차단 Finding 문맥. */
+function hookContext(eventName, name, findings) {
+  const where = eventName === "Stop" ? "마지막 답변" : "방금 쓴 마크다운";
+  return JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: eventName,
+      additionalContext: `hanlint가 ${where}에서 센 Finding입니다.\n${renderCompact(name, findings)}`,
+    },
+  });
+}
+
+/** 명령 훅 JSON을 stdin에서 읽어 저장 파일이나 마지막 답변을 검사한다. 언제나 종료 코드 0이다. @param {string[]} args */
+function runHook(args) {
+  try {
+    const { options, positionals } = parseArgs(args);
+    if (positionals.length) return 0;
+    const payload = JSON.parse(readFileSync(0, "utf-8"));
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) return 0;
+    let eventName;
+    let name;
+    let findings;
+    if (options["--reply"]) {
+      if (payload.hook_event_name !== "Stop" || payload.stop_hook_active === true) return 0;
+      const text = payload.last_assistant_message;
+      if (typeof text !== "string" || !text.trim()) return 0;
+      const start = typeof payload.cwd === "string" && payload.cwd ? payload.cwd : process.cwd();
+      const config = configFrom(options, [], start);
+      config.preset = "chat";
+      eventName = "Stop";
+      name = "<assistant>";
+      findings = lintText(text, config, name);
+    } else {
+      if (payload.hook_event_name !== "PostToolUse" || !["Write", "Edit"].includes(payload.tool_name)) return 0;
+      const rawPath = payload.tool_input?.file_path;
+      if (typeof rawPath !== "string" || !rawPath || !MARKDOWN.includes(extname(rawPath).toLowerCase())) return 0;
+      try {
+        if (!statSync(rawPath).isFile()) return 0;
+      } catch {
+        return 0;
+      }
+      const config = configFrom(options, [rawPath]);
+      eventName = "PostToolUse";
+      name = rawPath;
+      findings = lintText(readFileSync(rawPath, "utf-8"), config, name);
+      if (config.baseline) findings = loadBaseline(config.baseline).keep(name, findings);
+    }
+    if (findings.length) process.stdout.write(`${hookContext(eventName, name, findings)}\n`);
+  } catch {
+    return 0;
+  }
+  return 0;
+}
+
 /** 잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다. @param {import("../config/settings.js").Config} config */
 function baselineState(config) {
   if (!config.baseline) return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)";
@@ -954,6 +1009,7 @@ function dispatch(argv) {
   if (command === "patterns") return runPatterns(rest);
   if (command === "primer") return runPrimer(rest);
   if (command === "spec") return runSpec(rest);
+  if (command === "hook") return runHook(rest);
   if (command === "baseline") return runBaseline(rest);
   if (command === "doctor") return runDoctor(rest);
   return runInit(rest);

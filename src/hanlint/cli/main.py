@@ -13,6 +13,7 @@ hanlint explain <규칙>             규칙의 기술서
 hanlint patterns --rule <규칙>     그 규칙을 피하는 문장 틀
 hanlint primer --preset <종류>     쓰기 전에 읽는 한 장. 켜진 규칙의 고치는 법과 본보기 전후
 hanlint spec --preset <종류>       같은 규칙판과 종류 프로파일의 쓰기 전 숫자 사양
+hanlint hook                       Claude Code가 쓴 마크다운을 같은 턴에 비차단 검사
 hanlint baseline 글들/             지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
 hanlint doctor                     설정과 꺼진 규칙
 hanlint init                       주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
@@ -61,6 +62,7 @@ from .commands import (
     explain,
     fix,
     guard,
+    hook,
     init,
     learn,
     lint,
@@ -95,6 +97,7 @@ COMMANDS = {
     "lint": lint,
     "fix": fix,
     "guard": guard,
+    "hook": hook,
     "audit": audit,
     "map": mapCommand,
     "print": printFingerprint,

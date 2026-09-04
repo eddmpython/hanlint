@@ -173,13 +173,9 @@ def writingSpec(
     numberP50 = percentile(numbers, 50)
     numberP90 = percentile(numbers, 90)
     numberText = (
-        "문장 중앙과 90%에서 숫자 없음"
-        if numberP50 == numberP90 == 0
-        else f"문장 중앙 {numberP50}개, 90%가 {numberP90}개 이하"
+        "문장 중앙과 90%에서 숫자 없음" if numberP50 == numberP90 == 0 else f"문장 중앙 {numberP50}개, 90%가 {numberP90}개 이하"
     )
-    rows.append(
-        WritingSpecRow("numbers", "숫자", numberText, (f"profile.{profile.kind}.sentence.numbers",))
-    )
+    rows.append(WritingSpecRow("numbers", "숫자", numberText, (f"profile.{profile.kind}.sentence.numbers",)))
 
     question = profile.rates["question"]
     if config.enabled("noQuestion"):

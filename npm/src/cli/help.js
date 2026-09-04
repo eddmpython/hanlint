@@ -7,6 +7,7 @@ export function rootHelp() {
 일상 검사
   hanlint 글.md                         글을 검사한다
   hanlint fix 글.md                     안전한 고침만 적용한다
+  hanlint hook                          AI가 저장한 마크다운을 같은 턴에 검사한다
 
 요구사항 잠금
   hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2
