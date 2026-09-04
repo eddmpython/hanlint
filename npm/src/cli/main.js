@@ -53,9 +53,10 @@ import { LAYERS, renderFingerprintJson } from "../report/fingerprintJson.js";
 import { renderGithub } from "../report/githubReport.js";
 import { renderJson } from "../report/jsonReport.js";
 import { renderText } from "../report/textReport.js";
+import { renderWritingSpec, writingSpec } from "../report/writingSpec.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -124,6 +125,7 @@ const OPTION_KINDS = {
   "--preset": "value",
   "--rule": "value",
   "--register": "value",
+  "--chars": "value",
   "--baseline": "optional",
   "--prune": "flag",
 };
@@ -777,6 +779,24 @@ function runPrimer(args) {
   return 0;
 }
 
+/** @param {string[]} args */
+function runSpec(args) {
+  const { options } = parseArgs(args);
+  const config = configFrom(options, []);
+  const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
+  let targetChars = null;
+  if (options["--chars"] !== undefined) {
+    const raw = /** @type {string} */ (options["--chars"]);
+    targetChars = Number(raw);
+    if (!Number.isInteger(targetChars) || targetChars <= 0) throw new UsageError(`--chars 는 1 이상의 정수다: ${raw}`);
+  }
+  const result = writingSpec(config, register, targetChars);
+  const output = /** @type {string | undefined} */ (options["--output"]);
+  const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
+  emit(format === "json" ? JSON.stringify(result, null, 2) : renderWritingSpec(result), output);
+  return 0;
+}
+
 /** 잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다. @param {import("../config/settings.js").Config} config */
 function baselineState(config) {
   if (!config.baseline) return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)";
@@ -933,6 +953,7 @@ function dispatch(argv) {
   if (command === "explain") return runExplain(rest);
   if (command === "patterns") return runPatterns(rest);
   if (command === "primer") return runPrimer(rest);
+  if (command === "spec") return runSpec(rest);
   if (command === "baseline") return runBaseline(rest);
   if (command === "doctor") return runDoctor(rest);
   return runInit(rest);

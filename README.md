@@ -54,6 +54,7 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 |---|---|
 | 이 글에 무엇이 잘못됐나 | `hanlint 글.md` |
 | 기계가 고칠 수 있는 것은 먼저 고쳐 줘 | `hanlint fix 글.md` |
+| 쓰기 전에 이 종류의 숫자 사양을 줘 | `hanlint spec --preset blog --chars 800` |
 | Python에서 쓰는 동안 계속 봐 줘 | `hanlint watch 글.md` |
 | 섹션 수와 순서를 요구사항대로 잠가 줘 | `hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2` |
 
@@ -61,10 +62,29 @@ hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집�
 
 - [지적과 본보기가 어떻게 나오는지](#hanlint-가-한국어-글에서-잡는-것)
 - [AI 산문의 Contract, Finding, Patch](#contract-finding-patch)
+- [같은 규칙판을 쓰기 전 사양으로 만드는 법](#쓰기-전-숫자-사양)
 - [글 종류에 맞는 프리셋을 고르는 법](#글의-종류를-고른다-블로그-보고서-문서-안내서-수필-소설-백과)
 - [기존 문서의 지적을 잠그고 새 결함만 막는 법](#이미-쓴-글이-많은-저장소에-들일-때)
 - [Python과 npm의 명령 범위](#명령-한눈에)
 - [AI 초안에 연결하는 법](#ai-초안-검사)
+
+## 쓰기 전 숫자 사양
+
+`spec`은 검사 뒤에 쓰는 규칙판을 생성 전에 뒤집어 보여 준다. 새 점수나 별도 작법을 만들지 않는다. 글 종류의
+배포 프로파일에서 문단당 문장 수, 문장 길이, 쉼표, `의`, 명사 연쇄, 새 화제, 문두 접속, 숫자와 물음표 분포를
+읽고, 현재 설정에서 켜진 `longSentence`, `endingRepeat`, `euiChain`, `nounPile`, `noQuestion`의 정확한 임계를
+함께 적는다.
+
+```console
+hanlint spec --preset blog --register 합니다 --chars 800
+npx hanlint spec --preset blog --register 합니다 --chars 800 --format json
+```
+
+사람용 출력은 목표 800자를 프로파일의 문장 길이 중앙값으로 역산해 문단과 문장 수를 제안한다. JSON의 각
+`rows[].basis`는 그 수가 온 `profile.*`과 `rule.*` 정본을 밝힌다. 프로파일은 실제 편집 글의 관찰값이고 규칙은
+현재 검사 요구라서 둘이 어긋날 수 있다. 그때는 어긋남을 숨기지 않고 켜진 규칙을 따른다고 적는다. `chat`은 견줄
+말뭉치가 없으므로 사양을 꾸며 내지 않고 오류를 낸다. 이 사양은 좋은 글의 판정이 아니며, 쓴 뒤 같은 프리셋으로
+`hanlint 글.md`를 실행해야 한다.
 
 ## Contract, Finding, Patch
 
@@ -700,6 +720,7 @@ hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |
 | `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
+| `hanlint spec --preset blog --chars 800` | 같은 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
 | `hanlint 글들/ --baseline` | 잠근 것은 넘기고 새로 생긴 것만 막는다 | 예 |

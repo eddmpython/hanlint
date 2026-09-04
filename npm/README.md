@@ -9,6 +9,7 @@ npx hanlint
 npx hanlint 글.md
 npx hanlint fix 글.md
 npx hanlint 글.md --format compact --errors-only
+npx hanlint spec --preset blog --register 합니다 --chars 800
 npx hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산을 확인한다"
 npx hanlint contract init 초안.md --reader "개발자" --goal "섹션별로 비교한다" --outline h2
 npx hanlint check contract.json 초안.md --format text
@@ -36,6 +37,10 @@ npx hanlint verify-patch contract.json 초안.md patch.json
 글의 종류가 블로그가 아니면 프리셋을 먼저 고른다. `npx hanlint init --preset docs` 가 참고 문서에 맞지 않는
 규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia` 일곱이고
 `npx hanlint rules` 가 지금 도는 목록을 낸다.
+
+글을 쓰기 전에는 `npx hanlint spec --preset <종류> --chars <글자 수>`로 같은 규칙판에서 숫자 사양을 받는다.
+배포 프로파일에서 관찰한 값과 현재 켜진 규칙 임계를 함께 낸다. JSON의 `rows[].basis`가 각 수의 정본을 밝힌다.
+새 점수나 품질 판정은 만들지 않는다. `chat`은 견줄 프로파일이 없어 사양을 내지 않는다.
 
 ```js
 import { Contract, Patch, check, contractFromText, contractFromTextV2, lintFile, renderCheck, verifyPatch } from "hanlint";

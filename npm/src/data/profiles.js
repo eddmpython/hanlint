@@ -36,6 +36,10 @@ export const TYPE_LABELS = {
  * @property {number} sentences
  * @property {number} paragraphs
  * @property {Map<string, Histogram>} sentence
+ * @property {Map<string, Histogram>} paragraph
+ * @property {Histogram | null} endingRuns
+ * @property {Record<string, number>} endingTransitions
+ * @property {Record<string, Record<string, number>>} rates
  * @property {string} label
  */
 
@@ -62,6 +66,10 @@ function profileFromDict(kind, data) {
   for (const [name, value] of Object.entries(/** @type {Record<string, Record<string, unknown>>} */ (data.sentence))) {
     sentence.set(name, histogramFromDict(value));
   }
+  const paragraph = new Map();
+  for (const [name, value] of Object.entries(/** @type {Record<string, Record<string, unknown>>} */ (data.paragraph))) {
+    paragraph.set(name, histogramFromDict(value));
+  }
   const documents = Number(data.documents);
   return {
     kind,
@@ -69,6 +77,10 @@ function profileFromDict(kind, data) {
     sentences: Number(data.sentences),
     paragraphs: Number(data.paragraphs),
     sentence,
+    paragraph,
+    endingRuns: data.endingRuns ? histogramFromDict(/** @type {Record<string, unknown>} */ (data.endingRuns)) : null,
+    endingTransitions: { .../** @type {Record<string, number>} */ (data.endingTransitions ?? {}) },
+    rates: { .../** @type {Record<string, Record<string, number>>} */ (data.rates ?? {}) },
     label: TYPE_LABELS[kind] ?? `참조 글 ${documents}편`,
   };
 }

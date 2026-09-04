@@ -13,10 +13,14 @@ from .mapText import renderMap
 from .registerMatch import exemplarInRegister, patternInRegister, targetRegister
 from .textReport import renderText
 from .writingPacket import PURPOSES, buildBriefWritingPacket, buildWritingPacket, renderWritingPacket
+from .writingSpec import SPEC_VERSION, WritingSpec, WritingSpecRow, renderWritingSpec, writingSpec
 
 __all__ = [
     "LAYERS",
     "PURPOSES",
+    "SPEC_VERSION",
+    "WritingSpec",
+    "WritingSpecRow",
     "buildBriefWritingPacket",
     "buildWritingPacket",
     "fingerprintDict",
@@ -30,7 +34,9 @@ __all__ = [
     "renderMapHtml",
     "renderText",
     "renderWritingPacket",
+    "renderWritingSpec",
     "exemplarInRegister",
     "patternInRegister",
     "targetRegister",
+    "writingSpec",
 ]

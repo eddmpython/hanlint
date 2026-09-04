@@ -137,6 +137,21 @@ def testRuleListsAgree():
     python, node = runBoth(["primer", "--format", "compact"])
     assert python.returncode == node.returncode == 2
 
+    # 사양의 수와 근거도 어느 판을 설치했는지에 따라 갈리면 안 된다.
+    for preset in [name for name in PRESET_NAMES if name != "chat"]:
+        python, node = runBoth(["spec", "--preset", preset, "--chars", "800"])
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout, preset
+    for register in REGISTERS:
+        python, node = runBoth(
+            ["spec", "--preset", "blog", "--register", register, "--chars", "800", "--format", "json"]
+        )
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout, register
+    python, node = runBoth(["spec", "--preset", "chat"])
+    assert python.returncode == node.returncode == 2
+    assert python.stderr == node.stderr
+
     # 기계가 읽는 꼴. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 판이 같아야 한다.
     for args in (
         ["rules", "--format", "json"],
