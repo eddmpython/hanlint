@@ -87,6 +87,11 @@ npx hanlint spec --preset blog --register 합니다 --chars 800 --format json
 말뭉치가 없으므로 사양을 꾸며 내지 않고 오류를 낸다. 이 사양은 좋은 글의 판정이 아니며, 쓴 뒤 같은 프리셋으로
 `hanlint 글.md`를 실행해야 한다.
 
+사양을 모든 작문 프롬프트에 자동으로 넣지는 않는다. [18편 탐침](tests/_attempts/specSheet/)에서 spec은 추가
+자료 없음보다 error와 분량 위반을 줄였지만, 미리 정한 네 채택 조건을 모두 만족하지 못했다. 산문 대신 TOML만
+낸 두 편과 요구 밖 숫자를 보탠 두 편도 있었다. 따라서 분량과 분포를 따로 확인할 때 명시적으로 호출하는
+확인표이며, 초안의 사실 안전이나 문체 준수를 보장하지 않는다.
+
 ## 같은 턴 폐루프 훅
 
 `hook`은 Claude Code의 명령 훅 JSON을 stdin으로 받아 방금 쓴 `.md` 또는 `.markdown` 한 파일만 검사한다.
