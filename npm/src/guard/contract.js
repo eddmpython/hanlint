@@ -9,6 +9,7 @@ import { headingsOf } from "../document/model.js";
 import { parseMarkdown } from "../document/parseMarkdown.js";
 import { buildFingerprint } from "../fingerprint/build.js";
 import { runAll } from "../rules/registry.js";
+import { editIssues } from "./editLocality.js";
 import { compareOutline, summarizeDocument } from "./outline.js";
 import { CheckResult, PatchResult } from "./receipt.js";
 import { compareText, factLines, protectedSurface, surfaceDiff, surfaceViolationCount } from "./surface.js";
@@ -61,7 +62,7 @@ export function check(text, rawContract, config = defaultConfig(), path = null) 
   const findings = runAll(doc, config);
   const outline = contract instanceof ContractV2 ? compareOutline(contract.outline, doc) : null;
   const document = contract instanceof ContractV2 ? summarizeDocument(doc) : null;
-  return new CheckResult(contract.digest, digest(text), surfaceDiff(contract.text, text), findings, contract.version, outline, document);
+  return new CheckResult(contract.digest, digest(text), surfaceDiff(contract.text, text), findings, contract.version, outline, document, contract instanceof ContractV2 ? contract.lockedFacts.filter((fact) => !text.includes(fact)) : []);
 }
 
 /** @param {CheckResult} result */
@@ -75,11 +76,13 @@ function contractIssues(result) {
       found.add(`outline\u0000${mismatch.position}:${mismatch.expected ?? ""}:${mismatch.actual ?? ""}`);
     }
   }
+  for (const fact of result.missingFacts) found.add(`lockedFacts\u0000${fact}`);
   return found;
 }
 
 /** @param {CheckResult} result @param {string} reason */
 function reasonCount(result, reason) {
+  if (reason === "lockedFacts") return result.missingFacts.length;
   if (reason in result.surface) return result.surface[/** @type {keyof typeof result.surface} */ (reason)].length;
   if (reason === "outline" && result.outline) return result.outline.mismatches.length;
   return result.findings.filter((finding) => finding.rule === reason).length;
@@ -150,6 +153,10 @@ export function verifyPatch(text, rawPatch, rawContract, config = defaultConfig(
     .filter((issue) => !beforeIssues.has(issue))
     .map((issue) => /** @type {[string, string]} */ (issue.split("\u0000", 2)))
     .sort((left, right) => compareText(left[0], right[0]) || compareText(left[1], right[1]));
+  if (contract instanceof ContractV2) {
+    newContractIssues.push(...editIssues(text, patch, beforeResult.findings, contract.editPolicy));
+    newContractIssues.sort((a, b) => compareText(a[0], b[0]) || compareText(a[1], b[1]));
+  }
   return new PatchResult({
     contractSha256: contract.digest,
     sourceSha256: beforeResult.draftSha256,

@@ -179,9 +179,11 @@ def writingSpec(
 
     question = profile.rates["question"]
     if config.enabled("noQuestion"):
-        questionText = "절이 2개 이상이면 글 전체에 물음표 최소 1개"
-        if question["p50"] == 0:
-            questionText += ". 말뭉치 중앙은 0%라 규칙과 어긋나며 켜진 규칙을 따른다"
+        questionText = (
+            "선택한 정책: 절이 2개 이상이면 글 전체에 물음표 최소 1개"
+            if "noQuestion" in config.enforceStyle
+            else "물음표 부재는 notice다. 질문 없이 충분히 설명했다면 유지한다"
+        )
         questionBasis = (f"profile.{profile.kind}.rates.question", "rule.noQuestion")
     else:
         questionText = (

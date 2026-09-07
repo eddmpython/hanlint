@@ -13,7 +13,7 @@ const READS = new RegExp(
 const OPENS = new RegExp("\\bopen" + QUOTED + "\\s*(?:,\\s*(?:mode\\s*=\\s*)?[\"']([^\"']*)[\"'])?", "g");
 const WRITES = new RegExp(
   "\\b(?:to_csv|to_excel|to_parquet|to_json|to_sql|write_csv|write_parquet|write_json|write_ndjson|sink_parquet|sink_csv|" +
-    "write_text|write_bytes|savefig|save|imwrite|savetxt|dump)" + QUOTED,
+    "write_text|write_bytes|savefig|save|imwrite|savetxt|dump|ExcelWriter)" + QUOTED,
   "g",
 );
 const SHELL_WRITES = /(?:>>?|-o|-O|--output|Out-File)\s*["']?([\w./\\-]+\.[A-Za-z0-9]+)/g;

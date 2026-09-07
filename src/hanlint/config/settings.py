@@ -212,7 +212,12 @@ class Config:
     문서의 최솟값은 0.9778, 에세이 하위 5%는 0.7576이었고 실제 혼합 기사 한 편은 0.625였다. 0.7은
     그 기사를 섞임으로 가르면서 일관된 발행문을 보존한다 (2026-08-28)."""
 
+    enforceStyle: list[str] = field(default_factory=list)
+    """사용자가 오류로 강제할 문체 신호. 기본은 참고 지적이다."""
+
     def __post_init__(self) -> None:
+        if not isinstance(self.enforceStyle, list) or any(name not in ("noQuestion", "nounPile") for name in self.enforceStyle):
+            raise ValueError("enforceStyle 은 noQuestion, nounPile의 배열이다")
         if not isinstance(self.protectedTerms, list) or not all(
             isinstance(item, str) and item.strip() for item in self.protectedTerms
         ):
@@ -235,11 +240,11 @@ class Config:
                 self.operations = projectOperations(self.operations, PRESET_NAMES)
 
     def enabled(self, ruleName: str) -> bool:
-        return ruleName not in self.disable and ruleName not in PRESETS[self.preset]
+        return ruleName not in self.disable and (ruleName not in PRESETS[self.preset] or ruleName in self.enforceStyle)
 
     def offRules(self) -> tuple[str, ...]:
         """지금 꺼져 있는 규칙 이름. 프리셋이 끈 것과 disable 이 끈 것을 합친다."""
-        return tuple(sorted(set(PRESETS[self.preset]) | self.disable))
+        return tuple(sorted((set(PRESETS[self.preset]) - set(self.enforceStyle)) | self.disable))
 
     @classmethod
     def fromMapping(cls, data: dict) -> Config:
@@ -255,6 +260,8 @@ class Config:
                 if value not in PRESETS:
                     raise ValueError(f"preset 은 {', '.join(PRESET_NAMES)} 가운데 하나다: {shown(value)}")
                 config.preset = value
+            elif key == "enforceStyle":
+                config.enforceStyle = cls(enforceStyle=value).enforceStyle
             elif key == "dictionary":
                 config.dictionary = dict(value)
             elif key == "exemplars":

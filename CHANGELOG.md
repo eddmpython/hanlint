@@ -6,7 +6,17 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-09-07
+
 ### Added
+
+- **승인한 핵심 문구를 초안부터 잠근다.** Reader Contract v2의 선택 `lockedFacts`는 승인 facts의 정확한
+  문구를 검사한다. 숫자 집합을 유지한 채 회사별 값을 바꾸거나 잠근 부정을 지우면 누락으로 드러난다.
+  자동 의미 이해와 자연스러움 판정은 하지 않는다
+- **규칙별 수정 예산을 검증한다.** 선택 `editPolicy`가 Finding 줄과 실제 변경 창의 글자·줄 상한을 확인한다.
+  맞춤법 하나를 고친다는 이유로 떨어진 문장까지 다시 쓰는 후보를 거부한다
+- **쓰기 전 사양과 같은 턴 훅을 연결했다.** `spec`은 현재 규칙과 장르 분포를 확인표로 내고 `hook`은 저장과
+  답변의 Finding을 같은 턴에 돌려준다. reader 기제의 지적은 사람용 출력에서 독자 부채로 모아 읽는다
 
 - **`hanlint primer` 가 쓰기 전에 읽는 한 장을 낸다.** 프리셋에서 켜진 규칙마다 기술서의 고치기 절과 본보기
   전후 한 쌍을 부류별로 한 줄씩 늘어놓는다. 손으로 쓴 문장 없이 등록부와 본보기에서 결정적으로 생성하고 어느
@@ -26,11 +36,26 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Changed
 
+- **문체 신호를 기본 차단에서 분리했다.** `noQuestion`, `nounPile`은 notice이며 `enforceStyle`로 선택할 때만
+  error다. 사양과 primer도 불필요한 질문을 요구하지 않는다. 수정 절차는 반복 상한과 개선되지 않은 후보의
+  원문 유지를 명시한다
+- **생성 실험의 한계를 공개했다.** 숫자 사양과 리듬 실험은 초안의 규칙·분량과 모양을 측정한 결과이며,
+  숫자 사양은 기본 채택 조건을 모두 넘지 못했다. 사람 평가 없는 자연스러움 향상을 주장하지 않는다
+
 - **사용성을 제품의 최상위 원칙으로 올렸다.** 루트 도움말을 일상 검사, 요구사항 잠금, 설정과 이해,
   프로젝트와 평가 흐름으로 묶었다. 매 검사에서 기본값을 포함한 적용 프리셋을 표시하고 audit와 v2 check는
   긴 절 제목을 자르지 않는다
 - **설치명과 import 이름의 일대다 관계를 지원한다.** `cv2`의 네 공식 OpenCV 배포판과 `cudf`의 CUDA 12,
   CUDA 13 배포명을 모두 인정한다. 하나의 설치명만 강제하던 자료와 규칙을 허용 이름 집합으로 바꿨다
+
+### Fixed
+
+- **ExcelWriter로 만든 파일의 되읽기를 오탐하지 않는다.** 앞선 코드 줄의 생성 경로를 인식하며 생성 전
+  읽기는 계속 지적한다. 이슈 #7과 #8의 재현을 공용 fixture에 남겼다
+- **화제 단절과 설치명 관련 열린 제보를 재검증했다.** #9의 `topicBreak`는 이전 버전에서 제거되었으며,
+  #10의 CUDA 설치명 수정은 이번 배포에 포함한다
+- **낡은 파생 자료와 배포 문서의 표류를 줄였다.** 말뭉치 파생 자료를 갱신하고 push 시 코드와의 일치를
+  확인한다. 프리셋 표와 사용 스킬의 정본 연결, 쓰기 훅의 검사 범위를 보강했다
 
 ## [0.0.9] - 2026-09-01
 
@@ -496,7 +521,8 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   저장 시 진단과 quick fix), AI 스킬 (`skills/use-hanlint/SKILL.md`)
 - 형태소 정밀 모드 (`pip install hanlint[kiwi]`) 는 선택이고 기본은 표층 근사다
 
-[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.9...HEAD
+[Unreleased]: https://github.com/eddmpython/hanlint/compare/v0.0.10...HEAD
+[0.0.10]: https://github.com/eddmpython/hanlint/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/eddmpython/hanlint/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/eddmpython/hanlint/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/eddmpython/hanlint/compare/v0.0.2...v0.0.7

@@ -10,6 +10,7 @@ from ..config import Config, Contract, ContractV2, Outline, Patch, parseContract
 from ..document import parseMarkdown
 from ..fingerprint import buildFingerprint
 from ..rules import Finding, runAll
+from .editLocality import editIssues
 from .outline import compareOutline, summarizeDocument
 from .receipt import CheckResult, PatchResult
 from .surface import factLines, protectedSurface, surfaceDiff
@@ -72,6 +73,7 @@ def check(
         contractVersion=contract.version,
         outline=outline,
         document=document,
+        missingFacts=tuple(fact for fact in contract.lockedFacts if fact not in text) if isinstance(contract, ContractV2) else (),
     )
 
 
@@ -79,10 +81,13 @@ def contractIssues(result: CheckResult) -> set[tuple[str, str]]:
     issues = {(kind, value) for kind, values in result.surface.asDict().items() for value in values}
     if result.outline is not None:
         issues.update(("outline", mismatch.signature) for mismatch in result.outline.mismatches)
+    issues.update(("lockedFacts", fact) for fact in result.missingFacts)
     return issues
 
 
 def reasonCount(result: CheckResult, reason: str) -> int:
+    if reason == "lockedFacts":
+        return len(result.missingFacts)
     surface = result.surface.asDict()
     if reason in surface:
         return len(surface[reason])
@@ -145,7 +150,10 @@ def verifyPatch(
         )
     resultText = text.replace(patch.before, patch.after, 1)
     afterResult = check(resultText, contract, config, path)
-    newContractIssues = tuple(sorted(contractIssues(afterResult) - contractIssues(beforeResult)))
+    issues = contractIssues(afterResult) - contractIssues(beforeResult)
+    if isinstance(contract, ContractV2):
+        issues.update(editIssues(text, patch, beforeResult.findings, contract.editPolicy))
+    newContractIssues = tuple(sorted(issues))
     return PatchResult(
         contractSha256=contract.digest,
         sourceSha256=beforeResult.draftSha256,

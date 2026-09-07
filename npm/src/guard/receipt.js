@@ -6,9 +6,9 @@ import { readerDebts } from "../rules/readerDebt.js";
 import { compareText, surfaceViolationCount } from "./surface.js";
 
 export const CHECK_MEANING = "violationCount는 선언한 보호 원자와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
-export const CHECK_MEANING_V2 = "violationCount는 선언한 보호 원자, 제목 구조와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
+export const CHECK_MEANING_V2 = "violationCount는 선언한 보호 원자, 제목 구조, 잠금 문구 누락과 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
 export const PATCH_MEANING = "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다";
-export const PATCH_MEANING_V2 = "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반, 새 제목 구조 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다";
+export const PATCH_MEANING_V2 = "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 계약 위반과 새 error를 만들지 않고 선택한 수정 예산을 지켰다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다";
 
 /** @param {import("../rules/finding.js").Finding[]} findings */
 function errorRules(findings) {
@@ -22,7 +22,7 @@ function errorRules(findings) {
 
 export class CheckResult {
   /** @param {string} contractSha256 @param {string} draftSha256 @param {import("./surface.js").SurfaceDiff} surface @param {import("../rules/finding.js").Finding[]} findings @param {number} [contractVersion] @param {import("./outline.js").OutlineDiff | null} [outline] @param {import("./outline.js").DocumentSummary | null} [document] */
-  constructor(contractSha256, draftSha256, surface, findings, contractVersion = 1, outline = null, document = null) {
+  constructor(contractSha256, draftSha256, surface, findings, contractVersion = 1, outline = null, document = null, missingFacts = []) {
     this.contractSha256 = contractSha256;
     this.draftSha256 = draftSha256;
     this.surface = surface;
@@ -30,6 +30,7 @@ export class CheckResult {
     this.contractVersion = contractVersion;
     this.outline = outline;
     this.document = document;
+    this.missingFacts = missingFacts;
     if (![1, 2].includes(contractVersion)) {
       throw new Error(`check result contractVersion 은 1 또는 2다: ${contractVersion}`);
     }
@@ -48,7 +49,7 @@ export class CheckResult {
   }
 
   get violationCount() {
-    return surfaceViolationCount(this.surface) + (this.outline?.mismatches.length ?? 0) + this.errorCount;
+    return surfaceViolationCount(this.surface) + (this.outline?.mismatches.length ?? 0) + this.errorCount + this.missingFacts.length;
   }
 
   asDict() {
@@ -67,7 +68,7 @@ export class CheckResult {
       },
       meaning: this.contractVersion === 1 ? CHECK_MEANING : CHECK_MEANING_V2,
     };
-    if (this.contractVersion === 2) return { ...result, outline: this.outline, document: this.document };
+    if (this.contractVersion === 2) return { ...result, outline: this.outline, document: this.document, missingFacts: this.missingFacts };
     return result;
   }
 }
@@ -150,6 +151,7 @@ export function renderCheck(result) {
     ["계약 밖 링크 목적지", result.surface.unexpectedLinks],
   ];
   for (const [label, values] of labels) if (values.length) lines.push(`- ${label}: ${values.join(", ")}`);
+  for (const fact of result.missingFacts) lines.push(`- lockedFacts: ${fact}`);
   if (result.outline) {
     const state = result.outline.matches ? "일치" : `어긋남 ${result.outline.mismatches.length}곳`;
     lines.push(`- 구조: H${result.outline.level} ${result.outline.actual.length}개, ${state}`);

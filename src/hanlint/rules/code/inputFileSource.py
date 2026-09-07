@@ -44,8 +44,8 @@ def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     reported: set[str] = set()  # 이미 짚은 폴더. 같은 폴더를 두 번 짚지 않는다
     for block in doc.codeBlocks:
         reader = doc.reader.beforeBlock[block.index]
-        blockWrites, blockDirs = createdIn(line for _, line in block.lines)
-        # 이 블록이 만드는 폴더는 같은 블록의 읽기에도 미리 센다. 파일은 블록 안에서 쓴 것 (blockWrites) 만 따로 본다.
+        _, blockDirs = createdIn(line for _, line in block.lines)
+        # 폴더 준비는 블록 단위로 보고 파일 공급은 실제 줄 순서로 쌓는다.
         have = set(reader.files) | blockDirs | reported
         for line, code in block.lines:
             reads = readsIn(code)
@@ -53,7 +53,7 @@ def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                 if not isDataFile(path):
                     continue
                 name = fileName(path)
-                if name in have or name in blockWrites or doc.reader.mentionedBefore(block.index, name):
+                if name in have or doc.reader.mentionedBefore(block.index, name):
                     continue
                 yield Finding(
                     "inputFileSource",
@@ -65,6 +65,8 @@ def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                     DOCUMENT,
                     block.index,
                 )
+            made, _ = createdIn((code,))
+            have.update(made)
             for path in writeTargets(code) + reads:
                 if any(mark in path for mark in NOT_A_PATH):
                     continue

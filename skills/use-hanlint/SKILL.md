@@ -30,8 +30,9 @@ Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --repl
    직접 쓴다. `patch` 가 있으면 그 문장 전체를 `patch.after` 로 바꾼다. 어떻게 다시 쓸지 막히면
    `hanlint explain <규칙>` (왜, 어디서, 고치기, 안 잡는 것과 본보기) 과 `hanlint patterns --rule <규칙>` (error 0 이
    보장된 문장 틀) 을 본다. 지적을 없애려고 문장이나 사실을 지우지 않는다.
-5. **error 가 0 이 될 때까지 3 으로 돌아간다.** 고치는 행위가 새 결함을 만든다. 실측에서 문단을 나누다
-   `paraFragment` 가, 지시어를 이름으로 바꾸다 `deixis` 가 새로 났다.
+5. **개선한 후보만 반영한다.** 한 자리의 후보를 최대 두 번 검토한다. 같은 근거가 줄지 않거나 새 위반이 생기면
+   후보를 버리고 마지막으로 보존한 원문을 유지한다. 계약이 있으면 `verify-patch`로 검증한다. 남은 error는
+   원문과 함께 사람에게 넘기고 error가 없다고 말하지 않는다. notice는 자동 수정의 목표가 아니다.
 6. **notice 를 한 번 읽는다.** `--severity all`. 사람 평가자와 같은 자리를 짚은 것은 `endingRepeat` 과
    `factListParagraph` 둘이었다. 그 둘을 먼저 보고 정당한 문장이면 둔다.
 7. **넘긴다.** 사용자 저장소의 글쓰기 스킬이 정한 평가로 넘긴다. 평가 지적을 반영한 직후에 3 을 다시 돌린다.

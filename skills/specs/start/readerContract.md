@@ -116,6 +116,42 @@ version 2 해시는 version 1과 같은 정렬 JSON, UTF-8, SHA-256 규칙을 �
 
 ## Finding과 check
 
+### 초안부터 지킬 사실과 수정 범위
+
+version 2는 선택 필드 `lockedFacts`와 `editPolicy`를 받는다. `lockedFacts`는 이미 승인한 `facts` 중에서
+표현까지 그대로 유지할 문구만 고른다. 대상, 항목, 값, 단위, 기간과 부정·조건을 한 문구에 함께 적으면
+숫자 집합이 같아도 관계를 뒤집은 후보를 `missingFacts`로 발견한다. 뜻을 자동으로 분석하는 기능은 아니다.
+문구 밖의 모순과 다른 표현으로 쓴 같은 뜻은 이해하지 못한다. 표현을 자유롭게 바꿔야 할 사실은 잠그지 않는다.
+
+아직 글이 없을 때도 reader와 goal, 승인 facts와 예정 outline으로 JSON을 직접 작성할 수 있다.
+surface에는 사용하기로 정한 보호 원자만 둔다. 자동 추출 초안은 사실 승인이 아니므로 사람이 확인한다.
+한 번 승인한 계약은 검사 지적을 없애려고 자동으로 다시 만들지 않는다.
+
+```json
+{
+  "version": 2,
+  "reader": "실적을 확인할 독자",
+  "goal": "회사별 매출을 비교한다",
+  "facts": ["A사의 매출은 100억 원이다.", "B사의 매출은 200억 원이다."],
+  "surface": {"numbers": ["100", "200"], "urls": [], "code": [], "links": []},
+  "outline": {"level": 2, "headings": ["실적"]},
+  "lockedFacts": ["A사의 매출은 100억 원이다.", "B사의 매출은 200억 원이다."],
+  "editPolicy": {"spelling": {"maxChars": 2, "maxLines": 1}}
+}
+```
+
+예산의 수는 이 예시에서 선택한 정책이며 기본 임계가 아니다. `editPolicy`가 있으면 선택한 규칙의 Finding이
+가리키는 줄을 포함한 변경만 검증한다. 전후의 공통 접두·접미를 제외한 하나의 변경 창에서 Unicode 코드 포인트
+수와 줄 수를 센다. 중간의 그대로인 문장도 창에 포함해 멀리 떨어진 수정의 묶음을 숨기지 못한다.
+선택한 규칙의 예산이 없거나 상한을 넘으면 `newContractIssues`의 `editPolicy`로 거부한다.
+
+`hanlint check 계약.json 글.md`는 빠진 잠금 문구를 위반 수에 더한다. `verify-patch`는 새 잠금 문구 누락도
+거부한다. `reason: "lockedFacts"`는 누락을 복원하는 후보의 근거가 된다. editPolicy까지 선택했다면 이 근거는
+규칙 Finding이 없어 자동 수정되지 않으며, 사실 복원은 원문과 출처를 사람이 확인한다.
+
+글을 쓰는 중에는 아직 쓰지 않은 절의 제목과 사실이 빠져 있을 수 있다. 완성한 부분의 오류부터 고치고,
+예정된 내용을 지우거나 계약을 느슨하게 바꾸지 않는다. 완성 후 전체 계약의 남은 의무를 확인한다.
+
 `check(text, contract)`는 보호 원자 차이와 기존 hanlint `Finding`을 한 번 계산한다. 출력은
 [checkResult 스키마](../../../src/hanlint/data/checkResult.schema.json)에 맞는다. `violationCount`는 여덟
 보호 원자 차이의 항목 수와 error Finding 수의 합이다. notice는 영수증에 남지만 위반 수에는 더하지 않는다.
@@ -130,7 +166,7 @@ version 2 해시는 version 1과 같은 정렬 JSON, UTF-8, SHA-256 규칙을 �
 version 2 결과는 [checkResultV2 스키마](../../../src/hanlint/data/checkResultV2.schema.json)에 맞는다.
 기존 surface와 lint에 `outline`과 `document`를 더한다. outline은 기대 제목과 실제 제목, 위치별 어긋남을
 내고 document는 문장, 문단, 절, 어절, 질문, 독자 호출 수와 잘리지 않은 절 제목을 낸다. version 2의
-`violationCount`는 보호 원자 차이, 제목 위치 어긋남, error Finding의 합이다.
+`violationCount`는 보호 원자 차이, 제목 위치 어긋남, 잠금 문구 누락, error Finding의 합이다.
 
 CLI의 기본 JSON은 자동화용 결정적 영수증이다. `check --format text`는 같은 결과를 결론, 근거, 다음 행동
 순서로 렌더링한다. 별도 lint와 audit를 다시 실행한 결과를 합치는 기능이 아니라 check가 한 번 만든 같은

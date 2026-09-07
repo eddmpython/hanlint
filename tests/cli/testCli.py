@@ -797,9 +797,10 @@ def testTermsShowsLearningGradeAndOptionalOutsideWord(tmp_path, capsys):
 def testPresetSelectsContextualExemplar(tmp_path, capsys):
     draft = tmp_path / "보고서.md"
     draft.write_text("지역 경제 활성화 지원 사업 추진 계획을 발표했습니다.\n", encoding="utf-8")
-    assert main([str(draft), "--preset", "report", "--format", "json"]) == 1
+    assert main([str(draft), "--preset", "report", "--format", "json"]) == 0
     findings = json.loads(capsys.readouterr().out)["files"][0]["findings"]
     nounPile = next(finding for finding in findings if finding["rule"] == "nounPile")
+    assert nounPile["severity"] == "notice"
     assert nounPile["exemplar"]["before"].startswith("지역 경제")
 
     assert main(["explain", "nounPile", "--preset", "docs", "--format", "json"]) == 0
@@ -1006,7 +1007,7 @@ def testMissingBaselineFileIsAnErrorNotSilence(tmp_path, capsys):
 def testPresetFlagWorksWithoutAConfigFile(tmp_path, capsys):
     """글 하나를 검사하려고 남의 저장소에 hanlint.toml 을 만들게 하지 않는다."""
     doc = write(tmp_path, "문서.md", DOCLIKE)
-    assert main([str(doc), "--format", "compact"]) == 1
+    assert main([str(doc), "--format", "compact"]) == 0
     blog = capsys.readouterr().out
     assert "[noQuestion]" in blog
 

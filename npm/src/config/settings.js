@@ -79,6 +79,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
 /**
  * @typedef {object} Config
  * @property {string} preset 글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다
+ * @property {string[]} enforceStyle
  * @property {Set<string>} disable 끌 규칙 이름
  * @property {string | null} keywordField
  * @property {string[]} introFields
@@ -118,6 +119,7 @@ export function defaultConfig() {
   return {
     preset: DEFAULT_PRESET,
     disable: new Set(),
+    enforceStyle: [],
     keywordField: null,
     introFields: [],
     endingFields: [],
@@ -155,12 +157,12 @@ export function defaultConfig() {
 
 /** @param {Config} config @param {string} ruleName */
 export function enabled(config, ruleName) {
-  return !config.disable.has(ruleName) && !PRESETS[config.preset].includes(ruleName);
+  return !config.disable.has(ruleName) && (!PRESETS[config.preset].includes(ruleName) || config.enforceStyle.includes(ruleName));
 }
 
 /** 지금 꺼져 있는 규칙 이름. 프리셋이 끈 것과 disable 이 끈 것을 합친다. @param {Config} config */
 export function offRules(config) {
-  return [...new Set([...PRESETS[config.preset], ...config.disable])].sort();
+  return [...new Set([...PRESETS[config.preset].filter((name) => !config.enforceStyle.includes(name)), ...config.disable])].sort();
 }
 
 /** @param {Record<string, unknown>} data @returns {Config} */
@@ -177,6 +179,11 @@ export function configFromMapping(data) {
         throw new Error(`preset 은 ${PRESET_NAMES.join(", ")} 가운데 하나다: ${JSON.stringify(value)}`);
       }
       config.preset = /** @type {string} */ (value);
+    } else if (key === "enforceStyle") {
+      if (!Array.isArray(value) || value.some((name) => !["noQuestion", "nounPile"].includes(name))) {
+        throw new Error("enforceStyle 은 noQuestion, nounPile의 배열이다");
+      }
+      config.enforceStyle = [...value];
     } else if (key === "dictionary") {
       config.dictionary = { .../** @type {Record<string, unknown[]>} */ (value) };
     } else if (key === "exemplars") {

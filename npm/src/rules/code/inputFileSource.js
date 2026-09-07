@@ -33,15 +33,15 @@ export function run(doc) {
   const reported = new Set();
   for (const block of doc.codeBlocks) {
     const reader = doc.reader.beforeBlock[block.index];
-    const [blockWrites, blockDirs] = createdIn(block.lines.map(([, line]) => line));
-    // 이 블록이 만드는 폴더는 같은 블록의 읽기에도 미리 센다. 파일은 블록 안에서 쓴 것 (blockWrites) 만 따로 본다.
+    const [, blockDirs] = createdIn(block.lines.map(([, line]) => line));
+    // 폴더 준비는 블록 단위로 보고 파일 공급은 실제 줄 순서로 쌓는다.
     const have = new Set([...reader.files, ...blockDirs, ...reported]);
     for (const [line, code] of block.lines) {
       const reads = readsIn(code);
       for (const path of reads) {
         if (!isDataFile(path)) continue;
         const name2 = fileName(path);
-        if (have.has(name2) || blockWrites.has(name2) || doc.reader.mentionedBefore(block.index, name2)) continue;
+        if (have.has(name2) || doc.reader.mentionedBefore(block.index, name2)) continue;
         findings.push(finding(name, line, code.trim(), `\`${name2}\` 을 읽는데 글 어디에서도 만들지 않았다. 독자는 여기서 파일 없음 오류로 멈춘다`, null, "error", DOCUMENT, block.index));
       }
       for (const path of [...writeTargets(code), ...reads]) {
@@ -52,6 +52,8 @@ export function run(doc) {
         reported.add(directory);
         findings.push(finding(name, line, code.trim(), `\`${directory}\` 폴더를 쓰는데 글 어디에서도 만들지 않았다. 없으면 파일을 쓰다 멈춘다`, null, NOTICE, DOCUMENT, block.index));
       }
+      const [made] = createdIn([code]);
+      for (const file of made) have.add(file);
     }
   }
   return findings;

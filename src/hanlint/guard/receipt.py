@@ -14,7 +14,7 @@ CHECK_MEANING = (
     "facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다"
 )
 CHECK_MEANING_V2 = (
-    "violationCount는 선언한 보호 원자, 제목 구조와 hanlint error의 수다. "
+    "violationCount는 선언한 보호 원자, 제목 구조, 잠금 문구 누락과 hanlint error의 수다. "
     "facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다"
 )
 PATCH_MEANING = (
@@ -22,8 +22,8 @@ PATCH_MEANING = (
     "만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
 )
 PATCH_MEANING_V2 = (
-    "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반, 새 제목 구조 위반과 "
-    "새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
+    "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 계약 위반과 새 error를 만들지 않고 "
+    "선택한 수정 예산을 지켰다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
 )
 
 
@@ -38,6 +38,7 @@ class CheckResult:
     contractVersion: int
     outline: OutlineDiff | None
     document: DocumentSummary | None
+    missingFacts: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.contractVersion not in (1, 2):
@@ -57,7 +58,7 @@ class CheckResult:
     @property
     def violationCount(self) -> int:
         outlineCount = self.outline.violationCount if self.outline is not None else 0
-        return self.surface.violationCount + outlineCount + self.errorCount
+        return self.surface.violationCount + outlineCount + self.errorCount + len(self.missingFacts)
 
     def asDict(self) -> dict:
         errorRules = Counter(finding.rule for finding in self.findings if finding.severity == "error")
@@ -79,6 +80,7 @@ class CheckResult:
         if self.contractVersion == 2:
             result["outline"] = self.outline.asDict()
             result["document"] = self.document.asDict()
+            result["missingFacts"] = list(self.missingFacts)
         return result
 
 
@@ -164,6 +166,7 @@ def renderCheck(result: CheckResult) -> str:
         ("계약 밖 링크 목적지", result.surface.unexpectedLinks),
     )
     lines.extend(f"- {label}: {', '.join(items)}" for label, items in labels if items)
+    lines.extend(f"- lockedFacts: {fact}" for fact in result.missingFacts)
     if result.outline is not None:
         state = "일치" if result.outline.matches else f"어긋남 {result.outline.violationCount}곳"
         lines.append(f"- 구조: H{result.outline.level} {len(result.outline.actual)}개, {state}")

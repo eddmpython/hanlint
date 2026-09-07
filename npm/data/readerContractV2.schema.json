@@ -15,6 +15,19 @@
       "uniqueItems": true,
       "items": { "type": "string", "minLength": 1 }
     },
+    "lockedFacts": { "$ref": "#/$defs/strings" },
+    "editPolicy": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["maxChars", "maxLines"],
+        "properties": {
+          "maxChars": { "type": "integer", "minimum": 1 },
+          "maxLines": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
     "surface": {
       "type": "object",
       "additionalProperties": false,

@@ -60,6 +60,14 @@ def testReplyUsesChatPresetOnce(monkeypatch, capsys, tmp_path):
     assert runHook(monkeypatch, capsys, ["--reply"], payload) == (0, "", "")
 
 
+def testHookLabelsStyleNotices(tmp_path, monkeypatch, capsys):
+    draft = tmp_path / "draft.md"
+    draft.write_text("가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.", encoding="utf-8")
+    code, out, err = runHook(monkeypatch, capsys, [], postPayload(draft))
+    assert code == 0 and not err
+    assert "[nounPile] notice:" in json.loads(out)["hookSpecificOutput"]["additionalContext"]
+
+
 def testHookStaysSilentForCleanOrUnusableInput(tmp_path, monkeypatch, capsys):
     clean = tmp_path / "clean.md"
     clean.write_text("## 절\n\n파일을 엽니다. 그러면 표가 생길까요? 작업 폴더에 생깁니다.\n", encoding="utf-8")

@@ -96,6 +96,7 @@ def render(preset: str = "blog") -> str:
             "",
             "# 표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어. 수치와 라틴 식별자는 자동으로 보호한다",
             '# protectedTerms = ["한린트", "김민지"]',
+            '# enforceStyle = ["noQuestion", "nounPile"]  # 선택한 문체 신호만 error로 강제한다',
             "",
             "# 사람이 승인한 프로젝트 본보기. 같은 규칙과 프리셋의 내장 본보기를 덮어쓴다",
             "# [[exemplars]]",

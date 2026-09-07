@@ -153,7 +153,7 @@ export class Outline {
 
 export class ContractV2 {
   /** @param {string} reader @param {string} goal @param {string[]} facts @param {ProtectedSurface | Record<string, unknown>} surface @param {Outline | Record<string, unknown>} outline @param {number} [version] */
-  constructor(reader, goal, facts, surface, outline, version = LATEST_CONTRACT_VERSION) {
+  constructor(reader, goal, facts, surface, outline, version = LATEST_CONTRACT_VERSION, lockedFacts = [], editPolicy = {}) {
     if (!Number.isInteger(version) || version !== LATEST_CONTRACT_VERSION) {
       throw new Error(`reader contract version 은 ${LATEST_CONTRACT_VERSION}다: ${version}`);
     }
@@ -162,6 +162,17 @@ export class ContractV2 {
     this.facts = Object.freeze(checkedStrings(facts, "facts", true));
     this.surface = surface instanceof ProtectedSurface ? surface : ProtectedSurface.fromMapping(surface);
     this.outline = outline instanceof Outline ? outline : Outline.fromMapping(outline);
+    this.lockedFacts = Object.freeze(checkedStrings(lockedFacts, "lockedFacts", true));
+    if (this.lockedFacts.some((fact) => !this.facts.includes(fact))) throw new Error("lockedFacts must select approved facts");
+    if (!editPolicy || typeof editPolicy !== "object" || Array.isArray(editPolicy)) throw new Error("editPolicy must be an object");
+    this.editPolicy = Object.freeze(Object.fromEntries(Object.entries(editPolicy).sort(([a], [b]) => compareText(a, b)).map(([rule, limits]) => {
+      if (!rule || rule !== rule.trim()) throw new Error("editPolicy requires rule names");
+      if (!limits || typeof limits !== "object" || Array.isArray(limits) || Object.keys(limits).sort().join(",") !== "maxChars,maxLines") {
+        throw new Error("editPolicy requires maxChars and maxLines");
+      }
+      if (Object.values(limits).some((n) => !Number.isInteger(n) || n < 1)) throw new Error("editPolicy limits must be positive integers");
+      return [rule, Object.freeze({maxChars: limits.maxChars, maxLines: limits.maxLines})];
+    })));
     this.version = version;
     Object.freeze(this);
   }
@@ -171,7 +182,7 @@ export class ContractV2 {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract 는 JSON 객체다");
     const data = /** @type {Record<string, unknown>} */ (raw);
     const expected = ["version", "reader", "goal", "facts", "surface", "outline"];
-    const unknown = Object.keys(data).filter((key) => !expected.includes(key)).sort();
+    const unknown = Object.keys(data).filter((key) => !expected.includes(key) && !["lockedFacts", "editPolicy"].includes(key)).sort();
     const missing = expected.filter((key) => !(key in data)).sort();
     if (unknown.length) throw new Error(`reader contract 의 모르는 키: ${unknown.join(", ")}`);
     if (missing.length) throw new Error(`reader contract 의 빠진 키: ${missing.join(", ")}`);
@@ -182,6 +193,8 @@ export class ContractV2 {
       /** @type {Record<string, unknown>} */ (data.surface),
       /** @type {Record<string, unknown>} */ (data.outline),
       /** @type {number} */ (data.version),
+      Object.hasOwn(data, "lockedFacts") ? data.lockedFacts : [],
+      Object.hasOwn(data, "editPolicy") ? data.editPolicy : {},
     );
   }
 
@@ -191,8 +204,10 @@ export class ContractV2 {
 
   get digest() {
     const encoded = {
+      ...(Object.keys(this.editPolicy).length ? {editPolicy: this.editPolicy} : {}),
       facts: this.facts,
       goal: this.goal,
+      ...(this.lockedFacts.length ? {lockedFacts: this.lockedFacts} : {}),
       outline: { headings: this.outline.headings, level: this.outline.level },
       reader: this.reader,
       surface: {
@@ -214,6 +229,8 @@ export class ContractV2 {
       facts: [...this.facts],
       surface: this.surface.asDict(),
       outline: this.outline.asDict(),
+      ...(this.lockedFacts.length ? {lockedFacts: [...this.lockedFacts]} : {}),
+      ...(Object.keys(this.editPolicy).length ? {editPolicy: this.editPolicy} : {}),
     };
   }
 }

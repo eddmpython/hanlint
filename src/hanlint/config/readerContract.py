@@ -6,7 +6,9 @@ import json
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
+from types import MappingProxyType
 
+from .editPolicy import checkedEditPolicy
 from .writingBrief import checkedString, checkedStrings
 
 CONTRACT_VERSION = 1
@@ -166,6 +168,8 @@ class ContractV2:
     surface: ProtectedSurface
     outline: Outline
     version: int = LATEST_CONTRACT_VERSION
+    lockedFacts: tuple[str, ...] = ()
+    editPolicy: dict | None = None
 
     def __init__(
         self,
@@ -175,6 +179,8 @@ class ContractV2:
         surface: ProtectedSurface | dict,
         outline: Outline | dict,
         version: int = LATEST_CONTRACT_VERSION,
+        lockedFacts: list[str] | tuple[str, ...] = (),
+        editPolicy: dict | None = None,
     ):
         if isinstance(version, bool) or not isinstance(version, int) or version != LATEST_CONTRACT_VERSION:
             raise ValueError(f"reader contract version 은 {LATEST_CONTRACT_VERSION}다: {version}")
@@ -189,6 +195,16 @@ class ContractV2:
             surface if isinstance(surface, ProtectedSurface) else ProtectedSurface.fromMapping(surface),
         )
         object.__setattr__(self, "outline", outline if isinstance(outline, Outline) else Outline.fromMapping(outline))
+        locked = checkedStrings(
+            list(lockedFacts) if isinstance(lockedFacts, tuple) else lockedFacts, "lockedFacts", allowEmpty=True
+        )
+        if any(fact not in self.facts for fact in locked):
+            raise ValueError("lockedFacts must select approved facts")
+        object.__setattr__(self, "lockedFacts", locked)
+        policy = checkedEditPolicy(editPolicy if editPolicy is not None else {})
+        object.__setattr__(
+            self, "editPolicy", MappingProxyType({rule: MappingProxyType(limits) for rule, limits in policy.items()})
+        )
         object.__setattr__(self, "version", version)
 
     @classmethod
@@ -196,13 +212,22 @@ class ContractV2:
         if not isinstance(data, dict):
             raise ValueError("reader contract 는 JSON 객체다")
         expected = {"version", "reader", "goal", "facts", "surface", "outline"}
-        unknown = sorted(set(data) - expected)
+        unknown = sorted(set(data) - expected - {"lockedFacts", "editPolicy"})
         missing = sorted(expected - set(data))
         if unknown:
             raise ValueError(f"reader contract 의 모르는 키: {', '.join(unknown)}")
         if missing:
             raise ValueError(f"reader contract 의 빠진 키: {', '.join(missing)}")
-        return cls(data["reader"], data["goal"], data["facts"], data["surface"], data["outline"], data["version"])
+        return cls(
+            data["reader"],
+            data["goal"],
+            data["facts"],
+            data["surface"],
+            data["outline"],
+            data["version"],
+            data.get("lockedFacts", []),
+            checkedEditPolicy(data.get("editPolicy", {})),
+        )
 
     @property
     def text(self) -> str:
@@ -222,6 +247,8 @@ class ContractV2:
             "facts": list(self.facts),
             "surface": self.surface.asDict(),
             "outline": self.outline.asDict(),
+            **({"lockedFacts": list(self.lockedFacts)} if self.lockedFacts else {}),
+            **({"editPolicy": {rule: dict(limits) for rule, limits in self.editPolicy.items()}} if self.editPolicy else {}),
         }
 
 

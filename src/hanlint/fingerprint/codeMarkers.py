@@ -17,7 +17,7 @@ READS = re.compile(
 OPENS = re.compile(r"\bopen" + QUOTED + r"\s*(?:,\s*(?:mode\s*=\s*)?[\"']([^\"']*)[\"'])?")
 WRITES = re.compile(
     r"\b(?:to_csv|to_excel|to_parquet|to_json|to_sql|write_csv|write_parquet|write_json|write_ndjson|sink_parquet|sink_csv|"
-    r"write_text|write_bytes|savefig|save|imwrite|savetxt|dump)" + QUOTED
+    r"write_text|write_bytes|savefig|save|imwrite|savetxt|dump|ExcelWriter)" + QUOTED
 )
 SHELL_WRITES = re.compile(r"(?:>>?|-o|-O|--output|Out-File)\s*[\"']?([\w./\\-]+\.[A-Za-z0-9]+)")
 SQL_PATHS = re.compile(r"FROM\s+'([^']+\.(?:csv|parquet|json|xlsx))'", re.IGNORECASE)

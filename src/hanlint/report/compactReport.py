@@ -18,7 +18,8 @@ def flat(text: str) -> str:
 def renderCompact(path: str, findings: list[Finding]) -> str:
     lines = []
     for finding in findings:
-        line = f"{path}:{finding.line} [{finding.rule}] {flat(finding.why)}"
+        label = "notice: " if finding.severity == "notice" else ""
+        line = f"{path}:{finding.line} [{finding.rule}] {label}{flat(finding.why)}"
         if finding.fix:
             line += f"  고친 뒤: {flat(finding.fix)}"
         lines.append(line)
