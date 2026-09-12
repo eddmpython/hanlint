@@ -1,7 +1,7 @@
-"""README 첫 화면의 대표 출력이 실제 hanlint 출력과 같은지 본다.
+"""명령 안내의 대표 출력이 실제 hanlint 출력과 같은지 본다.
 
-README 는 이 도구를 처음 보는 사람이 읽는 첫 화면이고, 거기 붙은 출력 예시는 제품의 실제 동작을
-베낀 것이다. 규칙 문구나 세는 방법을 고치면 조용히 어긋난다. 실측: 2026-08-31 에 doublePassive 의
+README는 짧은 소개를 소유하고 명령 안내는 실제 출력 예시를 소유한다. 규칙 문구나 세는 방법을
+고치면 예시가 조용히 어긋난다. 실측: 2026-08-31 에 doublePassive 의
 이유 문구가 낡았고 (`피동 하나로 줄인다`), nounPile 이 세는 명사가 5개로 적혀 있었는데 실제는 6개였다.
 """
 
@@ -13,17 +13,17 @@ from pathlib import Path
 from hanlint import Config, lintText
 
 ROOT = Path(__file__).resolve().parents[2]
-README = ROOT / "README.md"
-# README 예시가 검사하는 그 글. 줄 번호가 예시와 맞아야 하므로 빈 줄까지 같다.
+GUIDE = ROOT / "skills" / "specs" / "start" / "cli.md"
+# 명령 안내 예시가 검사하는 그 글. 줄 번호가 예시와 맞아야 하므로 빈 줄까지 같다.
 SAMPLE = "결과가 저장되어집니다.\n\n가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.\n"
 
 
 def exampleBlock() -> str:
-    blocks = re.findall(r"```text\n(.*?)```", README.read_text(encoding="utf-8"), re.DOTALL)
+    blocks = re.findall(r"```text\n(.*?)```", GUIDE.read_text(encoding="utf-8"), re.DOTALL)
     for block in blocks:
         if block.startswith("설정:") and "[doublePassive]" in block:
             return block
-    raise AssertionError("README 에서 대표 출력 예시 블록을 못 찾았다")
+    raise AssertionError("명령 안내 에서 대표 출력 예시 블록을 못 찾았다")
 
 
 def testExampleMatchesRealFindings():
