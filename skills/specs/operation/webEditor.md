@@ -19,7 +19,7 @@ status: observed
 제목도 관찰할 수 있어야 하므로 승인 계약을 자동 생성하지 않는다. 승인 패치는 원문 전체를 담은
 기존 v1 계약으로 검증하고 H2 순서 변화도 거부한다. 명시한 계약의 입력 제약은 그대로 적용한다.
 
-사용자의 저장과 기여 절차는 [저장과 데이터 안내](../../../web/guide.html)가 소유한다. 기록 형식과 한도는
+사용자의 저장과 기여 절차는 [사용과 저장 안내](https://eddmpython.github.io/hanlint/guide.html)가 소유한다. 기록 형식과 한도는
 `web/records.js`, 토큰 수명과 원격 파일 갱신은 `web/github.js`가 소유한다. 수정 이력을 승인 패치로
 자동 변환하지 않는다. 사례를 내려받는 행동도 외부 제출이나 공통 규칙의 승인이 아니다.
 
@@ -29,6 +29,39 @@ status: observed
 출력에 덧씌우지 않는다. 로컬 산출물은 전역 development-hygiene의 공통 실행 공간에 둔다.
 `.github/workflows/pages.yml`이 기존 CI를 먼저 실행하고 배포한다. 프로젝트 경로는 상대 경로라
 Fork에서도 Pages 설정을 활성화하면 같은 소스를 제공한다. 사이트 소스에 개인 원고나 토큰을 넣지 않는다.
+
+Pages는 `main`의 검증된 소스를 제공한다. npm과 PyPI는 별도 릴리즈이므로 사이트에 들어간 API가 아직
+설치 패키지에는 없을 수 있다. 공개 상태는 `CHANGELOG.md`의 Unreleased와 배포 버전으로 구분한다.
+
+## 로컬 실행
+
+저장소 루트에서 Python 3.11 이상으로 조립한다. 다음 PowerShell 예시의 작업 폴더 이름은 실행마다
+새로 고른다. 출력 폴더에 파일이 이미 있으면 빌드는 덮어쓰지 않고 멈춘다.
+
+```powershell
+uv sync
+$sitePath = Join-Path $env:LOCALAPPDATA 'dev-workspace/hanlintPreview/site'
+uv run --no-sync python -X utf8 -B scripts/derive/site.py --output "$sitePath"
+uv run --no-sync python -X utf8 -B -m http.server 4179 --bind 127.0.0.1 --directory "$sitePath"
+```
+
+`http://127.0.0.1:4179/`를 연다. 파일을 직접 여는 `file://` 주소는 모듈과 Worker 실행에 맞지 않는다.
+화면을 바꾼 뒤에는 서버를 멈추고 새 출력 폴더에 조립한다. 검수가 끝나면 서버와 자신이 만든 출력만 정리한다.
+Linux와 macOS에서는 같은 빌드와 서버 명령에 저장소 밖 출력 경로를 넘긴다.
+
+## 화면을 바꿀 때
+
+| 바꿀 내용 | 소유 파일 |
+|---|---|
+| 첫 화면 구조와 안내 문구 | `web/index.html` |
+| 색, 간격과 반응형 배치 | `web/style.css` |
+| 심볼과 파비콘 | `web/brand.svg` |
+| 제작자 채널 | `web/channels.js` |
+| 사용자 안내 | `web/guide.html` |
+| 자료 고지 페이지 | `scripts/derive/site.py`와 `npm`의 라이선스·출처 고지 |
+
+첫 화면은 예문과 실제 지적을 바로 보여 준다. 소개를 읽거나 가입해야 편집할 수 있는 흐름을 넣지 않는다.
+브랜드와 채널을 바꿀 때는 편집기와 안내의 링크를 함께 확인한다. 라이선스와 자료 출처 고지는 유지한다.
 
 ## 검증
 

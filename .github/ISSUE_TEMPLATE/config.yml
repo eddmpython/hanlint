@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 한린트 편집기 사용과 저장 안내
+    url: https://eddmpython.github.io/hanlint/guide.html
+    about: 처음 쓰기, 수정본 기록, GitHub 보관과 문제 해결을 확인하세요.
+  - name: 명령과 설정 안내
+    url: https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md
+    about: 프리셋, baseline, 종료 코드와 지원 명령을 확인하세요.

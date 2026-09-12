@@ -4,10 +4,25 @@ description: 정당한 문장을 hanlint 가 잡았다
 title: "오탐: [규칙 이름] 잡힌 문장 앞부분"
 labels: ["falsePositive"]
 body:
+  - type: markdown
+    attributes:
+      value: 개인정보와 비공개 내용은 지우고, 같은 지적을 재현할 수 있는 문장을 남겨 주세요.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: 어디에서 검사했나요?
+      options:
+        - 브라우저 편집기
+        - Python CLI 또는 라이브러리
+        - npm CLI 또는 라이브러리
+        - CI 또는 에이전트 훅
+    validations:
+      required: true
   - type: input
     id: version
     attributes:
-      label: hanlint --version
+      label: 검사 버전
+      description: CLI는 hanlint --version, 브라우저는 화면 아래의 버전을 적어 주세요. 웹 주소도 함께 적으면 도움이 됩니다.
       placeholder: hanlint 0.0.x
     validations:
       required: true
@@ -17,6 +32,14 @@ body:
       label: 규칙 이름
       description: 지적 줄의 대괄호 안 이름
       placeholder: translationese
+    validations:
+      required: true
+  - type: input
+    id: preset
+    attributes:
+      label: 글 종류와 설정
+      description: 선택한 글 종류나 프리셋, 바꾼 규칙 설정이 있으면 적어 주세요.
+      placeholder: 기술 문서 (docs), 나머지는 기본 설정
     validations:
       required: true
   - type: textarea

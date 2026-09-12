@@ -1,90 +1,123 @@
 # hanlint
 
-[브라우저 편집기](https://eddmpython.github.io/hanlint/)에서 설치 없이 같은 검사를 실행할 수 있다.
-`inspectText(text, config)`는 지적과 문체 본보기, 지문을 함께 주고, `learnText(before, after, config)`는
-승인할 문장 고침과 표면 치환 후보를 준다. 후보를 만들었다고 재사용을 승인하지는 않는다.
-`compareRevision(before, after, config)`는 자유 원고의 숫자, 링크, 코드와 H2 순서 변화를 같은 기준으로 비교한다.
+한국어 글에서 반복되는 결함을 찾는 린터다. 번역투, 상투어, 이중 피동과 문장 구조를 검사하고,
+지적마다 위치, 이유와 고칠 수 있는 표기를 돌려준다. Node.js 18 이상에서 런타임 의존성 없이 실행한다.
 
-한국어 글에서 반복되는 결함을 결정적으로 잡는 린터다. 번역투, 상투어, 이중 피동, 명사 나열, 조각난
-문단과 코드 튜토리얼의 계약 위반을 집는다. 맞춤법 전체를 추측하지 않고 앞뒤 낱말로 확정되는 일부 표기만
-본다. 런타임 의존성이 없고 Node 18 이상이면 된다.
+**[설치 없이 써 보기](https://eddmpython.github.io/hanlint/)** ·
+[전체 소개](https://github.com/eddmpython/hanlint#readme) ·
+[명령과 설정](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md) ·
+[변경 이력](https://github.com/eddmpython/hanlint/blob/main/CHANGELOG.md)
 
-```powershell
-npx hanlint
+## 빠른 시작
+
+```sh
 npx hanlint 글.md
-npx hanlint fix 글.md
-npx hanlint 글.md --format compact --errors-only
-npx hanlint spec --preset blog --register 합니다 --chars 800
-npx hanlint hook
-npx hanlint hook --reply
-npx hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산을 확인한다"
-npx hanlint contract init 초안.md --reader "개발자" --goal "섹션별로 비교한다" --outline h2
-npx hanlint check contract.json 초안.md --format text
-npx hanlint verify-patch contract.json 초안.md patch.json
+npx hanlint docs/ --preset docs
+npx hanlint 글.md --format json
 ```
 
-인자 없이 치면 첫 화면이 나온다. 이 폴더의 마크다운 이름으로 만든 예시와 지금 칠 수 있는 명령이 거기 있다.
-파일 자리에 폴더를 주면 그 아래 마크다운을 전부 찾는다.
+인자 없이 실행하면 현재 폴더의 파일을 바탕으로 시작 안내를 보여 준다.
+파일 대신 폴더를 주면 아래의 마크다운 파일을 찾는다. 표준 입력은 `npx hanlint - --path 글.md`로 받는다.
 
-지적마다 규칙 이름, 줄 번호, 인용 문장, 왜 문제인지가 붙고 마지막 줄이 다음에 무엇을 하면 되는지 말한다.
-고친 표기가 확정된 자리는 `fix` 가 원문에 적용한다. `--format json` 은 기계가 읽는 꼴이고 종료 코드는
-지적이 없으면 0, error 가 있으면 1 이라 발행 게이트에 그대로 물린다. stdin 은 `npx hanlint - --path 이름.md`
-로 받는다. 규칙 목록은 `npx hanlint rules`, 규칙의 기술서는 `npx hanlint explain <규칙>`, 지금 어느 설정으로
-도는지는 `npx hanlint doctor` 다.
+```sh
+npx hanlint fix 글.md
+npx hanlint 글.md
+```
 
-파이썬 판의 `hanlint learn 전.md 승인본.md --format toml`로 승인한 `[[patches]]`를 같은
-`hanlint.toml`에 두면 npm 판도 같은 패치를 읽는다. 정규화한 원문, 규칙, 프리셋, 국소 표지, 독자 상태가
-모두 같은 유일한 패치만 JSON 지적의 `patch`로 내고, 원문이 다르면 유사 문장이라도 기권한다.
+`fix`는 고친 표기가 확정된 자리를 **파일에 직접 반영**한다. 변경을 확인하고 다시 검사한다.
+일반 검사는 error가 없으면 0, 있으면 1, 입력이나 설정이 잘못되면 2로 끝난다.
+notice만 있으면 0이며, `--errors-only`를 주면 notice 표시를 제외한다.
+명령마다 다른 판정은 [종료 코드 안내](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md#종료-코드)를 따른다.
 
-같은 `learn` 출력에서 뜻과 적용 범위를 확인한 `[[operations]]`도 두 판이 함께 읽는다. 승인 조각이 현재
-문장의 단어 경계 한 자리에만 있고 숫자, URL, 식별자, 경로, 코드, 링크 목적지가 그대로일 때 파일 JSON의
-`operations[].operation.result`를 낸다. 한국어 고유명사와 프로젝트 용어는 `protectedTerms`에 적어 잠근다.
-지시어와 의미 고침, 여러 자리 일치는 기권하며 원문 완전 일치 패치와 확정 fix가 먼저다.
+## JavaScript에서 검사하기
 
-글의 종류가 블로그가 아니면 프리셋을 먼저 고른다. `npx hanlint init --preset docs` 가 참고 문서에 맞지 않는
-규칙을 끈 설정 파일을 만든다. `blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia` 일곱이고
-`npx hanlint rules` 가 지금 도는 목록을 낸다.
-
-글을 쓰기 전에는 `npx hanlint spec --preset <종류> --chars <글자 수>`로 같은 규칙판에서 숫자 사양을 받는다.
-배포 프로파일에서 관찰한 값과 현재 켜진 규칙 임계를 함께 낸다. JSON의 `rows[].basis`가 각 수의 정본을 밝힌다.
-새 점수나 품질 판정은 만들지 않는다. `chat`은 견줄 프로파일이 없어 사양을 내지 않는다.
-
-Claude Code의 PostToolUse JSON을 stdin으로 `npx hanlint hook`에 연결하면 `Edit|Write`가 저장한 마크다운
-한 파일을 검사한다. Finding이 있을 때만 다음 모델 요청용 `additionalContext` JSON을 내며 언제나 종료 코드
-0이라 쓰기를 막지 않는다. Stop에는 `npx hanlint hook --reply`를 연결한다. 마지막 답변을 `chat` 프리셋으로
-한 번 검사하고 `stop_hook_active` 재진입에서는 침묵한다. 전체 `.claude/settings.json` 예시는 루트 README에 있다.
+```sh
+npm install hanlint
+```
 
 ```js
-import { Contract, Patch, check, contractFromText, contractFromTextV2, lintFile, renderCheck, verifyPatch } from "hanlint";
+import { configFromMapping, lintText } from "hanlint";
 
-for (const finding of lintFile("글.md")) console.log(finding.line, finding.rule, finding.why);
-
-const draftContract = contractFromText(text, "배포를 결정할 운영자", "예산을 확인한다");
-const structuredContract = contractFromTextV2(text, "개발자", "섹션별로 비교한다", 2);
-const contract = new Contract("배포를 결정할 운영자", "예산을 확인한다", ["예산은 380,000원이다."]);
-const receipt = check(text, contract);
-console.log(renderCheck(check(text, structuredContract)));
-const patch = new Patch("unexpectedNumbers", "400,000", "380,000");
-const verified = verifyPatch(text, patch, contract);
+const text = "이 도구는 다양한 기능을 제공합니다.";
+const config = configFromMapping({ preset: "docs" });
+for (const finding of lintText(text, config)) {
+  console.log(finding.line, finding.rule, finding.why);
+}
 ```
 
-Reader Contract는 `reader`, `goal`, `facts`에서 숫자, URL, 인라인 코드와 링크 목적지를 자동으로 보호한다.
-`contractFromText`와 `contract init`은 보호 원자를 많이 덮는 원문 줄부터 골라 facts 후보를 줄인다.
-사실의 진실과 보호 원자가 없는 의미는 추측하지 않으므로 사람이 초안을 확인한다.
-제목 수와 순서가 요구사항이면 `contractFromTextV2` 또는 `contract init --outline h2`를 쓴다. version 2는
-사람이 승인한 facts, 자동으로 모은 surface, 한 수준의 정확한 outline을 분리한다. `check --format text`는
-보호 원자, 제목 구조, 전체 절 제목, lint와 다음 행동을 한 화면에 보여 준다.
-check 결과는 Contract와 초안 해시, 보호 원자 차이와 기존 Finding을 담는다. Patch는 원문 한 자리에 정확히
-맞고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않을 때만 검증된다. 이 조건은 의미나
-진실, 자연스러움의 승인이 아니다. version 2 Patch는 새 outline 위반도 거부한다. Python과 npm은 배포물의
-같은 version 1 적합성 JSON을 독립 실행하고 version 2 결과도 동등성 게이트로 견준다.
+파일은 `lintFile("글.md", config)`로 검사한다. `loadConfig()`는 현재 위치에서 프로젝트 설정을 찾는다.
+파일과 설정 경로를 읽는 API는 Node 전용이다. 문자열 API에 설정을 생략하면 기본 설정을 쓴다.
 
-파이썬 패키지 (`pip install hanlint`) 와 같은 규칙, 같은 fixture, 같은 출력이다. 지문 지도 (`audit`, `map`),
-문체 프로파일, 초안 비교 (`diff`), 평가자 겹침 (`coverage`) 은 파이썬 쪽에만 있다. 무엇을 잡고 무엇을 잡지 않는지는
-[전체 사용 안내](https://github.com/eddmpython/hanlint#readme)와
-[제품 경계](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/product.md)에서 확인할 수 있다.
+`blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia`, `chat`의 여덟 프리셋이 있다.
+프로젝트 설정은 `npx hanlint init --preset docs`로 만들고 `npx hanlint doctor`로 확인한다.
+규칙 목록은 `npx hanlint rules`, 개별 규칙의 근거는 `npx hanlint explain translationese`에서 본다.
+
+## 수정하면서 원문 보호하기
+
+Reader Contract는 사람이 확인한 독자, 목적과 사실을 받아 숫자, URL, 인라인 코드와 링크 목적지를 보호한다.
+
+```js
+import { Contract, Patch, check, renderCheck, verifyPatch } from "hanlint";
+
+const text = "예산은 400,000원이다.";
+const contract = new Contract(
+  "배포를 결정할 운영자",
+  "예산을 확인한다",
+  ["예산은 380,000원이다."],
+);
+console.log(renderCheck(check(text, contract)));
+
+const patch = new Patch("unexpectedNumbers", "400,000", "380,000");
+const result = verifyPatch(text, patch, contract);
+console.log(result);
+```
+
+`contractFromText(text, reader, goal)`은 원문에서 사실 후보를 모은다. 사람이 확인한 뒤 사용한다.
+`contractFromTextV2(text, reader, goal, 2)`는 H2 제목의 수와 순서도 보호할 계약을 만든다.
+패치는 원문 한 자리에 정확히 맞고 기존 위반을 줄이며 새 보호 위반이나 error를 만들지 않아야 검증된다.
+사실의 진실, 의미 보존과 자연스러움은 사람이 판단한다.
+
+JSON 형식과 전체 조건은
+[Reader Contract](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/readerContract.md)가 정본이다.
+
+## 브라우저와 수정 사례
+
+[한린트 편집기](https://eddmpython.github.io/hanlint/)는 같은 npm 코어로 검사, 고침,
+원문 비교와 개인 기록을 제공한다. 사용 방법은
+[편집기 안내](https://eddmpython.github.io/hanlint/guide.html)에서 확인한다.
+
+다음 API는 **main과 현재 웹 편집기에 먼저 반영되어 있으며, npm 0.0.10에는 없다.**
+배포 여부는 [변경 이력](https://github.com/eddmpython/hanlint/blob/main/CHANGELOG.md)에서 확인한다.
+
+| API | 결과 |
+|---|---|
+| `inspectText(text, config)` | 지적, 문체 본보기, 승인 고침 후보와 지문 |
+| `learnText(before, after, config)` | 사람이 확인하고 승인할 문장 고침과 표면 치환 후보 |
+| `compareRevision(before, after, config)` | 자유 원고의 숫자, 링크, 코드와 H2 제목 변화 |
+
+브라우저에서 코어를 실행하려면 사전과 모듈을 함께 조립한다.
+저장소의 [정적 사이트 빌드 절차](https://github.com/eddmpython/hanlint/blob/main/skills/specs/operation/webEditor.md)를 따른다.
+
+Python의 `hanlint learn 전.md 승인본.md --format toml`로 만든 후보는 사람이 검토한 뒤
+`hanlint.toml`의 `[[patches]]`와 `[[operations]]`로 승인할 수 있다. 두 판이 같은 설정을 읽는다.
+원문 일치와 문맥 조건을 통과한 고침만 제안하며, 모호한 곳에서는 기권한다.
+보호할 고유명사와 프로젝트 용어는 `protectedTerms`에 넣는다.
+후보 생성, 개인 승인과 공통 규칙 반영은 별도 단계다.
+
+## 자동화와 지원 범위
+
+GitHub Actions, pre-commit과 Claude Code 훅의 전체 설정은
+[자동화 연결 안내](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/integrations.md)에 있다.
+훅은 후속 작업에 지적을 전달하며, CI의 종료 코드 검사와는 목적이 다르다.
+
+Python 판과 공유하는 검사는 같은 사전과 적합성 자료로 검증한다.
+`audit`, `map`, `diff`, `learn`, `profile`, `coverage` 등 분석·실험 명령은 Python 쪽에 있다.
+전체 명령의 구분은 [명령과 설정](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md)을 참고한다.
+
+한린트는 모든 맞춤법이나 글의 품질을 판정하지 않는다. 지적이 없어도 좋은 글이라는 보증은 아니다.
+오탐과 수정 사례는 [GitHub Issues](https://github.com/eddmpython/hanlint/issues/new/choose)로 받는다.
 
 ## 라이선스
 
-코드와 나머지 데이터는 [MIT](LICENSE)다. `data/easyWords.json`은 국립국어원 자료의 파생물이며
-[공공누리 제1유형 고지](koglType1.LICENSE.md)가 적용된다.
+코드는 [MIT](https://github.com/eddmpython/hanlint/blob/main/LICENSE)다.
+쉬운 말 자료에는 [공공누리 제1유형 고지](https://github.com/eddmpython/hanlint/blob/main/npm/koglType1.LICENSE.md)가 적용된다.

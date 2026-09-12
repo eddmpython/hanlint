@@ -59,6 +59,11 @@ spec, primer, 추가 자료 없음으로 두 번씩 쓴 18편 실측에서 spec�
 
 ## 평가 루프에서의 자리
 
+브라우저 편집기는 같은 npm 규칙판을 글 입력, 지적 확인, 수정과 전후 비교에 연결한다. 개인 수정본과
+재사용 승인을 분리하고, 승인한 고침도 원문과 문맥 조건이 맞을 때만 제안한다. 기록이 쌓였다는 이유로
+공통 규칙이나 품질 정답으로 바꾸지 않는다. 사용 흐름은 [편집기 안내](https://eddmpython.github.io/hanlint/guide.html),
+실행과 배포 경계는 [`operation.webEditor`](../operation/webEditor.md)가 소유한다.
+
 셀 수 있다는 사실만으로 오류를 강제하지 않는다. `noQuestion`과 `nounPile`은 기본 notice이며,
 사용자가 `enforceStyle`에 선택한 규칙만 error가 된다. 통계와 문체 신호의 유지 판단을 허용하고
 명시한 사실과 제목 계약은 별도로 지킨다. 쓰기 전 사실 잠금과 수정 예산은 `start.readerContract`가 소유한다.

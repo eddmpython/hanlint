@@ -14,6 +14,11 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 - npm 공개 `inspectText`, `learnText`, `compareRevision`. Python의 문장 대응과 고침 후보를 대조하고 브라우저에서도
   같은 데이터와 계약 해시를 사용한다. 기존 파일 경로 API는 Node에서 유지한다.
 
+### Changed
+
+- README를 브라우저 체험과 첫 검사 중심으로 정리했다. 명령과 설정, 자동화 연결은 별도 안내로
+  연결하고, 웹 사용·저장·Fork 안내와 수정 사례 접수를 보강했다. npm 배포판과 main의 API 범위를 구분한다.
+
 ## [0.0.10] - 2026-09-07
 
 ### Added

@@ -1,902 +1,220 @@
-# hanlint
+<p align="center">
+  <a href="https://eddmpython.github.io/hanlint/"><img src="https://raw.githubusercontent.com/eddmpython/hanlint/main/web/brand.svg" width="64" height="64" alt="한린트"></a>
+</p>
+
+# 한린트 · hanlint
+
+**고칠 곳이 보이는 한국어 글쓰기.**
+글을 넣으면 번역투, 명사 나열, 이중 피동과 문서 안의 어긋남을 찾아 **문장, 이유, 고친 본보기**를 보여 준다.
+직접 고친 내용을 비교하고, 다시 쓰고 싶은 고침은 뜻을 확인한 뒤 기억할 수 있다.
 
 [![PyPI](https://img.shields.io/pypi/v/hanlint?label=pypi)](https://pypi.org/project/hanlint/)
 [![npm](https://img.shields.io/npm/v/hanlint?label=npm)](https://www.npmjs.com/package/hanlint)
 [![CI](https://github.com/eddmpython/hanlint/actions/workflows/ci.yml/badge.svg)](https://github.com/eddmpython/hanlint/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/pypi/pyversions/hanlint)](https://pypi.org/project/hanlint/)
-[![License](https://img.shields.io/badge/license-details-blue)](#라이선스)
+[![Pages](https://github.com/eddmpython/hanlint/actions/workflows/pages.yml/badge.svg)](https://github.com/eddmpython/hanlint/actions/workflows/pages.yml)
 
-**AI 산문을 위한 한국어 타입 검사기 (Korean prose type checker).** `Contract`, `Finding`, `Patch`라는
-작은 공개 계약으로 초안이 선언하지 않은 수치와 링크를 보태거나, 필요한 원자를 잃거나, 승인한 제목
-구조를 바꾸거나, 이유 없이 재작성되는 일을 결정적으로 드러낸다. 같은 입력은 모델과 편집기가 달라도
-같은 영수증을 만든다.
+**[지금 글 다듬기][editor]** · [저장과 사용 안내][guide] · [명령과 설정][cli] · [npm API][npm] · [변경 이력][changes]
 
-자유 형식 마크다운에서는 번역투, 명사 나열, 이중 피동, 가리킬 것 없는 지시어, 조각난 문단처럼
-**세면 확정되는 결함**을 찾아 자리와 이유와 다시 쓴 본보기를 준다. 맞춤법 검사기가 아니다. 맞춤법이
-맞는데도 안 읽히는 글을 잡는 문장과 문단의 린터다.
+## 설치 없이 바로 써 보기
 
-파이썬과 npm 두 판이고 런타임 의존성이 없다. 블로그 원고, 기술 문서, 보고서, AI 가 쓴 초안을 발행 전에
-게이트로 막는 자리에 쓴다.
+[브라우저 편집기][editor]를 열면 예문과 실제 지적이 바로 나온다. 계정이나 API 키 없이 검사할 수 있다.
 
-## 30초 만에 첫 검사
+1. 예문을 전체 선택해 내 글을 붙여 넣거나 파일을 연다. 붙여 넣은 글이 수정 전 원문이 된다.
+2. 지적의 이유와 본보기를 읽는다. 확정할 수 있는 표현은 버튼으로 고치고, 나머지는 직접 수정한다.
+3. 전후 비교와 원문 보호에서 바뀐 내용을 확인하고 수정본을 기록한다.
+4. 다시 제안받을 고침은 고침 기억에서 뜻을 확인하고 승인한다.
 
-설치 없이 [브라우저 편집기](https://eddmpython.github.io/hanlint/)에서 예문을 검사하고 자기 글을 고칠 수 있다.
-원문 보호, 수정본 기록과 승인한 고침을 같은 화면에서 확인한다. 개인 GitHub 보관과 Fork 배포는
-[저장과 데이터 안내](web/guide.html)를 따른다.
+검사는 브라우저 안에서 실행한다. 원고와 수정 이력은 브라우저에 보관되며, 선택하면 파일로 내보내거나
+개인 GitHub 저장소에 저장할 수 있다. GitHub 보관에는 원고를 저장할 저장소의 Contents 읽기·쓰기 토큰이 필요하다.
+토큰은 현재 탭의 메모리에만 둔다. 저장 한도, 가져오기와 충돌 처리는 [저장과 사용 안내][guide]에 있다.
 
-Python 3.11 이상이면 패키지를 설치한다.
+**수정 이력, 재사용 승인, 공통 규칙 개선은 서로 다른 단계다.** 수정본을 기록한 것만으로 정답 데이터가
+되지는 않는다. 승인한 고침은 같은 원문과 문맥에서 제안하고, 공통 규칙에 기여할 사례는 따로 선택해 내보낸다.
 
-```powershell
+## 내 작업에 맞는 입구
+
+| 하고 싶은 일 | 시작하는 곳 |
+|---|---|
+| 글을 붙여 넣고 바로 다듬기 | [브라우저 편집기][editor] |
+| 마크다운 파일과 폴더 검사 | Python의 `hanlint 글.md` 또는 Node의 `npx hanlint 글.md` |
+| 앱에서 검사 결과 사용 | Python의 `lintText`, [npm 공개 API][npm] |
+| 문서 변경을 커밋과 CI에서 검사 | [pre-commit과 GitHub Actions][integrations] |
+| AI가 쓴 파일과 답변에 지적 전달 | [에이전트 스킬과 훅][integrations] |
+| 숫자, 링크와 제목 순서를 명시적으로 보호 | [Reader Contract][contract] |
+| 내 계정에서 편집기 운영 | [Fork와 GitHub Pages][fork] |
+
+Python과 npm은 공통 명령에서 같은 규칙과 출력을 사용하며, 런타임 의존성이 없다.
+브라우저는 같은 npm 엔진으로 검사한다. 지문 지도, 초안 비교와 평가 도구 등 Python 전용 명령의 범위는
+[명령 안내][cli]에서 확인할 수 있다.
+
+## 터미널에서 첫 검사
+
+Python 3.11 이상이면 설치 후 파일을 검사한다.
+
+```console
 pip install hanlint
-hanlint
 hanlint 글.md
 ```
 
-Node 18 이상이면 설치 없이 같은 검사를 실행할 수 있다.
+Node 18 이상이면 다음 명령으로 같은 검사를 실행한다.
 
-```powershell
-npx hanlint
+```console
 npx hanlint 글.md
 ```
 
-인자 없이 치면 현재 폴더의 마크다운 이름을 넣은 첫 화면이 나온다. 버전 숫자를 문서에 복사하지 않아도
-실행한 배포판을 바로 확인할 수 있다.
-
-```text
-hanlint <현재 버전>  한국어 글에서 세면 확정되는 결함을 집는다. 좋은 글인지는 판정하지 않는다
-
-  hanlint 초안.md        검사한다. 자리와 이유와 고칠 말이 나온다
-  hanlint fix 초안.md    기계가 확실히 고칠 수 있는 자리를 원문에 적용한다
-  hanlint audit 초안.md  글의 모양을 지도와 분포로 본다
-
-이 폴더의 마크다운: 초안.md. 폴더를 통째로 줘도 된다 (hanlint .)
-```
-
-처음에는 셋만 알면 된다.
-
-| 하고 싶은 것 | 치는 것 |
-|---|---|
-| 이 글에 무엇이 잘못됐나 | `hanlint 글.md` |
-| 기계가 고칠 수 있는 것은 먼저 고쳐 줘 | `hanlint fix 글.md` |
-| 쓰기 전에 이 종류의 숫자 사양을 줘 | `hanlint spec --preset blog --chars 800` |
-| Python에서 쓰는 동안 계속 봐 줘 | `hanlint watch 글.md` |
-| AI가 저장하거나 답한 자리에서 바로 봐 줘 | `hanlint hook`, `hanlint hook --reply` |
-| 섹션 수와 순서를 요구사항대로 잠가 줘 | `hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2` |
-
-필요한 내용부터 바로 읽을 수 있다.
-
-- [지적과 본보기가 어떻게 나오는지](#hanlint-가-한국어-글에서-잡는-것)
-- [AI 산문의 Contract, Finding, Patch](#contract-finding-patch)
-- [같은 규칙판을 쓰기 전 사양으로 만드는 법](#쓰기-전-숫자-사양)
-- [글 종류에 맞는 프리셋을 고르는 법](#글의-종류를-고른다-블로그-보고서-문서-안내서-수필-소설-백과)
-- [기존 문서의 지적을 잠그고 새 결함만 막는 법](#이미-쓴-글이-많은-저장소에-들일-때)
-- [Python과 npm의 명령 범위](#명령-한눈에)
-- [AI 초안에 연결하는 법](#ai-초안-검사)
-
-## 쓰기 전 숫자 사양
-
-초안부터 지켜야 할 사실은 선택한 문구로 잠그고, 수정은 규칙별 예산 안에서 검증할 수 있다.
-사용 예와 보장 범위는 [쓰기 전 사실 잠금과 수정 범위](skills/specs/start/readerContract.md#초안부터-지킬-사실과-수정-범위)에 있다.
-질문 사용과 명사 나열 같은 문체 신호는 기본 참고 지적이며, 사용자가 선택한 정책에서만 차단한다.
-
-`spec`은 검사 뒤에 쓰는 규칙판을 생성 전에 뒤집어 보여 준다. 새 점수나 별도 작법을 만들지 않는다. 글 종류의
-배포 프로파일에서 문단당 문장 수, 문장 길이, 쉼표, `의`, 명사 연쇄, 새 화제, 문두 접속, 숫자와 물음표 분포를
-읽고, 현재 설정에서 켜진 `longSentence`, `endingRepeat`, `euiChain`, `nounPile`, `noQuestion`의 정확한 임계를
-함께 적는다.
+`hanlint` 또는 `npx hanlint`만 실행하면 현재 폴더의 마크다운 이름으로 만든 사용 예가 나온다.
+파일 대신 폴더를 주면 하위 마크다운까지 검사한다.
 
 ```console
-hanlint spec --preset blog --register 합니다 --chars 800
-npx hanlint spec --preset blog --register 합니다 --chars 800 --format json
-```
-
-사람용 출력은 목표 800자를 프로파일의 문장 길이 중앙값으로 역산해 문단과 문장 수를 제안한다. JSON의 각
-`rows[].basis`는 그 수가 온 `profile.*`과 `rule.*` 정본을 밝힌다. 프로파일은 실제 편집 글의 관찰값이고 규칙은
-현재 검사 요구라서 둘이 어긋날 수 있다. 문체 신호는 강제한 정책과 참고 지적을 구분해 읽는다. `chat`은 견줄
-말뭉치가 없으므로 사양을 꾸며 내지 않고 오류를 낸다. 이 사양은 좋은 글의 판정이 아니며, 쓴 뒤 같은 프리셋으로
-`hanlint 글.md`를 실행해야 한다.
-
-사양을 모든 작문 프롬프트에 자동으로 넣지는 않는다. [18편 탐침](tests/_attempts/specSheet/)에서 spec은 추가
-자료 없음보다 error와 분량 위반을 줄였지만, 미리 정한 네 채택 조건을 모두 만족하지 못했다. 산문 대신 TOML만
-낸 두 편과 요구 밖 숫자를 보탠 두 편도 있었다. 따라서 분량과 분포를 따로 확인할 때 명시적으로 호출하는
-확인표이며, 초안의 사실 안전이나 문체 준수를 보장하지 않는다.
-
-## 같은 턴 폐루프 훅
-
-`hook`은 Claude Code의 명령 훅 JSON을 stdin으로 받아 방금 쓴 `.md` 또는 `.markdown` 한 파일만 검사한다.
-Finding이 있으면 Claude가 다음 모델 요청에서 읽는 `additionalContext` JSON을 내고, 없으면 아무것도 내지 않는다.
-입력이 깨졌거나 파일을 읽지 못해도 종료 코드 0이라 파일 쓰기와 답변을 막지 않는다. `--reply`는 Stop의
-`last_assistant_message`를 `chat` 프리셋으로 보고, `stop_hook_active` 재진입에서는 침묵해 한 번만 고칠 기회를 준다.
-
-프로젝트의 `.claude/settings.json`에는 다음 두 항목을 둘 수 있다. 명령 훅 입력과 `additionalContext`의 현재 계약은
-[Claude Code hooks reference](https://code.claude.com/docs/en/hooks)를 따른다.
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [{ "type": "command", "command": "uvx", "args": ["hanlint", "hook"] }]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [{ "type": "command", "command": "uvx", "args": ["hanlint", "hook", "--reply"] }]
-      }
-    ]
-  }
-}
-```
-
-Node만 있는 프로젝트는 `command`를 `npx`, `args`를 각각 `["hanlint", "hook"]`,
-`["hanlint", "hook", "--reply"]`로 바꾼다. 저장 훅은 쓴 파일에서 찾은 저장소 설정과 baseline을 따르고,
-답변 훅은 같은 설정 위에서 프리셋만 `chat`으로 고정한다.
-
-## Contract, Finding, Patch
-
-모델에 장문의 작법 프롬프트를 주기 전에 독자, 목표, 사실과 필요한 구조를 닫힌 JSON으로 선언한다.
-계약은 용도에 따라 고른다.
-
-| 계약 | 언제 쓰나 | 무엇을 잠그나 |
-|---|---|---|
-| version 1 | 기존 자동화와 최소 표면 계약 | reader, goal, facts에서 나온 숫자, URL, 코드, 링크 |
-| version 2 | 제목 수와 순서가 요구사항인 글 | 사람이 승인한 facts, 자동 surface, 한 수준의 정확한 outline |
-
-예를 들어 "라이브러리마다 H2 하나"가 요구사항이면 먼저 승인한 H2 골격을 만들고 그 순서를 잠근다.
-`contract init`은 현재 글의 제목을 읽을 뿐 원하는 라이브러리 이름을 추측하지 않는다.
-
-```console
-hanlint contract init 초안.md --reader "데이터 도구를 고르는 개발자" --goal "용도별 라이브러리를 비교한다" --outline h2 --output contract.json
-hanlint check contract.json 초안.md --format text
-```
-
-사람이 읽는 text 영수증 하나에 보호 표면, 제목 누락과 추가와 재배열, 전체 절 제목, lint 요약과 다음 행동이
-나온다. 자동화에서는 기본 JSON을 그대로 쓴다. Python과 npm 명령이 같다.
-
-[version 1 스키마](src/hanlint/data/readerContract.schema.json)와
-[version 2 스키마](src/hanlint/data/readerContractV2.schema.json)는 모르는 입력을 거부한다.
-
-기존 글에서는 독자와 목표만 적어 계약 초안을 만든다. 숫자, URL, 인라인 코드와 링크 목적지를 많이 덮는
-원문 줄부터 골라 facts 후보를 줄이며, 사실의 진실과 빠진 의미는 사람이 확인한다.
-
-```console
-hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산과 명세를 확인한다"
-npx hanlint contract init 초안.md --reader "배포를 결정할 운영자" --goal "예산과 명세를 확인한다"
-```
-
-```json
-{
-  "version": 1,
-  "reader": "배포를 결정할 운영자",
-  "goal": "예산과 명세를 확인한다",
-  "facts": [
-    "예산은 380,000원이다.",
-    "명세는 https://example.invalid/check 에 있다.",
-    "확인 명령은 `mora check`다."
-  ]
-}
-```
-
-`check`는 숫자, URL, 인라인 코드, 링크 목적지를 Contract에서 자동으로 컴파일한다. 별도
-`allowedNumbers`를 다시 적지 않는다. 결과에는 Contract와 초안의 SHA-256, 빠진 원자와 선언 밖 원자,
-기존 hanlint `Finding`이 담긴다. 시각과 모델 이름은 들어가지 않는다.
-
-사람용 영수증과 `audit`은 reader 기제의 Finding을 **독자 부채**로 묶어 보인다. 앞에서 본 이름, 수치,
-파일이나 미룬 약속만으로 지금 요구를 해결할 수 없다는 뜻이다. 새 판정이나 스키마 필드가 아니며 JSON에서는
-기존 `lint.items`가 정본이다. notice 부채는 영수증에 남지만 계약 위반 수에는 더하지 않는다.
-
-```console
-hanlint check contract.json 초안.md
-npx hanlint check contract.json 초안.md
-```
-
-```python
-from hanlint import Contract, Patch, check, contractFromText, contractFromTextV2, renderCheck, verifyPatch
-
-draftContract = contractFromText(text, "배포를 결정할 운영자", "예산과 명세를 확인한다")
-structuredContract = contractFromTextV2(text, "개발자", "라이브러리를 비교한다", outlineLevel=2)
-
-contract = Contract(
-    reader="배포를 결정할 운영자",
-    goal="예산과 명세를 확인한다",
-    facts=["예산은 380,000원이다.", "확인 명령은 `mora check`다."],
-)
-receipt = check(text, contract)
-print(renderCheck(check(text, structuredContract)))
-
-patch = Patch(reason="unexpectedNumbers", before="400,000", after="380,000")
-verified = verifyPatch(text, patch, contract)
-```
-
-[Patch 스키마](src/hanlint/data/patch.schema.json)는 `reason`, `before`, `after`만 받는다. 원문 한 자리에
-정확히 맞고, check에 실제로 있던 reason을 줄이며, 새 보호 원자 위반과 새 error를 만들지 않을 때만
-`verified`가 참이다. 이는 국소 기계 조건을 확인했다는 뜻이지 고친 문장이 참이거나 아름답다는 승인이
-아니다. version 2에서는 새 제목 구조 위반도 함께 막는다. **Finding이 없으면 Patch도 없다.**
-
-Python과 npm은 [같은 적합성 사례](src/hanlint/data/readerContractConformanceV1.json)를 독립 실행한다.
-교환 형식의 정확한 뜻과 해시 규칙은 [Reader Contract 프로토콜](skills/specs/start/readerContract.md)에
-있고 `Finding`, check 결과, Patch 결과도 각각 버전 고정 스키마가 있다.
-
-## 읽기 쉬운 글이란 무엇인가
-
-읽기 쉬운 글은 쉬운 내용을 다룬 글이 아니다. **독자가 문장을 머릿속에서 다시 번역하지 않아도 되는 글**이다.
-어려운 내용도 그렇게 쓸 수 있고, 쉬운 내용도 그렇게 못 쓸 수 있다.
-
-독자가 다시 번역하게 만드는 자리는 정해져 있다. 아래 왼쪽을 읽으면 뇌가 한 번 멈춘다.
-
-| 독자가 멈추는 문장 | 바로 읽히는 문장 |
-|---|---|
-| 가상환경 생성 후 패키지 설치 확인 절차를 따릅니다 | 가상환경을 만든 뒤 패키지가 깔렸는지 확인합니다 |
-| 이 기능을 통해 파일 생성이 가능합니다 | `저장` 버튼을 누르면 `report.csv` 가 만들어집니다 |
-| 결과가 저장되어집니다 | 결과가 저장됩니다 |
-| 표를 엽니다. 이것을 고칩니다 | 표를 엽니다. `금액` 열의 값을 고칩니다 |
-| 병합 셀은 첫 칸에만 값이 있습니다. 나머지는 빈값입니다. 정렬하면 순서가 깨집니다 | 병합 셀은 첫 칸에만 값이 들어 있고 나머지는 비어 있습니다. 그대로 정렬하면 빈 칸이 값과 떨어져 순서가 깨집니다 |
-
-왼쪽이 나쁜 까닭은 취향이 아니다. 각각 **독자에게 일을 떠넘긴다.** 첫째는 조사를 끼워 넣게 하고, 둘째는
-무엇을 눌러 무엇이 생기는지 짐작하게 하고, 셋째는 같은 뜻을 두 겹으로 읽게 하고, 넷째는 스크롤을 되돌리게
-하고, 다섯째는 세 문장 사이의 관계를 독자가 직접 세우게 한다.
-
-이 다섯 가지에는 공통점이 하나 더 있다. **전부 세어서 확정된다.** 명사가 몇 개 이어졌는지, 피동이 몇 겹인지,
-지시어가 가리킬 것이 앞 문장에 있는지, 문단에 인과 표지가 하나라도 있는지는 읽지 않고도 셀 수 있다.
-
-hanlint 는 그 셀 수 있는 것만 맡는다. 재미있는지, 설득력이 있는지, 검색해 들어온 독자가 원하던 답을
-받았는지는 판정하지 않는다. 그것은 사람과 LLM 평가자가 더 잘한다. 그래서 맞춤법 검사기와도 겹치지
-않는다. 맞춤법 검사기는 낱말이 틀렸는지 보고 hanlint 는 문장과 문단이 독자에게 일을 떠넘기는지 본다.
-
-## hanlint 가 한국어 글에서 잡는 것
-
-지적마다 **자리, 이유, 그리고 이렇게 쓴다는 본보기**를 준다. 세 번째가 이 도구의 핵심이다.
-
-```text
-설정: 기본값, 프리셋 blog
-
-글.md  집은 자리 1, 확인할 자리 1
-
-글.md:1  [doublePassive]
-  결과가 저장되어집니다.
-  `되어지` 는 피동에 어지다 를 또 붙인 이중 피동이다. 하나만 남긴다
-  고친 뒤: 결과가 저장됩니다.
-
-글.md:3  [nounPile] 확인
-  가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.
-  명사 6개가 조사 없이 이어진다. 관계가 표시되지 않아 독자가 조사를 끼워 넣는다. 동사로 되돌린다
-
-본보기 (고치기 전, 고친 뒤)
-  [doublePassive]
-    전  결과가 저장되어집니다.
-    후  결과가 저장됩니다.
-  [nounPile]
-    전  가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.
-    후  가상환경을 만든 뒤 패키지가 깔렸는지 확인합니다.
-
-다음: error 1건 가운데 1건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다
-```
-
-**왜 본보기인가.** 실제 발행된 글 다섯 편에 돌려 재 봤다. 지적 104건 가운데 기계가 자동으로 고칠 수 있는
-것은 0건이었다. 나머지 100%는 "무엇이 틀렸다"만 듣고 "그럼 어떻게 쓰나"는 글쓴이가 알아서 해야 했다.
-금지 목록은 사람을 고치게 만들지 못한다. 그래서 규칙마다 실제로 검증된 전후 짝을 달았고, 지금은
-그 104건 전부에 본보기가 붙는다. 재는 방법과 숫자는 [tests/_attempts/fixReach/](tests/_attempts/fixReach/)
-에 있다.
-
-본보기는 장식이 아니라 **검증된 데이터**다. `before` 는 그 규칙에 실제로 잡히는 글이고 `after` 는 같은 뜻인데
-안 잡히는 글이며, 게이트가 매번 둘 다 돌려 확인한다. 안내가 틀리면 나쁜 글이 퍼지기 때문이다.
-
-### 본보기가 그 글의 말투를 따른다
-
-규칙마다 둔 기본 본보기 54개와 문형 10개는 데이터에 합니다체 한 벌만 둔다. lint 와 watch 가 글의 종결을 세어 합니다체,
-한다체, 해요체 가운데 하나로 바꿔 보여 준다. 한다체 명세에 `확인합니다` 라고 남의 말투로 고치라고 하지
-않는다. `hanlint explain <규칙> --register 한다` 와 `hanlint patterns --register 해요` 로 문체를 직접
-고를 수도 있다.
-
-같은 결함도 글의 종류에 따라 풀어 쓰는 법이 다르면 문맥 본보기를 고른다. 지금 `nounPile` 은 기본 절차문,
-보고서, 기술 문서와 백과에 서로 다른 짝을 두어 모두 56개다. `--preset report` 로 검사한 보고서에는 사업
-이름의 관계를 푼 짝이 나오고, `--preset docs` 에는 기술 용어를 남긴 채 실패 조건과 행동을 푼 짝이 나온다.
-어느 짝이든 고치기 전은 잡히고 고친 뒤는 모든 error 가 0인지 세 문체에서 게이트가 확인한다.
-
-### 승인 고침의 정확 재생
-
-`hanlint learn 전.md 후.md` 는 글쓴이가 실제로 고쳐서 지적이 사라진 문장 짝과 그때의 국소 표지와 독자
-상태를 후보로 낸다. 여러 문장을 한꺼번에 다시 쓴 모호한 구간은 추측하지 않는다. 출력은 제안일 뿐이며,
-사람이 문장 대응과 뜻 보존을 확인한 것만 `hanlint.toml` 의 `[[patches]]` 에 승인한다.
-
-```console
-hanlint learn 전.md 후.md
-hanlint learn 전.md 후.md --format toml
-```
-
-승인 패치는 유사도 검색을 하지 않는다. NFC로 조합하고 줄과 연속 공백만 눕힌 마크다운 원문 `sourceText`,
-표식을 걷은 `sentence`, 규칙, 프리셋, 국소 표지, 문장 직전 독자 상태가 모두 같고 패치가 하나일 때만
-승인한 `after`를 그대로 돌려준다. 같은 규칙과
-표지라도 원문이 한 글자 다르면 기권한다. 그래서 같은 규칙 아래 서로 다른 승인 원문을 여러 개 쌓을 수
-있지만, 비슷한 문장에 남의 이름과 수치와 사실을 옮기지는 않는다. `before`, `after`, `sourceText`는 인라인
-코드와 링크 같은 마크다운을 보존하고, `sentence`는 그 표식만 걷은 선택용 원문이다.
-
-### 승인 고침의 안전한 표면 전이
-
-`learn`은 정확 패치와 별도로 공백, 문장부호, 한 글자 이내의 작은 표면 치환도 후보로 낸다. 사람이 뜻이
-같고 다른 원문에도 적용해도 된다고 확인한 후보만 `[[operations]]`로 승인한다.
-
-```toml
-protectedTerms = ["한린트", "김민지"]
-
-[[operations]]
-before = "여러가지"
-after = "여러 가지"
-presets = ["blog"]
-```
-
-연산은 유사도 검색이나 규칙 이름으로 선택하지 않는다. 승인 전후에서 추출한 조각이 32자 이하이고, 공백과
-문장부호를 걷은 편집 거리가 1 이하이며, 현재 문장의 단어 경계 한 자리에만 정확히 나타날 때만 `result`를
-낸다. 숫자, URL, 라틴 식별자, 파일 경로, 인라인 코드, 링크 목적지는 자동으로 보존한다. 한국어 고유명사는
-표층만으로 알아낼 수 없으므로 `protectedTerms`에 명시해 잠근다. 지시어와 의미 재작성, 여러 자리 일치,
-기존 확정 fix나 원문 완전 일치 패치와 겹치는 문장은 기권한다.
-
-### AI에 작문 근거를 한 번에 건넨다
-
-`hanlint packet 글.md`는 원문, 현재 지문, 독자 상태, 같은 종류의 편집 글 분포, 실제 지적, 정확히 선택된
-승인 패치와 안전하게 실행한 표면 치환을 `hanlint.writingPacket` JSON 하나로 묶는다. 생성 모델이 바뀌어도 근거는 같다. 처음부터
-쓸 때는 `--purpose draft`, 초안을 고칠 때는 `--purpose revise`를 쓴다. 말뭉치 문장을 검색해 복사하지 않고
-분포와 전후 변환만 전달하므로 공통 AI 문체로 평준화하는 위험도 줄인다.
-
-```console
-hanlint packet 요구.md --purpose draft --preset docs
-hanlint packet 초안.md --purpose revise --output packet.json
-```
-
-생성 패킷, 프리셋, 필수 표면, 금지 표면과 길이까지 필요한 새 글은 최소 Reader Contract 대신 확장
-[writing brief 스키마](src/hanlint/data/writingBrief.schema.json)를 쓴다. 원자 사실의 `id`는 대조용이고
-글에는 나오지 않는다. 기존 호환 계약이라 `allowedNumbers`에는 reader, task, facts에 있는 숫자를 천 단위
-쉼표 없이 모두 적는다. 일반 편집기와 에이전트는 위의 Reader Contract를 쓰면 이 중복 입력이 없다.
-
-```json
-{
-  "version": 1,
-  "preset": "docs",
-  "reader": "처음 쓰는 작성자",
-  "task": "명령을 실행하고 종료 코드를 해석한다",
-  "facts": [
-    { "id": "F1", "statement": "명령은 `mora check`이고 종료 코드는 0이다." }
-  ],
-  "mustInclude": ["`mora check`", "종료 코드는 0"],
-  "allowedNumbers": ["0"],
-  "forbidden": ["자동으로 고친다"],
-  "length": { "min": 100, "max": 300 }
-}
-```
-
-```console
-hanlint packet brief.json --purpose draft --output packet.json
-hanlint guard brief.json 초안.md
-```
-
-구조화 draft 패킷에는 `comparison`이 없다. brief만 사실 재료로 전달한다. `guard`는 빠진 필수 표면,
-요구 밖 숫자·URL·코드·링크 목적지, 금지 표면, 마크다운 원문의 글자 수와 hanlint error를 보고하고 글을 바꾸지 않는다.
-종료 코드 0은 이 표면 계약을 충족했다는 뜻이고 1은 위반이 있다는 뜻이다. 사실 관계와 진실, 빠진 의미,
-금지 주장의 바꿔 말하기, 독자 효용과 자연스러움은 여전히 사람이나 별도 평가가 확인한다.
-최종 구조화 패킷으로 일곱 종류를 한 번씩 생성한 탐침에서는 사실 표면 6/7, 길이 1/7, error 0은 3/7,
-전체 자동 계약은 1/7이었다. guard는 나머지 여섯 결과를 막았지만 생성 품질 향상을 입증하지는 않았다.
-
-출처가 있는 사실은 기존 v1 대신 [근거 원장 brief v2](src/hanlint/data/writingBriefV2.schema.json)를 쓸 수
-있다. facts의 모양은 그대로 두고 `evidence`가 각 fact ID를 고정 출처 판과 짧은 인용 조각에 연결한다.
-각 기록은 `E1` ID, `factIds`, 사용자 정보가 없는 HTTP(S) `sourceUrl`, 고정 `revision` 또는 UTC
-`checkedAt`, `locator`, 1,000자 이하 `excerpt`와 그 SHA-256, `license`, `reviewStatus`를 갖는다.
-
-```console
-hanlint evidence brief-v2.json
-hanlint evidence brief-v2.json --format json
-hanlint packet brief-v2.json --purpose draft --output packet.json
-```
-
-`evidence`는 근거 없는 fact, 없는 fact를 가리키는 기록, 움직이는 revision, 조각 변조, 라이선스 누락을
-결정적으로 거부한다. `humanVerified`는 사람이 그 연결을 검토했다는 상태일 뿐이다. URL이 실제로 열리는지,
-조각이 진짜인지, 조각이 fact를 함의하는지와 fact가 참인지는 판정하지 않는다. v2 draft 패킷에서도
-`facts.statement`만 주장 재료이며 excerpt의 다른 이름·수치·문장을 결과로 확산하지 않는다. 기존 v1
-schema, 로딩, guard와 기본 draft packet 해시는 그대로다.
-
-근거 조각과 fact의 문맥상 관계를 판정하는 외부 평가기는 별도 벤치마크로 잰다. 배포 평가판은
-[KLUE-NLI](https://github.com/KLUE-benchmark/KLUE) v1.1 dev의 여섯 source에서 세 관계를 두 개씩 고른
-36개다. 각 사례는 작성자 한 표와 독립 검토자 네 표 가운데 4표 이상이 gold와 일치한다. GUID 해시 순으로
-선택해 손으로 유리한 사례를 고르지 않았고 전제와 가설 중복을 막았다.
-
-```console
-hanlint entailment cases --output entailment-cases.json
-hanlint entailment evaluate predictions.json
-hanlint entailment evaluate predictions.json --format json
-```
-
-`cases`는 gold와 다섯 표를 빼고 `caseId`, domain, evidence excerpt와 atomic fact만 낸다. 외부 평가기는
-[예측 schema](src/hanlint/data/entailmentPredictions.schema.json)에 맞춰 `supported`, `contradicted`,
-`insufficient`, `abstain`과 0부터 1까지 confidence를 사례마다 하나씩 기록한다. `evaluate`는 class별
-혼동행렬과 F1, macro F1, coverage, 기권을 뺀 선택 정확도, selective risk와 risk-coverage 곡선을 낸다.
-기권만 늘려 오류를 감춘 결과는 coverage와 macro F1에서 함께 드러난다.
-Python에서는 `entailmentCases()`와 `evaluateEntailment(predictions)`가 같은 계약과 결과를 낸다.
-
-이 평가는 문장 두 개의 관계만 잰다. 원문 자체나 fact가 세상에서 참인지 판정하지 않으며, 36개 공개 KLUE
-사례가 모델 학습에 들어갔을 가능성도 배제하지 못한다. 따라서 한 모델 결과를 일반 함의 성능이나 글 품질
-향상으로 부르지 않는다. 한국어 문장과 주석이 든
-[`evidenceEntailmentV1.json`](src/hanlint/data/evidenceEntailmentV1.json)은 CC BY-SA 4.0이고, 코드와 다른
-데이터의 MIT 라이선스와 [분리해 표시한다](src/hanlint/data/evidenceEntailmentV1.LICENSE.md).
-
-구조가 필요하면 고정 말뭉치 1,600편의 종류별 절·문단·문장·글자 수 백분위로 원문 없는 청사진을 만든다.
-배포 데이터에는 원문, 제목, URL과 문장이 없고 허가된 출처 ID, 고정 판의 해시와 숫자 분포만 있다.
-`blueprint`은 마크다운 절 수와 도입·본문·마무리의 위치별 글자·문단·문장 예산을 따로 내며 사실이나
-표현을 공급하지 않는다.
-
-```console
-hanlint blueprint brief.json
-hanlint blueprint brief.json --format json --output blueprint.json
-hanlint packet brief.json --purpose draft --strategy rhetoricalBlueprintV1 --output packet.json
-```
-
-`--strategy`는 구조화 brief에서만 쓰는 opt-in이다. 기본 draft 패킷은 바뀌지 않는다. `qwen3:8b`로 같은
-일곱 brief를 한 번씩 짝 생성한 결과, 청사진 후보는 길이를 1/7에서 지켰고 기준은 0/7이었다. 사실 표면은
-후보 6/7, 기준 5/7, error 0은 두 조건 모두 4/7이었다. 전체 자동 계약은 두 조건 모두 0/7이라 일곱 쌍
-모두 블라인드 선호 평가 전에 막혔다. 따라서 이 전략은 구조 실험 도구이지 자연스러움 향상이 입증된
-기본 작법이 아니다.
-
-새 작법 전략이나 잘 쓴 글 DB 검색은 [writing trial 스키마](src/hanlint/data/writingTrial.schema.json)로 일반
-`plainBrief` 결과와 후보 결과를 같은 brief에 묶어 검증한다. 여러 장르를
-[`panelTrialSet`](src/hanlint/data/panelTrialSet.schema.json)으로 묶을 때 자료의 출처 성격, 라이선스,
-외부 참조 원문과 사람 품질 label 포함 여부까지 해시로 고정한다. 모델, 프롬프트와 출력 SHA256을 고정한
-뒤 사람 패널과 자동 심사기를 분리한다.
-
-```console
-hanlint arena panel trial-set.json --seed 42 --output suite.json
-hanlint arena assign suite.json --evaluator-id reviewer-a --group targetReader --output assignment-a.json
-hanlint arena review-page suite.json assignment-a.json --output review-a.html
-hanlint arena assignment-record suite.json assignment-a.json review-a.json --output recorded-a.json
-hanlint arena panel-adjudicate suite.json recorded-1.json recorded-2.json recorded-3.json --output adjudication.json
-hanlint arena panel-reveal trial-set.json suite.json adjudication.json --output result.json
-hanlint arena judge-cases suite.json --output judge-cases.json
-hanlint arena judge-consistency suite.json judge-cases.json predictions.json
-hanlint arena judge-evaluate suite.json adjudication.json judge-cases.json predictions.json
-```
-
-`panel`은 두 결과를 먼저 guard로 검사한다. 한쪽만 자동 계약을 충족하면 안전 결과만 기록하고 본문 비교를
-내지 않는다. 둘 다 충족할 때만 전략명, 모델명과 작성자를 숨기고 독자, 과업, 원자 사실과 제약을 함께
-보인다. 평가자는 좌우 content를 먼저 확인하고 자연스러움, 명료성, 독자 과업과 목소리를 따로 고른다.
-목소리 표본이 없으면 기권한다. 최소 세 명의 독립 batch에서 엄격 다수, 차원별 Krippendorff alpha,
-장르별 결과와 5,000회 bootstrap 구간을 낸다. 합성 품질 점수는 없다.
-
-`assign`은 평가자 가명과 suite 해시에서 사례별 좌우를 고정하되 어느 쪽을 바꿨는지 적지 않는다.
-운영자는 `assignment.json`을 검증 입력으로 삼아 `review.html`을 만들고 평가자에게는 HTML만 보낸다.
-HTML은 외부 스크립트와 네트워크 요청이 없는 단일 파일이다. 입력은 평가자가 연 브라우저에만 임시 저장되고,
-content를 끝내기 전에는 선호를 고를 수 없으며 목소리 표본이 없으면 voice가 `cannotJudge`로 잠긴다.
-평가자는 모든 판정과 근거를 채워 `review.json`을 저장한다. 이름이나 이메일 대신 연구 안에서만 쓰는 가명을
-사용하고 공용 기기에서는 내보낸 뒤 화면의 임시 저장 지우기를 누른다. 운영자는 `assignment-record`로
-배정 해시와 누락·변조를 검사하고 좌우를 원래 suite 방향으로 되돌린다. 세 평가가 모두 회수되기 전에는
-서로의 JSON이나 후보 정체성을 공개하지 않는다. [내보내기 schema](src/hanlint/data/panelAssignmentReview.schema.json)는
-파일 형식만 확인하며 사람의 판단을 대신 만들지 않는다.
-
-자동 심사기는 같은 쌍을 두 좌우 순서로 받고, 선택이 일치하지 않으면 기권한다. 사람 합의가 없을 때는
-위치 일관성과 사용 가능 범위만 계산한다. 합의가 생긴 뒤에만 정확도, macro F1, coverage, confusion,
-Brier와 calibration을 낸다. 일곱 쌍 `qwen3:8b` 실제 탐침에서 독자 과업의 순서 일관성은 0.5000,
-사용 가능 범위는 0.4286이었고 14개 응답 중 1개는 content 실패 뒤에도 선호를 내 계약에서 거부됐다.
-따라서 LLM 평가는 사람 선호나 진실로 합치지 않는다. 최소 세 명은 합의 계산 조건일 뿐 일반화 조건이
-아니며 30개 미만 사례와 낮은 alpha는 탐색 결과로만 보고한다.
-
-`readerTaskDraftV1` 절차도 같은 일곱 장르에서 실제로 한 번씩 생성했다. 사실 표면은 기준과 후보 모두
-7/7이었고 전체 자동 계약은 기준 3/7, 후보 7/7이었다. 후보 안전 승 네 쌍과 둘 다 안전 세 쌍을 얻었지만,
-사람 패널은 아직 없으므로 자연스러움 향상으로 부르지 않는다. 재현 절차와 해시는
-[`writingArena` 탐침 기록](tests/_attempts/writingArena/probeWritingArena_log.md)에 있다. 조사 근거와 자료
-사용 경계는 [`writingArena v1 조사`](tests/_attempts/writingArena/writingArenaV1_research.md)에 정리했다.
-
-기존 `arena blind`, `record`, `reveal`, `aggregate` 단일 평가 흐름도 호환하려고 남겨 두었다. 새 전략을
-승격할 때는 독자와 사실 맥락, 다중 사람 합의와 위치 편향 측정이 있는 panel 흐름을 쓴다.
-
-실행 절차는 [write-korean 스킬](skills/write-korean/SKILL.md)에 있다. 원문 전문을 JSON에 넣지 않으려면
-`--no-source`를 붙인다.
-
-패킷은 자연스러운 글을 보장하는 생성기가 아니다. 일곱 프리셋의 사실 고정 완성 글 실측에서 일반 brief의
-사실 표면 통과는 2/7이었고, 모든 공통 문형 예시를 넣은 v1 패킷은 0/7이었다. 모델이 문형 예시와 비교
-수치를 결과의 사실로 복제했기 때문이다. 공통 문형을 제거한 실제 v2 패킷은 1/7과 error 0건, v2로 한 번
-수정한 결과는 2/7과 error 0건이었다. v1의 error 7건과 반복 수정 12건은 없앴지만 일반 brief를 안전하게
-이긴 과제는 없었다. 그래서 v2 실행 패킷에는 공통 `patterns`를 싣지 않는다.
-문형이 필요하면 실제 error 하나를 확인한 사람이 `hanlint patterns --rule <규칙>`으로 따로 읽는다.
-`comparison`은 진단 자료일 뿐 결과 글의 사실이나 문장 재료가 아니다. 사실, 뜻, 독자 과업과 자연스러움은
-원문 대조와 별도 평가가 맡는다.
-
-이 변환은 형태소 분석기를 넣지 않은 작은 형태 층이 맡는다. 조사 맞추기, 종결 어미의 어간과 시제와 서법,
-피동과 사동을 따로 다룬다. 기준 말뭉치 390편, 17,420문장에서 합니다체 1,992개는 전부, 한다체 12,255개는
-12,209개를 원문 그대로 다시 만들었다. 그렇게 확인한 활용형 14,201개는 세 문체를 모두 만든다. 해요체
-원문을 거꾸로 푸는 일은 표층만으로 확정되지 않아 범위에 넣지 않았다.
-
-### 고를 수 있을 만큼만 후보를 낸다
-
-`--format json` 의 지적에는 만들 수 있을 때만 `candidates` 가 붙는다. 각 후보는 문장 `text` 와 왜 만든
-것인지 적은 `why` 를 가진다. 기계는 뜻이 필요한 다음 두 종류를 고르지 않는다.
-
-- 긴 문장을 끊어 볼 연결 어미 뒤
-- 지시어가 가리킬 수 있는 앞 문장의 명사
-
-범위는 말뭉치에서 재고 사람이 실제 문맥을 읽어 골랐다. 후보를 시험한 지적은 1,498건이고 규칙마다 10건씩
-50건을 검토했다. 장문과 지시어 후보는 각각 10건 중 7건을 골랐다. 명사 나열은 1건, 종결 어미 반복은
-0건이라 제품에서 뺐다. 이중 피동은 10건 전부를 골랐다. 추가 말뭉치의 표층 일치 58건 가운데 직접 인용
-1건은 글쓴이의 사용이 아니라 지적에서 제외했고, 남은 57건은 모두 확정 치환으로 승격했다.
-다섯 종류의 새 글을 쓴 3회차에서는 첫 검사 error 14, notice 6에 후보 14개가 나왔고, 두 번 고친 뒤 다섯 편
-모두 error 0, notice 0이었다.
-
-## 글의 종류를 고른다: 블로그, 보고서, 문서, 안내서, 수필, 소설, 백과
-
-기본은 블로그다. 독자를 부르고 절마다 눈에 보이는 결과를 남기는 글이 기준이라, 보고서나 참고 문서에
-그대로 대면 맞지 않는 지적이 나온다. 그때는 규칙을 하나씩 끄지 말고 종류를 고른다.
-
-```powershell
-hanlint 명세.md --preset docs      # 이번 검사에만
-hanlint init --preset docs         # 저장소에 고정할 때
-```
-
-| 프리셋 | 누구를 위한 것 | 끄는 규칙 | 견주는 프로파일 |
-|---|---|---:|---|
-| `blog` | 독자를 부르고 절마다 결과를 남기는 글 | 0개 | 블로그 |
-| `guide` | 단계별 안내서 | 2개 | 안내서 |
-| `report` | 보고서 | 5개 | 보고문 |
-| `essay` | 수필 | 6개 | 수필 |
-| `fiction` | 소설 | 6개 | 소설 |
-| `docs` | 참고 문서, 명세, README | 9개 | 기술 문서 |
-| `encyclopedia` | 백과 항목 | 10개 | 백과 |
-| `chat` | 대화 답변. 글의 짜임을 재는 규칙을 끈다 | 17개 | 없음 |
-
-어느 규칙이 꺼지는지는 여기 옮겨 적지 않는다. `hanlint rules --preset docs` 가 지금 도는 목록에
-꺼진 것을 표시해 보여 준다.
-
-`--preset` 은 설정 파일 없이 이번 실행에만 정한다. 남의 저장소에 파일을 만들지 않고 문서 한 편을
-검사할 때 쓴다. 한 폴더에 종류가 섞여 있으면 종류마다 나눠 돌린다. 지금 무엇이 켜져 있는지는
-`hanlint doctor` 가 한 화면으로 답한다.
-
-### 같은 종류의 편집된 글과 견준다
-
-프리셋은 규칙만 고르지 않는다. 블로그, 보고문, 기술 문서, 단계별 안내, 수필, 소설, 백과의 기준
-프로파일도 고른다. 프로파일은 재사용 조건과 판본을 고정한 글 1,600편, 문장 144,214개에서 문장 길이,
-쉼표 수, 새 화제 수, 유보 표현 수의 분포를 센 작은 표다. 원문은 제품에 싣지 않는다.
-
-`outsideProfile` 은 그 종류 문장의 99% 밖에 있는 자리만 notice 로 낸다. "문장 길이 47어절, 보고문
-3,897문장 가운데 상위 0.8%"처럼 관찰한 사실을 말할 뿐 고치라고 명령하거나 글을 채점하지 않는다.
-프리셋이 틀리면 대조도 틀리므로 종류가 섞인 폴더는 나눠 돌린다. 조직에서 승인한 글의 문체가 더 중요한
-때는 그 글들로 프로파일을 바꾼다.
-
-```powershell
-hanlint profile build 승인된글들/ --output 우리문체.json
-hanlint 새글.md --profile 우리문체.json
-```
-
-### 한국어 학습자에게 처음 풀어 쓸 낱말을 찾는다
-
-한국어 학습자가 독자라면 파이썬 판의 `terms` 를 한 번 더 돌린다. 국립국어원의 한국어 학습용 어휘
-5,965개를 A, B, C로 나눈 원 자료와 화제어의 첫 등장을 맞댄다.
-
-```powershell
-hanlint terms 글.md
-hanlint terms 글.md --outside --format json
-```
-
-기본 출력은 여러 뜻이 모두 C에 속하는 화제어만 보인다. A/C처럼 동형어의 등급이 갈리면 C라고 단정하지
-않는다. `--outside` 는 목록 밖 한글 화제어도 내지만 최신 전문어와 고유명사를 가르지 못하므로 후보일
-뿐이다. 이 등급은 한국어 학습자를 위한 것이며 한국어 모어 화자의 낱말 난도나 글의 품질 점수가 아니다.
-자료원, 필드, 인코딩, 라이선스, 한계는
-[`learningVocabularySource.toml`](src/hanlint/data/learningVocabularySource.toml)이 소유한다.
-
-## 이미 쓴 글이 많은 저장소에 들일 때
-
-새 도구를 이미 쌓인 문서에 대면 첫날 지적이 쏟아진다. 실측이다. 남의 저장소 문서 여섯 편에 그냥 돌리면
-error 가 21건 나왔다. 규칙이 틀려서가 아니라 그 글들이 실제로 문단이 조각나 있고 제목이 문장이기
-때문이다. 그런데 첫날 21건을 보는 팀은 도구를 끈다.
-
-그래서 **지금 있는 것을 잠그고 새로 생긴 것만 막는다.**
-
-```powershell
-hanlint baseline 글들/          # .hanlint-baseline.json 을 만들어 커밋한다
-hanlint 글들/ --baseline        # 그다음부터 새로 생긴 지적만 나온다
-```
-
-잠금은 줄 번호가 아니라 **인용문**으로 건다. 코드 린터는 파일과 줄로 잠그지만 글은 문단 하나만 고쳐도
-아래 줄 번호가 전부 밀려 잠근 것이 풀린다. hanlint 는 지적이 인용문을 들고 있어서 글자로 잠글 수 있고,
-그래서 성질 하나가 따라온다.
-
-| 글에 한 일 | 잠금이 하는 일 |
-|---|---|
-| 문단을 옮겨 줄 번호가 밀렸다 | 그대로 잠겨 있다. 헛경보가 안 난다 |
-| 잠긴 문장을 고쳤다 | 새 지적이 된다. 손댔으면 책임진다 |
-| 문장을 지웠다 | `hanlint baseline 글들/ --prune` 이 죽은 잠금을 치운다 |
-| 새 문장을 썼다 | 잠금과 무관하게 잡힌다 |
-
-**손댄 자리만 막는다.** 기한도 비율도 정하지 않아도 글을 고칠 때마다 잠금이 줄어든다. 잠금 파일은 사람이
-읽는 JSON 이라 PR 에서 무엇이 잠겼는지 보이고, `hanlint doctor` 가 몇 건이 잠겨 있는지 늘 말한다. 빚을
-감추는 자리가 되지 않게 하려는 것이다.
-
-## 잘 읽히는 글을 쓰는 법
-
-규칙은 결국 다섯 가지를 말한다. 각 항목의 오른쪽이 hanlint 가 그것을 세는 방식이다.
-
-### 1. 명사를 쌓지 말고 동사로 되돌린다
-
-한국어는 조사가 관계를 표시한다. 명사만 이어 붙이면 그 표시가 사라지고 독자가 조사를 스스로 끼워 넣는다.
-
-| 고치기 전 | 고친 뒤 |
-|---|---|
-| 가상환경 생성 후 패키지 설치 확인 절차를 따릅니다 | 가상환경을 만든 뒤 패키지가 깔렸는지 확인합니다 |
-| 회사의 팀의 결정의 근거를 봅니다 | 그 팀이 왜 그렇게 정했는지 근거를 봅니다 |
-
-아래쪽처럼 한 문장에 관형격 조사가 셋 이상 나오는 것도 같은 병이라 `nounPile` 과 `euiChain` 이 함께 센다.
-
-### 2. 독자가 누르고 입력할 것을 이름으로 쓴다
-
-가리키는 말은 전부 스크롤을 되돌리게 만든다. 특히 가리킬 대상이 앞 문장에 아예 없으면 독자는 되돌아가도
-못 찾는다.
-
-| 고치기 전 | 고친 뒤 |
-|---|---|
-| 터미널을 엽니다. 이것을 실행합니다 | 터미널을 엽니다. `make_qr.py` 를 실행합니다 |
-| 해당 값을 위의 코드에 넣습니다 | `행 수` 칸에 100을 넣습니다 |
-
-그래서 `deixis` 는 가리키는 말을, `danglingDeixis` 는 그중 앞 문장에 대상이 없는 것을 따로 센다.
-
-### 3. 사실을 나란히 놓지 말고 이유로 잇는다
-
-독자는 낱말이 아니라 문장 사이의 이유를 못 따라가서 멈춘다. 짧은 평서문 셋을 붙여 놓으면 그 관계를
-독자가 세운다.
-
-> 고치기 전: 병합 셀은 첫 칸에만 값이 있습니다. 나머지 칸은 빈값입니다. 정렬하면 순서가 깨집니다
->
-> 고친 뒤: 병합 셀은 첫 칸에만 값이 들어 있고 나머지는 비어 있습니다. 그대로 정렬하면 빈 칸이 값과
-> 떨어져 순서가 깨집니다
-
-오른쪽이 더 길지만 읽는 시간은 짧다. `factListParagraph` 가 인과 표지 없는 문단을, `endingRepeat` 이
-이유도 질문도 없이 같은 어미만 이어지는 구간을 센다.
-
-### 4. 글 전체의 자기모순
-
-그럼 hanlint 는 맞춤법 검사기와 무엇이 다를까요? 갈리는 자리가 여기다. 문장 하나만 보면 멀쩡한데
-**두 자리를 맞대 보면 틀린 것**이 있고, 그것은 글 전체를 들고 있어야 보인다.
-
-- 도입은 `여섯 가지` 라 했는데 결말은 `다섯 가지` 라 센다 (`countMismatch`)
-- `뒤에서 다루겠습니다` 라 해 놓고 끝까지 안 나온다 (`promiseRecall`)
-- 만들지 않은 파일을 뒤에서 읽는다 (`inputFileSource`)
-- 설치 줄에 없는 패키지를 import 한다 (`installImport`)
-- 표의 한 열에서 한 칸만 다른 잣대로 쟀다 (`tableOddCell`)
-- `453MB 에서 700MB 로 올라갔습니다` 인데 453MB 가 앞에 한 번도 안 나왔다 (`numberOrphan`)
-
-따라 하는 독자는 이런 자리에서 실제로 멈춘다. 문장이 예뻐도 소용이 없다.
-
-### 5. 독자를 부르고 절마다 결과를 남긴다
-
-질문은 설명 방법 중 하나다. 설명만으로 충분한 글에 물음표를 억지로 넣지 않는다. 따라 하는 글에서는
-독자가 자기 화면에서 결과를 확인할 수 있는지 살핀다.
-
-| 고치기 전 | 고친 뒤 |
-|---|---|
-| 파일을 만들 수 있습니다 | 터미널에 `dir` 을 쳐서 파일 이름을 확인해 봅니다 |
-| 표가 어디에 생기는지 설명합니다 | 그럼 표는 어디에 생겼을까요? 실행한 폴더에 있습니다 |
-
-`noQuestion`은 물음표 부재를 참고 지적으로 낸다. 문체 정책의 선택은 `hanlint init`이 만드는 설정 예시와
-[제품 경계](skills/specs/start/product.md#평가-루프에서의-자리)를 따른다.
-
-규칙 하나가 왜 있는지와 그 본보기는 `hanlint explain <규칙>` 이 전부 보여 준다. 글을 쓰기 전에 켜진 규칙 전부의
-고치는 법과 본보기를 한 장으로 읽으려면 `hanlint primer --preset <종류>` 다. AI 에게 글을 시킬 때 먼저 읽힌다.
-
-### 다시 쓸 틀
-
-위 다섯 가지를 **빈칸이 있는 틀**로도 든다. 본보기가 고친 사례 하나라면 문형은 그 사례를 다시 쓸 수 있는
-틀이다. 지적을 받았는데 어떻게 다시 쓸지 모를 때 그 규칙을 피하는 틀만 골라 본다.
-
-```powershell
-hanlint patterns --rule nounPile
-```
-
-```text
-동사로 되돌리기  (nounPile 를 피한다)
-  틀    {무엇}을 {한 뒤} {무엇}이 {어떤지} {확인합니다}
-  언제  명사가 셋 이상 이어질 때. 조사를 되살려 무엇이 무엇의 목적어인지 보인다
-  예시  가상환경을 만든 뒤 패키지가 깔렸는지 확인합니다.
-  대신  가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.
-  출처  이오덕 우리글 바로쓰기의 명사문을 동사문으로
-```
-
-열 개가 있다. 행동과 결과, 확인, 인과 잇기, 이름으로 이어받기, 독자에게 묻기, 값 소개, 동사로 되돌리기,
-결핍 도입, 수치 비교, 미룬 것 회수다. 출처는 글쓰기 스킬과 한국 글쓰기 책들 (이오덕 `우리글 바로쓰기`,
-이수열 `우리말 우리글 바로 쓰기`, 김정선 `내 문장이 그렇게 이상한가요`, 배상복 `문장기술`) 이다.
-
-**예시는 전부 hanlint 를 error 0 으로 통과한다.** 게이트가 매번 확인하므로 규칙이 바뀌어 틀이 낡으면
-빨갛다. 통과가 보장된 틀이라는 것이 이 명령이 파는 것이다.
-
-책들의 조언을 규칙으로 넣으려고 실측했더니 대부분 규칙이 아니었다. 김정선이 든 `것` 은 발행본 다섯
-편에서 75건이 걸리는데 표본이 전부 정당했다. 그 조언들은 "이건 틀렸다" 가 아니라 "이 자리를 다시 보라"
-는 교정자의 눈이다. 금지로는 못 담고 틀로는 담긴다. 재는 방법과 숫자는
-[tests/_attempts/koreanStyleBooks/](tests/_attempts/koreanStyleBooks/) 에 있다.
-
-## AI 초안 검사
-
-AI 가 쓴 한국어는 대체로 문법이 맞고 대체로 밋밋하다. 위 다섯 가지를 정확히 어긴다. 명사를 쌓고, 지시어를
-쓰고, 사실을 나란히 놓고, 도입에서 약속한 개수를 결말에서 잊고, 독자를 한 번도 부르지 않는다.
-
-그래서 AI 에게 규칙을 말로 설명하는 대신 **기계가 읽는 지적을 그대로 준다.**
-
-```powershell
+hanlint 문서들/ --preset docs
+hanlint fix 글.md
 hanlint 글.md --format json
 ```
 
-지적마다 `rule`, `line`, `quote`, `why`와 규칙을 설명하는 `exemplar`가 온다. 교육용 본보기가 실제 수정
-성공률을 높이는지는 [exemplarLift 탐침](tests/_attempts/exemplarLift/)에서 따로 쟀다. `qwen3:8b` 실제 문장
-30쌍에서 목표 규칙 해결, 새 error 0, 뜻 보존을 함께 만족한 것은 본보기 유무 모두 12/30이었다. 따라서
-`writingPacket`은 일반 본보기를 작문 근거로 싣지 않는다.
+`fix`는 원본 파일을 고친다. 적용 뒤에도 남은 지적과 문장의 뜻을 확인한다.
+일반 검사의 종료 코드는 error가 없으면 0, 있으면 1, 잘못된 인자나 실행 오류는 2다.
+notice는 읽고 판단할 참고 지적이다. 명령별 예외는 [종료 코드 안내][exitCodes]에 있다.
 
-대신 지적의 정규화한 원문까지 사람이 승인한 `[[patches]]`와 완전히 같을 때만 `patch`와
-`guidance.patch`가 붙는다. [patchMemory 탐침](tests/_attempts/patchMemory/)의 고정 9과제에서는 세 조건을
-모두 만족한 것이 이유만 제공 2/9, 무조건 본보기 3/9, 정확 재생 4/9이었다. 승인 원문 세 건만 보면 정확
-재생이 일반 본보기에 2승 0패 1무였다. 표본이 작으므로 유사 문장으로 넓히지 않는다. 맞는 승인 원문이
-없으면 그 패치는 선택하지 않는다.
+## 어떤 자리를 보여 주나
 
-서로 다른 공개 Git 이력 6곳에서 일대일 문장 고침 3,233쌍을 모아 보호 원자와 연산 서명으로 거른
-[operationMemory 탐침](tests/_attempts/operationMemory/)도 따로 했다. 고정 7과제에서 안전한 성공은 이유만
-2/7, 무조건 본보기 1/7, 정확 재생 2/7, 표면 연산 4/7이었다. 표면 연산은 정확 재생에 2승 0패 5무였고,
-위험한 의미 전이 세 건은 모두 선택하지 않았다. 그래서 이긴 표면 치환만 `guidance.operation`으로 내고,
-지시어와 의미 고침은 계속 원문 완전 일치에 남긴다. 맞는 패치나 연산이 없으면 `guidance`는 비고 모델은
-확실하지 않은 문장을 그대로 둔다.
+| 검사할 표현이나 상황 | 확인하는 것 |
+|---|---|
+| `결과가 저장되어집니다.` | 이중 피동. `결과가 저장됩니다.`로 고칠 수 있다 |
+| `가상환경 생성 후 패키지 설치 확인 절차` | 조사 없이 이어지는 명사와 빠진 관계 |
+| 앞 문장에 대상이 없는 지시어 | 독자가 앞에서 받은 정보로 대상을 찾을 수 있는지 |
+| 도입에서 약속한 개수와 다른 목록 | 문서 안에서 세는 값이 맞는지 |
+| 만들지 않은 파일을 읽는 예제 | 따라 하는 독자가 필요한 파일을 얻었는지 |
 
-에이전트에 붙일 때는 [skills/use-hanlint/SKILL.md](skills/use-hanlint/SKILL.md) 를 스킬 폴더에 둔다.
-글을 쓴 직후 스스로 검사하고 error 가 0 이 될 때까지 고친 뒤에 사람에게 넘긴다. Claude Code에서는 위의
-비차단 훅이 저장 직후 같은 루프를 자동으로 돌려준다.
+지적에는 위치와 규칙 이름, 인용 문장, 이유가 붙는다. 본보기는 글의 종류와 합니다체·한다체·해요체에
+맞춰 보여 준다. 본보기는 다시 쓰는 방법을 설명하는 사례이며, 내 문장에 그대로 적용할 답은 직접 고른다.
 
-## 평가 루프에서의 자리
-
-hanlint 는 **0층**이다. 좋은 글인지는 판정하지 않는다.
-
-```text
-쓴다
- ↓
-0층  hanlint            결정적. 고치면 확실히 0 이 된다. 0 이 될 때까지 여기서만 돈다
- ↓
-1층  규칙 위반 (LLM)     기계가 못 재는 규칙만 남는다
-2층  규칙 밖 읽힘 (LLM)  지루한가, 몰입이 끊기는가, 검색 의도에 답하는가
- ↓
-지적 없음 → 끝
+```console
+hanlint explain nounPile
+hanlint patterns --rule nounPile
+hanlint rules --preset docs
 ```
 
-블로그 글 한 편을 LLM 평가자 넷이 네 라운드 읽었더니 지적이 31, 27, 40, 16 건으로 줄지 않았다. 마지막
-16건의 절반이 세면 잡히는 것이었다. 평가자는 라운드마다 다른 것을 발견하므로 셀 수 있는 것에 화력을 쓰면
-루프가 수렴하지 않는다. 0층이 바닥을 깔아야 위층이 자기 일을 한다.
+한린트는 좋은 글의 점수나 등급을 내지 않는다. 맞춤법 전체, 사실의 진실, 의미 보존과 자연스러움은 판단하지
+않는다. 어떤 결함을 결정적으로 검사하고 어떤 것은 다루지 않는지는 [제품 경계][product]에 정리돼 있다.
 
-## 명령 한눈에
+## 글 종류부터 고르기
 
-| 명령 | 무엇 | npm |
-|---|---|---|
-| `hanlint` | 첫 화면. 이 폴더의 파일 이름으로 만든 예시와 다음 걸음 | 예 |
-| `hanlint 글.md` 또는 `hanlint 글들/` | 검사한다. 폴더면 그 아래 마크다운 전부 | 예 |
-| `hanlint contract init 글.md --reader "독자" --goal "목표"` | 기존 글의 보호 표면에서 호환용 version 1 계약을 만든다 | 예 |
-| `hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2` | 자동 surface와 현재 H2 순서를 분리한 version 2 계약을 만든다 | 예 |
-| `hanlint check contract.json 글.md --format text` | 보호 표면, 제목 구조, Finding, 글 요약과 다음 행동을 한 영수증으로 본다 | 예 |
-| `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
-| `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
-| `hanlint hook`, `hanlint hook --reply` | Claude Code가 저장한 마크다운과 마지막 답변을 같은 턴에 비차단 검사한다 | 예 |
-| `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
-| `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
-| `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |
-| `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
-| `hanlint spec --preset blog --chars 800` | 같은 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
-| `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
-| `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
-| `hanlint 글들/ --baseline` | 잠근 것은 넘기고 새로 생긴 것만 막는다 | 예 |
-| `hanlint 글.md --preset docs` | 설정 파일 없이 이번 검사의 글 종류만 정한다. 종류는 blog, report, docs, guide, essay, fiction, encyclopedia, chat 이고 규칙 묶음이 따라온다. chat 을 뺀 일곱은 견줄 프로파일도 따라온다 | 예 |
-| `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
-| `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
-| `hanlint 글.md --format compact --errors-only` | 한 줄에 지적 하나, error 만. 스크립트가 쓴다 | 예 |
-| `hanlint 글.md --format json` | 본보기가 붙은 기계 판. `github` 은 GitHub Actions 주석 | 예 |
-| `hanlint rules --format json` | 규칙 전부를 기술서와 본보기와 함께. 에이전트가 훑을 때 | 예 |
-| `hanlint explain <규칙> --format json` | 규칙 하나의 기술서와 본보기와 틀을 한 덩어리로 | 예 |
-| `hanlint - --path 초안.md` | stdin 으로 넣은 글을 그 이름으로 검사한다 | 예 |
-| `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |
-| `hanlint map 글.md --format html` | 지도를 단일 HTML 로 | 아니오 |
-| `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 지문을 JSON 으로 | 예 |
-| `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 | 아니오 |
-| `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 | 아니오 |
-| `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 | 아니오 |
-| `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다 | 아니오 |
-| `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 판·인용 조각 해시·라이선스를 검증한다 | 아니오 |
-| `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류·기권 지표를 집계한다 | 아니오 |
-| `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다 | 아니오 |
-| `hanlint arena panel / assign / review-page / assignment-record` | 같은 사실의 기준과 후보를 평가자별 단일 HTML로 눈가림하고, 회수한 독립 평가를 원래 방향으로 잠근다 | 아니오 |
-| `hanlint arena judge-cases / judge-consistency / judge-evaluate` | 자동 심사기의 좌우 위치 편향을 먼저 재고 사람 합의가 있을 때만 정확도와 calibration을 낸다 | 아니오 |
-| `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 | 아니오 |
-| `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 | 아니오 |
-| `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 | 아니오 |
+블로그, 기술 문서, 보고서, 안내서, 수필, 소설, 백과와 대화에 맞는 프리셋이 있다. 문서 한 편에만 적용하거나
+프로젝트 설정으로 남길 수 있다.
 
-종료 코드는 지적이 없으면 0, error 가 있으면 1 이라 발행 게이트에 그대로 물린다. npm 칸이 아니오 인 명령은
-파이썬 패키지 (`pip install hanlint`) 에만 있고 `npx hanlint` 로 부르면 무엇을 대신 쓰라는 안내와 함께 2 로
-끝난다. 두 판 모두에 있는 명령은 같은 규칙, 같은 fixture, 같은 출력이다.
-
-## 규칙을 끄기
-
-프리셋 위에서 더 끄려면 `hanlint.toml` 의 `disable` 에 이름을 넣는다. 한 자리에서만 끄려면 마크다운
-주석을 쓴다. 상투어를 인용하는 문단처럼 규칙이 맞지만 그 자리만 예외일 때다.
-
-```markdown
-<!-- hanlint-disable cliche -->
-
-AI 가 자주 쓰는 표현은 `핵심은`, `결국 중요한 것은` 처럼 눈에 띄는 것부터 지웁니다.
-
-<!-- hanlint-enable cliche -->
+```console
+hanlint 명세.md --preset docs
+hanlint init --preset docs
+hanlint doctor
 ```
 
-`hanlint-disable-next` 는 다음 블록 하나만 끈다. 규칙 이름을 안 적으면 전부 끈다. 백틱과 따옴표 안은
-인용이라 사전 규칙과 지시어 규칙이 처음부터 건너뛴다.
+이미 문서가 쌓인 저장소에는 baseline으로 기존 지적을 기록하고 새 지적부터 볼 수 있다.
+설정 방법과 주의할 범위는 [프리셋, 예외와 baseline][cli]를 따른다.
 
-규칙이 아니라 글의 형식이 다르면 끄지 말고 설정으로 말한다. 강의 교안처럼 절 제목 아래에 문장형 부제를 두면
-`headingSentenceMaxLevel = 2`, 장면 계약이나 도표 원문처럼 코드도 산문도 아닌 펜스가 있으면
-`ignoreFences = ["course-scene", "mermaid"]` 다. 실측: 강의 여섯 편에 그냥 돌리면 error 89건이었고 이 둘을
-적자 27건이 남았다. 남은 것은 전부 문장의 결함이었다.
+## Contract, Finding, Patch
 
-## 파이썬에서
+모델이나 편집기에서 재작성 범위를 확인할 때 쓰는 공개 프로토콜이다.
+
+| 개념 | 역할 |
+|---|---|
+| Contract | 독자, 목표, 승인한 사실과 보호할 표면·구조를 선언한다 |
+| Finding | 검사기가 집은 위치와 이유를 전달한다 |
+| Patch | 기존 지적 하나를 줄이는 정확한 국소 치환을 제안한다 |
+
+예를 들어 H2 제목이 있는 초안에서 제목 수와 순서를 잠그려면 다음과 같이 실행한다.
+
+```console
+hanlint contract init 초안.md --reader "개발자" --goal "라이브러리를 비교한다" --outline h2 --output contract.json
+hanlint check contract.json 초안.md --format text
+```
+
+생성한 계약은 사람이 확인한다. 제목이 없는 자유 원고는 브라우저에서 바로 비교할 수 있다.
+계약 버전, 보호 범위, 입력 조건과 실행 가능한 API 예제는 [Reader Contract 프로토콜][contract]이 소유한다.
+
+## Python과 JavaScript에서
+
+Python은 패키지의 공개 진입점에서 가져온다.
 
 ```python
 from hanlint import lintText
 
+text = "결과가 저장되어집니다."
 for finding in lintText(text):
     print(finding.line, finding.rule, finding.why)
 ```
 
-`Contract`, `ContractV2`, `Patch`, `check`, `contractFromTextV2`, `renderCheck`, `verifyPatch`, `lintFile`,
-`auditText`, `fingerprint`도 같은 자리에 있다.
+JavaScript는 `npm install hanlint` 후 ESM으로 가져온다.
 
-## CI 게이트로 물린다: pre-commit, GitHub Actions
+```js
+import { lintText } from "hanlint";
 
-pre-commit 훅과 GitHub Action 이 저장소 루트에 있다. 훅은 `.pre-commit-config.yaml` 에서 이 저장소를
-가리키면 되고, 액션은 지적을 PR 의 줄 주석으로 단다. 쓰는 동안 계속 보려면 `hanlint watch 글.md` 가
-저장할 때마다 다시 검사한다.
-
-```yaml
-- uses: eddmpython/hanlint@main
-  with:
-    files: docs/글.md
-    errors-only: "true"
+const text = "결과가 저장되어집니다.";
+for (const finding of lintText(text)) {
+  console.log(finding.line, finding.rule, finding.why);
+}
 ```
 
-이미 문서가 쌓인 저장소면 `hanlint baseline docs/` 로 한 번 잠그고 `.hanlint-baseline.json` 을 커밋한다.
-그러면 첫날부터 초록이고, 그 뒤로 누가 문장을 고치거나 새로 쓸 때만 막힌다.
+브라우저 편집기는 main의 소스로 배포한다. 패키지는 릴리즈 때 배포하므로 시점이 다를 수 있다.
+새 API의 배포 상태는 [npm 안내][npm]와 [Unreleased 변경][changes]를 함께 확인한다.
 
-## 무엇을 잡고 무엇은 안 잡나
+## 더 필요한 안내
 
-경계는 [skills/specs/start/product.md](skills/specs/start/product.md) 에 있다. 안 잡는 것도 근거와 함께
-적혀 있다. 뜻을 이해해야 잡히는 것, 취향, 그리고 만들었다가 실측에서 오탐이 이겨 뺀 규칙들이다.
+| 안내 | 내용 |
+|---|---|
+| [브라우저 사용과 저장][guide] | 원문 비교, 수정 기록, 승인 고침, 개인 GitHub, 문제 해결 |
+| [명령과 설정][cli] | 프리셋, 출력, baseline, Python 전용 명령 |
+| [자동화 연결][integrations] | GitHub Actions, pre-commit, 에이전트 스킬, Claude Code 훅 |
+| [Reader Contract][contract] | 입력 스키마, 영수증, 사실 잠금과 수정 범위 |
+| [작문 실험과 평가][writingAxis] | brief, packet, guard, arena의 절차와 검증 범위 |
+| [개발·운영 문서][skills] | 코드 구조, 기여, 검증, 패키지와 Pages 배포 |
 
-규칙 하나는 파일 하나이고 자기 기술서를 docstring 으로 든다. 규칙마다 어떤 실제 글의 어떤 문장에서
-왔는지가 거기 적혀 있다. 실측 없는 규칙은 넣지 않는다.
+작문 패킷과 평가 도구는 자연스러움 향상이 입증된 기본 작법으로 제공하지 않는다.
+실험 결과와 적용 경계는 [작문 축][writingAxis]과 [실측 기록][attempts]에서 확인할 수 있다.
 
-## 오탐 신고와 규칙 제안
+## 오탐과 개선 사례
 
-정당한 문장이 잡혔거나 잡아야 할 자리를 놓쳤으면 이슈로 알려 주면 된다. 양식 두 개가 문장 원문과 근거를
-묻는다. 오탐은 fixture 의 spare 로 박혀 다시는 잡히지 않게 되고, 제안은 실측 사례가 있어야 규칙이 된다.
-절차는 [skills/specs/operation/feedback.md](skills/specs/operation/feedback.md) 에 있다.
+정당한 문장이 잡혔으면 [오탐 신고][issues]에 문장, 규칙 이름, 사용한 버전과 글 종류를 남긴다.
+앞뒤 문맥이 필요하면 공개할 수 있는 범위로 함께 적는다. 브라우저에서 기록한 수정 사례도 선택해서
+내보낼 수 있다. [기여 절차][feedback]에 따라 사례를 검토한 뒤 규칙이나 본보기를 고친다.
 
 ## English
 
-hanlint is a type checker for Korean prose in Markdown. Its model-independent front door is three concepts:
-`Contract`, `Finding`, and `Patch`. A Reader Contract declares a reader, a goal, and facts. `check` derives protected
-numbers, URLs, inline code, and link destinations, then emits a deterministic receipt with regular lint findings.
-`contractFromText` derives a reviewable version 1 draft. `contractFromTextV2`, or `contract init --outline h2`,
-separates human-approved facts from an automatically captured surface and locks one exact heading level.
-`check --format text` combines protected atoms, outline mismatches, lint findings, a full section summary, and a next action.
-`verifyPatch` accepts only an exact local replacement tied to a named existing issue and rejects new protected-atom
-violations or new errors.
+hanlint is a Korean prose linter for Markdown, with a browser editor, Python package and Node.js CLI.
+It reports translationese, noun pile-ups, double passives and document inconsistencies, with locations,
+reasons and rewriting examples. The browser runs the same npm engine locally and keeps revision history
+separate from explicitly approved corrections.
 
-The regular linter reports only what can be decided by counting:
-translationese, noun pile-ups, double passives, dangling demonstratives, fragmented paragraphs and
-document-level structure. It does not judge whether writing is good, and it is not a spell checker.
-
-Two implementations, zero runtime dependencies, identical output: `pip install hanlint` and
-`npx hanlint`. Exit code is 1 when an error-level finding exists, so it drops into CI as a gate.
-`hanlint baseline docs/` locks what already exists so an established repository starts green.
+Python and npm share deterministic rules with zero runtime dependencies. Reader Contracts can protect
+numbers, URLs, inline code, links and heading order. These checks do not judge truth, meaning or writing quality.
+[Try the editor][editor], use `pip install hanlint`, or run `npx hanlint draft.md`.
 
 ## 라이선스
 
-코드는 MIT 다. 배포물이 함께 싣는 외부 자료 둘은 라이선스가 다르다.
+| 대상 | 라이선스와 고지 |
+|---|---|
+| 코드와 나머지 데이터 | [MIT][license] |
+| KLUE-NLI 파생 근거 평가 사례 | [CC BY-SA 4.0][klueLicense] |
+| 국립국어원 학습용 어휘와 쉬운 말 자료 | [공공누리 제1유형][koglLicense] |
 
-| 무엇 | 라이선스 | 고지 |
-|---|---|---|
-| hanlint 코드와 나머지 데이터 | MIT | `LICENSE` |
-| `evidenceEntailmentV1.json` (KLUE-NLI 파생 36개 사례) | CC BY-SA 4.0 | `src/hanlint/data/evidenceEntailmentV1.LICENSE.md` |
-| `learningVocabulary.tsv`, `easyWords.toml` (국립국어원) | 공공누리 제1유형 | `src/hanlint/data/koglType1.LICENSE.md` |
+npm과 브라우저에는 외부 자료 중 쉬운 말 자료의 파생물이 포함된다. 브라우저의 고지는
+[자료 출처와 라이선스][siteLicense]에서 읽을 수 있다. 기준 말뭉치 원문은 제품에 배포하지 않는다.
 
-파이썬 배포 메타데이터의 표현식은 `MIT AND CC-BY-SA-4.0 AND LicenseRef-KOGL-Type-1` 이고 세 고지
-파일이 휠과 sdist 에 함께 들어간다. 외부 자료 가운데 npm 배포물에는 `easyWords.json`만 가며
-`package.json`이 `koglType1.LICENSE.md`를 가리킨다. 기준 말뭉치의 원문은 저장소 밖에 있고 배포물에
-싣지 않는다.
+[editor]: https://eddmpython.github.io/hanlint/
+[guide]: https://eddmpython.github.io/hanlint/guide.html
+[fork]: https://eddmpython.github.io/hanlint/guide.html#fork
+[cli]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md
+[exitCodes]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md#종료-코드
+[integrations]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/integrations.md
+[npm]: https://github.com/eddmpython/hanlint/blob/main/npm/README.md
+[contract]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/readerContract.md
+[product]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/product.md
+[writingAxis]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/operation/writingAxis.md
+[skills]: https://github.com/eddmpython/hanlint/blob/main/skills/README.md
+[attempts]: https://github.com/eddmpython/hanlint/tree/main/tests/_attempts
+[feedback]: https://github.com/eddmpython/hanlint/blob/main/skills/specs/operation/feedback.md
+[issues]: https://github.com/eddmpython/hanlint/issues/new/choose
+[changes]: https://github.com/eddmpython/hanlint/blob/main/CHANGELOG.md
+[license]: https://github.com/eddmpython/hanlint/blob/main/LICENSE
+[klueLicense]: https://github.com/eddmpython/hanlint/blob/main/src/hanlint/data/evidenceEntailmentV1.LICENSE.md
+[koglLicense]: https://github.com/eddmpython/hanlint/blob/main/src/hanlint/data/koglType1.LICENSE.md
+[siteLicense]: https://eddmpython.github.io/hanlint/license.html

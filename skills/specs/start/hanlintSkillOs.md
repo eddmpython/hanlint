@@ -16,12 +16,13 @@ status: curated
 
 ## 소유하는 것
 
-한국어 글 린터 hanlint 의 코어, CLI, 파이썬 패키지, AI 사용 스킬이다.
+한국어 글 린터 hanlint의 코어, CLI, Python과 npm 패키지, 브라우저 편집기와 AI 사용 스킬이다.
 
 | 경로 | 무엇 |
 |---|---|
 | `src/hanlint/` | 코어. 층 구조는 `operation.moduleLayers` 가 정본이다 |
 | `npm/` | 파이썬의 투영. 순수 ESM, 빌드 0. `npm/src` 가 제품, `npm/test` 가 테스트, `npm/data` 는 `scripts/derive/npmData.py` 가 만든다 |
+| `web/` | 같은 npm 코어를 쓰는 편집기, 개인 기록, GitHub 보관과 사용 안내. 정적 배포는 `operation.webEditor`가 소유한다 |
 | `tests/` | 양방향 테스트와 구조 게이트. `tests/_attempts/` 는 실험 기록 |
 | `hooks/` | 훅 판정기. `writeGate.py` 는 Claude 쓰기 훅이, `commitMessage.py` 는 git commit-msg 훅이 부른다. 얇은 셸은 `.githooks/`, 등록은 `.claude/settings.json` |
 | `scripts/` | 도구. 도메인 셋이다. `derive/` 는 정본에서 파생 자료를 만들고, `fetch/` 는 외부 자료를 받고, `measure/` 는 실측 탐침이다 |
@@ -46,6 +47,10 @@ status: curated
 |---|---|
 | 위반하면 사고가 나는 규칙 | 루트 `CLAUDE.md` (추적하지 않음) |
 | 무엇을 잡고 무엇을 안 잡나 | [`start.product`](product.md) |
+| 첫 검사와 프로젝트 설정 | [`start.cli`](cli.md) |
+| CI와 에이전트 연결 | [`start.integrations`](integrations.md) |
+| 브라우저에서 글을 고치고 기록하는 법 | [사용과 저장 안내](https://eddmpython.github.io/hanlint/guide.html) |
+| 편집기 실행과 Pages 배포 | [`operation.webEditor`](../operation/webEditor.md) |
 | 규칙을 더하는 법 | `operation.addingARule` |
 | 커밋 전에 돌릴 것 | `operation.verify` |
 | 배포 절차 | `operation.release` |

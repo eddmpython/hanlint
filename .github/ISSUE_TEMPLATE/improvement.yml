@@ -1,0 +1,41 @@
+name: 사용 문제·수정 사례
+description: 편집기, 명령, 문서의 불편이나 직접 고친 글의 사례를 공유한다
+title: "개선: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        정당한 문장이 잡혔다면 오탐 신고, 새 검사 기준이라면 규칙 제안 양식을 사용해 주세요.
+        수정 사례 파일에는 원문과 수정 후 전문이 들어갑니다. 공유 전에 비공개 내용을 확인해 주세요.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 어떤 내용인가요?
+      options:
+        - 편집기 사용 문제
+        - 명령 또는 연동 문제
+        - 문서 개선
+        - 직접 고친 글의 사례
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 사용 환경
+      description: 웹 주소와 브라우저, 또는 명령과 hanlint 버전을 적어 주세요. 문서라면 해당 링크를 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: 무엇을 했고 어떤 결과가 나왔나요?
+      description: 재현 순서, 오류 문구나 수정 전후를 적어 주세요. 편집기의 사례 파일을 첨부해도 됩니다.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 결과 또는 수정 이유
+      description: 어디가 어떻게 달라져야 하는지, 글을 고친 사례라면 뜻이 어떻게 나아졌는지 적어 주세요.
+    validations:
+      required: true
