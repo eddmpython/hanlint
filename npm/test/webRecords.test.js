@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { GitHubStore } from "../../web/github.js";
-import { newDraft, emptyWorkspace, parseWorkspace, serializeWorkspace, addRecord, contribution } from "../../web/records.js";
+import { newDraft, emptyWorkspace, parseWorkspace, serializeWorkspace, addRecord, contribution, storageKeyFor } from "../../web/records.js";
+
+test("같은 배포 폴더는 기록을 공유하고 다른 Pages 경로와는 구분한다", () => {
+  assert.equal(storageKeyFor("/hanlint/"), storageKeyFor("/hanlint/index.html"));
+  assert.notEqual(storageKeyFor("/hanlint/"), storageKeyFor("/"));
+  assert.notEqual(storageKeyFor("/hanlint/"), storageKeyFor("/myFork/"));
+});
 
 test("원고와 명시한 판단만 보관하고 인증 정보는 내보내지 않는다", () => {
   const workspace = emptyWorkspace(newDraft("결과입니다.", "한글 😀 원고"));
