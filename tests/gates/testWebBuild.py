@@ -19,6 +19,8 @@ def testSiteContainsSameCoreAndCompleteData(tmp_path: Path) -> None:
         assert (output / name).is_file()
     assert not (output / "node_modules").exists()
     assert not (output / "package.json").exists()
+    assert (output / "pretendard.woff2").read_bytes() == (ROOT / "web/pretendard.woff2").read_bytes()
+    assert "SIL OPEN FONT LICENSE" in (output / "license.html").read_text(encoding="utf-8")
 
 
 def testSiteRefusesExistingOutputWithoutChangingIt(tmp_path: Path) -> None:

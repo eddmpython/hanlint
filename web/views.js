@@ -8,32 +8,51 @@ function empty(parent, title, description) {
   parent.append(node);
 }
 
+function findingDetail(result, index, handlers) {
+  const finding = result.report.findings[index], detail = element("div", "findingDetail");
+  detail.append(element("p", "findingWhy", finding.why));
+  if (finding.exemplar) {
+    const example = element("div", "example");
+    example.append(element("div", "exampleLabel", "이렇게 고친 본보기"), element("div", "exampleAfter", finding.exemplar.after));
+    detail.append(example);
+  }
+  const actions = element("div", "findingActions");
+  actions.append(button("이 지적은 맞지 않아요", () => handlers.reject(finding)));
+  if (finding.patch) actions.append(button("기억한 고침 적용", () => handlers.patch(index), "secondary small"));
+  else if (result.findings[index].replacement !== null) actions.append(button("수정본에 반영", () => handlers.fix(index), "secondary small"));
+  else actions.append(button("문장으로 이동 ↗", () => handlers.locate(finding)));
+  detail.append(actions, element("p", "findingMeta", `${finding.line}줄 · ${finding.rule}`));
+  return detail;
+}
+
 export function renderFindings(result, handlers) {
   const root = get("findings");
+  const opened = new Set([...root.querySelectorAll("details[open]")].map((node) => node.dataset.finding));
   root.replaceChildren();
-  const findings = result.report.findings;
+  const findings = result.report.findings, groups = new Map();
   get("findingCount").textContent = String(findings.length);
   const errors = findings.filter((item) => item.severity === "error").length;
-  get("reviewSummary").textContent = findings.length ? `집은 자리 ${errors}곳 · 참고할 자리 ${findings.length - errors}곳` : "현재 기준에서 집힌 자리가 없습니다.";
+  get("reviewSummary").textContent = findings.length ? `고칠 곳 ${errors} · 살펴볼 곳 ${findings.length - errors}` : "현재 기준에서 발견한 지적이 없어요.";
   get("fixAllButton").disabled = !result.findings.some((item) => item.replacement !== null);
-  if (!findings.length) empty(root, "지금은 남길 메모가 없어요", "문맥과 사실, 원하는 말투가 잘 담겼는지 한 번 읽어 보세요.");
+  if (!findings.length) empty(root, result.document.sentences.length ? "이제 한 번 읽어 보세요." : "어떤 글을 쓰고 있나요?", result.document.sentences.length ? "뜻과 말투까지 마음에 드는지는 직접 확인해 주세요." : "왼쪽에 글을 넣으면 고칠 곳을 함께 살펴볼게요.");
   findings.forEach((finding, index) => {
-    const card = element("article", "findingCard"), top = element("div", "findingTop");
-    top.append(element("span", `findingBadge${finding.severity === "notice" ? " noticeBadge" : ""}`, finding.severity === "notice" ? "참고" : "집은 자리"), element("span", "findingRule", `${finding.line}줄 · ${finding.rule}`));
-    card.append(top, button(finding.quote, () => handlers.locate(finding), "findingQuote"), element("p", "findingWhy", finding.why));
-    if (finding.exemplar) {
-      const example = element("div", "example");
-      example.append(element("div", "exampleLabel", "이렇게 고친 본보기"), element("div", "exampleBefore", finding.exemplar.before), element("div", "exampleAfter", finding.exemplar.after));
-      card.append(example);
-    }
-    const actions = element("div", "findingActions");
-    actions.append(button("이 지적은 맞지 않아요", () => handlers.reject(finding)));
-    if (finding.patch) actions.append(button("기억한 고침 적용", () => handlers.patch(index), "secondary small"));
-    else if (result.findings[index].replacement !== null) actions.append(button("이곳 고치기", () => handlers.fix(index), "secondary small"));
-    else actions.append(button("문장으로 이동 ↗", () => handlers.locate(finding)));
-    card.append(actions);
-    root.append(card);
+    const key = JSON.stringify([finding.line, finding.quote]);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(index);
   });
+  let number = 0;
+  for (const [key, indices] of groups) {
+    const finding = findings[indices[0]], notice = indices.every((index) => findings[index].severity === "notice");
+    const card = element("details", `findingCard${notice ? " noticeCard" : ""}`);
+    card.dataset.finding = key;
+    card.open = opened.has(key);
+    const summary = element("summary");
+    summary.setAttribute("aria-label", finding.quote);
+    summary.append(element("span", "findingNumber", String(++number).padStart(2, "0")),
+      element("span", "findingQuote", finding.quote), element("span", "findingChevron", "＋"));
+    card.append(summary, ...indices.map((index) => findingDetail(result, index, handlers)));
+    root.append(card);
+  }
 }
 
 export function renderProtection(result) {

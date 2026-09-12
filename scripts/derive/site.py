@@ -20,7 +20,7 @@ def buildSite(output: Path) -> None:
         raise ValueError("배포 폴더는 비어 있어야 한다")
     output.mkdir(parents=True, exist_ok=True)
     for source in (ROOT / "web").iterdir():
-        if source.is_file() and source.suffix in {".html", ".css", ".js", ".svg"}:
+        if source.is_file() and source.suffix in {".html", ".css", ".js", ".svg", ".woff2", ".txt"}:
             shutil.copy2(source, output / source.name)
     shutil.copytree(ROOT / "npm" / "src", output / "npm" / "src")
     dataRoot = output / "npm" / "data"
@@ -28,7 +28,7 @@ def buildSite(output: Path) -> None:
     files = {path.name: path.read_text(encoding="utf-8") for path in sorted((ROOT / "npm" / "data").iterdir())}
     (dataRoot / "siteData.json").write_text(json.dumps(files, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (output / ".nojekyll").write_text("", encoding="utf-8")
-    licenses = [ROOT / "npm" / "LICENSE", ROOT / "npm" / "koglType1.LICENSE.md"]
+    licenses = [ROOT / "npm" / "LICENSE", ROOT / "npm" / "koglType1.LICENSE.md", ROOT / "web" / "pretendard.LICENSE.txt"]
     sections = "".join(
         f"<h2>{html.escape(path.name)}</h2><pre>{html.escape(path.read_text(encoding='utf-8'))}</pre>" for path in licenses
     )

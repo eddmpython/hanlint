@@ -25,6 +25,11 @@ status: observed
 
 ## 배포
 
+첫 화면은 히어로 하나, 왼쪽 원문과 오른쪽 결과, 그 아래 수정본 입력으로 구성한다. 원문을 넣으면
+바로 검사하고 수정 중에는 수정본을 검사한다. 수정본을 전체 교체해도 원문을 바꾸지 않는다. 원문은
+수정 중 읽기 전용이며 새 원고를 열 때 기존 작업을 기록한다. 같은 문장의 지적은 한 행에서 펼쳐 본다.
+보호 조건, 승인과 보관은 아래에서 필요할 때 펼친다. 기존 개인 기록 형식은 그대로 읽는다.
+
 `scripts/derive/site.py --output <빈 출력 폴더>`가 정적 배포물을 조립한다. 원본을 고쳐서 빌드하고 기존
 출력에 덧씌우지 않는다. 로컬 산출물은 전역 development-hygiene의 공통 실행 공간에 둔다.
 `.github/workflows/pages.yml`이 기존 CI를 먼저 실행하고 배포한다. 프로젝트 경로는 상대 경로라
@@ -56,12 +61,16 @@ Linux와 macOS에서는 같은 빌드와 서버 명령에 저장소 밖 출력 �
 | 첫 화면 구조와 안내 문구 | `web/index.html` |
 | 색, 간격과 반응형 배치 | `web/style.css` |
 | 심볼과 파비콘 | `web/brand.svg` |
+| 글꼴과 배포 고지 | `web/pretendard.woff2`, `web/pretendard.LICENSE.txt` |
 | 제작자 채널 | `web/channels.js` |
 | 사용자 안내 | `web/guide.html` |
 | 자료 고지 페이지 | `scripts/derive/site.py`와 `npm`의 라이선스·출처 고지 |
 
 첫 화면은 예문과 실제 지적을 바로 보여 준다. 소개를 읽거나 가입해야 편집할 수 있는 흐름을 넣지 않는다.
 브랜드와 채널을 바꿀 때는 편집기와 안내의 링크를 함께 확인한다. 라이선스와 자료 출처 고지는 유지한다.
+
+글꼴은 [Pretendard 1.3.9](https://github.com/orioncactus/pretendard/tree/v1.3.9)의 가변 WOFF2 원본이다.
+사이트에서 직접 제공하고 SIL OFL 고지를 배포물에 포함한다. 글을 입력할 때 외부 글꼴 서버에 요청하지 않는다.
 
 ## 검증
 
