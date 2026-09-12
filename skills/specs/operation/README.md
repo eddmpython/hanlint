@@ -21,5 +21,6 @@ status: curated
 | [`operation.sourceControl`](sourceControl.md) | 소스 관리와 훅 |
 | [`operation.verify`](verify.md) | 게이트 전체 절차 |
 | [`operation.release`](release.md) | PyPI 와 npm 배포 |
+| [`operation.webEditor`](webEditor.md) | 브라우저 편집기와 개인 기록, GitHub Pages 배포 |
 | [`operation.feedback`](feedback.md) | 오탐과 미탐 신고 |
 | [`operation.writingAxis`](writingAxis.md) | 보류 중인 작문 축 (brief, guard, packet, arena, learn) 의 절차와 다시 들이는 조건 |
