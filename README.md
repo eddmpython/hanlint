@@ -20,6 +20,10 @@
 
 ## 30초 만에 첫 검사
 
+설치 없이 [브라우저 편집기](https://eddmpython.github.io/hanlint/)에서 예문을 검사하고 자기 글을 고칠 수 있다.
+원문 보호, 수정본 기록과 승인한 고침을 같은 화면에서 확인한다. 개인 GitHub 보관과 Fork 배포는
+[저장과 데이터 안내](web/guide.html)를 따른다.
+
 Python 3.11 이상이면 패키지를 설치한다.
 
 ```powershell

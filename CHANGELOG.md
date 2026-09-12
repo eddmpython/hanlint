@@ -6,6 +6,14 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Pages 편집기. 첫 화면의 예문 검사, 지적과 문체 본보기, 자동 수정과 되돌리기, 원문 보호와
+  전후 비교를 같은 npm 코어로 제공한다. 개인 수정본과 승인 고침을 브라우저에 보관하고 선택한
+  GitHub 저장소에 저장할 수 있다. 파비콘과 심볼, 제작자 채널, Fork 배포 워크플로를 함께 둔다.
+- npm 공개 `inspectText`, `learnText`, `compareRevision`. Python의 문장 대응과 고침 후보를 대조하고 브라우저에서도
+  같은 데이터와 계약 해시를 사용한다. 기존 파일 경로 API는 Node에서 유지한다.
+
 ## [0.0.10] - 2026-09-07
 
 ### Added

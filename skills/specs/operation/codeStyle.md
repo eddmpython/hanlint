@@ -108,6 +108,9 @@ def doublePassive(prints, config):
 
 ## JavaScript (npm)
 
+`web/`의 정적 편집기도 아래 이름과 ESM, JSDoc 규칙을 따른다. 브라우저용 규칙을 따로 만들지 않고
+`npm/src/index.js`를 호출한다. 코드 경로 게이트는 `.js`와 `.mjs`, 대시 게이트는 CSS와 SVG도 검사한다.
+
 `npm/` 은 파이썬의 투영이고 같은 이름 규칙을 따른다. 파일과 폴더와 함수와 변수는 camelCase, 테스트 파일은
 `<이름>.test.js` (node 의 관례). 순수 ESM 이고 빌드가 없다. 타입은 JSDoc 과 파일 첫 줄의 `// @ts-check` 로
 편집기가 본다. 런타임 의존성은 0이다. 브라우저 표면 검수용 dev 설치만 `npm/node_modules`에 생기며 배포물에는

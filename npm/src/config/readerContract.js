@@ -1,6 +1,6 @@
 // @ts-check
 /** 모델과 실행 환경에 독립적인 최소 Reader Contract와 정확 Patch. */
-import { createHash } from "node:crypto";
+import { sha256 } from "../digest.js";
 
 export const CONTRACT_VERSION = 1;
 export const LATEST_CONTRACT_VERSION = 2;
@@ -38,7 +38,7 @@ function compareText(left, right) {
 
 /** @param {string} text */
 function digest(text) {
-  return createHash("sha256").update(text, "utf8").digest("hex");
+  return sha256(text);
 }
 
 export class Contract {

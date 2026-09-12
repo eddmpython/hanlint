@@ -3,7 +3,7 @@
  * 참조 분포 (프로파일) 의 자료형과 읽기. 파이썬 data/profiles.py 와 같다. 종류별 프로파일은 profiles.json (투영) 에서,
  * 사용자 프로파일은 `hanlint profile build` 가 만든 파일에서 읽는다. 히스토그램은 정확한 계수라 두 판의 셈이 같다.
  */
-import { readFileSync } from "node:fs";
+import { readExternal } from "./read.js";
 
 import { readText } from "./load.js";
 
@@ -103,7 +103,7 @@ const users = new Map();
 export function userProfile(path) {
   let profile = users.get(path);
   if (!profile) {
-    const data = JSON.parse(readFileSync(path, "utf-8"));
+    const data = JSON.parse(readExternal(path));
     if (data.version !== PROFILE_VERSION || !("profile" in data)) {
       throw new Error(`프로파일 파일이 아니다: ${path}. hanlint profile build 로 다시 만든다`);
     }

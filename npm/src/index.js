@@ -8,11 +8,9 @@
  * ```
  *
  * 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이다.
- * 지문 지도 (audit, map) 와 프로파일은 파이썬 패키지에 있다.
+ * 같은 공개 API를 Node와 브라우저가 공유한다. 파일 경로를 읽는 API만 Node 전용이다.
  */
-import { readFileSync } from "node:fs";
-
-import { loadConfig } from "./config/loadConfig.js";
+import { readExternal } from "./data/read.js";
 import { Patch } from "./config/patch.js";
 import {
   CONTRACT_VERSION,
@@ -27,12 +25,26 @@ import {
 import { configFromMapping, defaultConfig } from "./config/settings.js";
 import { loadVersion } from "./data/load.js";
 import { parseMarkdown } from "./document/parseMarkdown.js";
+import { headingsOf } from "./document/model.js";
 import { applyFixes } from "./edit/applyFixes.js";
 import { buildFingerprint } from "./fingerprint/build.js";
 import { fingerprintDict } from "./report/fingerprintJson.js";
 import { check, contractFromText, contractFromTextV2, verifyPatch } from "./guard/contract.js";
 import { CheckResult, PatchResult, renderCheck } from "./guard/receipt.js";
+import { compareOutline } from "./guard/outline.js";
+import { protectedSurface, surfaceDiff } from "./guard/surface.js";
 import { ruleDoc, ruleNames, ruleSummary, runAll } from "./rules/registry.js";
+import { renderJson } from "./report/jsonReport.js";
+import { learnExemplars } from "./learn/edits.js";
+import { learnOperations } from "./learn/operations.js";
+
+const nodeConfig = typeof process === "object" && process.versions?.node ? await import("./config/loadConfig.js") : null;
+
+/** Node 파일 설정. 브라우저에서는 configFromMapping에 설정 객체를 전달한다. @param {string | null} path @param {string | null} start */
+export function loadConfig(path = null, start = null) {
+  if (!nodeConfig) throw new Error("브라우저에서는 configFromMapping으로 설정 객체를 전달해 주세요.");
+  return nodeConfig.loadConfig(path, start);
+}
 
 export {
   CheckResult,
@@ -52,7 +64,6 @@ export {
   configFromMapping,
   defaultConfig,
   fingerprintDict,
-  loadConfig,
   parseContract,
   renderCheck,
   ruleDoc,
@@ -88,5 +99,33 @@ export function lintText(text, config = defaultConfig(), path = null) {
  * @param {import("./config/settings.js").Config} [config]
  */
 export function lintFile(path, config = defaultConfig()) {
-  return lintText(readFileSync(path, "utf-8"), config, path);
+  return lintText(readExternal(path), config, path);
+}
+
+/** 지적, 문체 본보기, 승인 고침과 지문을 같은 분석에서 제공한다. @param {string} text @param {import("./config/settings.js").Config} config */
+export function inspectText(text, config = defaultConfig()) {
+  const document = fingerprint(text, config);
+  const findings = runAll(document, config);
+  const path = "draft.md";
+  const report = JSON.parse(renderJson(new Map([[path, findings]]), null,
+    new Map([[path, document.register]]), config.preset, config.exemplars,
+    new Map([[path, document]]), config.patches, config.operations, config.protectedTerms));
+  return { findings, report: report.files[0], document: fingerprintDict(document) };
+}
+
+/** 사람 수정 전후에서 승인할 후보를 추출한다. 후보 자체는 승인이 아니다. @param {string} before @param {string} after @param {import("./config/settings.js").Config} config */
+export function learnText(before, after, config = defaultConfig()) {
+  const beforeDoc = fingerprint(before, config), afterDoc = fingerprint(after, config);
+  return {
+    exemplars: learnExemplars(beforeDoc, afterDoc, runAll(beforeDoc, config), runAll(afterDoc, config), config.preset),
+    operations: learnOperations(beforeDoc, afterDoc, config.preset, config.protectedTerms),
+  };
+}
+
+/** 자유 원고의 표면과 H2 순서를 비교한다. 빈 글과 반복 제목도 관찰하며 승인 계약을 만들지 않는다. @param {string} before @param {string} after @param {import("./config/settings.js").Config} config */
+export function compareRevision(before, after, config = defaultConfig()) {
+  const original = before.normalize("NFC");
+  const outline = { level: 2, headings: headingsOf(parseMarkdown(original), 2).map((heading) => heading.text) };
+  return { surface: protectedSurface(original), changes: surfaceDiff(original, after),
+    outline: compareOutline(outline, fingerprint(after, config)) };
 }

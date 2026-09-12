@@ -3,13 +3,8 @@
  * data 폴더를 읽는다. 파이썬 정본의 투영이라 파일 모양이 같다. txt 는 한 줄에 항목 하나, json 은 toml 을 옮긴 것.
  * 한 번 읽은 것은 기억한다.
  */
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { compile } from "../regex.js";
-
-const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "data");
+import { readData } from "./read.js";
 /** @type {Map<string, unknown>} */
 const cache = new Map();
 
@@ -26,7 +21,7 @@ function cached(key, make) {
 
 /** @param {string} name */
 export function readText(name) {
-  return readFileSync(join(DATA_DIR, name), "utf-8");
+  return readData(name);
 }
 
 /** `#` 으로 시작하면 주석, 빈 줄은 무시. @param {string} name @returns {string[]} */

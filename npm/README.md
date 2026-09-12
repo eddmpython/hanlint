@@ -1,5 +1,10 @@
 # hanlint
 
+[브라우저 편집기](https://eddmpython.github.io/hanlint/)에서 설치 없이 같은 검사를 실행할 수 있다.
+`inspectText(text, config)`는 지적과 문체 본보기, 지문을 함께 주고, `learnText(before, after, config)`는
+승인할 문장 고침과 표면 치환 후보를 준다. 후보를 만들었다고 재사용을 승인하지는 않는다.
+`compareRevision(before, after, config)`는 자유 원고의 숫자, 링크, 코드와 H2 순서 변화를 같은 기준으로 비교한다.
+
 한국어 글에서 반복되는 결함을 결정적으로 잡는 린터다. 번역투, 상투어, 이중 피동, 명사 나열, 조각난
 문단과 코드 튜토리얼의 계약 위반을 집는다. 맞춤법 전체를 추측하지 않고 앞뒤 낱말로 확정되는 일부 표기만
 본다. 런타임 의존성이 없고 Node 18 이상이면 된다.

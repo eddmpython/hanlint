@@ -14,10 +14,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-CODE_DIRS = ("src", "tests", "hooks", "scripts", "npm")
+CODE_DIRS = ("src", "tests", "hooks", "scripts", "npm", "web")
 PATH_EXCEPTIONS = {"__init__.py", "__main__.py", "conftest.py"}
 """파이썬이 정한 이름. 던더 파일과 pytest 의 conftest 는 바꿀 수 없다."""
-CODE_SUFFIXES = (".py", ".js")
+CODE_SUFFIXES = (".py", ".js", ".mjs")
 TEST_SUFFIX = ".test.js"
 """node --test 의 관례. `rules.test.js` 의 앞부분만 camelCase 를 본다."""
 
@@ -114,7 +114,8 @@ def codeFiles(suffix: str = "*.py") -> list[Path]:
 
 
 def testRealTreePathsAreCamelCase():
-    problems = [pathViolation(p.relative_to(ROOT).as_posix()) for p in codeFiles("*.py") + codeFiles("*.js")]
+    files = [path for suffix in CODE_SUFFIXES for path in codeFiles(f"*{suffix}")]
+    problems = [pathViolation(p.relative_to(ROOT).as_posix()) for p in files]
     assert [p for p in problems if p] == []
 
 
@@ -187,3 +188,7 @@ def testPathRules():
     assert pathViolation("npm/test/rules.test.js") is None
     assert pathViolation("npm/src/document/parse_markdown.js") is not None
     assert pathViolation("npm/package.json") is None
+    assert pathViolation("web/engineClient.js") is None
+    assert pathViolation("web/engine_client.js") is not None
+    assert pathViolation("scripts/measure/site.mjs") is None
+    assert pathViolation("scripts/measure/site_check.mjs") is not None

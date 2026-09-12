@@ -6,7 +6,7 @@
 /** @typedef {{heading: string, line: number, paragraphCount: number, codeBlockCount: number}} SectionSummary */
 /** @typedef {{sentenceCount: number, paragraphCount: number, sectionCount: number, wordCount: number, questionCount: number, readerCallCount: number, sections: SectionSummary[]}} DocumentSummary */
 
-/** @param {import("../config/readerContract.js").Outline} outline @param {import("../fingerprint/build.js").DocumentPrint} doc @returns {OutlineDiff} */
+/** @param {Pick<import("../config/readerContract.js").Outline, "level" | "headings">} outline @param {import("../fingerprint/build.js").DocumentPrint} doc @returns {OutlineDiff} */
 export function compareOutline(outline, doc) {
   const actual = doc.headings.filter(([level]) => level === outline.level).map(([, title]) => title);
   const mismatches = [];

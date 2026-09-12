@@ -1,6 +1,6 @@
 // @ts-check
 /** Reader Contract 검사와 이유가 붙은 국소 Patch 검증. */
-import { createHash } from "node:crypto";
+import { sha256 } from "../digest.js";
 
 import { Patch } from "../config/patch.js";
 import { Contract, ContractV2, Outline, ProtectedSurface, parseContract } from "../config/readerContract.js";
@@ -16,7 +16,7 @@ import { compareText, factLines, protectedSurface, surfaceDiff, surfaceViolation
 
 /** @param {string} text */
 function digest(text) {
-  return createHash("sha256").update(text, "utf8").digest("hex");
+  return sha256(text);
 }
 
 /** 원문의 보호 표면을 모두 덮는 version 1 Contract 초안을 만든다. @param {string} text @param {string} reader @param {string} goal */

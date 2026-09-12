@@ -1,6 +1,6 @@
 // @ts-check
 /** 이유가 붙은 정확 국소 Patch 입력 계약. */
-import { createHash } from "node:crypto";
+import { sha256 } from "../digest.js";
 
 /** @param {unknown} value @param {string} where */
 function checkedString(value, where) {
@@ -39,7 +39,7 @@ export class Patch {
 
   get digest() {
     const encoded = JSON.stringify({ after: this.after, before: this.before, reason: this.reason });
-    return createHash("sha256").update(encoded, "utf8").digest("hex");
+    return sha256(encoded);
   }
 
   asDict() {
