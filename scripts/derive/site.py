@@ -35,6 +35,7 @@ def buildSite(output: Path) -> None:
     page = (
         '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>출처와 라이선스 · 한린트</title><link rel="icon" href="./brand.svg"><link rel="stylesheet" href="./style.css">'
+        '<script type="module" src="./theme.js"></script>'
         '<body><main class="documentPage"><a href="./">← 한린트 편집기로</a><h1>출처와 라이선스</h1>'
         "<p>브라우저 검사기는 배포판과 같은 사전, 규칙과 본보기를 사용합니다. 포함한 자료의 고지는 아래와 같습니다.</p>"
         f"{sections}</main></body></html>"

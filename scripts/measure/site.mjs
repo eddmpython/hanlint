@@ -15,8 +15,8 @@ await mkdir(output, { recursive: true });
 const client = await PyProcControlClient.start(config);
 let opened, attached;
 try {
-  async function open() {
-    opened = await client.openTarget(url, { expectedRisk: "externalEffect", waitUntil: "load" });
+  async function open(pageUrl = url) {
+    opened = await client.openTarget(pageUrl, { expectedRisk: "externalEffect", waitUntil: "load" });
     attached = await client.attachSession(opened.output.targetRef);
   }
   async function close() {
@@ -52,25 +52,46 @@ try {
     await evaluate(`document.getElementById(${JSON.stringify(id)}).value=${JSON.stringify(text)};document.getElementById(${JSON.stringify(id)}).dispatchEvent(new InputEvent('input',{bubbles:true,inputType:${JSON.stringify(inputType)}}))`);
     await waitFor("document.querySelector('#reviewSummary').textContent !== '수정한 문장을 다시 읽고 있어요.'");
   }
+  async function checkContrast() {
+    const ratios = await evaluate(`(() => {
+      const luminance = value => { const rgb=value.match(/[\\d.]+/g).slice(0,3).map(Number).map(value=>{value/=255;return value<=.04045?value/12.92:((value+.055)/1.055)**2.4});return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722; };
+      return ['body','#sourceInput','.findingQuote','.findingWhy','.textButton','.secondary','#fixAllButton'].map(selector=>{
+        const node=document.querySelector(selector);let backdrop=node,background=getComputedStyle(backdrop).backgroundColor;
+        while(background==='rgba(0, 0, 0, 0)'&&backdrop.parentElement){backdrop=backdrop.parentElement;background=getComputedStyle(backdrop).backgroundColor;}
+        const a=luminance(getComputedStyle(node).color),b=luminance(background);return {selector,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+      });
+    })()`);
+    for (const { selector, ratio } of ratios) assert.ok(ratio >= 4.5, `${selector}: ${ratio}`);
+  }
   await open();
   await waitFor("document.querySelector('#version').textContent.length > 0");
-  await click("내 기록과 보관", null); await click("내 기록");
+  await click("내 기록");
   await click("이 브라우저 기록 삭제"); await click("브라우저 기록 삭제");
   await click("예문");
   await close(); await open();
   await waitFor("document.querySelectorAll('.findingCard').length > 0");
   await evaluate("document.fonts.ready");
-  const initial = await evaluate(`({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,channels:document.querySelectorAll('#channels a').length,text:document.querySelector('#sourceInput').value,revision:document.querySelector('#draft').value,count:Number(document.querySelector('#findingCount').textContent),cards:document.querySelectorAll('.findingCard').length,firstCard:document.querySelector('.findingCard').getBoundingClientRect().top,sourceLeft:document.querySelector('.inputPanel').getBoundingClientRect().left,resultLeft:document.querySelector('.resultPanel').getBoundingClientRect().left,gridBottom:document.querySelector('.workGrid').getBoundingClientRect().bottom,revisionTop:document.querySelector('#revisionSection').getBoundingClientRect().top,font:document.fonts.check('16px Pretendard'),advanced:document.querySelector('.revisionDetails').open,storage:document.querySelector('.workspaceTools').open})`);
+  const initial = await evaluate(`({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,channels:document.querySelectorAll('#channels a').length,text:document.querySelector('#sourceInput').value,revision:document.querySelector('#draft').value,count:Number(document.querySelector('#findingCount').textContent),cards:document.querySelectorAll('.findingCard').length,firstCard:document.querySelector('.findingCard').getBoundingClientRect().top,sourceLeft:document.querySelector('.inputPanel').getBoundingClientRect().left,resultLeft:document.querySelector('.resultPanel').getBoundingClientRect().left,gridBottom:document.querySelector('.workGrid').getBoundingClientRect().bottom,revisionTop:document.querySelector('#revisionSection').getBoundingClientRect().top,font:document.fonts.check('16px Pretendard'),theme:document.documentElement.dataset.theme,systemTheme:matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light',closedResults:document.querySelectorAll('#findings details').length,reasons:document.querySelectorAll('.findingWhy').length})`);
   assert.equal(initial.overflow, false); assert.equal(initial.channels, 5); assert.equal(initial.font, true);
-  assert.equal(initial.revision, ""); assert.equal(initial.advanced, false); assert.equal(initial.storage, false);
-  assert.equal(initial.count, 3); assert.equal(initial.cards, 3);
+  assert.equal(initial.revision, initial.text); assert.equal(initial.closedResults, 0); assert.equal(initial.reasons, 2);
+  assert.equal(initial.count, 2); assert.equal(initial.cards, 2);
+  assert.equal(initial.theme, initial.systemTheme);
   assert.ok(initial.revisionTop >= initial.gridBottom);
   if (initial.width > 760) assert.ok(initial.resultLeft > initial.sourceLeft);
-  await capture("firstView");
-  await click("결과가 저장되어집니다.", null);
-  assert.equal(await evaluate("document.querySelectorAll('.findingCard[open]').length"), 1);
-  await capture("finding");
-  await click("수정본에 반영");
+  if (initial.theme === "dark") await click("라이트 모드로 전환");
+  await evaluate("scrollTo(0,0)");
+  await checkContrast();
+  await capture("light");
+  const lightBackground = await evaluate("getComputedStyle(document.body).backgroundColor");
+  await click("다크 모드로 전환");
+  assert.equal(await evaluate("document.documentElement.dataset.theme"), "dark");
+  assert.notEqual(await evaluate("getComputedStyle(document.body).backgroundColor"), lightBackground);
+  await checkContrast();
+  await capture("dark");
+  await close(); await open();
+  await waitFor("document.querySelectorAll('.findingCard').length === 2");
+  assert.equal(await evaluate("document.documentElement.dataset.theme"), "dark");
+  await click("이대로 고치기");
   await waitFor("document.querySelector('#draft').value.includes('결과가 저장됩니다.') && !document.querySelector('#saveButton').disabled");
   const fixed = await evaluate("document.querySelector('#draft').value");
   assert.notEqual(fixed, initial.text);
@@ -79,25 +100,26 @@ try {
   assert.equal(await evaluate("document.querySelector('#resultOrigin').textContent"), "수정본");
   await click("되돌리기");
   await waitFor(`document.querySelector('#draft').value === ${JSON.stringify(initial.text)} && !document.querySelector('#fixAllButton').disabled`);
-  await click("고칠 수 있는 곳 반영");
+  await click("한 번에 고치기");
   await waitFor(`document.querySelector('#draft').value === ${JSON.stringify(fixed)} && !document.querySelector('#saveButton').disabled`);
   await click("전후 비교");
   assert.equal(await evaluate("document.querySelector('#originalPane').hidden"), false);
   await capture("revision");
-  await click("수정본 기록"); await click("이 수정본 남기기");
+  await click("수정본 기록");
   await waitFor(`JSON.parse(localStorage.getItem(${storageKey})).records.length === 1`);
-  await click("원문 보호와 고침 기억", null);
+  assert.equal(await evaluate("document.querySelector('dialog[open]') === null"), true);
   assert.ok((await evaluate("document.querySelector('#protection').innerText")).includes("변화 없음"));
-  await click("고침 기억", "tab");
   await waitFor("document.querySelectorAll('#memory .memoryItem').length > 0");
-  await click("doublePassive 3줄 고침 기억"); await click("내 고침으로 기억");
+  assert.equal(await evaluate("document.querySelector('#memoryPanel').hidden"), false);
+  await click("doublePassive 1줄 고침 기억");
   await waitFor(`JSON.parse(localStorage.getItem(${storageKey})).patches.length === 1`);
+  assert.equal(await evaluate("document.querySelector('dialog[open]') === null"), true);
   await capture("remember");
   await enter("draft", initial.text, "insertFromPaste");
   assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${storageKey})).draft.original`), initial.text);
-  await click("결과가 저장되어집니다.", null); await click("기억한 고침 적용");
+  await click("기억한 고침 적용");
   await waitFor(`document.querySelector('#draft').value === ${JSON.stringify(fixed)} && !document.querySelector('#saveButton').disabled`);
-  await click("내 기록과 보관", null); await click("내 기록");
+  await click("내 기록");
   assert.equal(await evaluate("document.querySelectorAll('.historyItem').length"), 1);
   await click("기록 창 닫기"); await click("GitHub에 보관");
   await evaluate("document.querySelector('#token').value='test-not-a-real-token'");
@@ -112,7 +134,8 @@ try {
   const { lintText } = await import("../../npm/src/index.js");
   const browserFindings = await evaluate(`import('./npm/src/index.js').then(engine=>${JSON.stringify(inputs)}.map(text=>engine.lintText(text)))`);
   assert.deepEqual(browserFindings, inputs.map((text) => lintText(text)));
-  await click("새 글"); await click("기록하고 열기");
+  await click("새 글");
+  assert.equal(await evaluate("document.querySelector('dialog[open]') === null"), true);
   await waitFor("document.querySelector('#sourceInput').value === ''");
   assert.equal(await evaluate("document.querySelector('#draft').disabled"), true);
   const composing = "원고가 저장되어집니다.";
@@ -121,7 +144,6 @@ try {
   await evaluate("document.querySelector('#sourceInput').dispatchEvent(new CompositionEvent('compositionend',{bubbles:true}))");
   await waitFor("!document.querySelector('#fixAllButton').disabled");
   assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${storageKey})).draft.original`), composing);
-  await click("원문으로 시작");
   assert.equal(await evaluate("document.querySelector('#draft').value"), composing);
   await enter("draft", "<img src=x onerror=alert(1)> 원고가 저장됩니다.", "insertFromPaste");
   assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${storageKey})).draft.original`), composing);
@@ -129,9 +151,25 @@ try {
   await enter("draft", "");
   assert.equal(await evaluate("document.querySelector('#saveButton').disabled"), true);
   assert.equal(await evaluate("document.querySelector('#sourceInput').value"), composing);
-  const result = { initial, fixed, browserParity: true, restored: true, inputEscaped: true, sourcePreserved: true, composition: true };
+  await click("라이트 모드로 전환");
+  await close(); await open();
+  await waitFor("document.querySelector('#version').textContent.length > 0");
+  assert.equal(await evaluate("document.documentElement.dataset.theme"), "light");
+  await close(); await open(new URL("./guide.html", url).href);
+  await waitFor("document.documentElement.dataset.theme === 'light'");
+  await evaluate("document.fonts.ready");
+  await capture("guideLight");
+  await click("다크 모드로 전환");
+  await capture("guideDark");
+  await close(); await open(new URL("./license.html", url).href);
+  await waitFor("document.documentElement.dataset.theme === 'dark'");
+  await close(); await open();
+  await waitFor("document.querySelector('#version').textContent.length > 0");
+  assert.equal(await evaluate("document.documentElement.dataset.theme"), "dark");
+  await click("라이트 모드로 전환");
+  const result = { initial, fixed, browserParity: true, restored: true, inputEscaped: true, sourcePreserved: true, composition: true, themes: true, directActions: true };
   await writeFile(resolve(output, "result.json"), JSON.stringify(result, null, 2));
-  console.log(JSON.stringify({ viewport: initial.width, initialFindings: initial.count, browserParity: true, restored: true, sourcePreserved: true, composition: true }));
+  console.log(JSON.stringify({ viewport: initial.width, initialFindings: initial.count, browserParity: true, restored: true, sourcePreserved: true, composition: true, themes: true, directActions: true }));
 } finally {
   if (attached) await client.detachSession(attached.output);
   if (opened) await client.closeTarget(opened.output.targetRef);

@@ -4,25 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="원문을 넣고, 고칠 곳을 살펴보고, 내 문장으로 다듬으세요. 설치 없이 쓰는 한국어 글쓰기 도구, 한린트.">
-  <meta name="theme-color" content="#f5f4ef">
+  <meta name="theme-color" content="#f6f8fc" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c101a" media="(prefers-color-scheme: dark)">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>한린트 · 내 문장을, 더 나답게</title>
   <link rel="icon" type="image/svg+xml" href="./brand.svg">
   <link rel="preload" href="./pretendard.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./theme.js"></script>
   <script type="module" src="./app.js"></script>
 </head>
 <body>
   <a class="skipLink" href="#sourceInput">원문 입력으로 이동</a>
   <header class="siteHeader">
     <a class="wordmark" href="./" aria-label="한린트 처음으로"><img src="./brand.svg" width="36" height="36" alt=""><span>hanlint<span class="wordmarkDot">.</span></span></a>
-    <div class="headerRight"><a class="parentLink" href="https://eddmpython.com" target="_blank" rel="noopener noreferrer">by eddmpython</a><nav id="channels" aria-label="제작자 채널"></nav></div>
+    <div class="headerRight"><a class="parentLink" href="https://eddmpython.com" target="_blank" rel="noopener noreferrer">by eddmpython</a><nav id="channels" aria-label="제작자 채널"></nav><button id="themeToggle" class="themeToggle" aria-label="다크 모드로 전환" aria-pressed="false"><svg class="moonIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8.5 8.5 0 0 1 10 4a8.5 8.5 0 1 0 10 10Z"/></svg><svg class="sunIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button></div>
   </header>
   <main class="landing">
     <section class="hero" aria-labelledby="pageTitle">
-      <p class="eyebrow"><span class="heroDash"></span>조금 더 나은 문장을 위해</p>
-      <h1 id="pageTitle">내 문장을,<br class="mobileBreak"> <span class="heroAccent">더 나답게<svg viewBox="0 0 350 16" preserveAspectRatio="none" aria-hidden="true"><path d="M3 11C84 3 215 2 345 9" /></svg></span><span class="heroPeriod">.</span></h1>
-      <p class="heroDescription">글을 넣으면 고칠 곳이 보입니다. 마음에 드는 표현은 직접 남겨 보세요.</p>
+      <p class="eyebrow">한국어 글을 다듬는 가장 작은 습관</p>
+      <h1 id="pageTitle">내 문장을,<br class="mobileBreak"> <span class="heroAccent">더 나답게.</span></h1>
+      <p class="heroDescription">붙여 넣으면 고칠 곳이 보입니다.<br class="mobileBreak"> 읽고, 바로 다듬으세요.</p>
     </section>
 
     <section class="workGrid" aria-label="원문 입력과 검사 결과">
@@ -34,23 +36,21 @@
       <aside class="resultPanel" aria-label="검사 결과">
         <div class="panelHeader"><h2><span class="sectionIndex">02</span><span id="resultTitle">검사 결과</span><span id="findingCount" class="countBadge">·</span></h2><span id="resultOrigin" class="resultOrigin">원문</span></div>
         <div class="resultBody" id="findingsPanel"><p id="reviewSummary" class="reviewSummary" role="status">문장을 읽고 있어요.</p><div id="findings" class="findingList"></div></div>
-        <div class="panelFooter"><span>고침은 아래 수정본에 반영돼요</span><button id="fixAllButton" class="textButton applyAll" disabled>고칠 수 있는 곳 반영 <span aria-hidden="true">↗</span></button></div>
+        <div class="panelFooter"><span>확정할 수 있는 표현만 수정합니다</span><button id="fixAllButton" class="primary small" disabled>한 번에 고치기 <span aria-hidden="true">↗</span></button></div>
       </aside>
     </section>
     <p class="localNote"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="4" y="7" width="8" height="7" rx="2"/><path d="M5.5 7V4a2.5 2.5 0 0 1 5 0v3"/></svg>글은 이 브라우저 안에서 검사합니다.</p>
 
     <section id="revisionSection" class="revisionSection" aria-labelledby="revisionTitle">
-      <div class="revisionHeading"><div><p class="eyebrow">한 번 더, 내 문장으로</p><h2 id="revisionTitle">직접 다듬어 볼까요?</h2></div><button id="startRevision" class="secondary">원문으로 시작 <span aria-hidden="true">↙</span></button></div>
+      <div class="revisionHeading"><div><p class="eyebrow">마지막은, 내 표현으로</p><h2 id="revisionTitle">바로 고쳐 쓰세요.</h2></div><p class="revisionHint">원문은 위에 그대로 남아요.</p></div>
       <div class="revisionPaper">
-        <div id="editColumns" class="editColumns"><div class="originalPane" id="originalPane" hidden><div class="columnLabel">수정 전</div><pre id="originalText"></pre></div><div class="currentPane"><div class="columnLabel" id="currentLabel" hidden>수정 후</div><div class="editorStack"><pre id="highlights" aria-hidden="true"></pre><textarea id="draft" aria-label="직접 고친 수정본" spellcheck="false" maxlength="60000" placeholder="고친 문장을 입력해 보세요.&#10;원문을 불러와 다듬어도 좋아요."></textarea></div></div></div>
+        <div id="editColumns" class="editColumns"><div class="originalPane" id="originalPane" hidden><div class="columnLabel">수정 전</div><pre id="originalText"></pre></div><div class="currentPane"><div class="columnLabel" id="currentLabel" hidden>수정 후</div><div class="editorStack"><pre id="highlights" aria-hidden="true"></pre><textarea id="draft" aria-label="직접 고친 수정본" spellcheck="false" maxlength="60000" placeholder="위에 원문을 넣으면 여기서 바로 다듬을 수 있어요."></textarea></div></div></div>
+        <div class="recordFields"><input id="revisionReason" aria-label="수정 메모 (선택)" maxlength="1000" placeholder="수정 메모 (선택)"><select id="revisionOrigin" aria-label="수정 방식"><option value="unspecified">수정 방식 (선택)</option><option value="human">직접 수정</option><option value="assisted">자동 수정이나 모델의 도움</option></select></div>
         <div class="revisionFooter"><span id="textStats">내 표현으로 고친 글을 남겨 보세요</span><div class="quietActions"><button id="undoButton" class="textButton" disabled>되돌리기</button><button id="compareButton" class="textButton" aria-pressed="false" disabled>전후 비교</button><button id="saveButton" class="primary" disabled>수정본 기록 <span aria-hidden="true">↗</span></button></div></div>
       </div>
-      <details class="revisionDetails"><summary>원문 보호와 고침 기억<span aria-hidden="true">＋</span></summary><div class="detailContent">
-        <div class="tabBar" role="tablist" aria-label="수정 검토"><button id="protectionTab" role="tab" aria-selected="true" aria-controls="protectionPanel" tabindex="0" data-tab="protection">원문 보호</button><button id="memoryTab" role="tab" aria-selected="false" aria-controls="memoryPanel" tabindex="-1" data-tab="memory">고침 기억</button></div>
-        <section id="protectionPanel" role="tabpanel" aria-labelledby="protectionTab" tabindex="0"><p class="detailDescription">숫자, 링크, 코드와 제목 순서를 비교합니다. 문장의 뜻과 사실은 직접 확인해 주세요.</p><div id="protection" class="panelBody"></div></section>
-        <section id="memoryPanel" role="tabpanel" aria-labelledby="memoryTab" tabindex="0" hidden><p class="detailDescription">수정본을 기록한 뒤, 다시 쓰고 싶은 고침의 뜻을 확인하고 승인하세요.</p><div id="memory" class="panelBody"></div></section>
-      </div></details>
-      <details class="workspaceTools"><summary>내 기록과 보관<span aria-hidden="true">＋</span></summary><div class="detailContent"><label class="fieldLabel" for="title">원고 이름<input id="title" maxlength="100" value="처음 만나는 한린트"></label><div class="storageActions"><button id="historyButton" class="secondary">내 기록</button><button id="githubButton" class="secondary">GitHub에 보관</button><button id="downloadButton" class="textButton">원고 받기 ↗</button></div><p id="storageStatus" class="storageStatus">이 브라우저에 임시 보관</p></div></details>
+      <section id="protectionPanel" class="protectionSection" aria-label="원문 보호" hidden><div id="protection"></div></section>
+      <div class="workspaceTools"><label class="srOnly" for="title">원고 이름</label><input id="title" aria-label="원고 이름" maxlength="100" value="처음 만나는 한린트"><div class="storageActions"><button id="historyButton" class="textButton">내 기록</button><button id="githubButton" class="textButton">GitHub에 보관</button><button id="downloadButton" class="textButton">원고 받기 ↗</button></div><p id="storageStatus" class="storageStatus">이 브라우저에 임시 보관</p></div>
+      <section id="memoryPanel" class="memorySection" aria-labelledby="memoryTitle" hidden><h3 id="memoryTitle">다음에도 이렇게 고칠까요?</h3><p class="detailDescription">수정본을 기록한 뒤, 뜻이 유지된 고침만 기억하세요. 같은 문장과 문맥에서 다시 제안합니다.</p><div id="memory"></div></section>
     </section>
   </main>
   <footer class="siteFooter"><span>hanlint <span id="version"></span><span class="footerDivider">/</span>더 나은 글을 쓰는 작은 습관</span><nav aria-label="안내"><a href="./guide.html">사용 안내</a><a href="https://github.com/eddmpython/hanlint#readme" target="_blank" rel="noopener noreferrer">개발자 문서 ↗</a><a href="./license.html">라이선스</a></nav></footer>
@@ -58,7 +58,6 @@
   <dialog id="historyDialog" aria-labelledby="historyTitle"><div class="dialogHeader"><h2 id="historyTitle">내 원고 기록</h2><button class="iconButton" data-close="historyDialog" aria-label="기록 창 닫기">×</button></div><p>이 브라우저에 보관한 수정본입니다. 기록을 열면 현재 편집도 임시 보관합니다.</p><div class="dialogActions"><button id="exportButton" class="secondary small">기록 내보내기</button><label class="fileLabel" for="importInput">기록 가져오기<input id="importInput" type="file" accept=".json,application/json" hidden></label></div><div id="historyList"></div><div class="dialogBottom"><button id="clearButton" class="dangerButton">이 브라우저 기록 삭제</button></div></dialog>
   <dialog id="githubDialog" aria-labelledby="githubTitle"><div class="dialogHeader"><h2 id="githubTitle">내 GitHub에 보관</h2><button class="iconButton" data-close="githubDialog" aria-label="GitHub 창 닫기">×</button></div><p>선택한 저장소의 <code>hanlint/workspace.json</code>에 원고와 수정 이력을 보관합니다. 비공개 저장소를 권장합니다.</p><label class="fieldLabel" for="repository">저장소<input id="repository" placeholder="내계정/글보관함" autocomplete="off"></label><label class="fieldLabel" for="token">이 저장소에만 접근하는 토큰<input id="token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></label><p class="fieldHelp">Fine-grained token의 선택한 저장소에 Contents 읽기·쓰기를 허용해 주세요. 토큰은 이 탭의 메모리에만 두며 새로고침하면 지워집니다. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">토큰 만들기 ↗</a></p><div id="githubStatus" role="status"></div><div class="dialogActions"><button id="githubLoad" class="secondary">GitHub에서 가져오기</button><button id="githubSave" class="primary">이 저장소에 저장</button></div><button id="disconnectButton" class="textButton">연결 정보 지우기</button></dialog>
   <dialog id="confirmDialog" aria-labelledby="confirmTitle"><div class="dialogHeader"><h2 id="confirmTitle">확인</h2></div><p id="confirmText"></p><div class="dialogActions"><button id="confirmCancel" class="secondary">취소</button><button id="confirmAccept" class="primary">계속</button></div></dialog>
-  <dialog id="recordDialog" aria-labelledby="recordTitle"><div class="dialogHeader"><h2 id="recordTitle">수정본 기록</h2><button class="iconButton" data-close="recordDialog" aria-label="기록 창 닫기">×</button></div><p>지적이 줄어든 수정도 뜻과 말투가 나아졌는지는 직접 판단해 주세요.</p><label class="fieldLabel" for="revisionReason">어떤 점을 고쳤나요? (선택)<input id="revisionReason" maxlength="1000" placeholder="예: 절차가 드러나도록 명사를 동사로 풀었어요"></label><label class="fieldLabel" for="revisionOrigin">수정 방식 <select id="revisionOrigin"><option value="unspecified">표시하지 않음</option><option value="human">직접 수정</option><option value="assisted">자동 수정이나 모델의 도움</option></select></label><div class="dialogActions"><button id="recordAccept" class="primary">이 수정본 남기기</button></div></dialog>
   <noscript><p class="noScript">검사기를 사용하려면 JavaScript를 켜 주세요. <a href="https://github.com/eddmpython/hanlint">CLI로도 같은 검사를 할 수 있습니다.</a></p></noscript>
 </body>
 </html>

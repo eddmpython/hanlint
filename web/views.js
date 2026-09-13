@@ -19,15 +19,14 @@ function findingDetail(result, index, handlers) {
   const actions = element("div", "findingActions");
   actions.append(button("이 지적은 맞지 않아요", () => handlers.reject(finding)));
   if (finding.patch) actions.append(button("기억한 고침 적용", () => handlers.patch(index), "secondary small"));
-  else if (result.findings[index].replacement !== null) actions.append(button("수정본에 반영", () => handlers.fix(index), "secondary small"));
+  else if (result.findings[index].replacement !== null) actions.append(button("이대로 고치기", () => handlers.fix(index), "secondary small"));
   else actions.append(button("문장으로 이동 ↗", () => handlers.locate(finding)));
-  detail.append(actions, element("p", "findingMeta", `${finding.line}줄 · ${finding.rule}`));
+  detail.append(actions);
   return detail;
 }
 
 export function renderFindings(result, handlers) {
   const root = get("findings");
-  const opened = new Set([...root.querySelectorAll("details[open]")].map((node) => node.dataset.finding));
   root.replaceChildren();
   const findings = result.report.findings, groups = new Map();
   get("findingCount").textContent = String(findings.length);
@@ -43,13 +42,11 @@ export function renderFindings(result, handlers) {
   let number = 0;
   for (const [key, indices] of groups) {
     const finding = findings[indices[0]], notice = indices.every((index) => findings[index].severity === "notice");
-    const card = element("details", `findingCard${notice ? " noticeCard" : ""}`);
+    const card = element("article", `findingCard${notice ? " noticeCard" : ""}`);
     card.dataset.finding = key;
-    card.open = opened.has(key);
-    const summary = element("summary");
-    summary.setAttribute("aria-label", finding.quote);
+    const summary = element("div", "findingHeading");
     summary.append(element("span", "findingNumber", String(++number).padStart(2, "0")),
-      element("span", "findingQuote", finding.quote), element("span", "findingChevron", "＋"));
+      element("h3", "findingQuote", finding.quote));
     card.append(summary, ...indices.map((index) => findingDetail(result, index, handlers)));
     root.append(card);
   }
@@ -79,14 +76,15 @@ export function renderProtection(result) {
 
 export function renderMemory(result, patches, canApprove, handlers) {
   const root = get("memory");
+  get("memoryPanel").hidden = !result.learned.exemplars.length && !patches.length;
   root.replaceChildren();
   for (const candidate of result.learned.exemplars) {
     const item = element("article", "memoryItem");
-    item.append(element("h3", "", candidate.rule), element("p", "", `전: ${candidate.before}`), element("p", "", `후: ${candidate.after}`));
+    item.append(element("h3", "", `${candidate.beforeLine}줄에서 고친 문장`), element("p", "", `전: ${candidate.before}`), element("p", "", `후: ${candidate.after}`));
     const remembered = patches.some((patch) => patch.rule === candidate.rule && patch.before === candidate.before && patch.after === candidate.after && patch.presets.includes(candidate.presets[0]));
     if (remembered) item.append(element("span", "approved", "내 고침으로 기억했어요"));
     else {
-      const approve = button(canApprove ? "뜻을 확인하고 기억" : "먼저 수정본을 기록해 주세요", () => handlers.approve(candidate), "secondary small");
+      const approve = button(canApprove ? "뜻 유지 확인 · 고침 기억" : "먼저 수정본을 기록해 주세요", () => handlers.approve(candidate), "secondary small");
       approve.setAttribute("aria-label", `${candidate.rule} ${candidate.beforeLine}줄 고침 기억`);
       approve.disabled = !canApprove;
       item.append(approve);

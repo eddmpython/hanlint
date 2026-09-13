@@ -8,7 +8,7 @@ import { EngineClient } from "./engineClient.js";
 import { registerEditorTools } from "./modelTools.js";
 import { newDraft, emptyWorkspace, parseWorkspace, serializeWorkspace, addRecord, contribution, storageKeyFor, MAX_TEXT, MAX_ARCHIVE_BYTES } from "./records.js";
 
-const SAMPLE = "오래 남는 글을 쓰고 싶습니다.\n\n초안 작성 후 문장 구조 검토 과정을 거칩니다. 결과가 저장되어집니다.\n\n문장을 다듬는 동안 내 생각까지 달라지지는 않았는지 다시 읽어 봅니다.";
+const SAMPLE = "초안 작성 후 문장 구조 검토 과정을 거칩니다. 결과가 저장되어집니다.\n\n문장을 다듬으면서 생각도 조금씩 또렷해집니다. 내가 쓴 말투는 남기고, 읽다가 걸리는 표현만 고치고 싶습니다.";
 const github = new GitHubStore();
 const storageKey = storageKeyFor(location.pathname);
 const worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
@@ -51,21 +51,22 @@ function renderDraft(resetRevision = false) {
     get("originalPane").hidden = get("currentLabel").hidden = true;
     get("editColumns").classList.remove("comparing");
     get("compareButton").setAttribute("aria-pressed", "false");
+    get("revisionReason").value = "";
+    get("revisionOrigin").value = "unspecified";
   }
   get("sourceInput").value = draft.original;
   get("sourceInput").readOnly = revisionActive;
   get("sourceStats").textContent = `${[...draft.original].length.toLocaleString()}자${revisionActive ? " · 수정 전 원문 보관 중" : ""}`;
-  get("draft").value = revisionActive ? draft.text : "";
+  get("draft").value = draft.text;
   get("draft").disabled = !draft.original.trim() && !revisionActive;
-  get("startRevision").hidden = revisionActive;
-  get("startRevision").disabled = !draft.original.trim();
+  get("protectionPanel").hidden = !revisionActive;
   get("compareButton").disabled = !revisionActive;
   get("saveButton").disabled = !revisionActive || !draft.text.trim() || !analysis;
   get("resultOrigin").textContent = revisionActive ? "수정본" : "원문";
   get("title").value = draft.title;
   get("preset").value = draft.preset;
   get("originalText").textContent = draft.original;
-  get("textStats").textContent = revisionActive ? `${[...draft.text].length.toLocaleString()}자` : "내 표현으로 고친 글을 남겨 보세요";
+  get("textStats").textContent = `${[...draft.text].length.toLocaleString()}자`;
   get("undoButton").disabled = !undo.length;
 }
 
@@ -78,9 +79,9 @@ function renderResult() {
   renderFindings(analysis, { locate, reject: rejectFinding, fix: (index) => fix(index), patch: (index) => fix(index, "patch") });
   renderProtection(analysis);
   renderMemory(analysis, workspace.patches, isRecorded(), { approve, forget });
-  highlight(revisionActive ? workspace.draft.text : "", revisionActive ? analysis.report.findings : []);
+  highlight(workspace.draft.text, analysis.report.findings);
   get("version").textContent = `v${analysis.version}`;
-  if (revisionActive) get("textStats").textContent = `${[...workspace.draft.text].length.toLocaleString()}자 · ${analysis.document.sentences.length}문장`;
+  get("textStats").textContent = `${[...workspace.draft.text].length.toLocaleString()}자 · ${analysis.document.sentences.length}문장`;
   get("saveButton").disabled = !revisionActive || !workspace.draft.text.trim();
 }
 
@@ -111,7 +112,7 @@ function changed() {
   get("findings").replaceChildren();
   get("protection").replaceChildren(element("p", "emptyState", "수정한 원고의 보호 조건을 확인하고 있어요."));
   get("memory").replaceChildren(element("p", "emptyState", "수정 전후를 다시 비교하고 있어요."));
-  highlight(revisionActive ? workspace.draft.text : "", []);
+  highlight(workspace.draft.text, []);
   if (revisionActive) get("textStats").textContent = `${[...workspace.draft.text].length.toLocaleString()}자`;
   persist();
   timer = setTimeout(analyze, 220);
@@ -173,7 +174,6 @@ function confirmAction(message, label = "계속") {
 
 async function rejectFinding(finding) {
   const version = analysis?.version, preset = workspace.draft.preset;
-  if (!await confirmAction(`이 지적이 문맥에 맞지 않는다고 기록할까요?\n\n${finding.quote}\n\n기본 규칙은 바뀌지 않으며, 내 기록에 판단을 남깁니다.`, "맞지 않는 지적으로 기록")) return;
   workspace.feedback.push({ rule: finding.rule, quote: finding.quote, why: finding.why, preset,
     judgment: "falsePositive", engineVersion: version ?? "unknown", at: new Date().toISOString() });
   persist();
@@ -182,7 +182,6 @@ async function rejectFinding(finding) {
 
 async function approve(candidate) {
   if (!isRecorded()) return;
-  if (!await confirmAction(`고친 문장의 뜻이 유지되고, 같은 원문에서 다시 제안해도 되는지 확인해 주세요.\n\n전: ${candidate.before}\n후: ${candidate.after}\n\n이 승인은 내 고침에만 적용됩니다.`, "내 고침으로 기억")) return;
   const patch = { rule: candidate.rule, before: candidate.before, after: candidate.after, moved: candidate.moved,
     sourceText: candidate.before, sentence: candidate.sentence, cue: candidate.cue, reader: candidate.reader, presets: candidate.presets };
   const next = workspace.patches.filter((item) => !(item.rule === patch.rule && item.sourceText === patch.sourceText && item.cue === patch.cue && item.reader === patch.reader && item.presets.some((preset) => patch.presets.includes(preset))));
@@ -267,17 +266,7 @@ async function gitAction(action) {
   finally { get("githubSave").disabled = get("githubLoad").disabled = false; }
 }
 
-function selectTab(name) {
-  for (const tab of document.querySelectorAll("[role=tab]")) {
-    const selected = tab.dataset.tab === name;
-    tab.setAttribute("aria-selected", String(selected));
-    tab.tabIndex = selected ? 0 : -1;
-    get(`${tab.dataset.tab}Panel`).hidden = !selected;
-  }
-}
-
 async function startDraft(text, title) {
-  if (workspace.draft.text && !await confirmAction("현재 원고를 기록하고 다른 글을 열까요?", "기록하고 열기")) return;
   try { if (workspace.draft.text) addRecord(workspace, analysis?.version ?? "unknown"); }
   catch (error) { return notify(error.message, true); }
   workspace.draft = newDraft(text, title, workspace.draft.preset);
@@ -337,11 +326,6 @@ for (const id of ["sourceInput", "draft"]) get(id).addEventListener("composition
   editVersion++; analysis = null; clearTimeout(timer);
   get("fixAllButton").disabled = get("saveButton").disabled = true;
 });
-get("startRevision").onclick = () => {
-  if (!workspace.draft.original.trim() || revisionActive) return;
-  revisionActive = true; renderDraft(); renderResult();
-  get("draft").focus();
-};
 get("draft").addEventListener("scroll", () => { get("highlights").scrollTop = get("draft").scrollTop; });
 get("title").addEventListener("input", () => { workspace.draft.title = get("title").value; persist(); });
 get("preset").addEventListener("change", () => { workspace.draft.preset = get("preset").value; changed(); });
@@ -364,16 +348,13 @@ get("fileInput").onchange = async (event) => {
   if (text.length > MAX_TEXT) return notify("원고는 60,000자 이하 파일을 사용해 주세요.", true);
   await startDraft(text, file.name.replace(/\.[^.]+$/, "").slice(0, 100));
 };
-get("saveButton").onclick = () => {
+get("saveButton").onclick = async () => {
   if (!analysis) return notify("검사가 끝난 뒤 수정본을 기록해 주세요.");
   if (!workspace.draft.text.trim()) return notify("먼저 원고를 써 주세요.");
-  get("recordDialog").showModal();
-};
-get("recordAccept").onclick = async () => {
   try {
     if (!workspace.draft.original) workspace.draft.original = workspace.draft.text;
     const saved = addRecord(workspace, analysis?.version ?? "unknown", get("revisionReason").value, get("revisionOrigin").value);
-    get("recordDialog").close(); get("revisionReason").value = "";
+    get("revisionReason").value = "";
     persist(); renderDraft(); await analyze();
     notify(saved ? "수정본을 기록했습니다. 고침 기억에서 재사용할 문장을 확인해 보세요." : "같은 수정본이 이미 기록되어 있어요.");
   } catch (error) { notify(error.message, true); }
@@ -399,15 +380,6 @@ get("githubSave").onclick = () => gitAction("save");
 get("githubLoad").onclick = () => gitAction("load");
 get("disconnectButton").onclick = () => { github.disconnect(); get("token").value = get("repository").value = ""; get("githubStatus").textContent = "연결 정보를 지웠습니다."; };
 for (const close of document.querySelectorAll("[data-close]")) close.onclick = () => get(close.dataset.close).close();
-for (const tab of document.querySelectorAll("[role=tab]")) {
-  tab.onclick = () => selectTab(tab.dataset.tab);
-  tab.onkeydown = (event) => {
-    const tabs = [...document.querySelectorAll("[role=tab]")], index = tabs.indexOf(tab);
-    const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : -1;
-    if (next < 0) return;
-    event.preventDefault(); selectTab(tabs[next].dataset.tab); tabs[next].focus();
-  };
-}
 window.addEventListener("pagehide", () => { persist(); github.disconnect(); get("token").value = ""; });
 window.addEventListener("storage", (event) => {
   if (event.key !== storageKey) return;
