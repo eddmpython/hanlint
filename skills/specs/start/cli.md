@@ -81,6 +81,22 @@ hanlint - --path 초안.md
 위치와 규칙, 이유와 고친 표기를 함께 읽는다. error는 고칠 결함이고 notice는 문맥에 따라 판단할 자리다.
 이 출력은 같은 글을 실제로 검사한 결과와 대조하는 게이트로 유지한다.
 
+## 화면의 글을 표 하나로 보기
+
+앱의 화면 글 (단추, 이름표, 상태, 안내) 은 수십 소스 파일에 흩어져 있어 파일마다 지적을 받으면 전체가 안 보인다.
+`sheet` 는 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 한국어 문자열과 JSX 글을 표 하나로 떨군다.
+
+```console
+hanlint sheet src/ --preset screen --output 시트.md
+hanlint sheet src/ --preset screen --all --format json
+hanlint sheet apply 시트.md --dry-run
+hanlint sheet apply 시트.md
+```
+
+표의 칸은 번호, 자리 (`경로:줄`), 글, 지적, 고침이다. 사람이 `고침` 칸에 새 글을 적고 `apply` 를 돌리면 그 줄에서 글이
+정확히 한 번 있는 자리를 새 글로 바꿔 쓴다. 없거나 두 번이면 바꾸지 않고 실패로 적는다. 글을 지우거나 요소를 없애는
+일은 코드를 열어 손으로 한다. 주석과 개발자용 줄 (`new Error(`, `console.`, `assert`) 은 표에 안 나온다.
+
 ## 프리셋과 설정
 
 글의 목적이 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
@@ -197,6 +213,8 @@ hanlint 글.md --format github --errors-only
 | `hanlint spec --preset blog --chars 800` | 같은 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
+| `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py) 의 한국어 글을 표 하나로 떨군다. `--all` 은 지적 없는 글도 | 예 |
+| `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 자리에 되돌려 쓴다. `--dry-run` 은 보기만 | 예 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
 | `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |

@@ -89,7 +89,7 @@ from .config import (
     loadWritingBrief,
     parseContract,
 )
-from .document import parseMarkdown
+from .document import SOURCE_SUFFIXES, parseMarkdown, replaceLiteral, sourceLiterals
 from .entailment import (
     EntailmentEvaluationResult,
     EntailmentPrediction,
@@ -112,7 +112,7 @@ from .guard import (
     verifyPatch,
 )
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
-from .report import buildBriefWritingPacket, buildWritingPacket
+from .report import buildBriefWritingPacket, buildWritingPacket, parseSheet, renderSheet, renderSheetJson
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
@@ -176,6 +176,12 @@ __all__ = [
     "guardText",
     "lintFile",
     "lintText",
+    "parseSheet",
+    "renderSheet",
+    "renderSheetJson",
+    "replaceLiteral",
+    "sourceLiterals",
+    "SOURCE_SUFFIXES",
     "learnText",
     "learnOperationText",
     "loadConfig",

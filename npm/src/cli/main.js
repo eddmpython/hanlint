@@ -46,7 +46,9 @@ import { exemplarFor } from "../data/exemplars.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
 import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runAll } from "../rules/registry.js";
-import { MARKDOWN, SKIPPED_FOLDERS, markdownUnder } from "./walk.js";
+import { MARKDOWN, SKIPPED_FOLDERS, isSkipped, markdownUnder } from "./walk.js";
+import { SOURCE_SUFFIXES, replaceLiteral, sourceLiterals } from "../document/sourceText.js";
+import { parseSheet, renderSheet, renderSheetJson } from "../report/sheet.js";
 import { welcome } from "./welcome.js";
 import { rootHelp } from "./help.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -57,7 +59,7 @@ import { renderText } from "../report/textReport.js";
 import { renderWritingSpec, writingSpec } from "../report/writingSpec.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "hook", "baseline", "doctor", "init", "contract", "check", "verify-patch"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "hook", "baseline", "doctor", "init", "contract", "check", "verify-patch", "sheet"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -130,6 +132,7 @@ const OPTION_KINDS = {
   "--chars": "value",
   "--baseline": "optional",
   "--prune": "flag",
+  "--all": "flag",
 };
 
 class UsageError extends Error {}
@@ -982,6 +985,106 @@ function runInit(args) {
   return 0;
 }
 
+/** 폴더 아래 소스 파일. 뜻은 파이썬 cli/commands/sheet.py 의 sourceUnder 가 소유한다. @param {string} folder @returns {string[]} */
+function sourceUnder(folder) {
+  /** @type {string[]} */
+  const found = [];
+  for (const name of readdirSync(folder).sort()) {
+    const path = join(folder, name);
+    if (statSync(path).isDirectory()) {
+      if (!isSkipped(name)) found.push(...sourceUnder(path));
+    } else if (SOURCE_SUFFIXES.includes(extname(name).toLowerCase())) found.push(path);
+  }
+  return found.sort();
+}
+
+/** 작업 폴더 기준 상대 경로, 구분자는 `/`. 파이썬 relativeLabel 과 같은 글자를 낸다. @param {string} path */
+function relativeLabel(path) {
+  const rel = relative(process.cwd(), resolve(path));
+  const label = !rel || rel.startsWith("..") || isAbsolute(rel) ? path : rel;
+  return label.split(sep).join("/").replaceAll("\\", "/");
+}
+
+/** 표의 고침을 파일에 쓴다. 뜻은 파이썬 applySheet 가 소유한다. @param {string} sheetPath @param {boolean} dryRun @returns {[string[], string[]]} */
+function applySheet(sheetPath, dryRun) {
+  const parsed = parseSheet(readFileSync(sheetPath, "utf-8"));
+  /** @type {string[]} */
+  const applied = [];
+  const failed = [...parsed.problems];
+  /** @type {Map<string, import("../report/sheet.js").SheetRow[]>} */
+  const byFile = new Map();
+  for (const row of parsed.rows) {
+    if (!byFile.has(row.file)) byFile.set(row.file, []);
+    /** @type {import("../report/sheet.js").SheetRow[]} */ (byFile.get(row.file)).push(row);
+  }
+  for (const file of [...byFile.keys()].sort()) {
+    const rows = /** @type {import("../report/sheet.js").SheetRow[]} */ (byFile.get(file));
+    if (!existsSync(file)) {
+      failed.push(...rows.map((row) => `${row.file}:${row.line}: 파일이 없다`));
+      continue;
+    }
+    const lines = readFileSync(file, "utf-8").split("\n");
+    let changed = false;
+    for (const row of rows) {
+      const place = `${row.file}:${row.line}`;
+      if (row.line < 1 || row.line > lines.length) {
+        failed.push(`${place}: 그 줄이 없다`);
+        continue;
+      }
+      const [newLine, count] = replaceLiteral(lines[row.line - 1], row.text, row.fix);
+      if (count !== 1) {
+        failed.push(`${place}: 글이 그 줄에 ${count}번 있다. 한 번이어야 바꾼다`);
+        continue;
+      }
+      lines[row.line - 1] = newLine;
+      changed = true;
+      applied.push(`${place}: ${row.text} -> ${row.fix}`);
+    }
+    if (changed && !dryRun) writeFileSync(file, lines.join("\n"), "utf-8");
+  }
+  return [applied, failed];
+}
+
+/** `hanlint sheet 폴더/ --preset screen` 과 `hanlint sheet apply 시트.md`. 뜻은 파이썬 cli/commands/sheet.py 가 소유한다. @param {string[]} args */
+function runSheet(args) {
+  const { options, positionals } = parseArgs(args);
+  const output = /** @type {string | undefined} */ (options["--output"]);
+  if (!positionals.length) throw new UsageError("hanlint sheet 폴더/ 또는 hanlint sheet apply 시트.md");
+  if (positionals[0] === "apply") {
+    if (positionals.length !== 2) {
+      emit("hanlint sheet apply 시트.md 꼴로 시트 하나를 준다", output);
+      return 2;
+    }
+    const dryRun = Boolean(options["--dry-run"]);
+    const [applied, failed] = applySheet(positionals[1], dryRun);
+    const lines = [`${dryRun ? "볼 것" : "적용"} ${applied.length}건, 실패 ${failed.length}건`];
+    lines.push(...applied.map((item) => `  ${item}`));
+    lines.push(...failed.map((item) => `  실패 ${item}`));
+    emit(lines.join("\n"), output);
+    return failed.length ? 1 : 0;
+  }
+  /** @type {string[]} */
+  const files = [];
+  for (const target of positionals) {
+    if (!existsSync(target)) throw new Error(`${target} 이 없다`);
+    if (statSync(target).isDirectory()) files.push(...sourceUnder(target));
+    else files.push(target);
+  }
+  const config = configFrom(options, files);
+  const format = choose(/** @type {string} */ (options["--format"] ?? "markdown"), ["markdown", "json"], "--format");
+  /** @type {import("../report/sheet.js").SheetRow[]} */
+  const rows = [];
+  for (const file of files) {
+    const label = relativeLabel(file);
+    for (const literal of sourceLiterals(readFileSync(file, "utf-8"), label)) {
+      const findings = runAll(fingerprint(literal.plain, config), config).filter((finding) => finding.severity === "error");
+      if (findings.length || options["--all"]) rows.push({ file: label, line: literal.line, text: literal.text, findings, fix: "" });
+    }
+  }
+  emit(format === "json" ? renderSheetJson(rows, config.preset, files.length) : renderSheet(rows, config.preset, files.length), output);
+  return 0;
+}
+
 /** @param {string[]} argv */
 function dispatch(argv) {
   if (!argv.length) {
@@ -1014,6 +1117,7 @@ function dispatch(argv) {
   if (command === "hook") return runHook(rest);
   if (command === "baseline") return runBaseline(rest);
   if (command === "doctor") return runDoctor(rest);
+  if (command === "sheet") return runSheet(rest);
   return runInit(rest);
 }
 

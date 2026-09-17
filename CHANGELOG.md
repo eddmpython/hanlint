@@ -6,6 +6,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- `hanlint sheet`. 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 한국어 문자열과 JSX 글을 표 하나
+  (마크다운이나 JSON) 로 떨군다. 기본은 지적이 있는 글만, `--all` 은 전부. 사람이 표의 `고침` 칸을 채우면
+  `hanlint sheet apply 시트.md` 가 그 줄의 글을 되돌려 쓴다 (`--dry-run` 은 보기만). 공개 API `sourceLiterals`,
+  `replaceLiteral`, `renderSheet`, `parseSheet`. 실측: Taxly 의 화면 글 1,129건을 운영자가 한 표에서 보고 고치려고 만들었다.
+
 ## [0.0.12] - 2026-09-17
 
 0.0.11 태그는 CI 의 ruff 줄 길이 게이트에 막혀 게시되지 않았다. 같은 내용이 0.0.12 로 나간다.

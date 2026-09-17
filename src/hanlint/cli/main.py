@@ -73,6 +73,7 @@ from .commands import (
     printFingerprint,
     profile,
     rules,
+    sheet,
     spec,
     terms,
     watch,
@@ -116,6 +117,7 @@ COMMANDS = {
     "learn": learn,
     "packet": packet,
     "terms": terms,
+    "sheet": sheet,
     "verify-patch": verifyPatchCommand,
 }
 

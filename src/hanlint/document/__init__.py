@@ -5,5 +5,19 @@ from __future__ import annotations
 from .model import Block, Document, Section
 from .parseMarkdown import dropFences, fenceLanguage, parseMarkdown
 from .plainText import codeSpans, plainText
+from .sourceText import SOURCE_SUFFIXES, SourceLiteral, replaceLiteral, sourceLiterals
 
-__all__ = ["Block", "Document", "Section", "codeSpans", "dropFences", "fenceLanguage", "parseMarkdown", "plainText"]
+__all__ = [
+    "SOURCE_SUFFIXES",
+    "Block",
+    "Document",
+    "Section",
+    "SourceLiteral",
+    "codeSpans",
+    "dropFences",
+    "fenceLanguage",
+    "parseMarkdown",
+    "plainText",
+    "replaceLiteral",
+    "sourceLiterals",
+]

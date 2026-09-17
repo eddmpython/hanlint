@@ -23,6 +23,7 @@ export function rootHelp() {
   hanlint spec --preset <종류> --chars 800
                                          쓰기 전 숫자 사양을 만든다
   hanlint primer --preset <종류>         쓰기 전에 규칙의 고치는 법과 본보기를 한 장으로 본다
+  hanlint sheet src/ --preset screen    소스의 화면 글을 표 하나로 떨군다. 고친 표는 sheet apply 로 되돌려 쓴다
 
 추가 명령
   baseline, print

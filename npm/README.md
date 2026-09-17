@@ -14,6 +14,7 @@
 npx hanlint 글.md
 npx hanlint docs/ --preset docs
 npx hanlint 글.md --format json
+npx hanlint sheet src/ --preset screen
 ```
 
 인자 없이 실행하면 현재 폴더의 파일을 바탕으로 시작 안내를 보여 준다.

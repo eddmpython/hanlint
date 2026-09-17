@@ -560,3 +560,24 @@ def testConfigLabelAgreesWhenConfigIsOutsideTheWorkingFolder(tmp_path):
         assert python.returncode == node.returncode, node.stderr
         assert python.stdout == node.stdout, extra
         assert "\\" not in python.stdout.split("\n")[0], "설정 출처는 언제나 / 로 적는다"
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testSheetAgrees(tmp_path):
+    """소스의 글 시트와 되돌려 쓰기. 표와 JSON 과 apply 의 보고가 두 판에서 같은 글자다."""
+    folder = "tests/fixtures/sheet"
+    for extra in ([], ["--format", "json"], ["--all"], ["--all", "--format", "json"]):
+        python, node = runBoth(["sheet", folder, "--preset", "screen", *extra])
+        assert python.returncode == node.returncode == 0, node.stderr
+        assert python.stdout == node.stdout, extra
+    sheet = tmp_path / "시트.md"
+    rows = [
+        "| 번호 | 자리 | 글 | 지적 | 고침 |",
+        "| --- | --- | --- | --- | --- |",
+        "| 1 | tests/fixtures/sheet/sample.jsx:4 | 요청을 완료하지 못했습니다 | x | 요청 실패 |",
+        "| 2 | tests/fixtures/sheet/sample.jsx:99 | 없음 | x | 있음 |",
+    ]
+    sheet.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    python, node = runBoth(["sheet", "apply", str(sheet), "--dry-run"])
+    assert python.returncode == node.returncode == 1, node.stderr
+    assert python.stdout == node.stdout

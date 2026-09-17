@@ -56,7 +56,11 @@ Python 3.11 이상이면 설치 후 파일을 검사한다.
 ```console
 pip install hanlint
 hanlint 글.md
+hanlint sheet src/ --preset screen
 ```
+
+둘째 줄은 앱의 화면 글이다. 소스 파일의 한국어 문자열과 JSX 글을 표 하나로 떨구고, 표의 고침 칸을 채워
+`hanlint sheet apply 시트.md` 로 되돌려 쓴다.
 
 Node 18 이상이면 다음 명령으로 같은 검사를 실행한다.
 
