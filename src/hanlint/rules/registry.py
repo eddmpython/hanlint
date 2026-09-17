@@ -69,7 +69,7 @@ def rule(name: str, mechanism: str) -> Callable[[Check], Check]:
     return register
 
 
-_LOADED = False
+_loaded = False
 
 
 def loadAll() -> None:
@@ -78,8 +78,8 @@ def loadAll() -> None:
     실측: 글 마디 2,189개를 검사하는 `hanlint sheet` 가 15.8초 가운데 11.4초를 `runAll` 마다 폴더를 다시 걷는
     이 함수에 썼다 (2026-09-17). import 는 파이썬이 캐시하지만 `pkgutil.iter_modules` 는 매번 디스크를 읽는다.
     """
-    global _LOADED
-    if _LOADED:
+    global _loaded
+    if _loaded:
         return
     package = importlib.import_module("hanlint.rules")
     for category in CATEGORIES:
@@ -87,7 +87,7 @@ def loadAll() -> None:
         for info in pkgutil.iter_modules(module.__path__, f"{module.__name__}."):
             importlib.import_module(info.name)
     del package
-    _LOADED = True
+    _loaded = True
 
 
 def ruleNames() -> list[str]:
