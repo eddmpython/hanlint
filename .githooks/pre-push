@@ -41,6 +41,17 @@ if [ -z "$python_bin" ]; then
   exit 1
 fi
 
+# CI (ci.yml) 와 같은 순서로 ruff 를 먼저 돈다. 2026-09-17 v0.0.11 이 E501 하나로 세 워크플로에서 막힌 것이 이유다.
+for ruff_args in "check" "format --check"; do
+  # shellcheck disable=SC2086
+  if ! "$python_bin" -X utf8 -B -m ruff $ruff_args "$repo_root/src" "$repo_root/tests" "$repo_root/hooks" "$repo_root/scripts" >/dev/null 2>&1; then
+    echo "blocked: ruff $ruff_args 가 red 다. 고치고 다시 push 한다" >&2
+    # shellcheck disable=SC2086
+    "$python_bin" -X utf8 -B -m ruff $ruff_args "$repo_root/src" "$repo_root/tests" "$repo_root/hooks" "$repo_root/scripts" 2>&1 | tail -20 >&2
+    exit 1
+  fi
+done
+
 if ! "$python_bin" -X utf8 -B -m pytest -q "$repo_root/tests" >/dev/null 2>&1; then
   echo "blocked: pytest 가 red 다. 고치고 다시 push 한다" >&2
   "$python_bin" -X utf8 -B -m pytest -q "$repo_root/tests" 2>&1 | tail -20 >&2

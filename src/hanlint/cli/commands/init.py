@@ -89,7 +89,8 @@ def render(preset: str = "blog") -> str:
     lines.extend(
         [
             "",
-            "# 사전에 더할 항목. 키는 cliches, translationese, redundantPair, japaneseLoan, easyWords, screenSentence, screenNarration, screenTone",
+            "# 사전에 더할 항목. 키는 cliches, translationese, redundantPair, japaneseLoan, easyWords,",
+            "# screenSentence, screenNarration, screenTone",
             "# [dictionary]",
             '# cliches = ["우리의 여정"]',
             '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',
