@@ -75,8 +75,16 @@ def buildRows(files: list[str], config: Config, everything: bool) -> list[SheetR
                 if finding.severity == "error"
             )
             if findings or everything:
-                rows.append(SheetRow(label, literal.line, literal.text, findings))
+                rows.append(SheetRow(label, literal.line, literal.text, findings, "", literal.column))
     return rows
+
+
+def replaceAt(lineText: str, column: int, old: str, new: str) -> tuple[str, bool]:
+    """`column` (1부터) 에 `old` 가 그대로 있으면 그 자리만 `new` 로 바꾼다."""
+    start = column - 1
+    if start < 0 or lineText[start : start + len(old)] != old:
+        return lineText, False
+    return lineText[:start] + new + lineText[start + len(old) :], True
 
 
 def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
@@ -98,10 +106,16 @@ def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
             if row.line < 1 or row.line > len(lines):
                 failed.append(f"{row.place}: 그 줄이 없다")
                 continue
-            newLine, count = replaceLiteral(lines[row.line - 1], row.text, row.fix)
-            if count != 1:
-                failed.append(f"{row.place}: 글이 그 줄에 {count}번 있다. 한 번이어야 바꾼다")
-                continue
+            if row.column > 0:
+                newLine, hit = replaceAt(lines[row.line - 1], row.column, row.text, row.fix)
+                if not hit:
+                    failed.append(f"{row.place}: 그 칸에 그 글이 없다. 표를 다시 뽑는다")
+                    continue
+            else:
+                newLine, count = replaceLiteral(lines[row.line - 1], row.text, row.fix)
+                if count != 1:
+                    failed.append(f"{row.place}: 글이 그 줄에 {count}번 있다. 한 번이어야 바꾼다")
+                    continue
             lines[row.line - 1] = newLine
             changed = True
             applied.append(f"{row.place}: {row.text} -> {row.fix}")

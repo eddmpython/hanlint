@@ -20,6 +20,7 @@ const RUST_TEST_MARKER = "#[cfg(test)]";
  * @property {number} line 1부터 세는 줄 번호. 여러 줄을 이은 러스트 문자열은 시작 줄이다
  * @property {string} text 따옴표와 태그를 뺀 글. 파일에 있는 그대로라 되돌려 쓸 때 찾을 수 있다
  * @property {string} plain 검사에 쓰는 글. 식 (`${...}`, `{...}`) 을 비우고 공백을 하나로 모았다
+ * @property {number} column 1부터 세는 칸. 그 줄에서 text 가 시작하는 자리
  */
 
 /** 템플릿 리터럴의 `${ ... }` 식을 (중첩 괄호를 세어) 같은 길이의 빈칸으로 바꾼다. @param {string} source */
@@ -95,9 +96,9 @@ function tagCloses(line, index) {
   return "\"'}".includes(before) || /[A-Za-z0-9]/.test(before);
 }
 
-/** 한 줄의 글 마디를 나온 차례로. 뜻은 파이썬 lineLiterals 가 소유한다. @param {string} line @returns {string[]} */
+/** 한 줄의 글 마디를 [시작 자리, 글] 로 나온 차례로. 뜻은 파이썬 lineLiterals 가 소유한다. @param {string} line @returns {[number, string][]} */
 export function lineLiterals(line) {
-  /** @type {string[]} */
+  /** @type {[number, string][]} */
   const found = [];
   let index = 0;
   while (index < line.length) {
@@ -105,7 +106,7 @@ export function lineLiterals(line) {
     if (QUOTES.includes(char)) {
       const end = closingQuote(line, index);
       if (end < 0) break;
-      found.push(line.slice(index + 1, end));
+      found.push([index + 1, line.slice(index + 1, end)]);
       index = end + 1;
       continue;
     }
@@ -113,7 +114,7 @@ export function lineLiterals(line) {
       const end = line.indexOf("<", index + 1);
       if (end > index) {
         const inner = line.slice(index + 1, end);
-        found.push(inner);
+        found.push([index + 1, inner]);
         if (!inner.includes("{")) {
           index = end;
           continue;
@@ -130,10 +131,10 @@ export function sourceLiterals(source, path = "") {
   /** @type {SourceLiteral[]} */
   const found = [];
   userFacingSource(source, path).split("\n").forEach((line, index) => {
-    for (const raw of lineLiterals(line)) {
+    for (const [start, raw] of lineLiterals(line)) {
       const text = raw.trim();
       const plain = plainText(text);
-      if (text && KOREAN.test(plain)) found.push({ line: index + 1, text, plain });
+      if (text && KOREAN.test(plain)) found.push({ line: index + 1, text, plain, column: start + (raw.length - raw.trimStart().length) + 1 });
     }
   });
   return found;

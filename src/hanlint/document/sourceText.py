@@ -46,6 +46,8 @@ class SourceLiteral:
     """따옴표와 태그를 뺀 글. 파일에 있는 그대로라 되돌려 쓸 때 찾을 수 있다."""
     plain: str
     """검사에 쓰는 글. 식 (`${...}`, `{...}`) 을 비우고 공백을 하나로 모았다."""
+    column: int = 0
+    """1부터 세는 칸. 그 줄에서 `text` 가 시작하는 자리라 같은 글이 두 번 있어도 되돌려 쓸 자리가 하나로 정해진다."""
 
 
 def withoutTemplateExpressions(source: str) -> str:
@@ -129,13 +131,13 @@ def tagCloses(line: str, index: int) -> bool:
     return before in "\"'}" or before.isalnum()
 
 
-def lineLiterals(line: str) -> list[str]:
-    """한 줄의 글 마디를 나온 차례로. 따옴표 문자열과 JSX 의 태그 사이 글 (`>글<`) 이다.
+def lineLiterals(line: str) -> list[tuple[int, str]]:
+    """한 줄의 글 마디를 (시작 자리, 글) 로 나온 차례로. 따옴표 문자열과 JSX 의 태그 사이 글 (`>글<`) 이다.
 
     JSX 글의 `>` 는 화살표 (`=>`) 나 러스트 반환 (`->`) 의 `>` 가 아니다. 글에 식 (`{...}`) 이 끼면 그 글을 낸 뒤 식 안을
     이어 훑어 안의 따옴표 글도 낸다. 식이 없는 글 안은 다시 훑지 않는다 (글 속 인용 부호를 문자열로 오독하지 않게).
     """
-    found: list[str] = []
+    found: list[tuple[int, str]] = []
     index = 0
     while index < len(line):
         char = line[index]
@@ -143,14 +145,14 @@ def lineLiterals(line: str) -> list[str]:
             end = closingQuote(line, index)
             if end < 0:
                 break
-            found.append(line[index + 1 : end])
+            found.append((index + 1, line[index + 1 : end]))
             index = end + 1
             continue
         if char == ">" and tagCloses(line, index):
             end = line.find("<", index + 1)
             if end > index:
                 inner = line[index + 1 : end]
-                found.append(inner)
+                found.append((index + 1, inner))
                 if "{" not in inner:
                     index = end
                     continue
@@ -162,11 +164,11 @@ def sourceLiterals(source: str, path: str = "") -> list[SourceLiteral]:
     """소스에서 글 마디를 줄 번호 순으로. 같은 줄의 마디는 나온 차례다. 한국어가 식 안에만 있는 마디는 뺀다."""
     found: list[SourceLiteral] = []
     for number, line in enumerate(userFacingSource(source, path).split("\n"), 1):
-        for raw in lineLiterals(line):
+        for start, raw in lineLiterals(line):
             text = raw.strip()
             plain = plainText(text)
             if text and KOREAN.search(plain):
-                found.append(SourceLiteral(number, text, plain))
+                found.append(SourceLiteral(number, text, plain, start + (len(raw) - len(raw.lstrip())) + 1))
     return found
 
 

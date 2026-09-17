@@ -4,7 +4,8 @@
 남았는지 한눈에 보이고, `고침` 칸에 새 글을 적으면 `hanlint sheet apply` 가 그 자리를 파일에 되돌려 쓴다.
 표의 정본은 이 모듈이 낸 마크다운이고 사람은 `고침` 칸만 채운다. 나머지 칸을 고치면 자리를 못 찾는다.
 
-칸: 번호, 자리 (`경로:줄`), 글, 지적 (규칙: 이유. 여럿이면 ` / ` 로 잇는다), 고침 (비워 둔다).
+칸: 번호, 자리 (`경로:줄:칸`. 칸은 그 줄에서 글이 시작하는 자리라 같은 글이 두 번 있어도 되돌려 쓸 곳이 하나다), 글,
+지적 (규칙: 이유. 여럿이면 ` / ` 로 잇는다), 고침 (비워 둔다).
 `|` 는 `\\|` 로, 줄바꿈은 없다 (한 줄 글만 뽑는다).
 """
 
@@ -29,10 +30,12 @@ class SheetRow:
     findings: tuple[Finding, ...] = ()
     fix: str = ""
     """사람이 표에 적은 고친 글. 뽑을 때는 비어 있다."""
+    column: int = 0
+    """1부터 세는 칸. 0 이면 모른다 (사람이 손으로 적은 줄). 알면 되돌려 쓸 자리가 하나로 정해진다."""
 
     @property
     def place(self) -> str:
-        return f"{self.file}:{self.line}"
+        return f"{self.file}:{self.line}:{self.column}" if self.column > 0 else f"{self.file}:{self.line}"
 
 
 def escapeCell(text: str) -> str:
@@ -99,6 +102,7 @@ def renderSheetJson(rows: list[SheetRow], preset: str, fileCount: int) -> str:
             {
                 "file": row.file,
                 "line": row.line,
+                "column": row.column,
                 "text": row.text,
                 "findings": [{"rule": finding.rule, "why": finding.why} for finding in row.findings],
                 "fix": row.fix,
@@ -129,15 +133,26 @@ def parseSheet(markdown: str) -> ParsedSheet:
             parsed.problems.append(f"{lineNumber}행: 칸이 {len(cells)}개다. {len(HEADER)}개여야 한다")
             continue
         place = unescapeCell(cells[1])
-        file, separator, line = place.rpartition(":")
-        if not separator or not line.isdigit():
-            parsed.problems.append(f"{lineNumber}행: 자리 `{place}` 가 경로:줄 꼴이 아니다")
+        file, line, column = splitPlace(place)
+        if file is None:
+            parsed.problems.append(f"{lineNumber}행: 자리 `{place}` 가 경로:줄 이나 경로:줄:칸 꼴이 아니다")
             continue
         fix = unescapeCell(cells[4])
         if not fix:
             continue
-        parsed.rows.append(SheetRow(file, int(line), unescapeCell(cells[2]), (), fix))
+        parsed.rows.append(SheetRow(file, line, unescapeCell(cells[2]), (), fix, column))
     return parsed
 
 
-__all__ = ["HEADER", "ParsedSheet", "SheetRow", "parseSheet", "renderSheet", "renderSheetJson", "splitRow"]
+def splitPlace(place: str) -> tuple[str | None, int, int]:
+    """`경로:줄:칸` 이나 `경로:줄` 을 (경로, 줄, 칸) 으로. 칸이 없으면 0. 꼴이 아니면 경로가 None."""
+    head, separator, last = place.rpartition(":")
+    if not separator or not last.isdigit():
+        return None, 0, 0
+    front, separator2, middle = head.rpartition(":")
+    if separator2 and middle.isdigit() and front:
+        return front, int(middle), int(last)
+    return head, int(last), 0
+
+
+__all__ = ["HEADER", "ParsedSheet", "SheetRow", "parseSheet", "renderSheet", "renderSheetJson", "splitPlace", "splitRow"]

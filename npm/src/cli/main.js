@@ -1005,6 +1005,11 @@ function relativeLabel(path) {
   return label.split(sep).join("/").replaceAll("\\", "/");
 }
 
+/** 표의 자리 글자. 뜻은 파이썬 SheetRow.place 가 소유한다. @param {import("../report/sheet.js").SheetRow} row */
+function placeOf(row) {
+  return row.column > 0 ? `${row.file}:${row.line}:${row.column}` : `${row.file}:${row.line}`;
+}
+
 /** 표의 고침을 파일에 쓴다. 뜻은 파이썬 applySheet 가 소유한다. @param {string} sheetPath @param {boolean} dryRun @returns {[string[], string[]]} */
 function applySheet(sheetPath, dryRun) {
   const parsed = parseSheet(readFileSync(sheetPath, "utf-8"));
@@ -1020,21 +1025,32 @@ function applySheet(sheetPath, dryRun) {
   for (const file of [...byFile.keys()].sort()) {
     const rows = /** @type {import("../report/sheet.js").SheetRow[]} */ (byFile.get(file));
     if (!existsSync(file)) {
-      failed.push(...rows.map((row) => `${row.file}:${row.line}: 파일이 없다`));
+      failed.push(...rows.map((row) => `${placeOf(row)}: 파일이 없다`));
       continue;
     }
     const lines = readFileSync(file, "utf-8").split("\n");
     let changed = false;
     for (const row of rows) {
-      const place = `${row.file}:${row.line}`;
+      const place = placeOf(row);
       if (row.line < 1 || row.line > lines.length) {
         failed.push(`${place}: 그 줄이 없다`);
         continue;
       }
-      const [newLine, count] = replaceLiteral(lines[row.line - 1], row.text, row.fix);
-      if (count !== 1) {
-        failed.push(`${place}: 글이 그 줄에 ${count}번 있다. 한 번이어야 바꾼다`);
-        continue;
+      let newLine = lines[row.line - 1];
+      if (row.column > 0) {
+        const start = row.column - 1;
+        if (newLine.slice(start, start + row.text.length) !== row.text) {
+          failed.push(`${place}: 그 칸에 그 글이 없다. 표를 다시 뽑는다`);
+          continue;
+        }
+        newLine = newLine.slice(0, start) + row.fix + newLine.slice(start + row.text.length);
+      } else {
+        const [replaced, count] = replaceLiteral(newLine, row.text, row.fix);
+        if (count !== 1) {
+          failed.push(`${place}: 글이 그 줄에 ${count}번 있다. 한 번이어야 바꾼다`);
+          continue;
+        }
+        newLine = replaced;
       }
       lines[row.line - 1] = newLine;
       changed = true;
@@ -1078,7 +1094,7 @@ function runSheet(args) {
     const label = relativeLabel(file);
     for (const literal of sourceLiterals(readFileSync(file, "utf-8"), label)) {
       const findings = runAll(fingerprint(literal.plain, config), config).filter((finding) => finding.severity === "error");
-      if (findings.length || options["--all"]) rows.push({ file: label, line: literal.line, text: literal.text, findings, fix: "" });
+      if (findings.length || options["--all"]) rows.push({ file: label, line: literal.line, text: literal.text, findings, fix: "", column: literal.column });
     }
   }
   emit(format === "json" ? renderSheetJson(rows, config.preset, files.length) : renderSheet(rows, config.preset, files.length), output);

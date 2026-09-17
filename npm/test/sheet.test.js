@@ -93,5 +93,5 @@ test("sheet renders and parses back", () => {
 test("bad rows are reported", () => {
   const parsed = parseSheet("| 1 | 자리없음 | 글 | 지적 | 고침 |\n| 2 | a:1 | 글 |\n");
   assert.deepEqual(parsed.rows, []);
-  assert.deepEqual(parsed.problems, ["1행: 자리 `자리없음` 가 경로:줄 꼴이 아니다", "2행: 칸이 3개다. 5개여야 한다"]);
+  assert.deepEqual(parsed.problems, ["1행: 자리 `자리없음` 가 경로:줄 이나 경로:줄:칸 꼴이 아니다", "2행: 칸이 3개다. 5개여야 한다"]);
 });
