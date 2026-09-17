@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from hanlint.analysis.grammar import REGISTERS
-from hanlint.config import PRESET_NAMES
+from hanlint.config import PRESET_NAMES, PROFILE_OF
 from tests.conftest import expandTokens
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -173,7 +173,7 @@ def testRuleListsAgree():
     assert python.returncode == node.returncode == 2
 
     # 사양의 수와 근거도 어느 판을 설치했는지에 따라 갈리면 안 된다.
-    for preset in [name for name in PRESET_NAMES if name != "chat"]:
+    for preset in [name for name in PRESET_NAMES if PROFILE_OF[name]]:
         python, node = runBoth(["spec", "--preset", preset, "--chars", "800"])
         assert python.returncode == node.returncode == 0, node.stderr
         assert python.stdout == node.stdout, preset

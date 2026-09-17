@@ -8,6 +8,11 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- 화면의 글 부류 (`screen`) 와 프리셋 `screen`. 단추, 이름표, 상태, 빈 상태 같은 화면의 글에서 낱말 자리의 문장
+  (`screenSentence`), 화면 해설 (`screenNarration`: 오면 여기에 표시됩니다, 이 화면은, 잠시 뒤, 할 수 있습니다), 접객 말투
+  (`screenTone`: 언제든, 살펴보세요, 하시면, 보여드립니다) 를 잡는다. 사전은 `data/screen*.toml` 이고 설정의
+  `dictionary.screenSentence` 등으로 더한다. 산문 프리셋은 셋을 끄고 `enforceStyle` 로 해설과 말투만 되살릴 수 있다.
+  실측 사례는 Taxly 의 운영 화면과 설치 페이지다.
 - GitHub Pages 편집기. 첫 화면의 예문 검사, 지적과 문체 본보기, 자동 수정과 되돌리기, 원문 보호와
   전후 비교를 같은 npm 코어로 제공한다. 개인 수정본과 승인 고침을 브라우저에 보관하고 선택한
   GitHub 저장소에 저장할 수 있다. 파비콘과 심볼, 제작자 채널, Fork 배포 워크플로를 함께 둔다.

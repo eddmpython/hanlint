@@ -12,6 +12,8 @@ import { exemplarInRegister, patternInRegister } from "../src/report/registerMat
 /** 본보기 게이트가 요구하는 규칙별 설정. @param {string} name */
 function configFor(name) {
   const config = defaultConfig();
+  // 화면 규칙은 산문 프리셋이 끄므로 프리셋 screen 으로 잰다. 파이썬 tests/gates/testExemplars.py 의 configFor 와 같다.
+  if (name.startsWith("screen")) config.preset = "screen";
   if (["keywordMissing", "keywordHeading"].includes(name)) config.keywordField = "primaryKeyword";
   if (name === "fieldEcho") config.endingFields = ["readerTakeaway"];
   return config;

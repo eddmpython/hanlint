@@ -56,6 +56,9 @@ import * as headingSkip from "./structure/headingSkip.js";
 import * as headingUniform from "./structure/headingUniform.js";
 import * as introLong from "./structure/introLong.js";
 import * as sectionNoProse from "./structure/sectionNoProse.js";
+import * as screenNarration from "./screen/screenNarration.js";
+import * as screenSentence from "./screen/screenSentence.js";
+import * as screenTone from "./screen/screenTone.js";
 
 /**
  * @typedef {object} Rule
@@ -116,6 +119,9 @@ export const RULES = [
   duplicateBlock,
   firstResultDistance,
   platformApi,
+  screenNarration,
+  screenSentence,
+  screenTone,
 ];
 
 /**
@@ -192,6 +198,7 @@ export const CATEGORY_TITLES = {
   document: "두 자리를 대조해 세는 것",
   orthography: "표기와 띄어쓰기",
   code: "코드 블록 사이를 대조하는 것",
+  screen: "화면의 글에서 세는 것",
 };
 
 /** 규칙이 세는 방법. @param {string} name */

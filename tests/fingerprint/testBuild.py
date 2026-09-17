@@ -81,7 +81,8 @@ def testQuotedSpansSkipDictionaryAndDeixis():
         'AI 가 자주 쓰는 표현은 `핵심은`, "결국 중요한 것은" 처럼 지웁니다. 「이것」 은 지시어입니다. 핵심은 속도입니다.\n'
     )
     first = doc.sentences[0]
-    assert first.matches == () and len(first.quoted) == 2
+    # 화면 사전 (screen*) 은 인용 밖의 종결어미 `니다.` 를 정당하게 짚는다. 인용 안 상투어가 빠졌는지만 본다.
+    assert [m for m in first.matches if not m.dictionary.startswith("screen")] == [] and len(first.quoted) == 2
     assert doc.sentences[1].deixis == () and doc.sentences[1].quoted
     assert doc.sentences[2].matches[0].text == "핵심은" and doc.sentences[2].quoted == ()
 

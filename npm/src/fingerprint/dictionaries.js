@@ -12,6 +12,9 @@ export const DICTIONARY_FILES = {
   spacing: "spacing.toml",
   confusable: "confusable.toml",
   easyWords: "easyWords.toml",
+  screenSentence: "screenSentence.toml",
+  screenNarration: "screenNarration.toml",
+  screenTone: "screenTone.toml",
 };
 const GROUP_REF = /\$(\d)/g;
 const FINALS = { ㄴ: 4, ㄹ: 8 };

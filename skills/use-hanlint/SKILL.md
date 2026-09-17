@@ -18,7 +18,8 @@ Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --repl
 
 ## 순서
 
-1. **종류를 맞춘다.** 블로그가 아니면 `--preset report|docs|guide|essay|fiction|encyclopedia` 를 붙인다. 저장소에
+1. **종류를 맞춘다.** 블로그가 아니면 `--preset report|docs|guide|essay|fiction|encyclopedia` 를 붙인다. 화면의 글
+   (단추, 이름표, 상태, 빈 상태) 은 `--preset screen` 이다. 저장소에
    `hanlint.toml` 이 있으면 그것을 따른다. 참고 문서에 `noQuestion` 이 도는 것 같은 지적은 규칙이 아니라 종류가
    안 맞는 것이다. 한 폴더에 종류가 섞여 있으면 종류마다 나눠 돌린다. `hanlint.toml` 을 만들지는 사용자가 정한다.
 2. **기계가 고칠 것을 먼저 적용한다.** `hanlint fix 글.md`. 번역투, 명령형 뒤 마침표, 이중 부정, 인용이 아닌 이중

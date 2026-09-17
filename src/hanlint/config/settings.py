@@ -24,9 +24,16 @@ from ..data.exemplars import Exemplar, projectExemplars
 from ..data.operations import SurfaceOperation, projectOperations
 from ..data.patches import Patch, projectPatches
 
+SCREEN = ("screenNarration", "screenSentence", "screenTone")
+"""화면의 글에서만 켜는 것. 산문의 모든 종류가 처음부터 끈다.
+
+단추, 이름표, 상태, 빈 상태 같은 화면의 글은 낱말이고 종결어미가 보이면 문장이다. 산문에서는 `설정에서 언제든 바꿀 수
+있습니다` 가 정상 문장이라 이 셋을 켜면 글마다 오탐이 난다. 실측: Taxly 의 화면 소스에서 낱말 자리의 문장 325건과 화면
+해설·접객 말투 329건이 났고 산문 규칙 50개는 그 가운데 하나도 짚지 못했다 (2026-09-17). 프리셋 screen 이 이 셋을 켜고,
+산문 프리셋에서 해설과 말투만 잡으려면 enforceStyle 에 screenNarration 과 screenTone 을 넣는다."""
 PRESETS: dict[str, tuple[str, ...]] = {
-    "blog": (),
-    "report": ("noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan"),
+    "blog": SCREEN,
+    "report": ("noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan") + SCREEN,
     "docs": (
         "noQuestion",
         "firstResultDistance",
@@ -37,7 +44,8 @@ PRESETS: dict[str, tuple[str, ...]] = {
         "numberOrphan",
         "duplicateBlock",
         "headingUniform",
-    ),
+    )
+    + SCREEN,
 }
 REFERENCE = ("duplicateBlock", "headingUniform")
 """참고 문서와 자습서에서만 끄는 것. 둘 다 규칙이 온 자리는 blog 라 거기서는 켠 채 둔다.
@@ -93,10 +101,61 @@ PRESETS["guide"] = PRESETS["blog"] + REFERENCE
 PRESETS["essay"] = PRESETS["report"] + NARRATIVE
 PRESETS["fiction"] = PRESETS["report"] + NARRATIVE
 PRESETS["encyclopedia"] = PRESETS["docs"] + ENCYCLOPEDIC
-PRESETS["chat"] = CONVERSATION
+PRESETS["chat"] = CONVERSATION + SCREEN
+SCREEN_OFF = (
+    "cliche",
+    "connectorRepeat",
+    "danglingDeixis",
+    "deixis",
+    "doubleNegative",
+    "draftHistory",
+    "endingRepeat",
+    "euiChain",
+    "fillerOpener",
+    "imperativePeriod",
+    "longSentence",
+    "negationRedefine",
+    "nounPile",
+    "numberOrphan",
+    "outsideProfile",
+    "factListParagraph",
+    "paraFragment",
+    "blockUnread",
+    "bridgeRepeat",
+    "emojiBullet",
+    "headingSentence",
+    "headingSkip",
+    "headingUniform",
+    "introImage",
+    "introLong",
+    "loneSubheading",
+    "moreLater",
+    "sectionNoProse",
+    "countMismatch",
+    "enoughOnce",
+    "fieldEcho",
+    "keywordHeading",
+    "keywordMissing",
+    "noQuestion",
+    "promiseRecall",
+    "tableOddCell",
+    "duplicateBlock",
+    "firstResultDistance",
+    "inputFileSource",
+    "installImport",
+    "platformApi",
+)
+"""화면의 글에서 끄는 것. 문장과 문단과 글의 짜임을 재는 규칙은 화면의 글 한 마디에 전제가 없다.
+
+남는 것은 SCREEN 셋과 낱말 안에서 결정되는 것 (dash, spelling, spacing, confusable, hardWord, japaneseLoan,
+doublePassive, translationese, redundantPair) 이다. nounPile 은 끈다. `수임처 자료 수집 실패` 처럼 화면의 낱말은 명사가
+이어지는 것이 정상이다. imperativePeriod 와 cliche 와 doubleNegative 는 문장을 전제하므로 끈다. 종결어미 자체를
+screenSentence 가 잡는다 (2026-09-17)."""
+PRESETS["screen"] = SCREEN_OFF
 """글의 종류마다 처음부터 끄고 시작할 규칙. `preset` 키가 고르고 `disable` 이 그 위에 더한다.
 
-blog 는 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다.
+blog 는 화면 규칙 셋만 끄고 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다.
+screen 은 화면의 글이다. 낱말 안에서 결정되는 규칙과 화면 규칙 셋만 남긴다.
 report 는 보고서다. 독자에게 말을 걸지 않고 절이 결과를 남기지 않으며 도입이 짧을 필요가 없다.
 docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기는 것 (draftHistory) 과 그림을 text 펜스로
 그리는 것 (blockUnread) 이 제 일이다. 실측: 이 저장소의 hanlint.toml 이 noQuestion 과 readerAbsent 를
@@ -117,12 +176,15 @@ PROFILE_OF = {
     "fiction": "fiction",
     "encyclopedia": "encyclopedia",
     "chat": None,
+    "screen": None,
 }
 """프리셋 → 견줄 프로파일의 종류. data/profiles.json 의 키이고 정본은 corpus/catalogue.toml 의 types 다. 규칙
-outsideProfile 이 읽는다. chat 은 답변 말뭉치가 없어 None 이고 그 종류는 견주지 않는다."""
+outsideProfile 이 읽는다. chat 과 screen 은 견줄 말뭉치가 없어 None 이고 그 종류는 견주지 않는다."""
 
 PRESET_NAMES = tuple(PRESETS)
 DEFAULT_PRESET = PRESET_NAMES[0]
+ENFORCEABLE = ("noQuestion", "nounPile", "screenNarration", "screenTone")
+"""enforceStyle 에 넣을 수 있는 규칙. 프리셋이 꺼도 사용자가 오류로 되살리는 것들이다."""
 """설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다."""
 
 
@@ -213,11 +275,12 @@ class Config:
     그 기사를 섞임으로 가르면서 일관된 발행문을 보존한다 (2026-08-28)."""
 
     enforceStyle: list[str] = field(default_factory=list)
-    """사용자가 오류로 강제할 문체 신호. 기본은 참고 지적이다."""
+    """사용자가 오류로 강제할 문체 신호. 기본은 참고 지적이다. 산문 프리셋에서 화면 해설 (screenNarration) 과 접객 말투
+    (screenTone) 를 잡으려면 여기에 넣는다. 문장이 허용된 화면 글 (장표, 고지) 을 chat 으로 재는 자리다."""
 
     def __post_init__(self) -> None:
-        if not isinstance(self.enforceStyle, list) or any(name not in ("noQuestion", "nounPile") for name in self.enforceStyle):
-            raise ValueError("enforceStyle 은 noQuestion, nounPile의 배열이다")
+        if not isinstance(self.enforceStyle, list) or any(name not in ENFORCEABLE for name in self.enforceStyle):
+            raise ValueError(f"enforceStyle 은 {', '.join(ENFORCEABLE)}의 배열이다")
         if not isinstance(self.protectedTerms, list) or not all(
             isinstance(item, str) and item.strip() for item in self.protectedTerms
         ):

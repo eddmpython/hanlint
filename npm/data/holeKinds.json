@@ -128,6 +128,18 @@
         "dash",
         "imperativePeriod"
       ]
+    },
+    {
+      "id": "screen",
+      "name": "화면",
+      "symbol": "U",
+      "ansi": 178,
+      "hex": "#E69F00",
+      "rules": [
+        "screenSentence",
+        "screenNarration",
+        "screenTone"
+      ]
     }
   ]
 }

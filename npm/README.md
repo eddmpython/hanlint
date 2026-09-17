@@ -48,7 +48,8 @@ for (const finding of lintText(text, config)) {
 파일은 `lintFile("글.md", config)`로 검사한다. `loadConfig()`는 현재 위치에서 프로젝트 설정을 찾는다.
 파일과 설정 경로를 읽는 API는 Node 전용이다. 문자열 API에 설정을 생략하면 기본 설정을 쓴다.
 
-`blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia`, `chat`의 여덟 프리셋이 있다.
+`blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia`, `chat`, `screen`의 아홉 프리셋이 있다.
+`screen`은 화면의 글 (단추, 이름표, 상태, 빈 상태) 이다. 낱말 자리의 문장과 화면 해설, 접객 말투를 잡고 산문 규칙은 끈다.
 프로젝트 설정은 `npx hanlint init --preset docs`로 만들고 `npx hanlint doctor`로 확인한다.
 규칙 목록은 `npx hanlint rules`, 개별 규칙의 근거는 `npx hanlint explain translationese`에서 본다.
 

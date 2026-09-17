@@ -43,3 +43,33 @@ export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR) 
   }
   return findings;
 }
+
+/**
+ * 문장마다 가장 앞의 매치 하나만 지적한다. 뜻은 파이썬 rules/shared/dictionaryRule.py 의 firstMatchFindings 가 소유한다.
+ * 구체 무늬와 종결어미가 한 사전에 같이 사는 화면 사전에 쓴다. fix 는 내지 않는다.
+ * @param {import("../../fingerprint/build.js").DocumentPrint} doc
+ * @param {string} dictionary
+ * @param {string} ruleName
+ * @param {string} [severity]
+ * @returns {import("../finding.js").Finding[]}
+ */
+export function firstMatchFindings(doc, dictionary, ruleName, severity = ERROR) {
+  const findings = [];
+  for (const sentence of doc.sentences) {
+    const match = sentence.matches.find((m) => m.dictionary === dictionary);
+    if (!match) continue;
+    findings.push(
+      finding(
+        ruleName,
+        sentence.line + countNewlines(sentence.text.slice(0, match.start)),
+        sentence.text,
+        `\`${match.text}\` ${match.why} (${match.source})`,
+        null,
+        severity,
+        SENTENCE,
+        sentence.index,
+      ),
+    );
+  }
+  return findings;
+}

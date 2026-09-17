@@ -12,9 +12,11 @@ import { projectPatches } from "../data/patches.js";
  * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py 의 PRESETS 다.
  * @type {Record<string, string[]>}
  */
+// 화면의 글에서만 켜는 것. 산문의 모든 종류가 처음부터 끈다. 파이썬 settings.py 의 SCREEN 과 같다.
+const SCREEN = ["screenNarration", "screenSentence", "screenTone"];
 export const PRESETS = {
-  blog: [],
-  report: ["noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan"],
+  blog: [...SCREEN],
+  report: ["noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan", ...SCREEN],
   docs: [
     "noQuestion",
     "firstResultDistance",
@@ -25,6 +27,7 @@ export const PRESETS = {
     "numberOrphan",
     "duplicateBlock",
     "headingUniform",
+    ...SCREEN,
   ],
 };
 // 서사 글에서만 끄는 것. 설명글의 전제 (독자가 문장 사이 이유를 따라간다, 말끝을 맺는다) 가 장면과
@@ -58,7 +61,54 @@ const CONVERSATION = [
   "promiseRecall",
   "sectionNoProse",
 ];
-PRESETS.chat = CONVERSATION;
+PRESETS.chat = [...CONVERSATION, ...SCREEN];
+// 화면의 글에서 끄는 것. 문장과 문단과 글의 짜임을 재는 규칙은 화면의 글 한 마디에 전제가 없다. 파이썬 settings.py 의 SCREEN_OFF 와 같다.
+const SCREEN_OFF = [
+  "cliche",
+  "connectorRepeat",
+  "danglingDeixis",
+  "deixis",
+  "doubleNegative",
+  "draftHistory",
+  "endingRepeat",
+  "euiChain",
+  "fillerOpener",
+  "imperativePeriod",
+  "longSentence",
+  "negationRedefine",
+  "nounPile",
+  "numberOrphan",
+  "outsideProfile",
+  "factListParagraph",
+  "paraFragment",
+  "blockUnread",
+  "bridgeRepeat",
+  "emojiBullet",
+  "headingSentence",
+  "headingSkip",
+  "headingUniform",
+  "introImage",
+  "introLong",
+  "loneSubheading",
+  "moreLater",
+  "sectionNoProse",
+  "countMismatch",
+  "enoughOnce",
+  "fieldEcho",
+  "keywordHeading",
+  "keywordMissing",
+  "noQuestion",
+  "promiseRecall",
+  "tableOddCell",
+  "duplicateBlock",
+  "firstResultDistance",
+  "inputFileSource",
+  "installImport",
+  "platformApi",
+];
+PRESETS.screen = SCREEN_OFF;
+/** enforceStyle 에 넣을 수 있는 규칙. 파이썬 settings.py 의 ENFORCEABLE 과 같다. */
+export const ENFORCEABLE = ["noQuestion", "nounPile", "screenNarration", "screenTone"];
 
 /** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
 export const PROFILE_OF = {
@@ -70,6 +120,7 @@ export const PROFILE_OF = {
   fiction: "fiction",
   encyclopedia: "encyclopedia",
   chat: null,
+  screen: null,
 };
 
 export const PRESET_NAMES = Object.keys(PRESETS);
@@ -180,8 +231,8 @@ export function configFromMapping(data) {
       }
       config.preset = /** @type {string} */ (value);
     } else if (key === "enforceStyle") {
-      if (!Array.isArray(value) || value.some((name) => !["noQuestion", "nounPile"].includes(name))) {
-        throw new Error("enforceStyle 은 noQuestion, nounPile의 배열이다");
+      if (!Array.isArray(value) || value.some((name) => !ENFORCEABLE.includes(name))) {
+        throw new Error(`enforceStyle 은 ${ENFORCEABLE.join(", ")}의 배열이다`);
       }
       config.enforceStyle = [...value];
     } else if (key === "dictionary") {

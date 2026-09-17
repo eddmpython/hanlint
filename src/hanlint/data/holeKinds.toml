@@ -80,3 +80,11 @@ symbol = "W"
 ansi = 137
 hex = "#A0522D"
 rules = ["cliche", "translationese", "redundantPair", "japaneseLoan", "hardWord", "connectorRepeat", "fillerOpener", "doubleNegative", "negationRedefine", "dash", "imperativePeriod"]
+
+[[kind]]
+id = "screen"
+name = "화면"
+symbol = "U"
+ansi = 178
+hex = "#E69F00"
+rules = ["screenSentence", "screenNarration", "screenTone"]

@@ -7,7 +7,7 @@ export function storageKeyFor(path) {
 }
 export const MAX_TEXT = 60000;
 export const MAX_ARCHIVE_BYTES = 900000;
-export const PRESETS = ["blog", "docs", "report", "guide", "essay", "fiction", "encyclopedia", "chat"];
+export const PRESETS = ["blog", "docs", "report", "guide", "essay", "fiction", "encyclopedia", "chat", "screen"];
 const MAX_RECORDS = 100;
 
 function textField(value, name, maximum = MAX_TEXT) {

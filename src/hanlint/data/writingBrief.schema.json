@@ -18,7 +18,7 @@
   "properties": {
     "version": { "const": 1 },
     "preset": {
-      "enum": ["blog", "report", "docs", "guide", "essay", "fiction", "encyclopedia", "chat"]
+      "enum": ["blog", "report", "docs", "guide", "essay", "fiction", "encyclopedia", "chat", "screen"]
     },
     "reader": { "type": "string", "minLength": 1 },
     "task": { "type": "string", "minLength": 1 },

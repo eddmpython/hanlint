@@ -26,7 +26,7 @@ ALWAYS_ON = Config(preset="blog")
 
 def configFor(name: str) -> Config:
     """본보기가 도는 데 설정이 필요한 규칙만 채운다. 나머지는 기본값이다."""
-    config = Config(preset="blog")
+    config = Config(preset="screen" if name.startswith("screen") else "blog")
     if name in ("keywordMissing", "keywordHeading"):
         config.keywordField = "primaryKeyword"
     if name == "fieldEcho":

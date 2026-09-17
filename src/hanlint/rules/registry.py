@@ -22,7 +22,7 @@ from .finding import Finding
 Check = Callable[[DocumentPrint, Config], Iterable[Finding]]
 REGISTRY: dict[str, Check] = {}
 REQUIRED_SECTIONS = ("왜:", "어디서:", "고치기:", "안 잡는 것:")
-CATEGORIES = ("sentence", "paragraph", "structure", "document", "orthography", "code")
+CATEGORIES = ("sentence", "paragraph", "structure", "document", "orthography", "code", "screen")
 CATEGORY_TITLES = {
     "sentence": "문장 안에서 세는 것",
     "paragraph": "문단 사이에서 세는 것",
@@ -30,6 +30,7 @@ CATEGORY_TITLES = {
     "document": "두 자리를 대조해 세는 것",
     "orthography": "표기와 띄어쓰기",
     "code": "코드 블록 사이를 대조하는 것",
+    "screen": "화면의 글에서 세는 것",
 }
 """부류의 사람 이름. `hanlint rules` 가 이 순서로 묶어 보인다. 뜻의 정본은 start.product 의 잡는 것이다."""
 MECHANISMS = {

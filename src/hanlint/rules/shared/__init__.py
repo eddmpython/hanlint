@@ -9,7 +9,7 @@ from .candidates import (
     longSentenceCandidates,
     nounPileCandidates,
 )
-from .dictionaryRule import dictionaryFindings
+from .dictionaryRule import dictionaryFindings, firstMatchFindings
 from .localAntecedent import hasLocalAntecedent
 from .repeat import runsOf, shareOf
 
@@ -18,6 +18,7 @@ __all__ = [
     "dictionaryFindings",
     "doublePassiveCandidates",
     "endingRepeatCandidates",
+    "firstMatchFindings",
     "hasLocalAntecedent",
     "longSentenceCandidates",
     "nounPileCandidates",

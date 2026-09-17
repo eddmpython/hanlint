@@ -19,6 +19,9 @@ DICTIONARY_FILES = {
     "spacing": "spacing.toml",
     "confusable": "confusable.toml",
     "easyWords": "easyWords.toml",
+    "screenSentence": "screenSentence.toml",
+    "screenNarration": "screenNarration.toml",
+    "screenTone": "screenTone.toml",
 }
 GROUP_REF = re.compile(r"\$([0-9])")
 FINALS = {"ㄴ": 4, "ㄹ": 8}

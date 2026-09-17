@@ -38,3 +38,26 @@ def dictionaryFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
                 match.text if match.fix is not None else None,
                 match.fix,
             )
+
+
+def firstMatchFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:
+    """문장마다 가장 앞의 매치 하나만 지적한다.
+
+    구체 무늬 (진행, 실패) 와 종결어미 전체가 한 사전에 같이 사는 화면 사전에 쓴다. 한 문장이 둘 다에 걸리면 지적이 둘이
+    되고 사용자는 같은 자리를 두 번 읽는다. 가장 앞의 것이 가장 구체적인 것이다 (구체 무늬는 종결어미보다 앞에서 시작한다).
+    fix 는 내지 않는다. 문장을 낱말로 줄이는 일은 뜻을 골라야 해서 사람의 몫이다.
+    """
+    for sentence in doc.sentences:
+        match = next((m for m in sentence.matches if m.dictionary == dictionary), None)
+        if match is None:
+            continue
+        yield Finding(
+            ruleName,
+            sentence.line + sentence.text.count("\n", 0, match.start),
+            sentence.text,
+            f"`{match.text}` {match.why} ({match.source})",
+            None,
+            severity,
+            SENTENCE,
+            sentence.index,
+        )

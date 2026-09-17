@@ -325,3 +325,84 @@ rule = "translationese"
 before = "모든 분야에 있어서 기준이 필요합니다."
 after = "모든 분야에서 기준이 필요합니다."
 moved = "번역투를 우리말 어순으로 되돌렸다"
+
+[[entry]]
+rule = "screenSentence"
+before = "요청을 완료하지 못했습니다"
+after = "요청 실패"
+moved = "종결어미를 떼고 실패를 낱말로 적었다"
+
+[[entry]]
+rule = "screenNarration"
+before = "계약 신청이 도착하면 여기에 표시됩니다."
+after = "계약 없음"
+moved = "예고 문장을 빈 상태의 낱말로 바꿨다"
+
+[[entry]]
+rule = "screenTone"
+before = "관리하실 수임처를 체크해 주시면 그 회사의 자료만 가져옵니다."
+after = "관리할 수임처"
+moved = "접객 말투의 안내문을 칸의 이름으로 줄였다"
+
+[[entry]]
+rule = "dash"
+presets = ["screen"]
+before = "설정 {em} 저장"
+after = "설정 저장"
+moved = "긴 줄표를 지우고 낱말만 남겼다"
+
+[[entry]]
+rule = "spelling"
+presets = ["screen"]
+before = "몇일 남음"
+after = "며칠 남음"
+moved = "표기를 바로잡았다"
+
+[[entry]]
+rule = "spacing"
+presets = ["screen"]
+before = "저장할수 없음"
+after = "저장할 수 없음"
+moved = "띄어쓰기를 바로잡았다"
+
+[[entry]]
+rule = "confusable"
+presets = ["screen"]
+before = "회원으로써 신청"
+after = "회원으로서 신청"
+moved = "자격을 뜻하는 조사로 바로잡았다"
+
+[[entry]]
+rule = "hardWord"
+presets = ["screen"]
+before = "금일 수집"
+after = "오늘 수집"
+moved = "어려운 한자어를 쉬운 말로 바꿨다"
+
+[[entry]]
+rule = "japaneseLoan"
+presets = ["screen"]
+before = "잔고 조회"
+after = "잔액 조회"
+moved = "일본어투 낱말을 바꿨다"
+
+[[entry]]
+rule = "doublePassive"
+presets = ["screen"]
+before = "보여지는 항목"
+after = "보이는 항목"
+moved = "피동을 하나로 줄였다"
+
+[[entry]]
+rule = "translationese"
+presets = ["screen"]
+before = "승인에 있어서 필요한 값"
+after = "승인에 필요한 값"
+moved = "번역투를 지웠다"
+
+[[entry]]
+rule = "redundantPair"
+presets = ["screen"]
+before = "매 시간마다 확인"
+after = "매시간 확인"
+moved = "겹말을 하나로 줄였다"
