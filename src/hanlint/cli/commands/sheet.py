@@ -88,7 +88,10 @@ def replaceAt(lineText: str, column: int, old: str, new: str) -> tuple[str, bool
 
 
 def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
-    """표의 고침을 파일에 쓴다. (적용한 자리, 실패한 자리와 이유)."""
+    """표의 고침을 파일에 쓴다. (적용한 자리, 실패한 자리와 이유).
+
+    한 줄에 고침이 여럿이면 뒤 칸부터 바꾼다. 앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸의 자리가 어긋난다.
+    """
     parsed = parseSheet(sheetPath.read_text(encoding="utf-8"))
     applied: list[str] = []
     failed: list[str] = list(parsed.problems)
@@ -102,7 +105,7 @@ def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
             continue
         lines = path.read_text(encoding="utf-8").split("\n")
         changed = False
-        for row in byFile[file]:
+        for row in sorted(byFile[file], key=lambda row: (row.line, -row.column)):
             if row.line < 1 or row.line > len(lines):
                 failed.append(f"{row.place}: 그 줄이 없다")
                 continue

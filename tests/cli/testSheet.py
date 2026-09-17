@@ -61,3 +61,19 @@ def testApplyWritesFixesBackAndReportsFailures(tmp_path, capsys):
     )
     assert main(["sheet", "apply", str(sheet)]) == 0
     assert source.read_text(encoding="utf-8") == "const a = '요청 실패'\nconst b = '넷'\n"
+
+
+def testApplyChangesSeveralPlacesOnOneLineFromTheBack(tmp_path):
+    """앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸이 어긋난다. 표의 순서와 상관없이 뒤 칸부터 바꾼다."""
+    source = tmp_path / "sample.js"
+    source.write_text("const t = { a: '데이터 삭제', b: '기기 삭제' }\n", encoding="utf-8")
+    sheet = tmp_path / "sheet.md"
+    label = source.as_posix()
+    sheet.write_text(
+        "| 번호 | 자리 | 글 | 지적 | 고침 |\n| --- | --- | --- | --- | --- |\n"
+        f"| 1 | {label}:1:17 | 데이터 삭제 | x | 자료 삭제 |\n"
+        f"| 2 | {label}:1:30 | 기기 삭제 | x | 이 컴퓨터 삭제 |\n",
+        encoding="utf-8",
+    )
+    assert main(["sheet", "apply", str(sheet)]) == 0
+    assert source.read_text(encoding="utf-8") == "const t = { a: '자료 삭제', b: '이 컴퓨터 삭제' }\n"

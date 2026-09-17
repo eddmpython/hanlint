@@ -317,3 +317,17 @@ test("rules groups by category and marks off", () => {
   assert.deepEqual(names, [...names].sort());
   assert.ok(names.includes("moreLater"));
 });
+
+test("sheet apply changes several places on one line from the back", () => {
+  const room = mkdtempSync(join(tmpdir(), "hanlintSheet-"));
+  const source = join(room, "sample.js").replaceAll("\\", "/");
+  writeFileSync(source, "const t = { a: '데이터 삭제', b: '기기 삭제' }\n", "utf-8");
+  const sheet = join(room, "sheet.md");
+  writeFileSync(
+    sheet,
+    `| 번호 | 자리 | 글 | 지적 | 고침 |\n| --- | --- | --- | --- | --- |\n| 1 | ${source}:1:17 | 데이터 삭제 | x | 자료 삭제 |\n| 2 | ${source}:1:30 | 기기 삭제 | x | 이 컴퓨터 삭제 |\n`,
+    "utf-8",
+  );
+  assert.equal(run(["sheet", "apply", sheet]).code, 0);
+  assert.equal(readFileSync(source, "utf-8"), "const t = { a: '자료 삭제', b: '이 컴퓨터 삭제' }\n");
+});

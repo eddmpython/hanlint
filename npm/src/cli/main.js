@@ -1030,7 +1030,8 @@ function applySheet(sheetPath, dryRun) {
     }
     const lines = readFileSync(file, "utf-8").split("\n");
     let changed = false;
-    for (const row of rows) {
+    // 한 줄에 고침이 여럿이면 뒤 칸부터. 앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸의 자리가 어긋난다.
+    for (const row of [...rows].sort((a, b) => a.line - b.line || b.column - a.column)) {
       const place = placeOf(row);
       if (row.line < 1 || row.line > lines.length) {
         failed.push(`${place}: 그 줄이 없다`);
