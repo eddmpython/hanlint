@@ -210,7 +210,7 @@ __all__ = [
     "verifyPatch",
     "writingPacket",
 ]
-__version__ = "0.0.15"
+__version__ = "0.0.16"
 
 
 def fingerprint(text: str, config: Config | None = None, path: str | None = None) -> DocumentPrint:
