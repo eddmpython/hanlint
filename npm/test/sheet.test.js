@@ -55,6 +55,8 @@ test("arrow and template artifacts are not text", () => {
   const third = "<section role=\"status\" aria-label={busy ? '자료 갱신 중' : '자료 불러오는 중'} aria-live=\"polite\">\n";
   assert.deepEqual(sourceLiterals(third, "a.jsx").map((item) => [item.line, item.text]), [[1, "자료 갱신 중"], [1, "자료 불러오는 중"]]);
   assert.deepEqual(sourceLiterals("const s = 'it\\'s 한글'\n", "a.js").map((item) => item.text), ["it\\'s 한글"]);
+  const fourth = "<button disabled={page >= pageCount} onClick={() => go(page + 1)}>다음</button> {a > b ? '큼' : '작음'}\n";
+  assert.deepEqual(sourceLiterals(fourth, "a.jsx").map((item) => item.text), ["다음", "큼", "작음"]);
 });
 
 test("replaceLiteral only when unique", () => {

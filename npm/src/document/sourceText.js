@@ -88,6 +88,13 @@ function closingQuote(line, start) {
   return -1;
 }
 
+/** `index` 의 `>` 가 JSX 여는 태그의 끝인가. 뜻은 파이썬 tagCloses 가 소유한다. @param {string} line @param {number} index */
+function tagCloses(line, index) {
+  if (index === 0 || line[index + 1] === "=") return false;
+  const before = line[index - 1];
+  return "\"'}".includes(before) || /[A-Za-z0-9]/.test(before);
+}
+
 /** 한 줄의 글 마디를 나온 차례로. 뜻은 파이썬 lineLiterals 가 소유한다. @param {string} line @returns {string[]} */
 export function lineLiterals(line) {
   /** @type {string[]} */
@@ -102,7 +109,7 @@ export function lineLiterals(line) {
       index = end + 1;
       continue;
     }
-    if (char === ">" && (index === 0 || !"=-".includes(line[index - 1]))) {
+    if (char === ">" && tagCloses(line, index)) {
       const end = line.indexOf("<", index + 1);
       if (end > index) {
         const inner = line.slice(index + 1, end);

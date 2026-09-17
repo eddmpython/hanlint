@@ -116,6 +116,19 @@ def closingQuote(line: str, start: int) -> int:
     return -1
 
 
+def tagCloses(line: str, index: int) -> bool:
+    """`index` 의 `>` 가 JSX 여는 태그의 끝인가. 태그 이름, 속성 값의 따옴표, 식의 `}` 뒤에 오고 `=` 가 뒤따르지 않는다.
+
+    비교 (`page >= count`, `a > b`), 화살표 (`=>`), 러스트 반환 (`->`) 의 `>` 는 앞이 빈칸이거나 `=`, `-` 이고
+    뒤에 `=` 가 올 수 있다. 실측: `disabled={page >= pageCount}` 의 `>` 를 태그 끝으로 읽어 그 뒤 코드가 글로
+    잡혔다 (2026-09-17).
+    """
+    if index == 0 or index + 1 < len(line) and line[index + 1] == "=":
+        return False
+    before = line[index - 1]
+    return before in "\"'}" or before.isalnum()
+
+
 def lineLiterals(line: str) -> list[str]:
     """한 줄의 글 마디를 나온 차례로. 따옴표 문자열과 JSX 의 태그 사이 글 (`>글<`) 이다.
 
@@ -133,7 +146,7 @@ def lineLiterals(line: str) -> list[str]:
             found.append(line[index + 1 : end])
             index = end + 1
             continue
-        if char == ">" and (index == 0 or line[index - 1] not in "=-"):
+        if char == ">" and tagCloses(line, index):
             end = line.find("<", index + 1)
             if end > index:
                 inner = line[index + 1 : end]

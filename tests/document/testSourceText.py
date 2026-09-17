@@ -57,6 +57,8 @@ def testArrowAndTemplateArtifactsAreNotText():
     source = "<section role=\"status\" aria-label={busy ? '자료 갱신 중' : '자료 불러오는 중'} aria-live=\"polite\">\n"
     assert texts(source, "a.jsx") == [(1, "자료 갱신 중"), (1, "자료 불러오는 중")]
     assert texts("const s = 'it\\'s 한글'\n", "a.js") == [(1, "it\\'s 한글")]
+    source = "<button disabled={page >= pageCount} onClick={() => go(page + 1)}>다음</button> {a > b ? '큼' : '작음'}\n"
+    assert texts(source, "a.jsx") == [(1, "다음"), (1, "큼"), (1, "작음")]
 
 
 def testPythonCommentIsNotText():
