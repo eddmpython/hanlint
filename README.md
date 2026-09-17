@@ -1,11 +1,12 @@
 <p align="center">
-  <a href="https://eddmpython.github.io/hanlint/"><img src="https://raw.githubusercontent.com/eddmpython/hanlint/main/web/brand.svg" width="64" height="64" alt="한린트"></a>
+  <a href="https://eddmpython.github.io/hanlint/"><img src="https://raw.githubusercontent.com/eddmpython/hanlint/main/web/brand.png" width="64" height="64" alt="한린트"></a>
 </p>
 
 # 한린트 · hanlint
 
 **고칠 곳이 보이는 한국어 글쓰기.**
 글을 넣으면 번역투, 명사 나열, 이중 피동과 문서 안의 어긋남을 찾아 **문장, 이유, 고친 본보기**를 보여 준다.
+앱의 화면 글 (단추, 이름표, 상태) 은 프리셋 `screen` 으로 잰다. 낱말 자리에 놓인 문장과 화면 해설을 잡고, `hanlint sheet` 가 소스 전체의 글을 표 하나로 모은다.
 직접 고친 내용을 비교하고, 다시 쓰고 싶은 고침은 뜻을 확인한 뒤 기억할 수 있다.
 
 [![PyPI](https://img.shields.io/pypi/v/hanlint?label=pypi)](https://pypi.org/project/hanlint/)
@@ -90,6 +91,8 @@ notice는 읽고 판단할 참고 지적이다. 명령별 예외는 [종료 코�
 | 앞 문장에 대상이 없는 지시어 | 독자가 앞에서 받은 정보로 대상을 찾을 수 있는지 |
 | 도입에서 약속한 개수와 다른 목록 | 문서 안에서 세는 값이 맞는지 |
 | 만들지 않은 파일을 읽는 예제 | 따라 하는 독자가 필요한 파일을 얻었는지 |
+| 화면의 `요청을 완료하지 못했습니다` | 낱말 자리의 문장 (프리셋 `screen`). `요청 실패` 한 낱말로 |
+| 화면의 `신청이 오면 여기에 표시됩니다` | 빈 자리를 예고하는 화면 해설. 빈 상태는 `요청 없음` |
 
 지적에는 위치와 규칙 이름, 인용 문장, 이유가 붙는다. 본보기는 글의 종류와 합니다체·한다체·해요체에
 맞춰 보여 준다. 본보기는 다시 쓰는 방법을 설명하는 사례이며, 내 문장에 그대로 적용할 답은 직접 고른다.

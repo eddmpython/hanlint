@@ -8,6 +8,8 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- 새 브랜드 심볼 (`web/brand.png`). 운영자가 준 그림에서 심볼만 잘라 배경을 투명하게 했고, 랜딩과 README 와
+  파비콘이 같은 그림을 쓴다. SVG 심볼은 뺐다.
 - `hanlint sheet`. 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 한국어 문자열과 JSX 글을 표 하나
   (마크다운이나 JSON) 로 떨군다. 기본은 지적이 있는 글만, `--all` 은 전부. 사람이 표의 `고침` 칸을 채우면
   `hanlint sheet apply 시트.md` 가 그 줄의 글을 되돌려 쓴다 (`--dry-run` 은 보기만). 공개 API `sourceLiterals`,

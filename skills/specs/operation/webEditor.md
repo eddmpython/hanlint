@@ -64,7 +64,7 @@ Linux와 macOS에서는 같은 빌드와 서버 명령에 저장소 밖 출력 �
 | 첫 화면 구조와 안내 문구 | `web/index.html` |
 | 색, 간격과 반응형 배치 | `web/style.css` |
 | 시스템 테마, 선택과 복원 | `web/theme.js` |
-| 심볼과 파비콘 | `web/brand.svg` |
+| 심볼과 파비콘 | `web/brand.png` |
 | 글꼴과 배포 고지 | `web/pretendard.woff2`, `web/pretendard.LICENSE.txt` |
 | 제작자 채널 | `web/channels.js` |
 | 사용자 안내 | `web/guide.html` |

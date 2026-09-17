@@ -20,7 +20,7 @@ def buildSite(output: Path) -> None:
         raise ValueError("배포 폴더는 비어 있어야 한다")
     output.mkdir(parents=True, exist_ok=True)
     for source in (ROOT / "web").iterdir():
-        if source.is_file() and source.suffix in {".html", ".css", ".js", ".svg", ".woff2", ".txt"}:
+        if source.is_file() and source.suffix in {".html", ".css", ".js", ".png", ".svg", ".woff2", ".txt"}:
             shutil.copy2(source, output / source.name)
     shutil.copytree(ROOT / "npm" / "src", output / "npm" / "src")
     dataRoot = output / "npm" / "data"
@@ -34,7 +34,8 @@ def buildSite(output: Path) -> None:
     )
     page = (
         '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        '<title>출처와 라이선스 · 한린트</title><link rel="icon" href="./brand.svg"><link rel="stylesheet" href="./style.css">'
+        '<title>출처와 라이선스 · 한린트</title><link rel="icon" type="image/png" href="./brand.png">'
+        '<link rel="stylesheet" href="./style.css">'
         '<script type="module" src="./theme.js"></script>'
         '<body><main class="documentPage"><a href="./">← 한린트 편집기로</a><h1>출처와 라이선스</h1>'
         "<p>브라우저 검사기는 배포판과 같은 사전, 규칙과 본보기를 사용합니다. 포함한 자료의 고지는 아래와 같습니다.</p>"

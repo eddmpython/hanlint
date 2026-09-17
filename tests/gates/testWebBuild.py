@@ -15,7 +15,7 @@ def testSiteContainsSameCoreAndCompleteData(tmp_path: Path) -> None:
     assert (output / "npm/src/index.js").read_bytes() == (ROOT / "npm/src/index.js").read_bytes()
     data = json.loads((output / "npm/data/siteData.json").read_text(encoding="utf-8"))
     assert data == {path.name: path.read_text(encoding="utf-8") for path in (ROOT / "npm/data").iterdir()}
-    for name in ("index.html", "app.js", "worker.js", "style.css", "brand.svg", "guide.html", "license.html", ".nojekyll"):
+    for name in ("index.html", "app.js", "worker.js", "style.css", "brand.png", "guide.html", "license.html", ".nojekyll"):
         assert (output / name).is_file()
     assert not (output / "node_modules").exists()
     assert not (output / "package.json").exists()
