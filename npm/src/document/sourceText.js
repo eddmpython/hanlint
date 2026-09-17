@@ -9,7 +9,6 @@ export const SOURCE_SUFFIXES = [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".
 const KOREAN = /[가-힣]/;
 // 문자열의 경계. 줄을 앞에서부터 훑어 여는 따옴표에서 같은 닫는 따옴표까지를 한 마디로 본다. 파이썬 sourceText.py 와 같다.
 const QUOTES = ["'", '"', "`"];
-const EXPRESSION = /\{[^{}]*\}/g;
 const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//g;
 const DEVELOPER_LINE = /new Error\(|console\.|panic!\(|expect\(|assert/;
 const RUST_CONTINUATION = /\\\r?\n[ \t]*/g;
@@ -23,27 +22,52 @@ const RUST_TEST_MARKER = "#[cfg(test)]";
  * @property {number} column 1부터 세는 칸. 그 줄에서 text 가 시작하는 자리
  */
 
-/** 템플릿 리터럴의 `${ ... }` 식을 (중첩 괄호를 세어) 같은 길이의 빈칸으로 바꾼다. @param {string} source */
-export function withoutTemplateExpressions(source) {
-  let output = "";
-  let index = 0;
-  while (index < source.length) {
-    if (source[index] === "$" && source[index + 1] === "{") {
-      let depth = 0;
-      let cursor = index + 1;
-      for (; cursor < source.length; cursor++) {
-        if (source[cursor] === "{") depth += 1;
-        else if (source[cursor] === "}") {
-          depth -= 1;
-          if (depth === 0) break;
-        }
-      }
-      output += " ".repeat(cursor + 1 - index);
-      index = cursor + 1;
+/** `start` 의 `{` 를 닫는 `}` 의 자리. 뜻은 파이썬 balancedEnd 가 소유한다. @param {string} line @param {number} start */
+function balancedEnd(line, start) {
+  let depth = 0;
+  let index = start;
+  while (index < line.length) {
+    const char = line[index];
+    if (QUOTES.includes(char)) {
+      const end = closingQuote(line, index);
+      if (end < 0) return -1;
+      index = end + 1;
       continue;
     }
-    output += source[index];
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return index;
+    }
     index += 1;
+  }
+  return -1;
+}
+
+/** 글에 낀 식 `{...}` 와 `${...}` 의 [시작, 끝 다음]. 뜻은 파이썬 expressionSpans 가 소유한다. @param {string} text @returns {[number, number][]} */
+export function expressionSpans(text) {
+  /** @type {[number, number][]} */
+  const spans = [];
+  let index = 0;
+  while (index < text.length) {
+    if (text[index] === "{") {
+      const end = balancedEnd(text, index);
+      if (end < 0) break;
+      const start = index > 0 && text[index - 1] === "$" ? index - 1 : index;
+      spans.push([start, end + 1]);
+      index = end + 1;
+      continue;
+    }
+    index += 1;
+  }
+  return spans;
+}
+
+/** 템플릿 리터럴의 `${ ... }` 식을 같은 길이의 빈칸으로 바꾼다. 뜻은 파이썬 withoutTemplateExpressions 가 소유한다. @param {string} source */
+export function withoutTemplateExpressions(source) {
+  let output = source;
+  for (const [start, end] of expressionSpans(source)) {
+    if (source[start] === "$") output = output.slice(0, start) + " ".repeat(end - start) + output.slice(end);
   }
   return output;
 }
@@ -68,12 +92,17 @@ export function userFacingSource(source, path) {
 
 /** 검사에 쓰는 글. 식을 비우고 공백을 하나로 모은다. @param {string} text */
 export function plainText(text) {
-  let copy = withoutTemplateExpressions(text);
-  while (EXPRESSION.test(copy)) copy = copy.replace(EXPRESSION, " ");
-  return copy.replace(/\s+/g, " ").trim();
+  let plain = "";
+  let cursor = 0;
+  for (const [start, end] of expressionSpans(text)) {
+    plain += text.slice(cursor, start) + " ";
+    cursor = end;
+  }
+  plain += text.slice(cursor);
+  return plain.replace(/\s+/g, " ").trim();
 }
 
-/** `start` 의 따옴표를 닫는 자리. 역슬래시 뒤 글자는 건너뛴다. 없으면 -1. @param {string} line @param {number} start */
+/** `start` 의 따옴표를 닫는 자리. 백틱 안의 `${...}` 은 통째로 건너뛴다. 뜻은 파이썬 closingQuote 가 소유한다. @param {string} line @param {number} start */
 function closingQuote(line, start) {
   const quote = line[start];
   let index = start + 1;
@@ -81,6 +110,12 @@ function closingQuote(line, start) {
     const char = line[index];
     if (char === "\\") {
       index += 2;
+      continue;
+    }
+    if (quote === "`" && char === "$" && line[index + 1] === "{") {
+      const end = balancedEnd(line, index + 1);
+      if (end < 0) return -1;
+      index = end + 1;
       continue;
     }
     if (char === quote) return index;
@@ -96,8 +131,36 @@ function tagCloses(line, index) {
   return "\"'}".includes(before) || /[A-Za-z0-9]/.test(before);
 }
 
-/** 한 줄의 글 마디를 [시작 자리, 글] 로 나온 차례로. 뜻은 파이썬 lineLiterals 가 소유한다. @param {string} line @returns {[number, string][]} */
-export function lineLiterals(line) {
+/** `start` 부터의 JSX 글이 끝나는 `<` 의 자리. 식 안의 `<` 는 글의 끝이 아니다. 뜻은 파이썬 jsxTextEnd 가 소유한다. @param {string} line @param {number} start */
+function jsxTextEnd(line, start) {
+  let index = start;
+  while (index < line.length) {
+    const char = line[index];
+    if (char === "<") return index;
+    if (char === "{") {
+      const end = balancedEnd(line, index);
+      if (end < 0) return -1;
+      index = end + 1;
+      continue;
+    }
+    index += 1;
+  }
+  return -1;
+}
+
+/** 글에 낀 식 안의 글 마디. 뜻은 파이썬 innerLiterals 가 소유한다. @param {string} text @param {number} offset @returns {[number, string][]} */
+function innerLiterals(text, offset) {
+  /** @type {[number, string][]} */
+  const found = [];
+  for (const [start, end] of expressionSpans(text)) {
+    const brace = text[start] === "$" ? start + 1 : start;
+    found.push(...lineLiterals(text.slice(brace + 1, end - 1), offset + brace + 1));
+  }
+  return found;
+}
+
+/** 한 줄의 글 마디를 [시작 자리, 글] 로 나온 차례로. 뜻은 파이썬 lineLiterals 가 소유한다. @param {string} line @param {number} [offset] @returns {[number, string][]} */
+export function lineLiterals(line, offset = 0) {
   /** @type {[number, string][]} */
   const found = [];
   let index = 0;
@@ -106,23 +169,25 @@ export function lineLiterals(line) {
     if (QUOTES.includes(char)) {
       const end = closingQuote(line, index);
       if (end < 0) break;
-      found.push([index + 1, line.slice(index + 1, end)]);
+      const raw = line.slice(index + 1, end);
+      found.push([offset + index + 1, raw]);
+      if (char === "`") found.push(...innerLiterals(raw, offset + index + 1));
       index = end + 1;
       continue;
     }
     if (char === ">" && tagCloses(line, index)) {
-      const end = line.indexOf("<", index + 1);
+      const end = jsxTextEnd(line, index + 1);
       if (end > index) {
-        const inner = line.slice(index + 1, end);
-        found.push([index + 1, inner]);
-        if (!inner.includes("{")) {
-          index = end;
-          continue;
-        }
+        const raw = line.slice(index + 1, end);
+        found.push([offset + index + 1, raw]);
+        found.push(...innerLiterals(raw, offset + index + 1));
+        index = end;
+        continue;
       }
     }
     index += 1;
   }
+  found.sort((a, b) => a[0] - b[0]);
   return found;
 }
 

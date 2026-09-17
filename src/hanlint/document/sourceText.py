@@ -31,7 +31,6 @@ KOREAN = re.compile(r"[가-힣]")
 QUOTES = ("'", '"', "`")
 """문자열의 경계. 줄을 앞에서부터 훑어 여는 따옴표에서 같은 닫는 따옴표까지를 한 마디로 본다. 정규식으로 따옴표 쌍을
 찾으면 한국어 없는 문자열의 닫는 따옴표에서 다음 여는 따옴표까지의 코드를 글로 오독한다 (실측 2026-09-17)."""
-EXPRESSION = re.compile(r"\{[^{}]*\}")
 BLOCK_COMMENT = re.compile(r"/\*[\s\S]*?\*/")
 DEVELOPER_LINE = re.compile(r"new Error\(|console\.|panic!\(|expect\(|assert")
 RUST_CONTINUATION = re.compile(r"\\\r?\n[ \t]*")
@@ -50,27 +49,54 @@ class SourceLiteral:
     """1부터 세는 칸. 그 줄에서 `text` 가 시작하는 자리라 같은 글이 두 번 있어도 되돌려 쓸 자리가 하나로 정해진다."""
 
 
-def withoutTemplateExpressions(source: str) -> str:
-    """템플릿 리터럴의 `${ ... }` 식을 (중첩 괄호를 세어) 같은 길이의 빈칸으로 바꾼다. 식은 코드이지 글이 아니다."""
-    output: list[str] = []
-    index = 0
-    while index < len(source):
-        if source[index] == "$" and index + 1 < len(source) and source[index + 1] == "{":
-            depth = 0
-            cursor = index + 1
-            while cursor < len(source):
-                if source[cursor] == "{":
-                    depth += 1
-                elif source[cursor] == "}":
-                    depth -= 1
-                    if depth == 0:
-                        break
-                cursor += 1
-            output.append(" " * (cursor + 1 - index))
-            index = cursor + 1
+def balancedEnd(line: str, start: int) -> int:
+    """`start` 의 `{` 를 닫는 `}` 의 자리. 안의 따옴표 문자열 (중첩 백틱까지) 과 중첩 괄호를 건너뛴다. 없으면 -1."""
+    depth = 0
+    index = start
+    while index < len(line):
+        char = line[index]
+        if char in QUOTES:
+            end = closingQuote(line, index)
+            if end < 0:
+                return -1
+            index = end + 1
             continue
-        output.append(source[index])
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return index
         index += 1
+    return -1
+
+
+def expressionSpans(text: str) -> list[tuple[int, int]]:
+    """글에 낀 식 `{...}` 와 `${...}` 의 (시작, 끝 다음) 자리. 식 안의 따옴표와 중첩 괄호는 식의 일부다.
+
+    닫히지 않은 식 (여러 줄에 걸친 식의 첫 줄) 은 식으로 보지 않고 그 뒤를 그대로 둔다.
+    """
+    spans: list[tuple[int, int]] = []
+    index = 0
+    while index < len(text):
+        if text[index] == "{":
+            end = balancedEnd(text, index)
+            if end < 0:
+                break
+            start = index - 1 if index > 0 and text[index - 1] == "$" else index
+            spans.append((start, end + 1))
+            index = end + 1
+            continue
+        index += 1
+    return spans
+
+
+def withoutTemplateExpressions(source: str) -> str:
+    """템플릿 리터럴의 `${ ... }` 식을 (안의 따옴표와 중첩 괄호를 세어) 같은 길이의 빈칸으로 바꾼다. 식은 코드이지 글이 아니다."""
+    output = list(source)
+    for start, end in expressionSpans(source):
+        if source[start] == "$":
+            output[start:end] = " " * (end - start)
     return "".join(output)
 
 
@@ -97,20 +123,33 @@ def userFacingSource(source: str, path: str) -> str:
 
 def plainText(text: str) -> str:
     """검사에 쓰는 글. 식 (`${...}`, `{...}`) 을 비우고 공백을 하나로 모은다."""
-    copy = withoutTemplateExpressions(text)
-    while EXPRESSION.search(copy):
-        copy = EXPRESSION.sub(" ", copy)
-    return re.sub(r"\s+", " ", copy).strip()
+    pieces: list[str] = []
+    cursor = 0
+    for start, end in expressionSpans(text):
+        pieces.append(text[cursor:start])
+        pieces.append(" ")
+        cursor = end
+    pieces.append(text[cursor:])
+    return re.sub(r"\s+", " ", "".join(pieces)).strip()
 
 
 def closingQuote(line: str, start: int) -> int:
-    """`start` 의 따옴표를 닫는 자리. 역슬래시 뒤 글자는 건너뛴다. 없으면 -1."""
+    """`start` 의 따옴표를 닫는 자리. 역슬래시 뒤 글자는 건너뛰고, 백틱 안의 `${...}` 은 안의 백틱까지 통째로 건너뛴다.
+
+    없으면 -1. 실측: `${a ? `해마다 ${b}` : c}은 결산` 의 안쪽 백틱을 바깥의 끝으로 읽어 코드가 글로 샜다 (2026-09-18).
+    """
     quote = line[start]
     index = start + 1
     while index < len(line):
         char = line[index]
         if char == "\\":
             index += 2
+            continue
+        if quote == "`" and char == "$" and index + 1 < len(line) and line[index + 1] == "{":
+            end = balancedEnd(line, index + 1)
+            if end < 0:
+                return -1
+            index = end + 1
             continue
         if char == quote:
             return index
@@ -131,11 +170,39 @@ def tagCloses(line: str, index: int) -> bool:
     return before in "\"'}" or before.isalnum()
 
 
-def lineLiterals(line: str) -> list[tuple[int, str]]:
+def jsxTextEnd(line: str, start: int) -> int:
+    """`start` 부터의 JSX 글이 끝나는 `<` 의 자리. 식 (`{...}`) 안의 `<` 는 글의 끝이 아니다. 없으면 -1."""
+    index = start
+    while index < len(line):
+        char = line[index]
+        if char == "<":
+            return index
+        if char == "{":
+            end = balancedEnd(line, index)
+            if end < 0:
+                return -1
+            index = end + 1
+            continue
+        index += 1
+    return -1
+
+
+def innerLiterals(text: str, offset: int) -> list[tuple[int, str]]:
+    """글에 낀 식 (`{...}`, `${...}`) 안의 글 마디. 식 안은 코드라 따옴표 글과 태그 사이 글을 다시 훑는다."""
+    found: list[tuple[int, str]] = []
+    for start, end in expressionSpans(text):
+        brace = start + 1 if text[start] == "$" else start
+        found.extend(lineLiterals(text[brace + 1 : end - 1], offset + brace + 1))
+    return found
+
+
+def lineLiterals(line: str, offset: int = 0) -> list[tuple[int, str]]:
     """한 줄의 글 마디를 (시작 자리, 글) 로 나온 차례로. 따옴표 문자열과 JSX 의 태그 사이 글 (`>글<`) 이다.
 
-    JSX 글의 `>` 는 화살표 (`=>`) 나 러스트 반환 (`->`) 의 `>` 가 아니다. 글에 식 (`{...}`) 이 끼면 그 글을 낸 뒤 식 안을
-    이어 훑어 안의 따옴표 글도 낸다. 식이 없는 글 안은 다시 훑지 않는다 (글 속 인용 부호를 문자열로 오독하지 않게).
+    JSX 글의 `>` 는 화살표 (`=>`) 나 러스트 반환 (`->`) 의 `>` 가 아니다. 글에 식 (`{...}`, `${...}`) 이 끼면 그 글을 낸 뒤
+    식 안을 따로 훑어 안의 따옴표 글과 태그 사이 글도 낸다 (중첩 식과 중첩 백틱 포함). 식이 없는 글 안은 다시 훑지 않는다
+    (글 속 인용 부호를 문자열로 오독하지 않게). 실측: `{cond ? <span>없음</span> : x}` 의 안쪽 `<` 를 글의 끝으로 읽고
+    `{[['기준월 실적', a]]}` 의 식을 못 비워 코드가 글로 샜다 (2026-09-18).
     """
     found: list[tuple[int, str]] = []
     index = 0
@@ -145,18 +212,22 @@ def lineLiterals(line: str) -> list[tuple[int, str]]:
             end = closingQuote(line, index)
             if end < 0:
                 break
-            found.append((index + 1, line[index + 1 : end]))
+            raw = line[index + 1 : end]
+            found.append((offset + index + 1, raw))
+            if char == "`":
+                found.extend(innerLiterals(raw, offset + index + 1))
             index = end + 1
             continue
         if char == ">" and tagCloses(line, index):
-            end = line.find("<", index + 1)
+            end = jsxTextEnd(line, index + 1)
             if end > index:
-                inner = line[index + 1 : end]
-                found.append((index + 1, inner))
-                if "{" not in inner:
-                    index = end
-                    continue
+                raw = line[index + 1 : end]
+                found.append((offset + index + 1, raw))
+                found.extend(innerLiterals(raw, offset + index + 1))
+                index = end
+                continue
         index += 1
+    found.sort(key=lambda item: item[0])
     return found
 
 

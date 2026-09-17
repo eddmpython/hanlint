@@ -12,5 +12,7 @@ export function Sample ({ failure, count }) {
     <span>{count}개 회사</span>
     <Banner title="사전 승인 IP가 필요합니다">{`최대 ${count}개 · 추가 불가`}</Banner>
     <button onClick={() => go('설정')}>다시 시도</button>
+    <td>{count === 0 ? <span className="state">없음</span> : '확인 필요'}</td>
+    <p>{`${failure ? `원인 ${failure}` : '없음'} · 기록`}</p>
   </section>
 }

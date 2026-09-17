@@ -59,6 +59,32 @@ test("arrow and template artifacts are not text", () => {
   assert.deepEqual(sourceLiterals(fourth, "a.jsx").map((item) => item.text), ["다음", "큼", "작음"]);
 });
 
+test("nested expressions and nested templates", () => {
+  const lines = [
+    `<td>{ok ? <span className="state">없음</span> : '확인 필요'}</td> {[['기준월 실적', a], ['대상월 가정', b]]}`,
+    "parts.push(`${same ? `해마다 ${word(x)}` : words(y)}은 결산 대체 분개가 섞여 비교에서 뺌`)",
+    "const t = `${p === 'relay' ? '보안 중계' : '직접 연결'} 전송 완료`",
+  ];
+  const items = sourceLiterals(`${lines.join("\n")}\n`, "a.jsx");
+  assert.deepEqual(
+    items.map((item) => [item.line, item.text]),
+    [
+      [1, "없음"],
+      [1, "확인 필요"],
+      [1, "기준월 실적"],
+      [1, "대상월 가정"],
+      [2, "${same ? `해마다 ${word(x)}` : words(y)}은 결산 대체 분개가 섞여 비교에서 뺌"],
+      [2, "해마다 ${word(x)}"],
+      [3, "${p === 'relay' ? '보안 중계' : '직접 연결'} 전송 완료"],
+      [3, "보안 중계"],
+      [3, "직접 연결"],
+    ],
+  );
+  assert.deepEqual(items.slice(4, 7).map((item) => item.plain), ["은 결산 대체 분개가 섞여 비교에서 뺌", "해마다", "전송 완료"]);
+  for (const item of items) assert.equal(lines[item.line - 1].slice(item.column - 1, item.column - 1 + item.text.length), item.text);
+  assert.deepEqual(sourceLiterals("const t = `${label ? '한글' : ''}`\n", "a.js").map((item) => [item.text, item.column]), [["한글", 23]]);
+});
+
 test("replaceLiteral only when unique", () => {
   assert.deepEqual(replaceLiteral("a = '요청 실패'", "요청 실패", "요청 없음"), ["a = '요청 없음'", 1]);
   assert.deepEqual(replaceLiteral("a = '요청'; b = '요청'", "요청", "x"), ["a = '요청'; b = '요청'", 2]);
