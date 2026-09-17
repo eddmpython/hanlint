@@ -6,6 +6,8 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+## [0.0.14] - 2026-09-17
+
 ### Fixed
 
 - `sourceLiterals` 가 비교 (`page >= count`) 의 `>` 를 JSX 태그 끝으로 읽어 그 뒤 코드를 글로 잡던 것을 고쳤다.
