@@ -345,6 +345,12 @@ after = "관리할 수임처"
 moved = "접객 말투의 안내문을 칸의 이름으로 줄였다"
 
 [[entry]]
+rule = "screenWord"
+before = "계약 메타데이터"
+after = "계약 정보"
+moved = "개발 어휘를 사용자의 낱말로 바꿨다"
+
+[[entry]]
 rule = "dash"
 presets = ["screen"]
 before = "설정 {em} 저장"

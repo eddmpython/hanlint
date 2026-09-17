@@ -24,12 +24,12 @@ from ..data.exemplars import Exemplar, projectExemplars
 from ..data.operations import SurfaceOperation, projectOperations
 from ..data.patches import Patch, projectPatches
 
-SCREEN = ("screenNarration", "screenSentence", "screenTone")
+SCREEN = ("screenNarration", "screenSentence", "screenTone", "screenWord")
 """화면의 글에서만 켜는 것. 산문의 모든 종류가 처음부터 끈다.
 
 단추, 이름표, 상태, 빈 상태 같은 화면의 글은 낱말이고 종결어미가 보이면 문장이다. 산문에서는 `설정에서 언제든 바꿀 수
-있습니다` 가 정상 문장이라 이 셋을 켜면 글마다 오탐이 난다. 실측: Taxly 의 화면 소스에서 낱말 자리의 문장 325건과 화면
-해설·접객 말투 329건이 났고 산문 규칙 50개는 그 가운데 하나도 짚지 못했다 (2026-09-17). 프리셋 screen 이 이 셋을 켜고,
+있습니다` 가 정상 문장이라 이 넷을 켜면 글마다 오탐이 난다. 실측: Taxly 의 화면 소스에서 낱말 자리의 문장 325건과 화면
+해설·접객 말투 329건이 났고 산문 규칙 50개는 그 가운데 하나도 짚지 못했다 (2026-09-17). 프리셋 screen 이 이 넷을 켜고,
 산문 프리셋에서 해설과 말투만 잡으려면 enforceStyle 에 screenNarration 과 screenTone 을 넣는다."""
 PRESETS: dict[str, tuple[str, ...]] = {
     "blog": SCREEN,
@@ -183,7 +183,7 @@ outsideProfile 이 읽는다. chat 과 screen 은 견줄 말뭉치가 없어 Non
 
 PRESET_NAMES = tuple(PRESETS)
 DEFAULT_PRESET = PRESET_NAMES[0]
-ENFORCEABLE = ("noQuestion", "nounPile", "screenNarration", "screenTone")
+ENFORCEABLE = ("noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord")
 """enforceStyle 에 넣을 수 있는 규칙. 프리셋이 꺼도 사용자가 오류로 되살리는 것들이다."""
 """설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다."""
 

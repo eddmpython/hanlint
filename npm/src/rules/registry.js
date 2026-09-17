@@ -59,6 +59,7 @@ import * as sectionNoProse from "./structure/sectionNoProse.js";
 import * as screenNarration from "./screen/screenNarration.js";
 import * as screenSentence from "./screen/screenSentence.js";
 import * as screenTone from "./screen/screenTone.js";
+import * as screenWord from "./screen/screenWord.js";
 
 /**
  * @typedef {object} Rule
@@ -122,6 +123,7 @@ export const RULES = [
   screenNarration,
   screenSentence,
   screenTone,
+  screenWord,
 ];
 
 /**

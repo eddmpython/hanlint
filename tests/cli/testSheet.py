@@ -63,6 +63,16 @@ def testApplyWritesFixesBackAndReportsFailures(tmp_path, capsys):
     assert source.read_text(encoding="utf-8") == "const a = '요청 실패'\nconst b = '넷'\n"
 
 
+def testSheetPrefillsTheFixWhenOneFindingCarriesIt(tmp_path, capsys):
+    """개발 어휘처럼 고침이 정해진 지적은 고침 칸에 미리 적혀 apply 로 바로 되돌려 쓴다."""
+    source = tmp_path / "sample.js"
+    source.write_text("const a = '열린 트랜잭션 3개'\nconst b = '요청을 완료하지 못했습니다'\n", encoding="utf-8")
+    assert main(["sheet", str(source), "--preset", "screen"]) == 0
+    out = capsys.readouterr().out
+    assert "| 열린 트랜잭션 3개 | screenWord:" in out and "| 열린 작업 단위 3개 |" in out
+    assert "| 요청을 완료하지 못했습니다 | screenSentence:" in out and out.count("| 요청 실패 |") == 0
+
+
 def testApplyChangesSeveralPlacesOnOneLineFromTheBack(tmp_path):
     """앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸이 어긋난다. 표의 순서와 상관없이 뒤 칸부터 바꾼다."""
     source = tmp_path / "sample.js"

@@ -87,4 +87,4 @@ name = "화면"
 symbol = "U"
 ansi = 178
 hex = "#E69F00"
-rules = ["screenSentence", "screenNarration", "screenTone"]
+rules = ["screenSentence", "screenNarration", "screenTone", "screenWord"]

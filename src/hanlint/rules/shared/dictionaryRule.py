@@ -17,27 +17,45 @@ from ...fingerprint import DocumentPrint
 from ..finding import ERROR, SENTENCE, Finding
 
 
+def matchFinding(sentence, match, ruleName: str, severity: str) -> Finding:
+    fix = None
+    if match.fix is not None:
+        # 낱말만 갈아 끼우면 뒤에 붙은 조사가 틀어진다. `이슈로` 를 `쟁점로` 로 내밀던 자리다
+        fix = sentence.text[: match.start] + match.fix + fitJosa(match.fix, sentence.text[match.end :])
+    return Finding(
+        ruleName,
+        sentence.line + sentence.text.count("\n", 0, match.start),
+        sentence.text,
+        f"`{match.text}` {match.why} ({match.source})",
+        fix,
+        severity,
+        SENTENCE,
+        sentence.index,
+        match.text if match.fix is not None else None,
+        match.fix,
+    )
+
+
 def dictionaryFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:
     for sentence in doc.sentences:
         for match in sentence.matches:
-            if match.dictionary != dictionary:
-                continue
-            fix = None
-            if match.fix is not None:
-                # 낱말만 갈아 끼우면 뒤에 붙은 조사가 틀어진다. `이슈로` 를 `쟁점로` 로 내밀던 자리다
-                fix = sentence.text[: match.start] + match.fix + fitJosa(match.fix, sentence.text[match.end :])
-            yield Finding(
-                ruleName,
-                sentence.line + sentence.text.count("\n", 0, match.start),
-                sentence.text,
-                f"`{match.text}` {match.why} ({match.source})",
-                fix,
-                severity,
-                SENTENCE,
-                sentence.index,
-                match.text if match.fix is not None else None,
-                match.fix,
-            )
+            if match.dictionary == dictionary:
+                yield matchFinding(sentence, match, ruleName, severity)
+
+
+def overridingFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:
+    """같은 자리에 항목이 둘이면 뒤의 것이 이긴다.
+
+    기본 사전 뒤에 설정의 항목이 오므로 프로젝트가 기본 항목의 낱말을 다른 고침으로 덮는 자리다 (컴포넌트 → 차트).
+    자리가 다르면 둘 다 낸다.
+    """
+    for sentence in doc.sentences:
+        chosen = {}
+        for match in sentence.matches:
+            if match.dictionary == dictionary:
+                chosen[(match.start, match.end)] = match
+        for match in sorted(chosen.values(), key=lambda m: m.start):
+            yield matchFinding(sentence, match, ruleName, severity)
 
 
 def firstMatchFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:

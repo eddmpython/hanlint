@@ -63,6 +63,17 @@ def relativeLabel(path: str) -> str:
         return PurePath(path).as_posix()
 
 
+def prefilledFix(literal, findings) -> str:
+    """지적이 하나이고 그 지적에 고침이 있으면 고침 칸에 미리 적는다.
+
+    고침은 문장 단위라 글이 문장 하나 그대로일 때 (식이 없고 문장 부호로 나뉘지 않을 때) 만 글 전체와 같다.
+    """
+    if literal.plain != literal.text or len(findings) != 1:
+        return ""
+    only = findings[0]
+    return only.fix if only.fix is not None and only.quote == literal.plain else ""
+
+
 def buildRows(files: list[str], config: Config, everything: bool) -> list[SheetRow]:
     rows: list[SheetRow] = []
     for file in files:
@@ -75,7 +86,9 @@ def buildRows(files: list[str], config: Config, everything: bool) -> list[SheetR
                 if finding.severity == "error"
             )
             if findings or everything:
-                rows.append(SheetRow(label, literal.line, literal.text, findings, "", literal.column))
+                rows.append(
+                    SheetRow(label, literal.line, literal.text, findings, prefilledFix(literal, findings), literal.column)
+                )
     return rows
 
 

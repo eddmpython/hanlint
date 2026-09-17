@@ -47,6 +47,7 @@
   "screenNarration": "dictionary",
   "screenSentence": "dictionary",
   "screenTone": "dictionary",
+  "screenWord": "dictionary",
   "sectionNoProse": "threshold",
   "spacing": "dictionary",
   "spelling": "dictionary",

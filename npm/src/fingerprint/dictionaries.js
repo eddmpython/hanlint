@@ -15,6 +15,7 @@ export const DICTIONARY_FILES = {
   screenSentence: "screenSentence.toml",
   screenNarration: "screenNarration.toml",
   screenTone: "screenTone.toml",
+  screenWord: "screenWord.toml",
 };
 const GROUP_REF = /\$(\d)/g;
 const FINALS = { ㄴ: 4, ㄹ: 8 };

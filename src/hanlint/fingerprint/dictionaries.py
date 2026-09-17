@@ -22,6 +22,7 @@ DICTIONARY_FILES = {
     "screenSentence": "screenSentence.toml",
     "screenNarration": "screenNarration.toml",
     "screenTone": "screenTone.toml",
+    "screenWord": "screenWord.toml",
 }
 GROUP_REF = re.compile(r"\$([0-9])")
 FINALS = {"ㄴ": 4, "ㄹ": 8}

@@ -933,7 +933,7 @@ export function renderInit(preset = "blog") {
   lines.push(
     "",
     "# 사전에 더할 항목. 키는 cliches, translationese, redundantPair, japaneseLoan, easyWords,",
-    "# screenSentence, screenNarration, screenTone",
+    "# screenSentence, screenNarration, screenTone, screenWord",
     "# [dictionary]",
     '# cliches = ["우리의 여정"]',
     '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',
@@ -1095,7 +1095,10 @@ function runSheet(args) {
     const label = relativeLabel(file);
     for (const literal of sourceLiterals(readFileSync(file, "utf-8"), label)) {
       const findings = runAll(fingerprint(literal.plain, config), config).filter((finding) => finding.severity === "error");
-      if (findings.length || options["--all"]) rows.push({ file: label, line: literal.line, text: literal.text, findings, fix: "", column: literal.column });
+      // 지적이 하나이고 고침이 있으면 고침 칸에 미리 적는다. 뜻은 파이썬 cli/commands/sheet.py 의 prefilledFix 가 소유한다.
+      const only = literal.plain === literal.text && findings.length === 1 ? findings[0] : null;
+      const fix = only && only.fix !== null && only.quote === literal.plain ? only.fix : "";
+      if (findings.length || options["--all"]) rows.push({ file: label, line: literal.line, text: literal.text, findings, fix, column: literal.column });
     }
   }
   emit(format === "json" ? renderSheetJson(rows, config.preset, files.length) : renderSheet(rows, config.preset, files.length), output);
