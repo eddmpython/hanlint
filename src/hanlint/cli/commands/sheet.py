@@ -37,7 +37,8 @@ def sourceUnder(folder: Path) -> list[str]:
                 found.extend(sourceUnder(child))
         elif child.suffix.lower() in SOURCE_SUFFIXES:
             found.append(str(child))
-    return sorted(found)
+    # 구분자를 / 로 맞춘 뒤 정렬한다. \\ 는 / 보다 커서 Windows 와 다른 OS 의 순서가 갈리기 때문이다.
+    return sorted(found, key=lambda item: PurePath(item).as_posix())
 
 
 def collectSources(targets: list[str]) -> list[str]:
@@ -90,7 +91,9 @@ def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
         if not path.exists():
             failed.extend(f"{row.place}: 파일이 없다" for row in byFile[file])
             continue
-        lines = path.read_text(encoding="utf-8").split("\n")
+        # newline="" 이라야 \r\n 이 \n 으로 바뀌지 않는다. npm 의 readFileSync 와 같이 줄 끝을 그대로 두고 그대로 쓴다.
+        with path.open(encoding="utf-8", newline="") as handle:
+            lines = handle.read().split("\n")
         changed = False
         for row in sorted(byFile[file], key=lambda row: (row.line, -row.column)):
             if row.line < 1 or row.line > len(lines):

@@ -136,3 +136,17 @@ test("sheetRows keeps only flagged text unless everything", () => {
   assert.deepEqual(everything[0].findings, []);
   assert.equal(everything[0].fix, "");
 });
+
+const texts = (source, path = "a.jsx") => sourceLiterals(source, path).map((item) => [item.line, item.text]);
+
+test("a URL on the line does not hide later text", () => {
+  const source = "const link = \"https://example.com/a\"; const label = \"연결 실패\"; // 주석 한국어\nconst path = \"a // b\"; const t = '한글' // 뒤 주석\n<a href=\"https://github.com/x\">개발자 문서 보기</a>\n";
+  assert.deepEqual(texts(source), [[1, "연결 실패"], [2, "한글"], [3, "개발자 문서 보기"]]);
+});
+
+test("html reads tag text and attributes but not comments", () => {
+  const html = "<!-- 주석의 한국어 -->\n<button title=\"저장 실패\">다시 시도</button> <!-- 옆 주석 한글 -->\n<!--\n여러 줄 주석 한글\n-->\n<script>const M = '스크립트 글'; // 주석 한글</script>\n<p>여러 줄\n글</p>\n";
+  const expected = [[2, "저장 실패"], [2, "다시 시도"], [6, "스크립트 글"]];
+  assert.deepEqual(texts(html, "a.html"), expected);
+  assert.deepEqual(texts(html, "a.vue"), expected);
+});

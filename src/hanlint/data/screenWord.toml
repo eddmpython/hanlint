@@ -9,75 +9,75 @@
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])메타데이터{조사}'
 why = "는 개발 어휘다. 무엇의 정보인지 그 이름으로 쓴다 (계약 정보, 감사 기록)"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])컴포넌트{조사}'
 why = "는 개발 어휘다. 사용자가 보는 것의 이름으로 쓴다 (차트, 카드, 표)"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])트랜잭션{조사}'
 fix = "작업 단위"
 why = "은 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])디렉터리{조사}'
 fix = "폴더"
 why = "는 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])라이브러리{조사}'
 fix = "목록"
 why = "는 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])백필{조사}'
 fix = "과거 기간 채우기"
 why = "은 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])스트림{조사}'
 why = "은 개발 어휘다. 무엇이 흐르는지 그 이름으로 쓴다 (전체 행)"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])축출{조사}'
 why = "은 개발 어휘다. 누가 무엇을 지우는지 쓴다 (브라우저 삭제 대상)"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])원자적{조사}'
 fix = "한 번에"
 why = "은 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])클립보드{조사}'
 why = "는 개발 어휘다. 복사한 것의 이름으로 쓴다 (링크 복사)"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])릴레이{조사}'
 fix = "중계"
 why = "는 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])릴리스{조사}'
 fix = "배포"
 why = "는 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])매핑{조사}'
 fix = "연결"
 why = "은 개발 어휘다"
-source = "Taxly 화면 낱말 규약"
+source = "화면 낱말 규약"
 
 [[entry]]
 pattern = '(?<![가-힣a-zA-Z])파싱{조사}'

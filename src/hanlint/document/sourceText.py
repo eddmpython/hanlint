@@ -24,7 +24,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-SOURCE_SUFFIXES = (".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".rs", ".py")
+SOURCE_SUFFIXES = (".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".rs", ".py", ".html", ".htm", ".vue", ".svelte")
+MARKUP_SUFFIXES = (".html", ".htm", ".vue", ".svelte")
+"""태그 사이 글과 속성값을 JSX 와 같은 길로 읽는 파일. HTML 주석 `<!-- -->` 을 걷어낸다."""
 """`hanlint sheet` 가 폴더에서 찾는 확장자. 마크다운은 `hanlint 글.md` 의 몫이다."""
 
 KOREAN = re.compile(r"[가-힣]")
@@ -32,6 +34,7 @@ QUOTES = ("'", '"', "`")
 """문자열의 경계. 줄을 앞에서부터 훑어 여는 따옴표에서 같은 닫는 따옴표까지를 한 마디로 본다. 정규식으로 따옴표 쌍을
 찾으면 한국어 없는 문자열의 닫는 따옴표에서 다음 여는 따옴표까지의 코드를 글로 오독한다 (실측 2026-09-17)."""
 BLOCK_COMMENT = re.compile(r"/\*[\s\S]*?\*/")
+HTML_COMMENT = re.compile(r"<!--[\s\S]*?-->")
 DEVELOPER_LINE = re.compile(r"new Error\(|console\.|panic!\(|expect\(|assert")
 RUST_CONTINUATION = re.compile(r"\\\r?\n[ \t]*")
 RUST_TEST_MARKER = "#[cfg(test)]"
@@ -109,6 +112,8 @@ def userFacingSource(source: str, path: str) -> str:
     if isRust:
         body = RUST_CONTINUATION.sub("", body)
     body = BLOCK_COMMENT.sub(lambda match: re.sub(r"[^\n]", " ", match.group(0)), body)
+    if path.endswith(MARKUP_SUFFIXES):
+        body = HTML_COMMENT.sub(lambda match: re.sub(r"[^\n]", " ", match.group(0)), body)
     lines: list[str] = []
     for line in body.split("\n"):
         trimmed = line.strip()
@@ -117,8 +122,31 @@ def userFacingSource(source: str, path: str) -> str:
         elif DEVELOPER_LINE.search(line):
             lines.append("")
         else:
-            lines.append(re.sub(r"//.*$", "", line))
+            lines.append(withoutLineComment(line))
     return "\n".join(lines)
+
+
+def withoutLineComment(line: str) -> str:
+    """따옴표 밖의 `//` 부터 자른다. `https://` 처럼 `:` 뒤의 `//` 는 주소라 두고, 문자열 안의 `//` 도 둔다.
+
+    실측: 한 줄에 주소와 글이 같이 있으면 (`href="https://…">개발자 문서`) 글이 통째로 사라졌다 (2026-09-18).
+    """
+    quote: str | None = None
+    i = 0
+    while i < len(line):
+        char = line[i]
+        if quote:
+            if char == "\\":
+                i += 2
+                continue
+            if char == quote:
+                quote = None
+        elif char in "'\"`":
+            quote = char
+        elif char == "/" and line[i + 1 : i + 2] == "/" and (i == 0 or line[i - 1] != ":"):
+            return line[:i]
+        i += 1
+    return line
 
 
 def plainText(text: str) -> str:

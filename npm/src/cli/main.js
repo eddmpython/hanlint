@@ -995,7 +995,9 @@ function sourceUnder(folder) {
       if (!isSkipped(name)) found.push(...sourceUnder(path));
     } else if (SOURCE_SUFFIXES.includes(extname(name).toLowerCase())) found.push(path);
   }
-  return found.sort();
+  // 구분자를 / 로 맞춘 뒤 정렬한다. 뜻은 파이썬 sourceUnder 가 소유한다.
+  const posix = (item) => item.split(sep).join("/");
+  return found.sort((a, b) => (posix(a) < posix(b) ? -1 : posix(a) > posix(b) ? 1 : 0));
 }
 
 /** 작업 폴더 기준 상대 경로, 구분자는 `/`. 파이썬 relativeLabel 과 같은 글자를 낸다. @param {string} path */

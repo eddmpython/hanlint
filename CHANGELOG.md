@@ -14,14 +14,21 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   받으며 제3자 CDN 은 없다. 워커에 `sourceSuffixes`, `sheet`, `sheetText` 액션이 생겼다.
 - `sheetRows(sources, config, everything)` 를 hanlint 와 npm 의 공개 표면에 더했다. CLI `sheet` 의 행 조립을 report 층으로
   옮긴 것이라 출력은 같다.
+- `sheet` 가 html, htm, vue, svelte 도 읽는다. 태그 사이 글과 속성값을 JSX 와 같은 길로 뽑고 `<!-- -->` 주석은 걷어낸다.
 
 ### Changed
 
+- 화면 규칙 (screenNarration, screenSentence, screenTone, screenWord) 의 지적 문장 끝 출처가 `(화면 낱말 규약)` 이다. 사적
+  프로젝트 이름이 공개 제품의 메시지에 나오지 않는다. 실측 출처는 규칙 docstring 이 소유한다.
+- `sheet` 의 파일 순서를 구분자를 `/` 로 맞춘 경로로 정렬한다. Windows 와 다른 OS, 브라우저의 표 순서가 같다.
 - 랜딩의 중요 색을 심볼의 네 색 (파랑, 보라, 코랄, 시안) 에서 파생한다. 히어로 강조어의 파랑→보라 흐름과 뒤의 글로우,
   코랄 지적, 시안 승인. 원색은 흰 바탕에서 AA 를 못 넘어 라이트는 어둡게 파생했다.
 
 ### Fixed
 
+- 소스에서 글을 뽑을 때 `//` 를 무조건 주석으로 잘라, 주소 (`https://`) 가 있는 줄의 뒤쪽 글이 통째로 사라지던 것을
+  고쳤다. 따옴표 밖이고 `:` 뒤가 아닌 `//` 만 주석이다.
+- 파이썬 `sheet apply` 가 CRLF 파일을 LF 로 다시 쓰던 것을 고쳤다. 줄 끝을 그대로 둔다 (npm 과 같다).
 - 브라우저의 GitHub 보관이 `fetch` 를 다른 `this` 로 불러 Chrome 에서 항상 "연결하지 못했습니다" 로 끝나던 것을
   고쳤다 (Illegal invocation). 회귀 시험을 두었다.
 

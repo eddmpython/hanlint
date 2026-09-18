@@ -4,12 +4,15 @@
  * 뜻과 규칙은 파이썬 document/sourceText.py 가 소유한다. 여기는 같은 값을 낸다.
  */
 
-export const SOURCE_SUFFIXES = [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".rs", ".py"];
+export const SOURCE_SUFFIXES = [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".rs", ".py", ".html", ".htm", ".vue", ".svelte"];
+/** 태그 사이 글과 속성값을 JSX 와 같은 길로 읽는 파일. HTML 주석 `<!-- -->` 을 걷어낸다. */
+const MARKUP_SUFFIXES = [".html", ".htm", ".vue", ".svelte"];
 
 const KOREAN = /[가-힣]/;
 // 문자열의 경계. 줄을 앞에서부터 훑어 여는 따옴표에서 같은 닫는 따옴표까지를 한 마디로 본다. 파이썬 sourceText.py 와 같다.
 const QUOTES = ["'", '"', "`"];
 const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//g;
+const HTML_COMMENT = /<!--[\s\S]*?-->/g;
 const DEVELOPER_LINE = /new Error\(|console\.|panic!\(|expect\(|assert/;
 const RUST_CONTINUATION = /\\\r?\n[ \t]*/g;
 const RUST_TEST_MARKER = "#[cfg(test)]";
@@ -79,15 +82,34 @@ export function userFacingSource(source, path) {
   if (isRust && body.includes(RUST_TEST_MARKER)) body = body.slice(0, body.indexOf(RUST_TEST_MARKER));
   if (isRust) body = body.replace(RUST_CONTINUATION, "");
   body = body.replace(BLOCK_COMMENT, (block) => block.replace(/[^\n]/g, " "));
+  if (MARKUP_SUFFIXES.some((suffix) => path.endsWith(suffix))) body = body.replace(HTML_COMMENT, (block) => block.replace(/[^\n]/g, " "));
   return body
     .split("\n")
     .map((line) => {
       const trimmed = line.trim();
       if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("#")) return "";
       if (DEVELOPER_LINE.test(line)) return "";
-      return line.replace(/\/\/.*$/, "");
+      return withoutLineComment(line);
     })
     .join("\n");
+}
+
+
+/**
+ * 따옴표 밖의 `//` 부터 자른다. `https://` 처럼 `:` 뒤의 `//` 는 주소라 두고, 문자열 안의 `//` 도 둔다.
+ * 뜻은 파이썬 document/sourceText.py 의 withoutLineComment 가 소유한다.
+ */
+export function withoutLineComment(line) {
+  let quote = null;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (quote) {
+      if (char === "\\") { i++; continue; }
+      if (char === quote) quote = null;
+    } else if (char === "'" || char === '"' || char === "`") quote = char;
+    else if (char === "/" && line[i + 1] === "/" && (i === 0 || line[i - 1] !== ":")) return line.slice(0, i);
+  }
+  return line;
 }
 
 /** 검사에 쓰는 글. 식을 비우고 공백을 하나로 모은다. @param {string} text */

@@ -87,3 +87,13 @@ def testApplyChangesSeveralPlacesOnOneLineFromTheBack(tmp_path):
     )
     assert main(["sheet", "apply", str(sheet)]) == 0
     assert source.read_text(encoding="utf-8") == "const t = { a: '자료 삭제', b: '이 컴퓨터 삭제' }\n"
+
+
+def testApplyKeepsCrlfLineEndings(tmp_path):
+    """CRLF 파일에 되돌려 써도 줄 끝이 LF 로 바뀌지 않는다. read_text 의 줄바꿈 변환이 파일 전체를 바꾸던 결함 (2026-09-18)."""
+    source = tmp_path / "a.js"
+    source.write_bytes("const A = '요청을 완료하지 못했습니다'\r\nconst B = '없음'\r\n".encode())
+    sheet = tmp_path / "sheet.md"
+    sheet.write_text(f"| 1 | {source.as_posix()}:1:12 | 요청을 완료하지 못했습니다 | x | 요청 실패 |\n", encoding="utf-8")
+    assert main(["sheet", "apply", str(sheet)]) == 0
+    assert source.read_bytes() == "const A = '요청 실패'\r\nconst B = '없음'\r\n".encode()

@@ -95,3 +95,27 @@ def testNestedExpressionsAndNestedTemplates():
     assert [item.plain for item in items][4:7] == ["은 결산 대체 분개가 섞여 비교에서 뺌", "해마다", "전송 완료"]
     for item in items:
         assert lines[item.line - 1][item.column - 1 : item.column - 1 + len(item.text)] == item.text
+
+
+def testUrlOnTheLineDoesNotHideLaterText():
+    """`//` 는 따옴표 밖이고 `:` 뒤가 아닐 때만 주석이다. 주소가 있는 줄의 뒤쪽 글이 사라지던 결함 (2026-09-18)."""
+    source = (
+        'const link = "https://example.com/a"; const label = "연결 실패"; // 주석 한국어\n'
+        "const path = \"a // b\"; const t = '한글' // 뒤 주석\n"
+        '<a href="https://github.com/x">개발자 문서 보기</a>\n'
+    )
+    assert texts(source) == [(1, "연결 실패"), (2, "한글"), (3, "개발자 문서 보기")]
+
+
+def testHtmlReadsTagTextAndAttributesButNotComments():
+    """html, vue, svelte 는 JSX 와 같은 길로 읽고 `<!-- -->` 는 걷어낸다. 여러 줄에 걸친 글은 한 줄 글만 뽑는 설계라 안 잡힌다."""
+    html = (
+        "<!-- 주석의 한국어 -->\n"
+        '<button title="저장 실패">다시 시도</button> <!-- 옆 주석 한글 -->\n'
+        "<!--\n여러 줄 주석 한글\n-->\n"
+        "<script>const M = '스크립트 글'; // 주석 한글</script>\n"
+        "<p>여러 줄\n글</p>\n"
+    )
+    expected = [(2, "저장 실패"), (2, "다시 시도"), (6, "스크립트 글")]
+    assert texts(html, "a.html") == expected
+    assert texts(html, "a.vue") == expected

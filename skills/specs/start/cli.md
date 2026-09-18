@@ -84,7 +84,8 @@ hanlint - --path 초안.md
 ## 화면의 글을 표 하나로 보기
 
 앱의 화면 글 (단추, 이름표, 상태, 안내) 은 수십 소스 파일에 흩어져 있어 파일마다 지적을 받으면 전체가 안 보인다.
-`sheet` 는 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 한국어 문자열과 JSX 글을 표 하나로 떨군다.
+`sheet` 는 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py, html, htm, vue, svelte) 을 전부 뒤져 한국어 문자열과
+태그 사이 글, 속성값을 표 하나로 떨군다. 한 줄 안의 글만 뽑으므로 여러 줄에 걸친 문단은 안 잡힌다.
 
 ```console
 hanlint sheet src/ --preset screen --output 시트.md
@@ -218,7 +219,7 @@ hanlint 글.md --format github --errors-only
 | `hanlint spec --preset blog --chars 800` | 같은 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
-| `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py) 의 한국어 글을 표 하나로 떨군다. `--all` 은 지적 없는 글도 | 예 |
+| `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py, html, vue, svelte) 의 한국어 글을 표 하나로 떨군다. `--all` 은 지적 없는 글도 | 예 |
 | `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 자리에 되돌려 쓴다. `--dry-run` 은 보기만 | 예 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
