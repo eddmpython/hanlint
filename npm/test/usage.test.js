@@ -64,7 +64,7 @@ import { FILES, decodeVarints, paragraphsOf, sentenceKey, sentencesOf } from "..
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CORPUS = join(HERE, "..", "..", "tests", "fixtures", "usage", "corpus");
-const SHARED = "회사는 리스부채를 리스개시일에 지급되지 않은 리스료의 현재가치로 측정합니다.";
+const SHARED = "회사는 창고 임차료를 계약 첫날에 한꺼번에 내지 않고 달마다 나누어 냅니다.";
 
 test("tokens strip josa and add bigrams", () => {
   assert.deepEqual(indexTokens("회사는 리스부채를 K-IFRS 기준으로 12% 측정합니다."), [
@@ -81,7 +81,20 @@ test("sentence key folds spacing and numbers", () => {
 test("paragraphs skip headings, tables, fences and bullets", () => {
   const text = "# 제목\n\n| 구분 | 값 |\n|---|---|\n\n```\n코드입니다.\n```\n\n- 항목입니다.\n(가) 가나다.\n3. 셋째입니다.\n";
   assert.deepEqual(paragraphsOf(`${text}나.붙은 항목입니다.\n`), ["항목입니다.", "가나다.", "셋째입니다.", "붙은 항목입니다."]);
-  assert.deepEqual(sentencesOf("제목만 있는 줄\n마침표로 끝난다. 물음표로 끝나나? 3.5 초다.\n"), ["마침표로 끝난다.", "물음표로 끝나나?", "3.5 초다."]);
+  assert.deepEqual(sentencesOf("제목만 있는 줄\n평가 보고6.\n마침표로 끝난다. 물음표로 끝나나? 3.5 초다.\n"), ["마침표로 끝난다.", "물음표로 끝나나?", "3.5 초다."]);
+});
+
+test("bom and control characters read the same in both ports", () => {
+  assert.deepEqual(sentencesOf("\ufeff# 제목입니다.\n첫째 문장입니다.\u001c둘째 문장입니다.\n"), ["첫째 문장입니다.", "둘째 문장입니다."]);
+  assert.deepEqual(indexTokens("\ufeff회사는 창고를 \u0085씁니다."), ["회사", "창고", "씁니다", "씁니", "니다"]);
+});
+
+test("tiny index keeps common tokens", () => {
+  const root = mkdtempSync(join(tmpdir(), "hanlintUsageTiny-"));
+  buildIndex("report", [["one", "회사는 파주에 공장을 세웠습니다.\n"]], root);
+  const index = loadIndex("report", root);
+  assert.ok(index);
+  assert.deepEqual(index.search("공장", 5).map((hit) => hit.text), ["회사는 파주에 공장을 세웠습니다."]);
 });
 
 test("varints decode what the builder wrote", () => {
@@ -93,22 +106,22 @@ test("build is deterministic, folds shared sentences, and search ranks", () => {
   const first = buildIndex("report", readDocuments(CORPUS), join(root, "one"));
   const second = buildIndex("report", readDocuments(CORPUS), join(root, "two"));
   assert.deepEqual(first, second);
-  assert.deepEqual(first, { documents: 3, sentences: 11, terms: 135 });
+  assert.deepEqual(first, { documents: 3, sentences: 11, terms: 116 });
   for (const name of FILES) {
     assert.ok(readFileSync(join(root, "one", "report", name)).equals(readFileSync(join(root, "two", "report", name))), name);
   }
   const lines = readFileSync(join(root, "one", "report", "sentences.tsv"), "utf-8").split("\n");
   assert.equal(lines[0], `3\ta001\t${SHARED}`);
-  assert.ok(!lines.some((line) => line.includes("리스부채의 최초 측정금액")), "제목은 문장이 아니다");
+  assert.ok(!lines.some((line) => line.includes("창고 임차 계약의 요약")), "제목은 문장이 아니다");
   const index = loadIndex("report", join(root, "one"));
   assert.ok(index);
-  const hits = index.search("리스부채 측정", 2);
-  assert.deepEqual(hits.map((hit) => hit.text), [SHARED, "리스부채는 이자비용을 반영하여 증가하고 지급한 리스료를 반영하여 감소합니다."]);
+  const hits = index.search("임차료 계약", 2);
+  assert.deepEqual(hits.map((hit) => hit.text), [SHARED, "임차 부채는 이자만큼 늘고 낸 임차료만큼 줄어듭니다."]);
   assert.equal(hits[0].documents, 3);
   assert.equal(hits[0].source, "a001");
   assert.ok(hits[0].score > hits[1].score && hits[1].score > 0);
   assert.deepEqual(index.search("없는낱말", 5), []);
-  assert.deepEqual(index.search("리스부채 측정", 5), index.search("측정 리스부채", 5));
+  assert.deepEqual(index.search("임차료 계약", 5), index.search("계약 임차료", 5));
   assert.equal(loadIndex("report", join(root, "none")), null);
   writeFileSync(join(root, "one", "report", "meta.json"), '{"format": 99}');
   assert.throws(() => loadIndex("report", join(root, "one")), /format/);

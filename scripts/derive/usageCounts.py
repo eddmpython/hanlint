@@ -82,11 +82,16 @@ def problems(path: Path) -> list[str]:
         found.append(f"{path.name} 의 kind 가 파일 이름과 다르다")
     if table.get("minLength") != MIN_LENGTH or table.get("minDocuments") != MIN_DOCUMENTS:
         found.append(f"{path.name} 의 minLength 와 minDocuments 가 스크립트와 다르다")
-    chains = table.get("chains", {})
+    chains = table.get("chains")
+    if not isinstance(chains, dict) or not chains:
+        found.append(f"{path.name} 에 연쇄가 없다")
+        return found
     if list(chains) != sorted(chains):
         found.append(f"{path.name} 의 연쇄가 정렬되어 있지 않다")
     for chain, count in chains.items():
-        if not isinstance(count, int) or count < MIN_DOCUMENTS:
+        if " ".join(chain.split()) != chain:
+            found.append(f"{chain!r}: 어절 사이가 빈칸 하나가 아니다")
+        elif not isinstance(count, int) or count < MIN_DOCUMENTS:
             found.append(f"{chain}: 문서 수 {count!r} 는 {MIN_DOCUMENTS} 이상의 정수여야 한다")
         elif len(chain.split()) < MIN_LENGTH:
             found.append(f"{chain}: 어절 {len(chain.split())}개는 {MIN_LENGTH} 미만이다")

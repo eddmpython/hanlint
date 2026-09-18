@@ -37,9 +37,9 @@ def missingIndex(kind: str) -> str:
     )
 
 
-def renderText(kind: str, query: str, documents: int, sentences: int, hits: list[Hit]) -> str:
+def renderText(kind: str, query: str, documents: int, sentences: int, hits: list[Hit], limit: int) -> str:
     lines = [f"{kind} 용례 (문서 {documents}편, 문장 {sentences}개): {query}"]
-    if not hits:
+    if not hits and limit > 0:
         lines.append("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다")
     for number, hit in enumerate(hits, 1):
         lines.append(f"{number}. {hit.text}")
@@ -81,7 +81,10 @@ def run(args: argparse.Namespace) -> int:
     if index is None:
         emit(missingIndex(args.kind), args.output)
         return 2
-    hits = index.search(query, max(args.limit, 0))
-    render = renderJson if args.format == "json" else renderText
-    emit(render(args.kind, query, index.documents, index.sentences, hits), args.output)
+    limit = max(args.limit, 0)
+    hits = index.search(query, limit)
+    if args.format == "json":
+        emit(renderJson(args.kind, query, index.documents, index.sentences, hits), args.output)
+    else:
+        emit(renderText(args.kind, query, index.documents, index.sentences, hits, limit), args.output)
     return 0

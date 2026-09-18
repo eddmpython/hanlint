@@ -12,7 +12,7 @@ CORPUS = ROOT / "tests" / "fixtures" / "usage" / "corpus"
 
 
 def testMissingIndexExplainsHowToBuild(tmp_path, capsys):
-    assert main(["usage", "리스부채", "--root", str(tmp_path)]) == 2
+    assert main(["usage", "임차료", "--root", str(tmp_path)]) == 2
     out = capsys.readouterr().out
     assert "report 색인이 없다" in out and "hanlint usage build report" in out
 
@@ -20,17 +20,19 @@ def testMissingIndexExplainsHowToBuild(tmp_path, capsys):
 def testBuildThenQueryTextAndJson(tmp_path, capsys):
     assert main(["usage", "build", "report", str(CORPUS), "--root", str(tmp_path)]) == 0
     assert "문서 3편, 문장 11개" in capsys.readouterr().out
-    assert main(["usage", "리스부채", "측정", "--root", str(tmp_path), "--limit", "1"]) == 0
+    assert main(["usage", "임차료", "계약", "--root", str(tmp_path), "--limit", "1"]) == 0
     out = capsys.readouterr().out
-    assert out.startswith("report 용례 (문서 3편, 문장 11개): 리스부채 측정\n1. 회사는 리스부채를")
+    assert out.startswith("report 용례 (문서 3편, 문장 11개): 임차료 계약\n1. 회사는 창고 임차료를")
     assert "   문서 3편, 출처 a001" in out
-    assert main(["usage", "영업이익 감소 원인", "--root", str(tmp_path), "--format", "json"]) == 0
+    assert main(["usage", "영업이익 줄어든 원인", "--root", str(tmp_path), "--format", "json"]) == 0
     data = json.loads(capsys.readouterr().out)
-    assert data["kind"] == "report" and data["query"] == "영업이익 감소 원인" and data["sentences"] == 11
-    assert data["hits"][0]["text"] == "영업이익 감소의 주요 원인은 원재료 가격 상승입니다."
+    assert data["kind"] == "report" and data["query"] == "영업이익 줄어든 원인" and data["sentences"] == 11
+    assert data["hits"][0]["text"] == "영업이익이 줄어든 주된 원인은 원재료인 구리 값이 오른 것입니다."
     assert set(data["hits"][0]) == {"text", "documents", "source", "score"}
     assert main(["usage", "없는낱말", "--root", str(tmp_path)]) == 0
     assert "쓰인 문장이 없다" in capsys.readouterr().out
+    assert main(["usage", "임차료", "--root", str(tmp_path), "--limit", "0"]) == 0
+    assert capsys.readouterr().out.strip() == "report 용례 (문서 3편, 문장 11개): 임차료"
 
 
 def testBuildArgumentsAreChecked(tmp_path, capsys):

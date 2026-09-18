@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 문장 역인덱스. 뜻과 파일 꼴은 파이썬 usage/sentences.py 가 소유한다. 같은 글에서 같은 바이트를 만들고 같은 순서로 답한다.
- * 토큰은 조사를 뗀 어절과 한글 어절의 글자 두 개짜리 조각, 점수는 BM25 (k1 1.5, b 0.75), 점수는 SCORE_SCALE 배의
+ * 토큰은 조사를 뗀 어절과 한글 어절의 글자 두 개짜리 조각, 순서는 BM25 (k1 1.5, b 0.75) 값, 값은 SCORE_SCALE 배의
  * 정수로 내려 견준다 (두 판의 log 가 마지막 자리에서 다를 수 있다).
  */
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, statSync, writeFileSync } from "node:fs";
@@ -17,12 +17,15 @@ const K1 = 1.5;
 const B = 0.75;
 export const SCORE_SCALE = 1_000_000;
 const MAX_DF_SHARE = 0.5;
+const MIN_FILTER_SENTENCES = 1000;
 const HANGUL = /[가-힣]/;
 const ASCII_WORD = /[A-Za-z0-9]+/g;
 const DIGITS = /[0-9]+/g;
 const SPACE = /\s+/g;
+const STRAY = /[\u001c-\u001f\u0085]/g;
+const BOM = /\ufeff/g;
 const BULLET = /^(?:(?:[-*·•※]|\([0-9a-z]{1,2}\)|[0-9]{1,2}[.)])\s+|(?:\([가-힣]\)|[가-힣][.)])\s*)/;
-const TERMINAL = /[.!?]["'”’)\]]*$/;
+const TERMINAL = /(?<![0-9])[.!?]["'”’)\]]*$/;
 const FENCE = "```";
 const TEXT_SUFFIXES = new Set([".txt", ".md"]);
 export const FILES = ["meta.json", "sentences.tsv", "offsets.bin", "lengths.bin", "terms.tsv", "postings.bin"];
@@ -43,11 +46,16 @@ export function compareCodePoints(a, b) {
   return left.length - right.length;
 }
 
+/** 두 판이 같은 글자를 보게 한다. 뜻은 파이썬 normalized 가 소유한다. @param {string} text */
+export function normalized(text) {
+  return text.replace(BOM, "").replace(STRAY, " ");
+}
+
 /** BM25 토큰. 조사를 뗀 어절과 한글 어절의 글자 두 개짜리 조각. 영문과 숫자는 부호에서 갈라 소문자로. @param {string} text @returns {string[]} */
 export function indexTokens(text) {
   /** @type {string[]} */
   const found = [];
-  for (const raw of splitWords(text)) {
+  for (const raw of splitWords(normalized(text))) {
     let core = stripChars(raw, EDGE_PUNCTUATION);
     if (!core || josaSet().has(core) || COPULA.test(core)) continue;
     core = stripJosa(core);
@@ -74,7 +82,7 @@ export function paragraphsOf(text) {
   /** @type {string[]} */
   const found = [];
   let inFence = false;
-  for (const line of splitLines(text)) {
+  for (const line of splitLines(normalized(text))) {
     const stripped = line.trim();
     if (stripped.startsWith(FENCE)) {
       inFence = !inFence;
@@ -331,7 +339,7 @@ export class UsageIndex {
     const scores = new Map();
     for (const token of tokens) {
       const found = this.terms.get(token);
-      if (!found || found[0] > this.sentences * MAX_DF_SHARE) continue;
+      if (!found || (this.sentences >= MIN_FILTER_SENTENCES && found[0] > this.sentences * MAX_DF_SHARE)) continue;
       const df = found[0];
       const idf = Math.log(1 + (this.sentences - df + 0.5) / (df + 0.5));
       for (const [sentenceId, tf] of this.postings(token)) {

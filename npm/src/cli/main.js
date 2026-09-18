@@ -1096,7 +1096,7 @@ function runUsage(args) {
     return 0;
   }
   const lines = [`${kind} 용례 (문서 ${index.documents}편, 문장 ${index.sentences}개): ${query}`];
-  if (!hits.length) lines.push("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다");
+  if (!hits.length && limit > 0) lines.push("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다");
   hits.forEach((hit, index) => {
     lines.push(`${index + 1}. ${hit.text}`);
     lines.push(`   문서 ${hit.documents}편, 출처 ${hit.source}`);

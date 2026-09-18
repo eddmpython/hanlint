@@ -14,12 +14,12 @@ core 는 낱말 그대로를 맞히고 bigram 은 `금융리스부채` 와 `리�
   바꾼 꼴이 같은 것) 은 하나로 접고 처음 본 글과 출처를 둔다. 실측: 사업보고서 961편에서 문장의 47.4% 가 다른
   문서에도 있었다.
 - offsets.bin: 문장마다 sentences.tsv 안의 바이트 위치 (8바이트 little endian). 번호로 바로 읽는다.
-- lengths.bin: 문장마다 토큰 수 (4바이트 little endian). 점수에 쓰므로 통째로 든다.
+- lengths.bin: 문장마다 토큰 수 (4바이트 little endian). BM25 의 길이 보정에 쓰므로 통째로 든다.
 - terms.tsv: `토큰 \\t 문서 빈도 \\t postings.bin 위치 \\t 바이트 수`. 토큰 순 (코드 포인트 순).
 - postings.bin: 토큰마다 (문장 번호 차이, 빈도) 를 LEB128 부호 없는 varint 로 이어 쓴 것.
 
-점수: BM25 (k1 1.5, b 0.75). 순서는 점수 내림차순, 같으면 문장 번호 오름차순. 두 판의 log 가 마지막 자리에서 다를 수
-있어 점수를 SCORE_SCALE 배의 정수로 내린 뒤 견준다 (npm 판과 같은 셈).
+순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 질의와 문장의 낱말 겹침이지 글의 좋고 나쁨이
+아니다. 두 판의 log 가 마지막 자리에서 다를 수 있어 값을 SCORE_SCALE 배의 정수로 내린 뒤 견준다 (npm 판과 같은 셈).
 """
 
 from __future__ import annotations
@@ -40,17 +40,27 @@ K1 = 1.5
 B = 0.75
 SCORE_SCALE = 1_000_000
 MAX_DF_SHARE = 0.5
+MIN_FILTER_SENTENCES = 1000
+"""이보다 문장이 적은 색인은 흔한 토큰도 거르지 않는다. 걸러 얻는 것은 큰 postings 를 안 읽는 시간뿐인데 작은 색인에서는
+그 시간이 없고, 문장 몇 개짜리 색인에서는 모든 토큰이 절반을 넘어 아무것도 안 나온다 (검증 실측, 2026-09-19)."""
 HANGUL = re.compile(r"[가-힣]")
 ASCII_WORD = re.compile(r"[A-Za-z0-9]+")
 """한글이 없는 어절의 토큰. `K-IFRS` 는 k 와 ifrs, `12%` 는 12 다."""
 DIGITS = re.compile(r"[0-9]+")
 SPACE = re.compile(r"\s+")
+LINE_BREAK = re.compile(r"\r\n|\r|\n")
+"""줄 나누기. 파이썬 splitlines 는 \x1c 와 \x85 와 \v 에서도 나누지만 npm 판 (splitLines) 은 셋에서만 나눈다. 같은 줄을
+읽어야 같은 색인이 나온다."""
+STRAY = re.compile(r"[\x1c-\x1f\x85]")
+"""파이썬은 빈칸으로 보고 JS 는 아닌 글자. 빈칸으로 바꿔 두 판을 맞춘다. U+FEFF (BOM) 는 반대라 지운다 (BOM 은 메모장이
+저장한 파일 첫머리에 흔하다. 검증 실측, 2026-09-19)."""
 BULLET = re.compile(r"^(?:(?:[-*·•※]|\([0-9a-z]{1,2}\)|[0-9]{1,2}[.)])\s+|(?:\([가-힣]\)|[가-힣][.)])\s*)")
 """줄 머리의 목록 표시와 항목 번호 (`- `, `(1) `, `3. `, `(가) `, `나. `). 문장이 아니라 떼고 읽는다. 한글 항목은 뒤에
 빈칸이 없어도 뗀다 (DART 원문이 `나.최대주주의 변동` 처럼 붙인 자리가 있다). 숫자는 `3.5 초` 를 지키려 빈칸을 요구한다."""
-TERMINAL = re.compile(r"[.!?][\"'”’)\]]*$")
+TERMINAL = re.compile(r"(?<![0-9])[.!?][\"'”’)\]]*$")
 """문장으로 셀 조건. 마침표나 물음표나 느낌표로 끝나야 한다 (닫는 따옴표와 괄호는 뒤에 와도 된다). 제목과 항목 이름
-(`리스부채의 최초 측정금액`) 은 낱말의 쓰임이 아니라 이름이라 색인하지 않는다. 그런 연쇄는 빈도표 (counts) 가 든다."""
+(`리스부채의 최초 측정금액`) 은 낱말의 쓰임이 아니라 이름이라 색인하지 않는다. 그런 연쇄는 빈도표 (counts) 가 든다.
+숫자 뒤의 마침표 (`평가 보고6.`, DART 원문에서 항목 번호가 붙은 제목) 도 문장 끝이 아니다."""
 FENCE = "```"
 TEXT_SUFFIXES = (".txt", ".md")
 FILES = ("meta.json", "sentences.tsv", "offsets.bin", "lengths.bin", "terms.tsv", "postings.bin")
@@ -60,10 +70,15 @@ def defaultRoot() -> Path:
     return Path.home() / ".cache" / "hanlint" / "usage"
 
 
+def normalized(text: str) -> str:
+    """두 판이 같은 글자를 보게 한다. BOM 을 지우고 빈칸 판정이 갈리는 제어 문자를 빈칸으로."""
+    return STRAY.sub(" ", text.replace("\ufeff", ""))
+
+
 def indexTokens(text: str) -> list[str]:
     """BM25 토큰. 조사를 뗀 어절과 한글 어절의 글자 두 개짜리 조각. 영문과 숫자는 부호에서 갈라 소문자로."""
     found: list[str] = []
-    for raw in text.split():
+    for raw in normalized(text).split():
         core = raw.strip(EDGE_PUNCTUATION)
         if not core or core in josaSet() or COPULA.match(core):
             continue
@@ -85,7 +100,7 @@ def sentenceKey(text: str) -> str:
 def paragraphsOf(text: str) -> Iterator[str]:
     """글의 산문 줄. 코드 펜스 안, 제목, 표 줄은 넘기고 목록 표시는 뗀다."""
     inFence = False
-    for line in text.splitlines():
+    for line in LINE_BREAK.split(normalized(text)):
         stripped = line.strip()
         if stripped.startswith(FENCE):
             inFence = not inFence
@@ -223,7 +238,7 @@ class Hit:
     source: str
     """처음 본 문서의 출처 (파일 이름)."""
     score: int
-    """BM25 점수를 SCORE_SCALE 배 해 내린 정수."""
+    """BM25 값을 SCORE_SCALE 배 해 내린 정수. 낱말 겹침의 크기이지 글의 판정이 아니다."""
 
 
 class UsageIndex:
@@ -235,7 +250,9 @@ class UsageIndex:
         if self.meta.get("format") != FORMAT:
             raise ValueError(f"{folder} 의 색인 format 이 {self.meta.get('format')} 이다. {FORMAT} 으로 다시 만든다")
         self.terms: dict[str, tuple[int, int, int]] = {}
-        for line in (folder / "terms.tsv").read_text(encoding="utf-8").splitlines():
+        for line in (folder / "terms.tsv").read_text(encoding="utf-8").split("\n"):
+            if not line:
+                continue
             term, df, offset, size = line.split("\t")
             self.terms[term] = (int(df), int(offset), int(size))
         self.lengths = array("I")
@@ -287,7 +304,7 @@ class UsageIndex:
         scores: dict[int, float] = {}
         for token in tokens:
             found = self.terms.get(token)
-            if not found or found[0] > self.sentences * MAX_DF_SHARE:
+            if not found or (self.sentences >= MIN_FILTER_SENTENCES and found[0] > self.sentences * MAX_DF_SHARE):
                 continue
             df = found[0]
             idf = math.log(1 + (self.sentences - df + 0.5) / (df + 0.5))

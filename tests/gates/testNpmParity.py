@@ -590,7 +590,7 @@ def testUsageIndexAgrees(tmp_path):
 
     corpus = "tests/fixtures/usage/corpus"
     pythonRoot, nodeRoot = tmp_path / "py", tmp_path / "js"
-    python, node = runBoth(["usage", "리스부채", "--root", str(pythonRoot)])
+    python, node = runBoth(["usage", "임차료", "--root", str(pythonRoot)])
     assert python.returncode == node.returncode == 2, node.stderr
     assert python.stdout == node.stdout
     python = subprocess.run(
@@ -605,8 +605,25 @@ def testUsageIndexAgrees(tmp_path):
     assert python.stdout.replace(str(pythonRoot), "") == node.stdout.replace(str(nodeRoot), "")
     for name in FILES:
         assert (pythonRoot / "report" / name).read_bytes() == (nodeRoot / "report" / name).read_bytes(), name
-    for query in (["리스부채", "측정"], ["영업이익 감소 원인"], ["무상증자"], ["없는낱말"]):
-        for extra in ([], ["--format", "json"], ["--limit", "1"]):
+    for query in (["임차료", "계약"], ["영업이익 줄어든 원인"], ["무상증자"], ["없는낱말"], ["K-IFRS", "12%"]):
+        for extra in ([], ["--format", "json"], ["--limit", "1"], ["--limit", "0"]):
             python, node = runBoth(["usage", *query, "--root", str(pythonRoot), *extra])
             assert python.returncode == node.returncode == 0, node.stderr
             assert python.stdout == node.stdout, (query, extra)
+    # BOM 과 제어 문자. 파이썬 strip 과 splitlines 와 JS trim 과 splitLines 가 갈리던 자리다 (검증 실측, 2026-09-19).
+    odd = tmp_path / "odd"
+    odd.mkdir()
+    oddText = "\ufeff# 제목입니다.\n첫째 문장입니다.\x1c둘째 문장입니다.\x85셋째 문장입니다.\n"
+    (odd / "bom.txt").write_bytes(oddText.encode("utf-8"))
+    (odd / "plain.txt").write_text("첫째 문장입니다.\n", encoding="utf-8")
+    pythonCommand = [sys.executable, "-X", "utf8", "-B", "-m", "hanlint"]
+    for root, command in ((tmp_path / "pyOdd", pythonCommand), (tmp_path / "jsOdd", [str(NODE), str(NODE_CLI)])):
+        done = subprocess.run(
+            [*command, "usage", "build", "report", str(odd), "--root", str(root)],
+            capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+        )  # fmt: skip
+        assert done.returncode == 0, done.stderr
+    for name in FILES:
+        assert (tmp_path / "pyOdd" / "report" / name).read_bytes() == (tmp_path / "jsOdd" / "report" / name).read_bytes(), name
+    python, node = runBoth(["usage", "둘째 문장", "--root", str(tmp_path / "pyOdd")])
+    assert python.returncode == node.returncode == 0 and python.stdout == node.stdout and "둘째 문장입니다." in python.stdout
