@@ -17,7 +17,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 from ..config import Config
-from ..document import parseMarkdown, sourceLiterals
+from ..document import parseMarkdown, replaceLiteral, sourceLiterals
 from ..fingerprint import buildFingerprint
 from ..rules import Finding, runAll
 
@@ -106,6 +106,42 @@ def splitRow(line: str) -> list[str] | None:
 
 
 CUE = re.compile(r"^`([^`]+)`")
+
+
+def replaceAt(lineText: str, column: int, old: str, new: str) -> tuple[str, bool]:
+    """`column` (1부터) 에 `old` 가 그대로 있으면 그 자리만 `new` 로 바꾼다."""
+    start = column - 1
+    if start < 0 or lineText[start : start + len(old)] != old:
+        return lineText, False
+    return lineText[:start] + new + lineText[start + len(old) :], True
+
+
+def applyRows(source: str, rows: list[SheetRow]) -> tuple[str, list[str], list[str]]:
+    """한 파일의 소스에 표의 행들을 되돌려 쓴다. (새 소스, 적용한 자리, 실패한 자리와 이유).
+
+    한 줄에 고침이 여럿이면 뒤 칸부터 바꾼다. 앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸의 자리가 어긋난다.
+    줄은 `\\n` 으로만 나누므로 `\\r` 은 줄에 남아 CRLF 파일이 그대로다. CLI 의 apply 와 브라우저의 저장소 쓰기가 같이 쓴다.
+    """
+    lines = source.split("\n")
+    applied: list[str] = []
+    failed: list[str] = []
+    for row in sorted(rows, key=lambda row: (row.line, -row.column)):
+        if row.line < 1 or row.line > len(lines):
+            failed.append(f"{row.place}: 그 줄이 없다")
+            continue
+        if row.column > 0:
+            newLine, hit = replaceAt(lines[row.line - 1], row.column, row.text, row.fix)
+            if not hit:
+                failed.append(f"{row.place}: 그 칸에 그 글이 없다. 표를 다시 뽑는다")
+                continue
+        else:
+            newLine, count = replaceLiteral(lines[row.line - 1], row.text, row.fix)
+            if count != 1:
+                failed.append(f"{row.place}: 글이 그 줄에 {count}번 있다. 한 번이어야 바꾼다")
+                continue
+        lines[row.line - 1] = newLine
+        applied.append(f"{row.place}: {row.text} -> {row.fix}")
+    return "\n".join(lines), applied, failed
 
 
 def findingCell(findings: tuple[Finding, ...]) -> str:

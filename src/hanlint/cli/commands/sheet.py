@@ -13,8 +13,8 @@ import argparse
 from pathlib import Path, PurePath
 
 from ...config import Config
-from ...document import SOURCE_SUFFIXES, replaceLiteral
-from ...report import SheetRow, parseSheet, renderSheet, renderSheetJson, sheetRows
+from ...document import SOURCE_SUFFIXES
+from ...report import SheetRow, applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows
 from .shared import addCommonOptions, configFrom, emit, isSkipped
 
 HELP = "소스의 화면 글을 표 하나로 떨구거나 (sheet 폴더/), 고친 표를 파일로 되돌려 쓴다 (sheet apply 시트.md)"
@@ -67,19 +67,8 @@ def buildRows(files: list[str], config: Config, everything: bool) -> list[SheetR
     return sheetRows(((relativeLabel(file), Path(file).read_text(encoding="utf-8")) for file in files), config, everything)
 
 
-def replaceAt(lineText: str, column: int, old: str, new: str) -> tuple[str, bool]:
-    """`column` (1부터) 에 `old` 가 그대로 있으면 그 자리만 `new` 로 바꾼다."""
-    start = column - 1
-    if start < 0 or lineText[start : start + len(old)] != old:
-        return lineText, False
-    return lineText[:start] + new + lineText[start + len(old) :], True
-
-
 def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
-    """표의 고침을 파일에 쓴다. (적용한 자리, 실패한 자리와 이유).
-
-    한 줄에 고침이 여럿이면 뒤 칸부터 바꾼다. 앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸의 자리가 어긋난다.
-    """
+    """표의 고침을 파일에 쓴다. (적용한 자리, 실패한 자리와 이유). 되돌려 쓰는 뜻은 report.applyRows 가 소유한다."""
     parsed = parseSheet(sheetPath.read_text(encoding="utf-8"))
     applied: list[str] = []
     failed: list[str] = list(parsed.problems)
@@ -93,27 +82,12 @@ def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
             continue
         # newline="" 이라야 \r\n 이 \n 으로 바뀌지 않는다. npm 의 readFileSync 와 같이 줄 끝을 그대로 두고 그대로 쓴다.
         with path.open(encoding="utf-8", newline="") as handle:
-            lines = handle.read().split("\n")
-        changed = False
-        for row in sorted(byFile[file], key=lambda row: (row.line, -row.column)):
-            if row.line < 1 or row.line > len(lines):
-                failed.append(f"{row.place}: 그 줄이 없다")
-                continue
-            if row.column > 0:
-                newLine, hit = replaceAt(lines[row.line - 1], row.column, row.text, row.fix)
-                if not hit:
-                    failed.append(f"{row.place}: 그 칸에 그 글이 없다. 표를 다시 뽑는다")
-                    continue
-            else:
-                newLine, count = replaceLiteral(lines[row.line - 1], row.text, row.fix)
-                if count != 1:
-                    failed.append(f"{row.place}: 글이 그 줄에 {count}번 있다. 한 번이어야 바꾼다")
-                    continue
-            lines[row.line - 1] = newLine
-            changed = True
-            applied.append(f"{row.place}: {row.text} -> {row.fix}")
-        if changed and not dryRun:
-            path.write_text("\n".join(lines), encoding="utf-8", newline="")
+            source = handle.read()
+        rewritten, done, problems = applyRows(source, byFile[file])
+        applied.extend(done)
+        failed.extend(problems)
+        if done and not dryRun:
+            path.write_text(rewritten, encoding="utf-8", newline="")
     return applied, failed
 
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from hanlint.config import Config
-from hanlint.report import SheetRow, parseSheet, renderSheet, renderSheetJson, sheetRows
+from hanlint.report import SheetRow, applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows
 from hanlint.rules import Finding
 
 
@@ -81,3 +81,24 @@ def testFindingCellNamesEachRuleOnceAndListsExtraCues():
     sheet = renderSheet(rows, "screen", 1)
     assert "| screenSentence: `니다.` 는 종결어미다 (또 `습니다`, `세요`) / doublePassive: `되어지` 는 이중 피동이다 |" in sheet
     assert "| nounPile: 명사 6개가 이어진다 (또 1건) |" in sheet
+
+
+def testApplyRowsRewritesFromTheBackAndKeepsLineEndings():
+    """한 줄의 고침 여럿은 뒤 칸부터, 칸이 없는 자리는 한 번 있을 때만, CRLF 는 그대로. npm/test/sheet.test.js 와 같은 사례다."""
+    source = "const t = { a: '데이터 삭제', b: '기기 삭제' }\r\nconst u = '둘'\r\n"
+    rows = [
+        SheetRow("a.js", 1, "데이터 삭제", (), "자료 삭제", 17),
+        SheetRow("a.js", 1, "기기 삭제", (), "이 컴퓨터 삭제", 30),
+        SheetRow("a.js", 2, "둘", (), "셋"),
+        SheetRow("a.js", 2, "없는 글", (), "넷"),
+        SheetRow("a.js", 9, "둘", (), "셋"),
+        SheetRow("a.js", 2, "둘", (), "다섯", 5),
+    ]
+    rewritten, applied, failed = applyRows(source, rows)
+    assert rewritten == "const t = { a: '자료 삭제', b: '이 컴퓨터 삭제' }\r\nconst u = '셋'\r\n"
+    assert applied == ["a.js:1:30: 기기 삭제 -> 이 컴퓨터 삭제", "a.js:1:17: 데이터 삭제 -> 자료 삭제", "a.js:2: 둘 -> 셋"]
+    assert failed == [
+        "a.js:2:5: 그 칸에 그 글이 없다. 표를 다시 뽑는다",
+        "a.js:2: 글이 그 줄에 0번 있다. 한 번이어야 바꾼다",
+        "a.js:9: 그 줄이 없다",
+    ]

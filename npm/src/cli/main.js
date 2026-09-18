@@ -47,8 +47,8 @@ import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
 import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runAll } from "../rules/registry.js";
 import { MARKDOWN, SKIPPED_FOLDERS, isSkipped, markdownUnder } from "./walk.js";
-import { SOURCE_SUFFIXES, replaceLiteral } from "../document/sourceText.js";
-import { parseSheet, renderSheet, renderSheetJson, sheetRows } from "../report/sheet.js";
+import { SOURCE_SUFFIXES } from "../document/sourceText.js";
+import { applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows } from "../report/sheet.js";
 import { welcome } from "./welcome.js";
 import { rootHelp } from "./help.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -1031,36 +1031,11 @@ function applySheet(sheetPath, dryRun) {
       failed.push(...rows.map((row) => `${placeOf(row)}: 파일이 없다`));
       continue;
     }
-    const lines = readFileSync(file, "utf-8").split("\n");
-    let changed = false;
-    // 한 줄에 고침이 여럿이면 뒤 칸부터. 앞 칸을 먼저 바꾸면 길이가 달라져 뒤 칸의 자리가 어긋난다.
-    for (const row of [...rows].sort((a, b) => a.line - b.line || b.column - a.column)) {
-      const place = placeOf(row);
-      if (row.line < 1 || row.line > lines.length) {
-        failed.push(`${place}: 그 줄이 없다`);
-        continue;
-      }
-      let newLine = lines[row.line - 1];
-      if (row.column > 0) {
-        const start = row.column - 1;
-        if (newLine.slice(start, start + row.text.length) !== row.text) {
-          failed.push(`${place}: 그 칸에 그 글이 없다. 표를 다시 뽑는다`);
-          continue;
-        }
-        newLine = newLine.slice(0, start) + row.fix + newLine.slice(start + row.text.length);
-      } else {
-        const [replaced, count] = replaceLiteral(newLine, row.text, row.fix);
-        if (count !== 1) {
-          failed.push(`${place}: 글이 그 줄에 ${count}번 있다. 한 번이어야 바꾼다`);
-          continue;
-        }
-        newLine = replaced;
-      }
-      lines[row.line - 1] = newLine;
-      changed = true;
-      applied.push(`${place}: ${row.text} -> ${row.fix}`);
-    }
-    if (changed && !dryRun) writeFileSync(file, lines.join("\n"), "utf-8");
+    // 되돌려 쓰는 뜻은 report/sheet.js 의 applyRows 가 소유한다 (브라우저의 저장소 쓰기와 같은 함수).
+    const [rewritten, done, problems] = applyRows(readFileSync(file, "utf-8"), rows);
+    applied.push(...done);
+    failed.push(...problems);
+    if (done.length && !dryRun) writeFileSync(file, rewritten, "utf-8");
   }
   return [applied, failed];
 }

@@ -112,7 +112,7 @@ from .guard import (
     verifyPatch,
 )
 from .learn import LearnedExemplar, LearnedOperation, learnExemplars, learnOperations
-from .report import buildBriefWritingPacket, buildWritingPacket, parseSheet, renderSheet, renderSheetJson, sheetRows
+from .report import applyRows, buildBriefWritingPacket, buildWritingPacket, parseSheet, renderSheet, renderSheetJson, sheetRows
 from .rules import Finding, ruleDoc, ruleNames, ruleSummary, runAll
 
 __all__ = [
@@ -180,6 +180,7 @@ __all__ = [
     "renderSheet",
     "renderSheetJson",
     "sheetRows",
+    "applyRows",
     "replaceLiteral",
     "sourceLiterals",
     "SOURCE_SUFFIXES",

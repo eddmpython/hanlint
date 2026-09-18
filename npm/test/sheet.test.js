@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { configFromMapping, parseSheet, renderSheet, renderSheetJson, replaceLiteral, sheetRows, sourceLiterals } from "../src/index.js";
+import { applyRows, configFromMapping, parseSheet, renderSheet, renderSheetJson, replaceLiteral, sheetRows, sourceLiterals } from "../src/index.js";
 import { finding } from "../src/rules/finding.js";
 
 const JSX = [
@@ -190,4 +190,14 @@ test("inline tags do not split a sentence but siblings stay separate", () => {
   assert.equal(literals[6].plain, "HTML 문서");
   assert.deepEqual(texts("<p>접수 <b>실패</b> 코드: {failure}</p>\n"), [[1, "접수 <b>실패</b> 코드: {failure}"]]);
   assert.deepEqual(texts("const a = '<대상> 필요'\n"), [[1, "<대상> 필요"]]);
+});
+
+test("applyRows rewrites from the back and keeps line endings", () => {
+  const source = "const t = { a: '데이터 삭제', b: '기기 삭제' }\r\nconst u = '둘'\r\n";
+  const row = (line, text, fix, column = 0) => ({ file: "a.js", line, text, findings: [], fix, column });
+  const rows = [row(1, "데이터 삭제", "자료 삭제", 17), row(1, "기기 삭제", "이 컴퓨터 삭제", 30), row(2, "둘", "셋"), row(2, "없는 글", "넷"), row(9, "둘", "셋"), row(2, "둘", "다섯", 5)];
+  const [rewritten, applied, failed] = applyRows(source, rows);
+  assert.equal(rewritten, "const t = { a: '자료 삭제', b: '이 컴퓨터 삭제' }\r\nconst u = '셋'\r\n");
+  assert.deepEqual(applied, ["a.js:1:30: 기기 삭제 -> 이 컴퓨터 삭제", "a.js:1:17: 데이터 삭제 -> 자료 삭제", "a.js:2: 둘 -> 셋"]);
+  assert.deepEqual(failed, ["a.js:2:5: 그 칸에 그 글이 없다. 표를 다시 뽑는다", "a.js:2: 글이 그 줄에 0번 있다. 한 번이어야 바꾼다", "a.js:9: 그 줄이 없다"]);
 });

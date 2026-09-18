@@ -11,7 +11,7 @@ from .jsonReport import renderJson
 from .mapHtml import renderMapHtml
 from .mapText import renderMap
 from .registerMatch import exemplarInRegister, patternInRegister, targetRegister
-from .sheet import SheetRow, parseSheet, renderSheet, renderSheetJson, sheetRows
+from .sheet import SheetRow, applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows
 from .textReport import renderText
 from .writingPacket import PURPOSES, buildBriefWritingPacket, buildWritingPacket, renderWritingPacket
 from .writingSpec import SPEC_VERSION, WritingSpec, WritingSpecRow, renderWritingSpec, writingSpec
@@ -38,6 +38,7 @@ __all__ = [
     "parseSheet",
     "SheetRow",
     "sheetRows",
+    "applyRows",
     "renderText",
     "renderWritingPacket",
     "renderWritingSpec",

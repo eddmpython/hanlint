@@ -26,7 +26,7 @@ import { configFromMapping, defaultConfig } from "./config/settings.js";
 import { loadVersion } from "./data/load.js";
 import { parseMarkdown } from "./document/parseMarkdown.js";
 import { SOURCE_SUFFIXES, replaceLiteral, sourceLiterals } from "./document/sourceText.js";
-import { parseSheet, renderSheet, renderSheetJson, sheetRows } from "./report/sheet.js";
+import { applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows } from "./report/sheet.js";
 import { headingsOf } from "./document/model.js";
 import { applyFixes } from "./edit/applyFixes.js";
 import { buildFingerprint } from "./fingerprint/build.js";
@@ -55,6 +55,7 @@ export {
   renderSheet,
   renderSheetJson,
   sheetRows,
+  applyRows,
   replaceLiteral,
   sourceLiterals,
   CONTRACT_VERSION,
