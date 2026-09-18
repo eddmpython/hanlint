@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseSheet, renderSheet, renderSheetJson, replaceLiteral, sourceLiterals } from "../src/index.js";
+import { configFromMapping, parseSheet, renderSheet, renderSheetJson, replaceLiteral, sheetRows, sourceLiterals } from "../src/index.js";
 import { finding } from "../src/rules/finding.js";
 
 const JSX = [
@@ -120,4 +120,19 @@ test("bad rows are reported", () => {
   const parsed = parseSheet("| 1 | 자리없음 | 글 | 지적 | 고침 |\n| 2 | a:1 | 글 |\n");
   assert.deepEqual(parsed.rows, []);
   assert.deepEqual(parsed.problems, ["1행: 자리 `자리없음` 가 경로:줄 이나 경로:줄:칸 꼴이 아니다", "2행: 칸이 3개다. 5개여야 한다"]);
+});
+
+test("sheetRows keeps only flagged text unless everything", () => {
+  const source = "const LABELS = { pending: '승인 대기', failed: '요청을 완료하지 못했습니다' }\nconst NOTE = '없음'\n";
+  const config = configFromMapping({ preset: "screen" });
+  const rows = sheetRows([{ label: "src/a.jsx", source }], config);
+  assert.deepEqual(rows.map((row) => [row.file, row.line, row.column, row.text]), [["src/a.jsx", 1, 45, "요청을 완료하지 못했습니다"]]);
+  assert.equal(rows[0].findings[0].rule, "screenSentence");
+  assert.equal(rows[0].fix, "");
+  const passive = sheetRows([{ label: "src/b.js", source: "const MSG = '결과가 저장되어집니다'" + String.fromCharCode(10) }], config);
+  assert.deepEqual(passive.map((row) => [row.findings[0].rule, row.fix]), [["doublePassive", "결과가 저장됩니다"]]);
+  const everything = sheetRows([{ label: "src/a.jsx", source }], config, true);
+  assert.deepEqual(everything.map((row) => row.text), ["승인 대기", "요청을 완료하지 못했습니다", "없음"]);
+  assert.deepEqual(everything[0].findings, []);
+  assert.equal(everything[0].fix, "");
 });

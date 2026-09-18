@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 
-from hanlint.report import SheetRow, parseSheet, renderSheet, renderSheetJson
+from hanlint.config import Config
+from hanlint.report import SheetRow, parseSheet, renderSheet, renderSheetJson, sheetRows
 from hanlint.rules import Finding
 
 
@@ -43,3 +44,19 @@ def testJsonCarriesFindingsAndFix():
     assert data["version"] == 1 and data["files"] == 1 and data["preset"] == "screen"
     assert data["rows"][0]["findings"] == [{"rule": "screenSentence", "why": "실패를 문장으로 쓴 것이다"}]
     assert data["rows"][1]["fix"] == ""
+
+
+SOURCE = "const LABELS = { pending: '승인 대기', failed: '요청을 완료하지 못했습니다' }\nconst NOTE = '없음'\n"
+
+
+def testSheetRowsKeepOnlyFlaggedTextUnlessEverything():
+    """소스 문자열만 받아 행을 만든다. 지적 없는 글은 everything 일 때만 들어가고 고침은 지적이 하나일 때 미리 적힌다."""
+    config = Config(preset="screen")
+    rows = sheetRows([("src/a.jsx", SOURCE)], config)
+    assert [(row.file, row.line, row.column, row.text) for row in rows] == [("src/a.jsx", 1, 45, "요청을 완료하지 못했습니다")]
+    assert rows[0].findings[0].rule == "screenSentence" and rows[0].fix == ""
+    passive = sheetRows([("src/b.js", "const MSG = '결과가 저장되어집니다'" + chr(10))], config)
+    assert [(row.findings[0].rule, row.fix) for row in passive] == [("doublePassive", "결과가 저장됩니다")]
+    everything = sheetRows([("src/a.jsx", SOURCE)], config, everything=True)
+    assert [row.text for row in everything] == ["승인 대기", "요청을 완료하지 못했습니다", "없음"]
+    assert everything[0].findings == () and everything[0].fix == ""

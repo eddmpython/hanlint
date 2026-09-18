@@ -13,10 +13,8 @@ import argparse
 from pathlib import Path, PurePath
 
 from ...config import Config
-from ...document import SOURCE_SUFFIXES, parseMarkdown, replaceLiteral, sourceLiterals
-from ...fingerprint import buildFingerprint
-from ...report import SheetRow, parseSheet, renderSheet, renderSheetJson
-from ...rules import runAll
+from ...document import SOURCE_SUFFIXES, replaceLiteral
+from ...report import SheetRow, parseSheet, renderSheet, renderSheetJson, sheetRows
 from .shared import addCommonOptions, configFrom, emit, isSkipped
 
 HELP = "소스의 화면 글을 표 하나로 떨구거나 (sheet 폴더/), 고친 표를 파일로 되돌려 쓴다 (sheet apply 시트.md)"
@@ -63,33 +61,9 @@ def relativeLabel(path: str) -> str:
         return PurePath(path).as_posix()
 
 
-def prefilledFix(literal, findings) -> str:
-    """지적이 하나이고 그 지적에 고침이 있으면 고침 칸에 미리 적는다.
-
-    고침은 문장 단위라 글이 문장 하나 그대로일 때 (식이 없고 문장 부호로 나뉘지 않을 때) 만 글 전체와 같다.
-    """
-    if literal.plain != literal.text or len(findings) != 1:
-        return ""
-    only = findings[0]
-    return only.fix if only.fix is not None and only.quote == literal.plain else ""
-
-
 def buildRows(files: list[str], config: Config, everything: bool) -> list[SheetRow]:
-    rows: list[SheetRow] = []
-    for file in files:
-        label = relativeLabel(file)
-        source = Path(file).read_text(encoding="utf-8")
-        for literal in sourceLiterals(source, label):
-            findings = tuple(
-                finding
-                for finding in runAll(buildFingerprint(parseMarkdown(literal.plain), config), config)
-                if finding.severity == "error"
-            )
-            if findings or everything:
-                rows.append(
-                    SheetRow(label, literal.line, literal.text, findings, prefilledFix(literal, findings), literal.column)
-                )
-    return rows
+    """디스크의 파일을 읽어 report.sheetRows 에 넘긴다. 행의 뜻은 그쪽이 소유한다."""
+    return sheetRows(((relativeLabel(file), Path(file).read_text(encoding="utf-8")) for file in files), config, everything)
 
 
 def replaceAt(lineText: str, column: int, old: str, new: str) -> tuple[str, bool]:

@@ -13,9 +13,13 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 
-from ..rules import Finding
+from ..config import Config
+from ..document import parseMarkdown, sourceLiterals
+from ..fingerprint import buildFingerprint
+from ..rules import Finding, runAll
 
 HEADER = ("번호", "자리", "글", "지적", "고침")
 ROW_PATTERN = re.compile(r"^\|(.*)\|$")
@@ -36,6 +40,37 @@ class SheetRow:
     @property
     def place(self) -> str:
         return f"{self.file}:{self.line}:{self.column}" if self.column > 0 else f"{self.file}:{self.line}"
+
+
+def prefilledFix(literal, findings: tuple[Finding, ...]) -> str:
+    """지적이 하나이고 그 지적에 고침이 있으면 고침 칸에 미리 적는다.
+
+    고침은 문장 단위라 글이 문장 하나 그대로일 때 (식이 없고 문장 부호로 나뉘지 않을 때) 만 글 전체와 같다.
+    """
+    if literal.plain != literal.text or len(findings) != 1:
+        return ""
+    only = findings[0]
+    return only.fix if only.fix is not None and only.quote == literal.plain else ""
+
+
+def sheetRows(sources: Iterable[tuple[str, str]], config: Config, everything: bool = False) -> list[SheetRow]:
+    """(이름표, 소스) 마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error` 만 남긴다.
+
+    이름표는 표의 `자리` 가 되는 경로다. 소스를 읽는 쪽 (CLI 는 디스크, 브라우저는 저장소) 이 다르므로
+    읽기는 밖에 두고 여기서는 문자열만 받는다. 파이썬과 npm 이 같은 행을 내는지는 testSheetAgrees 가 본다.
+    """
+    rows: list[SheetRow] = []
+    for label, source in sources:
+        for literal in sourceLiterals(source, label):
+            findings = tuple(
+                finding
+                for finding in runAll(buildFingerprint(parseMarkdown(literal.plain), config), config)
+                if finding.severity == "error"
+            )
+            if findings or everything:
+                fix = prefilledFix(literal, findings)
+                rows.append(SheetRow(label, literal.line, literal.text, findings, fix, literal.column))
+    return rows
 
 
 def escapeCell(text: str) -> str:

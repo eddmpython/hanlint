@@ -47,8 +47,8 @@ import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
 import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runAll } from "../rules/registry.js";
 import { MARKDOWN, SKIPPED_FOLDERS, isSkipped, markdownUnder } from "./walk.js";
-import { SOURCE_SUFFIXES, replaceLiteral, sourceLiterals } from "../document/sourceText.js";
-import { parseSheet, renderSheet, renderSheetJson } from "../report/sheet.js";
+import { SOURCE_SUFFIXES, replaceLiteral } from "../document/sourceText.js";
+import { parseSheet, renderSheet, renderSheetJson, sheetRows } from "../report/sheet.js";
 import { welcome } from "./welcome.js";
 import { rootHelp } from "./help.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -1089,18 +1089,8 @@ function runSheet(args) {
   }
   const config = configFrom(options, files);
   const format = choose(/** @type {string} */ (options["--format"] ?? "markdown"), ["markdown", "json"], "--format");
-  /** @type {import("../report/sheet.js").SheetRow[]} */
-  const rows = [];
-  for (const file of files) {
-    const label = relativeLabel(file);
-    for (const literal of sourceLiterals(readFileSync(file, "utf-8"), label)) {
-      const findings = runAll(fingerprint(literal.plain, config), config).filter((finding) => finding.severity === "error");
-      // 지적이 하나이고 고침이 있으면 고침 칸에 미리 적는다. 뜻은 파이썬 cli/commands/sheet.py 의 prefilledFix 가 소유한다.
-      const only = literal.plain === literal.text && findings.length === 1 ? findings[0] : null;
-      const fix = only && only.fix !== null && only.quote === literal.plain ? only.fix : "";
-      if (findings.length || options["--all"]) rows.push({ file: label, line: literal.line, text: literal.text, findings, fix, column: literal.column });
-    }
-  }
+  // 디스크의 파일을 읽어 report.sheetRows 에 넘긴다. 행의 뜻은 그쪽이 소유한다.
+  const rows = sheetRows(files.map((file) => ({ label: relativeLabel(file), source: readFileSync(file, "utf-8") })), config, Boolean(options["--all"]));
   emit(format === "json" ? renderSheetJson(rows, config.preset, files.length) : renderSheet(rows, config.preset, files.length), output);
   return 0;
 }
