@@ -13,8 +13,7 @@ import { newDraft, emptyWorkspace, parseWorkspace, serializeWorkspace, addRecord
 const SAMPLE = "초안 작성 후 문장 구조 검토 과정을 거칩니다. 결과가 저장되어집니다.\n\n문장을 다듬으면서 생각도 조금씩 또렷해집니다. 내가 쓴 말투는 남기고, 읽다가 걸리는 표현만 고치고 싶습니다.";
 const github = new GitHubStore();
 const storageKey = storageKeyFor(location.pathname);
-const worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
-const engine = new EngineClient(worker, (error) => {
+const engine = new EngineClient(() => new Worker(new URL("./worker.js", import.meta.url), { type: "module" }), (error) => {
   get("reviewSummary").textContent = error.message;
   notify(error.message, true);
 });
@@ -408,7 +407,7 @@ get("githubSave").onclick = () => gitAction("save");
 get("githubLoad").onclick = () => gitAction("load");
 get("disconnectButton").onclick = () => { github.disconnect(); get("token").value = get("repository").value = ""; get("githubStatus").textContent = "연결 정보를 지웠습니다."; };
 for (const close of document.querySelectorAll("[data-close]")) close.onclick = () => get(close.dataset.close).close();
-window.addEventListener("pagehide", () => { persist(); github.disconnect(); get("token").value = ""; });
+window.addEventListener("pagehide", () => { persist(); github.disconnect(); get("token").value = ""; repoMode.writer.forget(); get("writeToken").value = ""; });
 window.addEventListener("storage", (event) => {
   if (event.key !== storageKey) return;
   storageEnabled = false;

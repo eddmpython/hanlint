@@ -77,7 +77,12 @@ raw 의 본문은 BOM 을 남겨 CLI 의 파일 읽기와 첫 줄 칸이 같다.
 
 워커가 `sheet` 액션으로 표를 묶음 단위로 만든다 (`sheetRows` 를 돌려 `renderSheetJson` 과 같은 rows 를 낸다).
 고침 칸을 적은 뒤 `시트 내려받기` 를 누르면 `sheetText` 액션이 `renderSheet` 로 마크다운을 만들어 준다. 저장소
-루트에서 `hanlint sheet apply` 가 그대로 읽는다. 공개 저장소만 다루고 토큰을 받지 않는다. 저장소의 글은 `textContent` 로만 그린다.
+루트에서 `hanlint sheet apply` 가 그대로 읽는다. 표 위의 규칙별 칩을 누르면 그 규칙의 행만 보이고 `제안 있음` 은 고침
+칸이 미리 채워진 행이다. 같은 blob sha 의 파일과 기본 브랜치는 페이지가 살아 있는 동안 다시 받지 않는다.
+
+`저장소에 쓰기` 는 고침이 적힌 파일마다 Contents API 로 읽고, 워커의 `sheetApply` (CLI 와 같은 `applyRows`) 로 바꾼 뒤
+같은 브랜치에 파일마다 commit 하나로 쓴다 (`web/repoWrite.js`). 이때만 그 저장소의 Contents 쓰기 토큰을 받고 메모리에만
+두며 창을 떠나면 지운다. 읽기는 여전히 토큰이 없다. 저장소의 글은 `textContent` 로만 그린다.
 마지막 주소는 기록과 다른 localStorage 키에 하나만 기억한다. 되돌리기: 글 모드로 돌아가면 편집기는 이전 상태다.
 
 ## 화면을 바꿀 때
@@ -93,6 +98,7 @@ raw 의 본문은 BOM 을 남겨 CLI 의 파일 읽기와 첫 줄 칸이 같다.
 | 사용자 안내 | `web/guide.html` |
 | 저장소 읽기와 예산 | `web/repoSource.js` |
 | 저장소 모드 화면과 시트 표 | `web/repoMode.js` |
+| 표의 고침을 GitHub 에 되돌려 쓰기 | `web/repoWrite.js` |
 | 자료 고지 페이지 | `scripts/derive/site.py`와 `npm`의 라이선스·출처 고지 |
 
 첫 화면은 예문과 실제 지적을 바로 보여 준다. 소개를 읽거나 가입해야 편집할 수 있는 흐름을 넣지 않는다.
@@ -110,8 +116,9 @@ raw 의 본문은 BOM 을 남겨 CLI 의 파일 읽기와 첫 줄 칸이 같다.
 `npm/test/engineClient.test.js`는 검사 준비 전 요청 유실과 실패를, `npm/test/webRecords.test.js`는
 기록의 왕복, 인증 정보 제외, GitHub의 최초 생성과 갱신 및 충돌을 확인한다.
 `tests/gates/testWebBuild.py`는 코어와 자료의 누락, 저장소 내부 출력과 기존 파일 덮어쓰기를 검사한다.
-`npm/test/repoSource.test.js` 는 주소 해석, 파일 고르기와 예산, raw 받기의 동시성과 오류, 그리고 `fetch` 를
-다른 `this` 로 부르지 않는 것 (브라우저의 Illegal invocation) 을 가짜 fetch 로 확인한다.
+`npm/test/repoSource.test.js` 는 주소 해석, 파일 고르기와 예산, raw 받기의 동시성과 오류, 캐시, 그리고 `fetch` 를
+다른 `this` 로 부르지 않는 것 (브라우저의 Illegal invocation) 을 가짜 fetch 로 확인한다. `npm/test/repoWrite.test.js` 는
+파일마다 읽고 바꾸고 commit 하는 순서와 실패 보고를, `npm/test/engineClient.test.js` 는 시간 초과 뒤 워커 다시 띄우기를 본다.
 
 명령줄 밖 화면은 설치된 정확 버전의 pyproc로 확인한다. 공통 실행 공간에 localhost만 허용한
 제어 프로파일을 만들고 `node scripts/measure/site.mjs <manifest> <출력 폴더> [URL]`을 실행한다.

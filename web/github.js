@@ -5,16 +5,17 @@ const API = "https://api.github.com";
 const FILE_PATH = "hanlint/workspace.json";
 const API_VERSION = "2022-11-28";
 
-function encodeContent(text) {
+export function encodeContent(text) {
   const bytes = new TextEncoder().encode(text);
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
 }
 
-function decodeContent(content) {
+/** base64 본문을 글로. BOM 은 남겨 소스 파일을 되돌려 쓸 때 그대로다. */
+export function decodeContent(content) {
   const binary = atob(content.replace(/\s/g, ""));
-  return new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
+  return new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
 }
 
 export class GitHubStore {

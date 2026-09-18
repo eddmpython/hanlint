@@ -73,9 +73,9 @@ function isSkipped(name) {
  * 트리 항목 가운데 검사할 소스 파일만 고른다. 경로가 파일이면 그 하나, 폴더면 그 아래 전부.
  * 건너뛰기 (`.` 접두 폴더, node_modules) 는 CLI 처럼 고른 경로 아래에서만 본다. 고른 경로가 `.github` 여도 그 안은 읽는다.
  * 심볼릭 링크 (mode 120000) 는 raw 가 링크 대상 경로를 주므로 뺀다. MAX_FILE_BYTES 를 넘는 파일은 세어서 뺀다.
- * @param {{ path: string, type: string, mode?: string, size?: number }[]} entries
+ * @param {{ path: string, type: string, mode?: string, size?: number, sha?: string }[]} entries
  * @param {{ suffixes: string[], path?: string }} options
- * @returns {{ files: { path: string, size: number }[], bytes: number, oversized: number }}
+ * @returns {{ files: { path: string, size: number, sha: string }[], bytes: number, oversized: number }}
  */
 export function selectFiles(entries, { suffixes, path = "" }) {
   const lowered = suffixes.map((suffix) => suffix.toLowerCase());
@@ -92,7 +92,7 @@ export function selectFiles(entries, { suffixes, path = "" }) {
     const dot = name.lastIndexOf(".");
     if (dot < 0 || !lowered.includes(name.slice(dot).toLowerCase())) continue;
     if ((entry.size ?? 0) > MAX_FILE_BYTES) { oversized += 1; continue; }
-    files.push({ path: entry.path, size: entry.size ?? 0 });
+    files.push({ path: entry.path, size: entry.size ?? 0, sha: entry.sha ?? "" });
     bytes += entry.size ?? 0;
   }
   files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
@@ -125,6 +125,10 @@ export class RepoSource {
    */
   constructor(request = (url, options) => fetch(url, options)) {
     this.request = request;
+    /** blob sha → 소스. 같은 저장소를 다시 열 때 안 바뀐 파일은 다시 받지 않는다. 페이지가 살아 있는 동안만이다. */
+    this.blobs = new Map();
+    /** `계정/저장소` → 기본 브랜치. API 한 번을 아낀다. */
+    this.branches = new Map();
   }
 
   /**
@@ -165,8 +169,11 @@ export class RepoSource {
 
   /** 기본 브랜치 이름. API 1회. */
   async defaultBranch(owner, repo, signal) {
+    const key = `${owner}/${repo}`;
+    if (this.branches.has(key)) return this.branches.get(key);
     const data = await this.call(`${API}/repos/${owner}/${repo}`, "json", signal);
     if (typeof data.default_branch !== "string" || !data.default_branch) throw new Error("저장소의 기본 브랜치를 읽지 못했습니다.");
+    this.branches.set(key, data.default_branch);
     return data.default_branch;
   }
 
@@ -204,7 +211,7 @@ export class RepoSource {
   /**
    * raw 에서 파일 내용을 받는다. 동시에 CONCURRENCY 개, 결과는 files 순서 그대로. 하나가 실패하면 나머지를 멈춘다.
    * @param {RepoRef & { ref: string }} target
-   * @param {{ path: string }[]} files
+   * @param {{ path: string, sha?: string }[]} files
    * @param {(done: number, total: number) => void} [onProgress]
    * @param {AbortSignal} [signal]
    * @returns {Promise<{ label: string, source: string }[]>}
@@ -217,10 +224,16 @@ export class RepoSource {
     const lane = async () => {
       while (next < files.length && failure === null && !signal?.aborted) {
         const index = next++;
-        const path = files[index].path;
+        const { path, sha } = files[index];
         try {
-          const url = `${RAW}/${target.owner}/${target.repo}/${encodedPath(target.ref)}/${encodedPath(path)}`;
-          results[index] = { label: path, source: await this.call(url, "text", signal) };
+          const cached = sha ? this.blobs.get(sha) : undefined;
+          if (cached !== undefined) results[index] = { label: path, source: cached };
+          else {
+            const url = `${RAW}/${target.owner}/${target.repo}/${encodedPath(target.ref)}/${encodedPath(path)}`;
+            const source = await this.call(url, "text", signal);
+            if (sha) this.blobs.set(sha, source);
+            results[index] = { label: path, source };
+          }
         } catch (error) {
           failure = failure ?? error;
           return;

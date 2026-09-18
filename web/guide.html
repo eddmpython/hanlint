@@ -80,7 +80,7 @@
         <tr><th scope="row">지적</th><td>규칙 이름과 이유. <strong>지적 없는 글도 표에</strong>를 켜면 지적이 없는 글도 함께 봅니다.</td></tr>
         <tr><th scope="row">고침</th><td>새 글을 적는 칸. 적은 뒤 <strong>시트 내려받기</strong>를 누릅니다.</td></tr>
       </tbody></table></div>
-      <p>내려받은 시트는 저장소를 받은 폴더에서 <code>hanlint sheet apply 시트.md</code> 로 그 자리에 되돌려 씁니다. 터미널의 <code>hanlint sheet src/ --preset screen</code> 과 같은 표라 어느 쪽에서 시작해도 됩니다. 소스는 GitHub 에서만 받고 이 브라우저 안에서 검사합니다. 비공개 저장소는 아직 다루지 않습니다.</p>
+      <p>고침 칸은 진행, 실패, 요구, 완료 문장에 낱말 제안이 미리 적혀 있습니다 (<code>요청을 완료하지 못했습니다</code> 는 <code>요청 완료 실패</code>). 지우거나 고쳐 쓰면 됩니다. 표 위의 칩을 누르면 그 규칙의 행만 봅니다. <strong>저장소에 쓰기</strong>를 누르면 그 저장소의 Contents 쓰기 토큰으로 고침을 적은 파일마다 commit 하나를 만듭니다. 토큰은 이 탭의 메모리에만 둡니다. 내려받은 시트는 저장소를 받은 폴더에서 <code>hanlint sheet apply 시트.md</code> 로 그 자리에 되돌려 씁니다. 터미널의 <code>hanlint sheet src/ --preset screen</code> 과 같은 표라 어느 쪽에서 시작해도 됩니다. 소스는 GitHub 에서만 받고 이 브라우저 안에서 검사합니다. 비공개 저장소는 아직 다루지 않습니다.</p>
       <aside class="guideCallout"><strong>파일이 많으면 폴더를 좁혀 주세요</strong><p>한 번에 받는 소스는 300개, 8MB 까지이고 1MB 가 넘는 파일 (번들, 생성물) 은 세어서 뺍니다. 넘으면 <code>/tree/main/src</code> 처럼 경로를 좁히라는 안내가 뜹니다. GitHub 는 비인증 요청을 시간당 60회로 제한하므로 같은 저장소를 여러 번 열면 잠시 기다려야 할 수 있습니다.</p></aside>
     </section>
     <section class="guideSection" id="contribute" aria-labelledby="contributeTitle">

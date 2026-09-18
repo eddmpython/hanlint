@@ -1,6 +1,6 @@
 // @ts-check
 /** 편집 입력과 분리한 검사 작업. 배포 조립에서 같은 npm 공개 API를 나란히 둔다. */
-import { inspectText, learnText, compareRevision, configFromMapping, applyFixes, verifyPatch, Contract, Patch, version, SOURCE_SUFFIXES, sheetRows, renderSheet, renderSheetJson } from "./npm/src/index.js";
+import { inspectText, learnText, compareRevision, configFromMapping, applyFixes, verifyPatch, Contract, Patch, version, SOURCE_SUFFIXES, sheetRows, renderSheet, renderSheetJson, applyRows } from "./npm/src/index.js";
 
 function analyze({ text, original, preset, patches }) {
   const config = configFromMapping({ preset, patches });
@@ -40,6 +40,7 @@ self.onmessage = ({ data }) => {
       const rows = sheetRows(data.files, config, Boolean(data.everything));
       self.postMessage({ id: data.id, result: JSON.parse(renderSheetJson(rows, config.preset, data.files.length)).rows });
     } else if (data.action === "sheetText") self.postMessage({ id: data.id, result: renderSheet(data.rows, config.preset, data.fileCount) });
+    else if (data.action === "sheetApply") self.postMessage({ id: data.id, result: applyRows(data.source, data.rows) });
     else throw new Error("지원하지 않는 편집 요청입니다.");
   } catch (error) { self.postMessage({ id: data.id, error: error.message }); }
 };

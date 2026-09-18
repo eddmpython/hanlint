@@ -30,22 +30,22 @@ test("isRepoUrl needs the github.com host so pasted prose never switches mode", 
 
 test("selectFiles follows the CLI walk: suffix, dot folders, node_modules, and the chosen path", () => {
   const entries = [
-    { path: "src/app.js", type: "blob", size: 10 },
+    { path: "src/app.js", type: "blob", size: 10, sha: "aa" },
     { path: "src/view.tsx", type: "blob", size: 5 },
     { path: "src/readme.md", type: "blob", size: 5 },
     { path: "node_modules/x/index.js", type: "blob", size: 99 },
-    { path: ".github/scripts/a.js", type: "blob", size: 7 },
+    { path: ".github/scripts/a.js", type: "blob", size: 7, sha: "gh" },
     { path: "src/.hidden/b.js", type: "blob", size: 7 },
-    { path: "docs/App.PY", type: "blob", size: 3 },
+    { path: "docs/App.PY", type: "blob", size: 3, sha: "py" },
     { path: "src/link.js", type: "blob", mode: "120000", size: 20 },
     { path: "dist/bundle.js", type: "blob", size: MAX_FILE_BYTES + 1 },
     { path: "src", type: "tree" },
   ];
-  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES }), { files: [{ path: "docs/App.PY", size: 3 }, { path: "src/app.js", size: 10 }], bytes: 13, oversized: 1 });
-  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: ".github" }).files, [{ path: ".github/scripts/a.js", size: 7 }]);
-  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: ".github/scripts/a.js" }).files, [{ path: ".github/scripts/a.js", size: 7 }]);
-  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: "src" }).files, [{ path: "src/app.js", size: 10 }]);
-  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: "src/app.js" }).files, [{ path: "src/app.js", size: 10 }]);
+  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES }), { files: [{ path: "docs/App.PY", size: 3, sha: "py" }, { path: "src/app.js", size: 10, sha: "aa" }], bytes: 13, oversized: 1 });
+  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: ".github" }).files, [{ path: ".github/scripts/a.js", size: 7, sha: "gh" }]);
+  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: ".github/scripts/a.js" }).files, [{ path: ".github/scripts/a.js", size: 7, sha: "gh" }]);
+  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: "src" }).files, [{ path: "src/app.js", size: 10, sha: "aa" }]);
+  assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: "src/app.js" }).files, [{ path: "src/app.js", size: 10, sha: "aa" }]);
   assert.deepEqual(selectFiles(entries, { suffixes: SUFFIXES, path: "sr" }).files, []);
 });
 
@@ -157,4 +157,23 @@ test("raw text keeps a leading BOM like the CLI's readFileSync, so line-1 column
   const source = new RepoSource(async () => ({ status: 200, ok: true, arrayBuffer: async () => new Uint8Array([0xef, 0xbb, 0xbf, 0x61]).buffer }));
   const [{ source: text }] = await source.fetchSources({ owner: "o", repo: "r", ref: "main", path: "" }, [{ path: "a.js" }]);
   assert.equal(text, "﻿a");
+});
+
+test("unchanged blobs and the default branch are not fetched twice while the page lives", async () => {
+  let calls = 0;
+  const source = new RepoSource(async (url) => {
+    calls += 1;
+    if (url.endsWith("/repos/o/r")) return reply(200, { default_branch: "main" });
+    return reply(200, `내용 ${decodeURIComponent(url.split("/").pop())}`);
+  });
+  const target = { owner: "o", repo: "r", ref: "main", path: "" };
+  const first = await source.fetchSources(target, [{ path: "a.js", sha: "1" }, { path: "b.js", sha: "2" }]);
+  assert.deepEqual(first.map((item) => item.source), ["내용 a.js", "내용 b.js"]);
+  assert.equal(calls, 2);
+  const second = await source.fetchSources(target, [{ path: "a.js", sha: "1" }, { path: "b.js", sha: "3" }, { path: "c.js" }]);
+  assert.deepEqual(second.map((item) => item.source), ["내용 a.js", "내용 b.js", "내용 c.js"]);
+  assert.equal(calls, 4, "sha 가 바뀐 b 와 sha 없는 c 만 다시 받는다");
+  assert.equal(await source.defaultBranch("o", "r"), "main");
+  assert.equal(await source.defaultBranch("o", "r"), "main");
+  assert.equal(calls, 5);
 });
