@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 
-from hanlint.config import Config
-from hanlint.document import parseMarkdown
-from hanlint.fingerprint import buildFingerprint
-from hanlint.rules import runAll
+# 어떻게 불려도 저장소 안에 __pycache__ 를 남기지 않는다. `-B` 없이 pytest 를 돌린 흔적이 실제로 남았다 (2026-09-17).
+# 이 줄 뒤에 import 되는 모듈 (hanlint 와 테스트 모듈) 은 바이트코드를 쓰지 않는다. 잔해는 testNoBytecodeCache 가 잡는다.
+sys.dont_write_bytecode = True
+
+from hanlint.config import Config  # noqa: E402
+from hanlint.document import parseMarkdown  # noqa: E402
+from hanlint.fingerprint import buildFingerprint  # noqa: E402
+from hanlint.rules import runAll  # noqa: E402
 
 EM_DASH = chr(0x2014)
 EN_DASH = chr(0x2013)
