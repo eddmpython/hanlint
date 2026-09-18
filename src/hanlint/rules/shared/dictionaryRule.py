@@ -63,19 +63,35 @@ def firstMatchFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
 
     구체 무늬 (진행, 실패) 와 종결어미 전체가 한 사전에 같이 사는 화면 사전에 쓴다. 한 문장이 둘 다에 걸리면 지적이 둘이
     되고 사용자는 같은 자리를 두 번 읽는다. 가장 앞의 것이 가장 구체적인 것이다 (구체 무늬는 종결어미보다 앞에서 시작한다).
-    fix 는 내지 않는다. 문장을 낱말로 줄이는 일은 뜻을 골라야 해서 사람의 몫이다.
+    항목에 to 규칙이 있으면 (진행, 실패, 요구, 완료) 문장 전체를 낱말로 다시 쓴 제안을 fix 로 낸다. 사람이 칸에서 지우거나
+    고쳐 쓰는 제안이다. 일반 종결어미처럼 뜻을 골라야 하는 자리는 to 가 없어 fix 도 없다. 실측: 표 146칸이 전부 비어
+    사람이 다 타이핑하던 것이 검토로 바뀐다 (2026-09-18).
     """
     for sentence in doc.sentences:
         match = next((m for m in sentence.matches if m.dictionary == dictionary), None)
         if match is None:
             continue
+        fragment, replacement = changedSpan(sentence.text, match.rewrite) if match.rewrite else (None, None)
         yield Finding(
             ruleName,
             sentence.line + sentence.text.count("\n", 0, match.start),
             sentence.text,
             f"`{match.text}` {match.why} ({match.source})",
-            None,
+            match.rewrite,
             severity,
             SENTENCE,
             sentence.index,
+            fragment,
+            replacement,
         )
+
+
+def changedSpan(before: str, after: str) -> tuple[str, str]:
+    """두 글의 공통 앞뒤를 뺀 바뀐 조각. 편집기의 `이대로 고치기` 가 이 조각만 바꾼다."""
+    head = 0
+    while head < min(len(before), len(after)) and before[head] == after[head]:
+        head += 1
+    tail = 0
+    while tail < min(len(before), len(after)) - head and before[-1 - tail] == after[-1 - tail]:
+        tail += 1
+    return before[head : len(before) - tail], after[head : len(after) - tail]

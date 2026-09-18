@@ -54,7 +54,7 @@ def testSheetRowsKeepOnlyFlaggedTextUnlessEverything():
     config = Config(preset="screen")
     rows = sheetRows([("src/a.jsx", SOURCE)], config)
     assert [(row.file, row.line, row.column, row.text) for row in rows] == [("src/a.jsx", 1, 45, "요청을 완료하지 못했습니다")]
-    assert rows[0].findings[0].rule == "screenSentence" and rows[0].fix == ""
+    assert rows[0].findings[0].rule == "screenSentence" and rows[0].fix == "요청 완료 실패"
     passive = sheetRows([("src/b.js", "const MSG = '결과가 저장되어집니다'" + chr(10))], config)
     assert [(row.findings[0].rule, row.fix) for row in passive] == [("doublePassive", "결과가 저장됩니다")]
     everything = sheetRows([("src/a.jsx", SOURCE)], config, everything=True)

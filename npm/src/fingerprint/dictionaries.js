@@ -44,6 +44,7 @@ export function expandClasses(pattern) {
  * @property {string} why
  * @property {string} source
  * @property {string | null} fix
+ * @property {{ pattern: import("../regex.js").Pattern, into: string }[]} to 문장 전체를 다시 쓰는 규칙. 앞의 것부터 시도한다
  */
 
 /**
@@ -55,6 +56,7 @@ export function expandClasses(pattern) {
  * @property {string} why
  * @property {string} source
  * @property {string | null} fix
+ * @property {string | null} rewrite 항목의 to 규칙으로 문장 전체를 다시 쓴 제안. 없거나 안 맞으면 null
  */
 
 /** @param {string} dictionary @param {Record<string, unknown> | string} raw @returns {Entry} */
@@ -66,6 +68,7 @@ export function entryFrom(dictionary, raw) {
     why: /** @type {string} */ (data.why ?? "설정에서 더한 항목"),
     source: /** @type {string} */ (data.source ?? "설정"),
     fix: /** @type {string | null} */ (data.fix ?? null),
+    to: (/** @type {[string, string][]} */ (data.to ?? [])).map(([source, into]) => ({ pattern: compile(expandClasses(source)), into })),
   };
 }
 
@@ -99,6 +102,21 @@ export function applyFix(match, fix) {
   return fix.replace(GROUP_REF, (_, n) => match[Number(n)] ?? "");
 }
 
+/**
+ * to 규칙으로 문장을 다시 쓴다. 빈 그룹이 남긴 겹 공백은 하나로 줄이고 양끝을 다듬는다. 원문과 같으면 null.
+ * 뜻은 파이썬 fingerprint/dictionaries.py 의 rewriteBy 가 소유한다.
+ * @param {string} text @param {Entry["to"]} rules
+ */
+export function rewriteBy(text, rules) {
+  for (const { pattern, into } of rules) {
+    const match = pattern.search(text);
+    if (!match) continue;
+    const rewritten = applyFix(match, into).split(/\s+/).filter(Boolean).join(" ");
+    return rewritten && rewritten !== text ? rewritten : null;
+  }
+  return null;
+}
+
 /** @param {string} text @param {Entry[]} entries @returns {DictionaryMatch[]} */
 export function matchesIn(text, entries) {
   /** @type {DictionaryMatch[]} */
@@ -114,6 +132,7 @@ export function matchesIn(text, entries) {
         why: entry.why,
         source: entry.source,
         fix: entry.fix ? applyFix(match, entry.fix) : null,
+        rewrite: entry.to.length ? rewriteBy(text, entry.to) : null,
       });
     }
   }

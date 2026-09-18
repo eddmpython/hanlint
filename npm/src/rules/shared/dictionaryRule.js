@@ -74,7 +74,8 @@ export function overridingFindings(doc, dictionary, ruleName, severity = ERROR) 
 
 /**
  * 문장마다 가장 앞의 매치 하나만 지적한다. 뜻은 파이썬 rules/shared/dictionaryRule.py 의 firstMatchFindings 가 소유한다.
- * 구체 무늬와 종결어미가 한 사전에 같이 사는 화면 사전에 쓴다. fix 는 내지 않는다.
+ * 구체 무늬와 종결어미가 한 사전에 같이 사는 화면 사전에 쓴다. 항목에 to 규칙이 있으면 문장 전체를 낱말로 다시 쓴
+ * 제안을 fix 로 낸다 (진행, 실패, 요구, 완료). 뜻을 골라야 하는 일반 종결어미는 to 가 없어 fix 도 없다.
  * @param {import("../../fingerprint/build.js").DocumentPrint} doc
  * @param {string} dictionary
  * @param {string} ruleName
@@ -86,18 +87,33 @@ export function firstMatchFindings(doc, dictionary, ruleName, severity = ERROR) 
   for (const sentence of doc.sentences) {
     const match = sentence.matches.find((m) => m.dictionary === dictionary);
     if (!match) continue;
+    const [fragment, replacement] = match.rewrite ? changedSpan(sentence.text, match.rewrite) : [null, null];
     findings.push(
       finding(
         ruleName,
         sentence.line + countNewlines(sentence.text.slice(0, match.start)),
         sentence.text,
         `\`${match.text}\` ${match.why} (${match.source})`,
-        null,
+        match.rewrite,
         severity,
         SENTENCE,
         sentence.index,
+        fragment,
+        replacement,
       ),
     );
   }
   return findings;
+}
+
+/**
+ * 두 글의 공통 앞뒤를 뺀 바뀐 조각. 편집기의 `이대로 고치기` 가 이 조각만 바꾼다. 뜻은 파이썬 changedSpan 이 소유한다.
+ * @param {string} before @param {string} after @returns {[string, string]}
+ */
+export function changedSpan(before, after) {
+  let head = 0;
+  while (head < Math.min(before.length, after.length) && before[head] === after[head]) head++;
+  let tail = 0;
+  while (tail < Math.min(before.length, after.length) - head && before[before.length - 1 - tail] === after[after.length - 1 - tail]) tail++;
+  return [before.slice(head, before.length - tail), after.slice(head, after.length - tail)];
 }

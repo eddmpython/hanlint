@@ -48,6 +48,8 @@ class Entry:
     why: str
     source: str
     fix: str | None
+    to: tuple[tuple[re.Pattern[str], str], ...] = ()
+    """문장 전체를 다시 쓰는 (from, into) 규칙. 앞의 것부터 시도해 처음 맞는 것이 제안이다. 화면 문장 사전이 쓴다."""
 
 
 def entryFrom(dictionary: str, raw: dict | str) -> Entry:
@@ -59,6 +61,7 @@ def entryFrom(dictionary: str, raw: dict | str) -> Entry:
         raw.get("why", "설정에서 더한 항목"),
         raw.get("source", "설정"),
         raw.get("fix"),
+        tuple((re.compile(expandClasses(source)), into) for source, into in raw.get("to", ())),
     )
 
 
@@ -83,13 +86,27 @@ def applyFix(match: re.Match[str], fix: str) -> str:
     return GROUP_REF.sub(lambda m: match.group(int(m.group(1))) or "", fix)
 
 
+def rewriteBy(text: str, rules: tuple[tuple[re.Pattern[str], str], ...]) -> str | None:
+    """to 규칙으로 문장을 다시 쓴다. 빈 그룹이 남긴 겹 공백은 하나로 줄이고 양끝을 다듬는다. 원문과 같으면 없다."""
+    for pattern, into in rules:
+        match = pattern.search(text)
+        if match is None:
+            continue
+        rewritten = " ".join(applyFix(match, into).split())
+        return rewritten if rewritten and rewritten != text else None
+    return None
+
+
 def matchesIn(text: str, entries: tuple[Entry, ...]) -> tuple[DictionaryMatch, ...]:
     found: list[DictionaryMatch] = []
     for entry in entries:
         for match in entry.pattern.finditer(text):
             fix = applyFix(match, entry.fix) if entry.fix else None
+            rewrite = rewriteBy(text, entry.to) if entry.to else None
             found.append(
-                DictionaryMatch(entry.dictionary, match.group(0), match.start(), match.end(), entry.why, entry.source, fix)
+                DictionaryMatch(
+                    entry.dictionary, match.group(0), match.start(), match.end(), entry.why, entry.source, fix, rewrite
+                )
             )
     found.sort(key=lambda m: m.start)
     return tuple(found)

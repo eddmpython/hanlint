@@ -128,7 +128,7 @@ test("sheetRows keeps only flagged text unless everything", () => {
   const rows = sheetRows([{ label: "src/a.jsx", source }], config);
   assert.deepEqual(rows.map((row) => [row.file, row.line, row.column, row.text]), [["src/a.jsx", 1, 45, "요청을 완료하지 못했습니다"]]);
   assert.equal(rows[0].findings[0].rule, "screenSentence");
-  assert.equal(rows[0].fix, "");
+  assert.equal(rows[0].fix, "요청 완료 실패");
   const passive = sheetRows([{ label: "src/b.js", source: "const MSG = '결과가 저장되어집니다'" + String.fromCharCode(10) }], config);
   assert.deepEqual(passive.map((row) => [row.findings[0].rule, row.fix]), [["doublePassive", "결과가 저장됩니다"]]);
   const everything = sheetRows([{ label: "src/a.jsx", source }], config, true);
