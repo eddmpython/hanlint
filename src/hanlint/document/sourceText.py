@@ -6,6 +6,9 @@
 무엇을 글로 보나
   - 작은따옴표, 큰따옴표, 백틱 안의 한 줄짜리 문자열. 한국어가 하나라도 있는 것만.
   - JSX 의 태그 사이 글 (`>글<`). 식 (`{...}`) 이 끼어도 글로 본다. 식 안의 따옴표 글은 따로 본다.
+  - 같은 줄에서 인라인 태그 (`<strong>`, `<a>`) 만 사이에 둔 조각은 한 마디다. 형제 링크 (`</a><a>`) 는 따로다.
+  - 마크업 파일 (html, vue, svelte) 은 여는 태그 뒤 줄 끝까지, 줄 처음부터 닫는 태그 앞까지, 태그 없는 글 줄도 마디다.
+    여러 줄 문단이 줄마다 한 마디로 나온다. `<script>` 와 `<style>` 안은 코드라 따옴표 글만 본다.
   - 글 (`text`) 은 파일에 있는 그대로 두어 되돌려 쓸 수 있게 하고, 검사는 식 (`${...}`, `{...}`) 을 비운 `plain` 으로 한다.
   - 러스트의 줄 이음 (역슬래시 + 줄바꿈) 은 한 줄로 이어 한 마디로 본다.
 
@@ -38,6 +41,18 @@ HTML_COMMENT = re.compile(r"<!--[\s\S]*?-->")
 DEVELOPER_LINE = re.compile(r"new Error\(|console\.|panic!\(|expect\(|assert")
 RUST_CONTINUATION = re.compile(r"\\\r?\n[ \t]*")
 RUST_TEST_MARKER = "#[cfg(test)]"
+INLINE_TAGS = frozenset(
+    "a abbr b bdi bdo cite code data del dfn em i ins kbd mark q s samp small span strong sub sup time u var wbr br".split()
+)
+"""문장을 끊지 않는 HTML 인라인 태그. 같은 줄에서 이 태그만 사이에 둔 글 조각은 한 마디로 잇는다."""
+INLINE_TAG = re.compile(r"</?([a-zA-Z][a-zA-Z0-9]*)[^<>]*>")
+INLINE_GAP = re.compile(r"^(?:\s*</?[a-zA-Z][a-zA-Z0-9]*[^<>]*>)+\s*$")
+SIBLING_GAP = re.compile(r"</[a-zA-Z][a-zA-Z0-9]*\s*>\s*<[a-zA-Z]")
+CODE_OPEN = re.compile(r"<(?:script|style)\b", re.IGNORECASE)
+CODE_TAG = re.compile(r"</?(?:script|style)\b[^<>]*>", re.IGNORECASE)
+CODE_CLOSE = re.compile(r"</(?:script|style)\s*>", re.IGNORECASE)
+PROSE_LINE = re.compile(r"^(?![\s]*$)[^<>=;{}]*$")
+"""마크업 파일에서 태그도 코드 기호도 없는 줄. 여러 줄 문단의 이어지는 줄이다. 한국어가 없으면 뒤에서 걸러진다."""
 
 
 @dataclass(frozen=True)
@@ -150,7 +165,10 @@ def withoutLineComment(line: str) -> str:
 
 
 def plainText(text: str) -> str:
-    """검사에 쓰는 글. 식 (`${...}`, `{...}`) 을 비우고 공백을 하나로 모은다."""
+    """검사에 쓰는 글. 식 (`${...}`, `{...}`) 과 인라인 태그 (`<strong>`) 를 비우고 공백을 하나로 모은다.
+
+    태그는 이름이 영문자로 시작하는 것만이다. `<대상> 필요` 처럼 글 안의 꺾쇠는 남는다.
+    """
     pieces: list[str] = []
     cursor = 0
     for start, end in expressionSpans(text):
@@ -158,7 +176,8 @@ def plainText(text: str) -> str:
         pieces.append(" ")
         cursor = end
     pieces.append(text[cursor:])
-    return re.sub(r"\s+", " ", "".join(pieces)).strip()
+    joined = INLINE_TAG.sub(lambda m: "" if m.group(1).lower() in INLINE_TAGS else m.group(0), "".join(pieces))
+    return re.sub(r"\s+", " ", joined).strip()
 
 
 def closingQuote(line: str, start: int) -> int:
@@ -224,8 +243,11 @@ def innerLiterals(text: str, offset: int) -> list[tuple[int, str]]:
     return found
 
 
-def lineLiterals(line: str, offset: int = 0) -> list[tuple[int, str]]:
+def lineLiterals(line: str, offset: int = 0, openEnded: bool = False) -> list[tuple[int, str]]:
     """한 줄의 글 마디를 (시작 자리, 글) 로 나온 차례로. 따옴표 문자열과 JSX 의 태그 사이 글 (`>글<`) 이다.
+
+    openEnded (마크업 파일) 이면 여는 태그 뒤 줄 끝까지의 글과 줄 처음부터 닫는 태그 (`</`) 앞까지의 글도 마디다.
+    여러 줄에 걸친 문단이 줄마다 한 마디로 나온다. 코드가 섞인 jsx 에서는 오독이 커서 켜지 않는다.
 
     JSX 글의 `>` 는 화살표 (`=>`) 나 러스트 반환 (`->`) 의 `>` 가 아니다. 글에 식 (`{...}`, `${...}`) 이 끼면 그 글을 낸 뒤
     식 안을 따로 훑어 안의 따옴표 글과 태그 사이 글도 낸다 (중첩 식과 중첩 백틱 포함). 식이 없는 글 안은 다시 훑지 않는다
@@ -248,6 +270,8 @@ def lineLiterals(line: str, offset: int = 0) -> list[tuple[int, str]]:
             continue
         if char == ">" and tagCloses(line, index):
             end = jsxTextEnd(line, index + 1)
+            if end < 0 and openEnded and index + 1 < len(line):
+                end = len(line)
             if end > index:
                 raw = line[index + 1 : end]
                 found.append((offset + index + 1, raw))
@@ -255,15 +279,75 @@ def lineLiterals(line: str, offset: int = 0) -> list[tuple[int, str]]:
                 index = end
                 continue
         index += 1
+    if openEnded:
+        head = re.match(r"^\s*[^<\s][^<]*(?=</)", line)
+        if head and not any(start < head.end() for start, _ in found):
+            found.append((offset, head.group(0)))
+        elif not found and PROSE_LINE.match(line):
+            found.append((offset, line))
     found.sort(key=lambda item: item[0])
-    return found
+    return joinInline(line, found, offset)
+
+
+def joinInline(line: str, found: list[tuple[int, str]], offset: int) -> list[tuple[int, str]]:
+    """사이가 인라인 태그뿐인 태그 사이 글 조각을 한 마디로 잇는다 (`붙여 넣으면 <strong>고칠 곳</strong>이 보입니다.`).
+
+    이은 마디의 원문은 태그를 품은 연속 구간이라 되돌려 쓰기가 그대로 된다. 검사는 plainText 가 태그를 뺀 글로 한다.
+    태그 안의 속성 문자열 (`title="…"`) 은 잇기에 끼지 않고 제 마디로 남는다. 빈 조각은 잇지 않는다.
+    실측: guide.html 의 문단이 인라인 태그마다 끊겨 "로 원고를 엽니다. 오른쪽에…" 같은 반토막 행이 나왔다 (2026-09-18).
+    """
+    pieces = [(start, raw) for start, raw in found if raw.strip()]
+    attributes = [(start, raw) for start, raw in pieces if insideTag(line, start - offset)]
+    joined: list[tuple[int, str]] = []
+    for start, raw in pieces:
+        if (start, raw) in attributes:
+            continue
+        if joined:
+            previousStart, previousRaw = joined[-1]
+            tail = previousStart - offset + len(previousRaw)
+            if start - offset >= tail and inlineOnly(line[tail : start - offset]):
+                joined[-1] = (previousStart, line[previousStart - offset : start - offset + len(raw)])
+                continue
+        joined.append((start, raw))
+    return sorted(joined + attributes, key=lambda item: item[0])
+
+
+def insideTag(line: str, position: int) -> bool:
+    """position 이 태그 안 (`<` 뒤, `>` 앞) 인가. 속성 문자열은 태그 안에 있다."""
+    opened = line.rfind("<", 0, position)
+    return opened >= 0 and line.rfind(">", 0, position) < opened
+
+
+def inlineOnly(gap: str) -> bool:
+    """사이가 인라인 태그뿐이고, 닫는 태그 바로 뒤에 여는 태그가 오는 형제 (`</a><a>`, 목차 링크) 가 아니다."""
+    if not INLINE_GAP.match(gap) or SIBLING_GAP.search(gap):
+        return False
+    return all(m.group(1).lower() in INLINE_TAGS for m in INLINE_TAG.finditer(gap))
 
 
 def sourceLiterals(source: str, path: str = "") -> list[SourceLiteral]:
     """소스에서 글 마디를 줄 번호 순으로. 같은 줄의 마디는 나온 차례다. 한국어가 식 안에만 있는 마디는 뺀다."""
     found: list[SourceLiteral] = []
+    markup = path.endswith(MARKUP_SUFFIXES)
+    # 마크업은 주석 지우기가 줄 수를 지키므로 원문 줄과 나란히 간다. script 블록 판정은 원문 줄로 한다
+    # (`// 주석</script>` 처럼 닫는 태그가 주석과 함께 지워져도 블록이 닫힌 것을 안다).
+    rawLines = source.split("\n") if markup else []
+    inCode = False
     for number, line in enumerate(userFacingSource(source, path).split("\n"), 1):
-        for start, raw in lineLiterals(line):
+        # <script> 와 <style> 안은 코드다. 열린 조각 규칙을 끄고 따옴표 문자열만 잡는다.
+        rawLine = rawLines[number - 1] if markup and number <= len(rawLines) else line
+        opensCode = markup and CODE_OPEN.search(rawLine) is not None
+        closesCode = markup and CODE_CLOSE.search(rawLine) is not None
+        openEnded = markup and not inCode and not opensCode
+        if markup:
+            if opensCode and not closesCode:
+                inCode = True
+            elif inCode and closesCode:
+                inCode = False
+        # <script …> 와 </script> 태그 자체를 빈칸으로 바꿔 그 사이 코드가 태그 사이 글로 읽히지 않게 한다. 자리는 그대로다.
+        codeTagged = opensCode or closesCode
+        scanned = CODE_TAG.sub(lambda m: " " * len(m.group(0)), line) if codeTagged else line
+        for start, raw in lineLiterals(scanned, 0, openEnded):
             text = raw.strip()
             plain = plainText(text)
             if text and KOREAN.search(plain):

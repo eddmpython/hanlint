@@ -108,7 +108,7 @@ def testUrlOnTheLineDoesNotHideLaterText():
 
 
 def testHtmlReadsTagTextAndAttributesButNotComments():
-    """html, vue, svelte 는 JSX 와 같은 길로 읽고 `<!-- -->` 는 걷어낸다. 여러 줄에 걸친 글은 한 줄 글만 뽑는 설계라 안 잡힌다."""
+    """html, vue, svelte 는 JSX 와 같은 길로 읽고 `<!-- -->` 는 걷어낸다. 여러 줄 문단은 줄마다 한 마디다. script 안은 코드다."""
     html = (
         "<!-- 주석의 한국어 -->\n"
         '<button title="저장 실패">다시 시도</button> <!-- 옆 주석 한글 -->\n'
@@ -116,6 +116,32 @@ def testHtmlReadsTagTextAndAttributesButNotComments():
         "<script>const M = '스크립트 글'; // 주석 한글</script>\n"
         "<p>여러 줄\n글</p>\n"
     )
-    expected = [(2, "저장 실패"), (2, "다시 시도"), (6, "스크립트 글")]
+    expected = [(2, "저장 실패"), (2, "다시 시도"), (6, "스크립트 글"), (7, "여러 줄"), (8, "글")]
     assert texts(html, "a.html") == expected
     assert texts(html, "a.vue") == expected
+
+
+def testInlineTagsDoNotSplitASentenceButSiblingsStaySeparate():
+    """같은 줄에서 인라인 태그만 사이에 둔 조각은 한 마디다 (원문은 태그째, 검사는 태그 없이). 형제 링크와 다른 요소는 따로다."""
+    html = (
+        '<p>붙여 넣으면 <strong>고칠 곳</strong>이 보입니다. <a href="https://x">읽고</a>, 바로 다듬으세요.</p>\n'
+        '<a href="#start">처음 쓰기</a><a href="#records">수정본 기록</a>\n'
+        '<button>다시 시도</button> <a href="#">도움말</a>\n'
+        '<abbr title="한글 설명">HTML</abbr> 문서\n'
+        "<script>const a = '값'; if (x < 3) { alert(a) }</script>\n"
+    )
+    literals = sourceLiterals(html, "a.html")
+    assert [(item.line, item.text) for item in literals] == [
+        (1, '붙여 넣으면 <strong>고칠 곳</strong>이 보입니다. <a href="https://x">읽고</a>, 바로 다듬으세요.'),
+        (2, "처음 쓰기"),
+        (2, "수정본 기록"),
+        (3, "다시 시도"),
+        (3, "도움말"),
+        (4, "한글 설명"),
+        (4, "HTML</abbr> 문서"),
+        (5, "값"),
+    ]
+    assert literals[0].plain == "붙여 넣으면 고칠 곳이 보입니다. 읽고, 바로 다듬으세요."
+    assert literals[6].plain == "HTML 문서"
+    assert texts("<p>접수 <b>실패</b> 코드: {failure}</p>\n") == [(1, "접수 <b>실패</b> 코드: {failure}")]
+    assert texts("const a = '<대상> 필요'\n") == [(1, "<대상> 필요")]

@@ -146,7 +146,7 @@ test("a URL on the line does not hide later text", () => {
 
 test("html reads tag text and attributes but not comments", () => {
   const html = "<!-- 주석의 한국어 -->\n<button title=\"저장 실패\">다시 시도</button> <!-- 옆 주석 한글 -->\n<!--\n여러 줄 주석 한글\n-->\n<script>const M = '스크립트 글'; // 주석 한글</script>\n<p>여러 줄\n글</p>\n";
-  const expected = [[2, "저장 실패"], [2, "다시 시도"], [6, "스크립트 글"]];
+  const expected = [[2, "저장 실패"], [2, "다시 시도"], [6, "스크립트 글"], [7, "여러 줄"], [8, "글"]];
   assert.deepEqual(texts(html, "a.html"), expected);
   assert.deepEqual(texts(html, "a.vue"), expected);
 });
@@ -164,4 +164,30 @@ test("findingCell names each rule once and lists extra cues", () => {
   const sheet = renderSheet(rows, "screen", 1);
   assert.ok(sheet.includes("| screenSentence: `니다.` 는 종결어미다 (또 `습니다`, `세요`) / doublePassive: `되어지` 는 이중 피동이다 |"));
   assert.ok(sheet.includes("| nounPile: 명사 6개가 이어진다 (또 1건) |"));
+});
+
+test("inline tags do not split a sentence but siblings stay separate", () => {
+  const html = [
+    '<p>붙여 넣으면 <strong>고칠 곳</strong>이 보입니다. <a href="https://x">읽고</a>, 바로 다듬으세요.</p>',
+    '<a href="#start">처음 쓰기</a><a href="#records">수정본 기록</a>',
+    '<button>다시 시도</button> <a href="#">도움말</a>',
+    '<abbr title="한글 설명">HTML</abbr> 문서',
+    "<script>const a = '값'; if (x < 3) { alert(a) }</script>",
+    "",
+  ].join("\n");
+  const literals = sourceLiterals(html, "a.html");
+  assert.deepEqual(literals.map((item) => [item.line, item.text]), [
+    [1, '붙여 넣으면 <strong>고칠 곳</strong>이 보입니다. <a href="https://x">읽고</a>, 바로 다듬으세요.'],
+    [2, "처음 쓰기"],
+    [2, "수정본 기록"],
+    [3, "다시 시도"],
+    [3, "도움말"],
+    [4, "한글 설명"],
+    [4, "HTML</abbr> 문서"],
+    [5, "값"],
+  ]);
+  assert.equal(literals[0].plain, "붙여 넣으면 고칠 곳이 보입니다. 읽고, 바로 다듬으세요.");
+  assert.equal(literals[6].plain, "HTML 문서");
+  assert.deepEqual(texts("<p>접수 <b>실패</b> 코드: {failure}</p>\n"), [[1, "접수 <b>실패</b> 코드: {failure}"]]);
+  assert.deepEqual(texts("const a = '<대상> 필요'\n"), [[1, "<대상> 필요"]]);
 });
