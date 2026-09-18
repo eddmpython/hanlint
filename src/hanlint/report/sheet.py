@@ -105,8 +105,25 @@ def splitRow(line: str) -> list[str] | None:
     return cells
 
 
+CUE = re.compile(r"^`([^`]+)`")
+
+
 def findingCell(findings: tuple[Finding, ...]) -> str:
-    return " / ".join(f"{finding.rule}: {finding.why}" for finding in findings)
+    """규칙마다 한 번. 첫 지적의 이유는 온전히, 같은 규칙의 나머지는 단서 (이유 앞의 `…`) 만 `(또 …)` 로 잇는다.
+
+    실측: 종결어미가 둘인 글 하나에 같은 101자 문장이 두 번 붙어 표의 지적 칸이 훑을 수 없게 길었다 (2026-09-18).
+    """
+    byRule: dict[str, list[str]] = {}
+    for finding in findings:
+        byRule.setdefault(finding.rule, []).append(finding.why)
+    cells = []
+    for rule, whys in byRule.items():
+        cell = f"{rule}: {whys[0]}"
+        if len(whys) > 1:
+            cues = [match.group(0) for why in whys[1:] if (match := CUE.match(why))]
+            cell += f" (또 {', '.join(cues)})" if len(cues) == len(whys) - 1 else f" (또 {len(whys) - 1}건)"
+        cells.append(cell)
+    return " / ".join(cells)
 
 
 def renderSheet(rows: list[SheetRow], preset: str, fileCount: int) -> str:

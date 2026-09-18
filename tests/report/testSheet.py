@@ -60,3 +60,24 @@ def testSheetRowsKeepOnlyFlaggedTextUnlessEverything():
     everything = sheetRows([("src/a.jsx", SOURCE)], config, everything=True)
     assert [row.text for row in everything] == ["승인 대기", "요청을 완료하지 못했습니다", "없음"]
     assert everything[0].findings == () and everything[0].fix == ""
+
+
+def testFindingCellNamesEachRuleOnceAndListsExtraCues():
+    """같은 규칙의 지적이 여럿이면 첫 이유만 온전히 쓰고 나머지는 단서만 `(또 …)` 로 잇는다. 다른 규칙은 ` / ` 로 나눈다."""
+    rows = [
+        SheetRow(
+            "a.js",
+            1,
+            "글",
+            (
+                finding("screenSentence", "`니다.` 는 종결어미다"),
+                finding("screenSentence", "`습니다` 는 종결어미다"),
+                finding("doublePassive", "`되어지` 는 이중 피동이다"),
+                finding("screenSentence", "`세요` 는 종결어미다"),
+            ),
+        ),
+        SheetRow("a.js", 2, "글", (finding("nounPile", "명사 6개가 이어진다"), finding("nounPile", "명사 5개가 이어진다"))),
+    ]
+    sheet = renderSheet(rows, "screen", 1)
+    assert "| screenSentence: `니다.` 는 종결어미다 (또 `습니다`, `세요`) / doublePassive: `되어지` 는 이중 피동이다 |" in sheet
+    assert "| nounPile: 명사 6개가 이어진다 (또 1건) |" in sheet

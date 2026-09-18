@@ -15,6 +15,7 @@ const BATCH_BYTES = 400_000;
 const TOGGLED = ["sampleButton", "newButton", "repoButton"];
 const TEXT_FILE = /\.(md|markdown|txt)$/i;
 const COLUMNS = ["자리", "글", "지적", "고침"];
+const CUE = /^`[^`]+`/;
 
 function fileName(path) {
   return path.slice(path.lastIndexOf("/") + 1);
@@ -262,9 +263,14 @@ export class RepoMode {
       if (!byRule.has(finding.rule)) byRule.set(finding.rule, []);
       if (!byRule.get(finding.rule).includes(finding.why)) byRule.get(finding.rule).push(finding.why);
     }
+    // CLI 의 findingCell 과 같은 꼴: 첫 이유는 온전히, 같은 규칙의 나머지는 단서만.
     for (const [rule, reasons] of byRule) {
       const item = element("div", "sheetRule");
-      item.append(element("strong", "", rule), ...reasons.map((reason) => element("span", "", reason)));
+      item.append(element("strong", "", rule), element("span", "", reasons[0]));
+      if (reasons.length > 1) {
+        const cues = reasons.slice(1).map((reason) => CUE.exec(reason)?.[0]).filter((cue) => cue !== undefined);
+        item.append(element("small", "", cues.length === reasons.length - 1 ? `또 ${cues.join(", ")}` : `또 ${reasons.length - 1}건`));
+      }
       why.append(item);
     }
     const fix = element("td", "sheetFix");

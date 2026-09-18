@@ -150,3 +150,18 @@ test("html reads tag text and attributes but not comments", () => {
   assert.deepEqual(texts(html, "a.html"), expected);
   assert.deepEqual(texts(html, "a.vue"), expected);
 });
+
+test("findingCell names each rule once and lists extra cues", () => {
+  const rows = [
+    { file: "a.js", line: 1, text: "글", fix: "", column: 0, findings: [
+      finding("screenSentence", 1, "글", "`니다.` 는 종결어미다"),
+      finding("screenSentence", 1, "글", "`습니다` 는 종결어미다"),
+      finding("doublePassive", 1, "글", "`되어지` 는 이중 피동이다"),
+      finding("screenSentence", 1, "글", "`세요` 는 종결어미다"),
+    ] },
+    { file: "a.js", line: 2, text: "글", fix: "", column: 0, findings: [finding("nounPile", 2, "글", "명사 6개가 이어진다"), finding("nounPile", 2, "글", "명사 5개가 이어진다")] },
+  ];
+  const sheet = renderSheet(rows, "screen", 1);
+  assert.ok(sheet.includes("| screenSentence: `니다.` 는 종결어미다 (또 `습니다`, `세요`) / doublePassive: `되어지` 는 이중 피동이다 |"));
+  assert.ok(sheet.includes("| nounPile: 명사 6개가 이어진다 (또 1건) |"));
+});
