@@ -102,7 +102,7 @@ def run(args: argparse.Namespace) -> int:
         else:
             parts.append(
                 "\n\n".join(
-                    renderText(name, findings, registers[name], config.preset, config.exemplars)
+                    renderText(name, findings, registers[name], config.preset, config.exemplars, args.notices)
                     for name, findings in shown.items()
                 )
             )

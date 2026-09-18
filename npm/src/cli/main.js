@@ -116,6 +116,7 @@ const OPTION_KINDS = {
   "--quiet": "flag",
   "--severity": "value",
   "--errors-only": "flag",
+  "--notices": "flag",
   "--path": "value",
   "--layer": "value",
   "--dry-run": "flag",
@@ -528,7 +529,7 @@ function runLint(args) {
     } else {
       parts.push(
         [...shown]
-          .map(([name, findings]) => renderText(name, findings, registers.get(name), config.preset, config.exemplars))
+          .map(([name, findings]) => renderText(name, findings, registers.get(name), config.preset, config.exemplars, Boolean(options["--notices"])))
           .join("\n\n"),
       );
       if (shown.size > 1) parts.push(summary(results));

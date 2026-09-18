@@ -73,7 +73,8 @@ def report(paths: list[str], args: argparse.Namespace, config: Config) -> str:
     else:
         parts = [
             "\n\n".join(
-                renderText(name, found, registers[name], config.preset, config.exemplars) for name, found in shown.items()
+                renderText(name, found, registers[name], config.preset, config.exemplars, getattr(args, "notices", False))
+                for name, found in shown.items()
             )
         ]
         if len(shown) > 1:

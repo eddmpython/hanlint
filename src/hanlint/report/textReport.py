@@ -5,6 +5,9 @@
 
 전과 후를 제 줄에 둔다. 한 줄에 이어 붙였더니 53개 본보기 가운데 23개에서 **답인 `후` 가 잘렸다.**
 잘린 짝이 있으면 전문이 어디 있는지 (`hanlint explain`) 머리줄이 한 번 알린다.
+
+확인할 자리 (notice) 는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README 를 검사할 때마다 같은
+확인 12개 (endingRepeat, outsideProfile) 가 오류와 같은 무게로 나와 눈이 무뎌졌다 (2026-09-18). `--notices` 가 편다.
 """
 
 from __future__ import annotations
@@ -52,12 +55,25 @@ def candidateLines(findings: list[Finding]) -> list[str]:
     return lines
 
 
+def noticeLines(notices: list[Finding]) -> list[str]:
+    """접은 확인할 자리. 규칙마다 개수와 줄 번호 한 줄, 규칙은 이름 순이다."""
+    byRule: dict[str, list[int]] = {}
+    for finding in notices:
+        byRule.setdefault(finding.rule, []).append(finding.line)
+    lines = [f"확인할 자리 {len(notices)} (접음. 다 보려면 --notices)"]
+    for rule in sorted(byRule):
+        numbers = sorted(set(byRule[rule]))
+        lines.append(f"  {rule} {len(byRule[rule])}  {', '.join(str(n) for n in numbers)}줄")
+    return lines
+
+
 def renderText(
     path: str,
     findings: list[Finding],
     register: str | None = None,
     preset: str | None = None,
     customExemplars: Iterable[Exemplar] = (),
+    unfoldNotices: bool = False,
 ) -> str:
     if not findings:
         return f"{path}  집은 자리 없음"
@@ -65,7 +81,9 @@ def renderText(
     notices = len(findings) - errors
     summary = f"{path}  집은 자리 {errors}" + (f", 확인할 자리 {notices}" if notices else "")
     lines = [summary, ""]
-    for finding in findings:
+    folded = [f for f in findings if f.severity == "notice"] if not unfoldNotices else []
+    shown = [f for f in findings if unfoldNotices or f.severity == "error"]
+    for finding in shown:
         tag = f"[{finding.rule}]" + (" 확인" if finding.severity == "notice" else "")
         lines.append(f"{path}:{finding.line}  {tag}")
         lines.append(f"  {finding.quote}")
@@ -73,8 +91,10 @@ def renderText(
         if finding.fix:
             lines.append(f"  고친 뒤: {finding.fix}")
         lines.append("")
-    lines.extend(exemplarLines(findings, register, preset, customExemplars))
-    candidates = candidateLines(findings)
+    if folded:
+        lines.extend([*noticeLines(folded), ""])
+    lines.extend(exemplarLines(shown, register, preset, customExemplars))
+    candidates = candidateLines(shown)
     if candidates:
         lines.extend(["", *candidates])
     return "\n".join(lines).rstrip("\n")

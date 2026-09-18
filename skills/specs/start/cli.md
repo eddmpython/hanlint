@@ -188,7 +188,8 @@ hanlint 글.md --format github --errors-only
 ```
 
 `compact`는 지적을 한 줄씩 보여 주고, `json`은 위치와 이유, 본보기와 제공할 수 있는 후보를 담는다.
-`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 notice 표시를 제외한다.
+`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 notice 표시를 제외한다. 기본 text 출력은 확인할 자리
+(notice) 를 규칙과 줄 번호 한 줄로 접는다. `--notices` 가 다 편다.
 설정 안내 같은 주변 출력을 줄이려면 `--quiet`를 사용한다.
 
 ### 종료 코드

@@ -23,6 +23,8 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Changed
 
+- 기본 text 출력이 확인할 자리 (notice) 를 규칙마다 개수와 줄 번호 한 줄로 접는다. `--notices` 가 다 편다.
+  README 를 검사할 때마다 같은 확인 12개가 오류와 같은 무게로 나와 눈이 무뎌지던 것을 바꿨다.
 - 화면 규칙 (screenNarration, screenSentence, screenTone, screenWord) 의 지적 문장 끝 출처가 `(화면 낱말 규약)` 이다. 사적
   프로젝트 이름이 공개 제품의 메시지에 나오지 않는다. 실측 출처는 규칙 docstring 이 소유한다.
 - `sheet` 의 파일 순서를 구분자를 `/` 로 맞춘 경로로 정렬한다. Windows 와 다른 OS, 브라우저의 표 순서가 같다.

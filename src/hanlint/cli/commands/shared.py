@@ -90,6 +90,7 @@ def addOutputOption(parser: argparse.ArgumentParser) -> None:
 def addSeverityOptions(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--severity", choices=SEVERITIES, default="all", help="보여 줄 지적. 기본 all")
     parser.add_argument("--errors-only", dest="errorsOnly", action="store_true", help="--severity error 와 같다")
+    parser.add_argument("--notices", action="store_true", help="접힌 확인할 자리 (notice) 를 다 편다. text 꼴에서만")
 
 
 def severityOf(args: argparse.Namespace) -> str:

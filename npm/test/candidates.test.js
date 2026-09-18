@@ -6,6 +6,7 @@ import { defaultConfig } from "../src/config/settings.js";
 import { lintText } from "../src/index.js";
 import { renderJson } from "../src/report/jsonReport.js";
 import { renderText } from "../src/report/textReport.js";
+import { finding } from "../src/rules/finding.js";
 
 /** @param {string} rule @param {string} text @param {import("../src/config/settings.js").Config} [config] */
 function one(rule, text, config = defaultConfig()) {
@@ -50,4 +51,20 @@ test("json carries candidates and text puts them below exemplars", () => {
   assert.ok(text.indexOf("본보기") < text.indexOf("후보 (기계가 고르지 않음)"));
   const noCandidate = JSON.parse(renderJson(new Map([["글.md", [one("cliche", "핵심은 속도입니다.")]]])));
   assert.ok(!("candidates" in noCandidate.files[0].findings[0]));
+});
+
+test("text folds notices unless asked", () => {
+  const error = finding("cliche", 3, "핵심은 속도입니다.", "상투어다", "속도가 기준입니다.", "error");
+  const notices = [
+    finding("endingRepeat", 5, "글", "다 가 반복된다", null, "notice"),
+    finding("endingRepeat", 9, "글", "다 가 반복된다", null, "notice"),
+    finding("longSentence", 7, "글", "길다", null, "notice"),
+  ];
+  const folded = renderText("글.md", [error, ...notices]);
+  assert.ok(folded.includes("글.md  집은 자리 1, 확인할 자리 3"));
+  assert.ok(folded.includes("확인할 자리 3 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄"));
+  assert.ok(!folded.includes("[endingRepeat] 확인") && folded.includes("[cliche]"));
+  const unfolded = renderText("글.md", [error, ...notices], null, null, [], true);
+  assert.ok(unfolded.includes("글.md:5  [endingRepeat] 확인") && !unfolded.includes("(접음"));
+  assert.equal(renderText("글.md", [error]), renderText("글.md", [error], null, null, [], true));
 });

@@ -35,21 +35,40 @@ function candidateLines(findings) {
   return lines;
 }
 
-/** @param {string} path @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} [register] @param {string | null | undefined} [preset] @param {import("../data/exemplars.js").Exemplar[]} [customExemplars] */
-export function renderText(path, findings, register = null, preset = null, customExemplars = []) {
+/** 접은 확인할 자리. 규칙마다 개수와 줄 번호 한 줄. 뜻은 파이썬 textReport.py 의 noticeLines 가 소유한다. @param {import("../rules/finding.js").Finding[]} notices */
+function noticeLines(notices) {
+  /** @type {Map<string, number[]>} */
+  const byRule = new Map();
+  for (const finding of notices) {
+    if (!byRule.has(finding.rule)) byRule.set(finding.rule, []);
+    /** @type {number[]} */ (byRule.get(finding.rule)).push(finding.line);
+  }
+  const lines = [`확인할 자리 ${notices.length} (접음. 다 보려면 --notices)`];
+  for (const rule of [...byRule.keys()].sort()) {
+    const numbers = [...new Set(/** @type {number[]} */ (byRule.get(rule)))].sort((a, b) => a - b);
+    lines.push(`  ${rule} ${/** @type {number[]} */ (byRule.get(rule)).length}  ${numbers.join(", ")}줄`);
+  }
+  return lines;
+}
+
+/** @param {string} path @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} [register] @param {string | null | undefined} [preset] @param {import("../data/exemplars.js").Exemplar[]} [customExemplars] @param {boolean} [unfoldNotices] */
+export function renderText(path, findings, register = null, preset = null, customExemplars = [], unfoldNotices = false) {
   if (!findings.length) return `${path}  집은 자리 없음`;
   const errors = findings.filter((f) => f.severity === "error").length;
   const notices = findings.length - errors;
   const summary = `${path}  집은 자리 ${errors}` + (notices ? `, 확인할 자리 ${notices}` : "");
   const lines = [summary, ""];
-  for (const f of findings) {
+  const folded = unfoldNotices ? [] : findings.filter((f) => f.severity === "notice");
+  const shown = findings.filter((f) => unfoldNotices || f.severity === "error");
+  for (const f of shown) {
     const tag = `[${f.rule}]` + (f.severity === "notice" ? " 확인" : "");
     lines.push(`${path}:${f.line}  ${tag}`, `  ${f.quote}`, `  ${f.why}`);
     if (f.fix) lines.push(`  고친 뒤: ${f.fix}`);
     lines.push("");
   }
-  lines.push(...exemplarLines(findings, register, preset, customExemplars));
-  const candidates = candidateLines(findings);
+  if (folded.length) lines.push(...noticeLines(folded), "");
+  lines.push(...exemplarLines(shown, register, preset, customExemplars));
+  const candidates = candidateLines(shown);
   if (candidates.length) lines.push("", ...candidates);
   return lines.join("\n").replace(/\n+$/, "");
 }

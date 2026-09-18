@@ -158,3 +158,22 @@ def testJsonReportCarriesSafeOperationOutsideFindings():
     )
     operation = data["files"][0]["operations"][0]["operation"]
     assert operation["result"] == "첫 렌더링 결과입니다."
+
+
+def testTextReportFoldsNoticesUnlessAsked():
+    """확인할 자리는 기본으로 규칙과 줄 번호 한 줄로 접히고 본보기에도 안 낀다. unfoldNotices 가 편다."""
+    from hanlint.rules import Finding
+
+    error = Finding("cliche", 3, "핵심은 속도입니다.", "상투어다", "속도가 기준입니다.", "error", "sentence", 0)
+    notices = [
+        Finding("endingRepeat", 5, "글", "다 가 반복된다", None, "notice", "paragraph", 1),
+        Finding("endingRepeat", 9, "글", "다 가 반복된다", None, "notice", "paragraph", 2),
+        Finding("longSentence", 7, "글", "길다", None, "notice", "sentence", 3),
+    ]
+    folded = renderText("글.md", [error, *notices])
+    assert "글.md  집은 자리 1, 확인할 자리 3" in folded
+    assert "확인할 자리 3 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄" in folded
+    assert "[endingRepeat] 확인" not in folded and "[cliche]" in folded
+    unfolded = renderText("글.md", [error, *notices], unfoldNotices=True)
+    assert "글.md:5  [endingRepeat] 확인" in unfolded and "(접음" not in unfolded
+    assert renderText("글.md", [error]) == renderText("글.md", [error], unfoldNotices=True)
