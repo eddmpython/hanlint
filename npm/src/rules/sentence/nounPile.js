@@ -1,6 +1,6 @@
 // @ts-check
 import { nounRuns } from "../../analysis/index.js";
-import { attested, usageKindOf } from "../../usage/index.js";
+import { attested, usageKindOf } from "../../usage/counts.js";
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "nounPile";

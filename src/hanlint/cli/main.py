@@ -76,6 +76,7 @@ from .commands import (
     sheet,
     spec,
     terms,
+    usage,
     watch,
 )
 from .commands import (
@@ -118,6 +119,7 @@ COMMANDS = {
     "packet": packet,
     "terms": terms,
     "sheet": sheet,
+    "usage": usage,
     "verify-patch": verifyPatchCommand,
 }
 

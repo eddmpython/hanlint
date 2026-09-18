@@ -14,6 +14,7 @@ def rootHelp() -> str:
   hanlint hook                          AI가 저장한 마크다운을 같은 턴에 검사한다
   hanlint audit 글.md                   글의 구조와 분포를 함께 본다
   hanlint sheet src/ --preset screen    소스의 화면 글을 표 하나로 떨군다. 고친 표는 sheet apply 로 되돌려 쓴다
+  hanlint usage "낱말 낱말"             그 종류의 실제 글에서 낱말이 쓰인 문장을 본다. 색인은 usage build 가 만든다
 
 요구사항 잠금
   hanlint contract init 글.md --reader "독자" --goal "목표" --outline h2

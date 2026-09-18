@@ -12,13 +12,13 @@ const WORD_CHARS = /^[가-힣A-Za-z0-9]+$/;
 /** 관형격 조사 의. 영문과 숫자 뒤 (API의, 600MiB의) 와 닫는 괄호 뒤 (L7(HTTP)의) 도 센다. 파이썬 tokenize.py 와 같다. */
 const GENITIVE = /([가-힣A-Za-z0-9]+|\))의(?=[\s,.)\]]|$)/g;
 const SPACED_GENITIVE = /(?<=\s)의(?=\s)/g;
-const COPULA = /^(?:이(?:고|며|다|라|란|면|라서|므로|지만|어서|었다|었고)|인|인데|입니다|였다)$/;
+export const COPULA = /^(?:이(?:고|며|다|라|란|면|라서|므로|지만|어서|었다|었고)|인|인데|입니다|였다)$/;
 const DIGITS = /^\d+$/;
 /** 수에 단위가 붙은 어절 (2012년, 30분쯤, 제16호, 100명). 수량이라 명사 나열에서 세지도 끊지도 않는다. */
 const QUANTITY = /^제?\d[\d,.]*[가-힣]{1,3}$/;
 const OPENERS = "([{\"“‘'";
 const CLOSERS = ",.?!;:)]}\"”’'";
-const EDGE_PUNCTUATION = ".,?!:;\"'“”‘’()[]{}<>";
+export const EDGE_PUNCTUATION = ".,?!:;\"'“”‘’()[]{}<>";
 
 /**
  * @typedef {object} Word

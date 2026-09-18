@@ -103,6 +103,24 @@ hanlint sheet apply 시트.md
 설치 없이 보려면 [브라우저 편집기](https://eddmpython.github.io/hanlint/) 의 원문 칸에 공개 GitHub 저장소 주소를 붙여
 넣는다. 같은 표가 뜨고 내려받은 시트를 `hanlint sheet apply` 가 그대로 읽는다.
 
+## 실제 글에서 낱말의 쓰임 보기
+
+지적을 고칠 때 "이 종류의 실제 글은 이 낱말을 어떻게 쓰나" 가 막히는 자리다. `usage` 는 그 종류의 말뭉치를 문장 단위로
+색인해 두고 질의의 낱말이 쓰인 문장을 BM25 순서로 보인다. 좋은 문장을 고르지 않는다. 쓰인 문장을 보이고 판정은 읽는
+쪽이 한다. 같은 질의는 같은 순서다.
+
+```console
+hanlint usage build report 보고서들/
+hanlint usage "리스부채 최초 인식" --kind report --limit 5
+hanlint usage "영업이익 감소 원인" --format json
+```
+
+색인은 사용자 기계 (`~/.cache/hanlint/usage/<종류>/`) 에만 있고 패키지에 실리지 않는다. `build` 는 폴더 (하위 포함) 의
+txt 와 md 를 읽어 마침표로 끝난 한국어 문장만 색인하고, 같은 문장은 하나로 접어 몇 편의 문서에 나왔는지 센다. 결과
+줄마다 문서 수와 출처 (파일 이름) 가 붙는다. 사업보고서는 `scripts/fetch/dartReports.py` 가 받고 출처는 접수번호라
+`https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<접수번호>` 로 원문을 연다. 색인이 없으면 만드는 법을 알리고 2 로
+끝난다. 규칙 쪽의 용례 (nounPile 이 접는 관용 연쇄) 는 `operation.usage` 가 설명한다.
+
 ## 프리셋과 설정
 
 글의 목적이 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
@@ -223,6 +241,8 @@ hanlint 글.md --format github --errors-only
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
 | `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py, html, vue, svelte) 의 한국어 글을 표 하나로 떨군다. `--all` 은 지적 없는 글도 | 예 |
 | `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 자리에 되돌려 쓴다. `--dry-run` 은 보기만 | 예 |
+| `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 낱말이 쓰인 문장을 BM25 순서로. `--limit`, `--format json` | 예 |
+| `hanlint usage build report 글들/` | 폴더의 txt 와 md 로 사용자 기계에 문장 색인을 만든다 | 예 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
 | `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |

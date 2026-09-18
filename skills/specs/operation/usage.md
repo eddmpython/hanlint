@@ -27,7 +27,10 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 | 빈도표 만들기 | `scripts/derive/usageCounts.py` | 도구 |
 | 말뭉치 받기 | `scripts/fetch/dartReports.py` (report) | 도구 |
 | 실측 | `scripts/measure/reports.py` | 도구 |
+| 문장 역인덱스 만들기와 조회 (`buildIndex`, `loadIndex`, `UsageIndex.search`) | `src/hanlint/usage/sentences.py`, `npm/src/usage/sentences.js` | usage |
 | 규칙 | `nounPile` 이 관용 연쇄를 접는다 | rules |
+| 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>` (두 판) | cli |
+| 스킬 | `skills/use-hanlint/SKILL.md` 4단계가 막힌 자리에서 `usage` 를 부른다 | |
 
 프리셋 → 종류는 `config.USAGE_OF` 가 정한다 (report 만). 설정 `usageKind` 가 덮고 빈 문자열이면 보지 않는다.
 `usageMin` (기본 3) 은 연쇄가 몇 편의 문서에 나와야 관용으로 보는지다.
@@ -47,6 +50,22 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
 관용 연쇄에 명사를 하나 더 얹은 것 (`정관상 배당절차 개선방안 이행 가부 검토 결과`) 은 여전히 쌓기다. 부분 일치와
 창 (window) 으로 접지 않는다. 관용 낱말 둘을 붙인 것도 관계가 표시되지 않은 쌓기이기 때문이다.
 
+## 문장 역인덱스
+
+`hanlint usage build <종류> <글 폴더>` 가 `~/.cache/hanlint/usage/<종류>/` 에 만든다. 파일 꼴과 토큰과 점수는
+`src/hanlint/usage/sentences.py` 의 docstring 이 소유하고 npm 판은 같은 바이트를 만든다 (`testUsageIndexAgrees`).
+
+- 문장: 마침표나 물음표나 느낌표로 끝난 한국어 문장만. 제목과 항목 이름은 낱말의 쓰임이 아니라 이름이라 빈도표 쪽이다.
+  코드 펜스 안과 표 줄은 넘기고 목록 표시와 항목 번호는 뗀다.
+- 접기: 공백을 모으고 숫자를 0 으로 바꾼 꼴이 같으면 한 문장이다. 몇 편의 문서에 나왔는지를 세어 결과에 보인다.
+  실측: 사업보고서 961편 747,583문장이 416,914문장으로 접혔다.
+- 토큰: 조사를 뗀 어절 (core) 과 세 글자 이상 한글 어절의 글자 두 개짜리 조각 (bigram). bigram 이 `금융리스부채` 와
+  `리스부채`, `적용되며` 와 `적용된다` 를 잇는다. 문장 절반 넘게 나오는 토큰은 조회에서 뺀다.
+- 점수: BM25 (k1 1.5, b 0.75). 점수 내림차순, 같으면 문장 번호 오름차순. 두 판의 log 가 마지막 자리에서 갈릴 수 있어
+  1e6 배의 정수로 내려 견준다.
+- 크기와 시간 (2026-09-19, 961편): 색인 150 MB (문장 94 MB, postings 43 MB, 토큰 표 14 MB), 만들기 파이썬 약 75초,
+  조회 1.3초 (그 가운데 토큰 표 읽기가 대부분). 같은 파이썬 색인을 npm 판이 같은 순서로 답한다.
+
 ## 다시 만들기
 
 ```
@@ -54,6 +73,7 @@ DART_API_KEY=... python -X utf8 -B scripts/fetch/dartReports.py --count 1000
 python -X utf8 -B scripts/derive/usageCounts.py --kind report
 python -X utf8 -B scripts/derive/npmData.py
 python -X utf8 -B scripts/measure/reports.py
+python -X utf8 -B -m hanlint usage build report ~/.cache/hanlint/corpus/dart
 ```
 
 말뭉치는 `~/.cache/hanlint/corpus/dart/` 에 있고 저장소에 들어오지 않는다. 키는 환경 변수로만 준다.

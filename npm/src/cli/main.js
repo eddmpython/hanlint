@@ -49,6 +49,8 @@ import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runA
 import { MARKDOWN, SKIPPED_FOLDERS, isSkipped, markdownUnder } from "./walk.js";
 import { SOURCE_SUFFIXES } from "../document/sourceText.js";
 import { applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows } from "../report/sheet.js";
+import { buildIndex as buildUsageIndex, defaultRoot as defaultUsageRoot, loadIndex as loadUsageIndex, readDocuments as readUsageDocuments } from "../usage/sentences.js";
+import { USAGE_KINDS } from "../config/settings.js";
 import { welcome } from "./welcome.js";
 import { rootHelp } from "./help.js";
 import { renderCompact } from "../report/compactReport.js";
@@ -59,7 +61,7 @@ import { renderText } from "../report/textReport.js";
 import { renderWritingSpec, writingSpec } from "../report/writingSpec.js";
 import { exemplarInRegister, patternInRegister } from "../report/registerMatch.js";
 
-const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "hook", "baseline", "doctor", "init", "contract", "check", "verify-patch", "sheet"];
+const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "hook", "baseline", "doctor", "init", "contract", "check", "verify-patch", "sheet", "usage"];
 const PYTHON_ONLY = [
   "audit",
   "map",
@@ -134,6 +136,9 @@ const OPTION_KINDS = {
   "--baseline": "optional",
   "--prune": "flag",
   "--all": "flag",
+  "--kind": "value",
+  "--limit": "value",
+  "--root": "value",
 };
 
 class UsageError extends Error {}
@@ -1045,6 +1050,61 @@ function applySheet(sheetPath, dryRun) {
   return [applied, failed];
 }
 
+/** 색인이 없을 때의 안내. 뜻은 파이썬 cli/commands/usage.py 의 missingIndex 가 소유한다. @param {string} kind */
+function missingIndex(kind) {
+  return `${kind} 색인이 없다. hanlint usage build ${kind} <글 폴더> 로 만든다 (txt 와 md, 하위 폴더 포함). 사업보고서는 scripts/fetch/dartReports.py 가 받는다`;
+}
+
+/**
+ * `hanlint usage "낱말 …" --kind report --limit 5` 와 `hanlint usage build report 글폴더/`. 뜻은 파이썬
+ * cli/commands/usage.py 가 소유한다.
+ * @param {string[]} args
+ */
+function runUsage(args) {
+  const { options, positionals } = parseArgs(args);
+  const output = /** @type {string | undefined} */ (options["--output"]);
+  const root = /** @type {string} */ (options["--root"] ?? defaultUsageRoot());
+  if (!positionals.length) throw new UsageError('hanlint usage "낱말 …" 또는 hanlint usage build <종류> <글 폴더>');
+  if (positionals[0] === "build") {
+    if (positionals.length !== 3) {
+      emit("hanlint usage build <종류> <글 폴더> 꼴로 준다", output);
+      return 2;
+    }
+    const [, kind, folder] = positionals;
+    if (!existsSync(folder) || !statSync(folder).isDirectory()) {
+      emit(`${folder} 는 폴더가 아니다`, output);
+      return 2;
+    }
+    const result = buildUsageIndex(kind, readUsageDocuments(folder), root);
+    emit(`${join(root, kind)}: 문서 ${result.documents}편, 문장 ${result.sentences}개, 토큰 ${result.terms}종. hanlint usage "낱말" --kind ${kind} 로 묻는다`, output);
+    return 0;
+  }
+  const kind = /** @type {string} */ (options["--kind"] ?? USAGE_KINDS[0]);
+  const limit = Math.max(Number(options["--limit"] ?? 5), 0);
+  if (!Number.isInteger(limit)) throw new UsageError("--limit 은 정수다");
+  const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
+  const query = positionals.join(" ");
+  const index = loadUsageIndex(kind, root);
+  if (!index) {
+    emit(missingIndex(kind), output);
+    return 2;
+  }
+  const hits = index.search(query, limit);
+  if (format === "json") {
+    const data = { version: 1, kind, query, documents: index.documents, sentences: index.sentences, hits };
+    emit(JSON.stringify(data, null, 2), output);
+    return 0;
+  }
+  const lines = [`${kind} 용례 (문서 ${index.documents}편, 문장 ${index.sentences}개): ${query}`];
+  if (!hits.length) lines.push("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다");
+  hits.forEach((hit, index) => {
+    lines.push(`${index + 1}. ${hit.text}`);
+    lines.push(`   문서 ${hit.documents}편, 출처 ${hit.source}`);
+  });
+  emit(lines.join("\n"), output);
+  return 0;
+}
+
 /** `hanlint sheet 폴더/ --preset screen` 과 `hanlint sheet apply 시트.md`. 뜻은 파이썬 cli/commands/sheet.py 가 소유한다. @param {string[]} args */
 function runSheet(args) {
   const { options, positionals } = parseArgs(args);
@@ -1111,6 +1171,7 @@ function dispatch(argv) {
   if (command === "baseline") return runBaseline(rest);
   if (command === "doctor") return runDoctor(rest);
   if (command === "sheet") return runSheet(rest);
+  if (command === "usage") return runUsage(rest);
   return runInit(rest);
 }
 

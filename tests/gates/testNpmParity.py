@@ -581,3 +581,32 @@ def testSheetAgrees(tmp_path):
     python, node = runBoth(["sheet", "apply", str(sheet), "--dry-run"])
     assert python.returncode == node.returncode == 1, node.stderr
     assert python.stdout == node.stdout
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testUsageIndexAgrees(tmp_path):
+    """용례 색인. 두 판이 같은 글에서 같은 바이트의 색인을 만들고, 같은 질의에 같은 글자를 낸다."""
+    from hanlint.usage.sentences import FILES
+
+    corpus = "tests/fixtures/usage/corpus"
+    pythonRoot, nodeRoot = tmp_path / "py", tmp_path / "js"
+    python, node = runBoth(["usage", "리스부채", "--root", str(pythonRoot)])
+    assert python.returncode == node.returncode == 2, node.stderr
+    assert python.stdout == node.stdout
+    python = subprocess.run(
+        [sys.executable, "-X", "utf8", "-B", "-m", "hanlint", "usage", "build", "report", corpus, "--root", str(pythonRoot)],
+        capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+    )  # fmt: skip
+    node = subprocess.run(
+        [str(NODE), str(NODE_CLI), "usage", "build", "report", corpus, "--root", str(nodeRoot)],
+        capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
+    )  # fmt: skip
+    assert python.returncode == node.returncode == 0, node.stderr
+    assert python.stdout.replace(str(pythonRoot), "") == node.stdout.replace(str(nodeRoot), "")
+    for name in FILES:
+        assert (pythonRoot / "report" / name).read_bytes() == (nodeRoot / "report" / name).read_bytes(), name
+    for query in (["리스부채", "측정"], ["영업이익 감소 원인"], ["무상증자"], ["없는낱말"]):
+        for extra in ([], ["--format", "json"], ["--limit", "1"]):
+            python, node = runBoth(["usage", *query, "--root", str(pythonRoot), *extra])
+            assert python.returncode == node.returncode == 0, node.stderr
+            assert python.stdout == node.stdout, (query, extra)
