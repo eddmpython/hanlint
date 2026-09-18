@@ -181,6 +181,12 @@ PROFILE_OF = {
 """프리셋 → 견줄 프로파일의 종류. data/profiles.json 의 키이고 정본은 corpus/catalogue.toml 의 types 다. 규칙
 outsideProfile 이 읽는다. chat 과 screen 은 견줄 말뭉치가 없어 None 이고 그 종류는 견주지 않는다."""
 
+USAGE_OF = {"report": "report"}
+"""프리셋 → 용례 빈도표의 종류 (data/usageCounts.<종류>.json). 없는 프리셋은 용례를 보지 않는다. 사업보고서에서 센
+빈도표는 보고서의 관용 연쇄이지 블로그와 안내의 관용이 아니다. 설정 usageKind 가 이 기본을 덮는다."""
+USAGE_KINDS = tuple(sorted(set(USAGE_OF.values())))
+"""실린 빈도표의 종류. scripts/derive/usageCounts.py 가 만들고 tests/gates/testUsageCounts.py 가 크기와 꼴을 지킨다."""
+
 PRESET_NAMES = tuple(PRESETS)
 DEFAULT_PRESET = PRESET_NAMES[0]
 ENFORCEABLE = ("noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord")
@@ -245,6 +251,12 @@ class Config:
     `이번에는` 은 1건이었다. 둘은 우연이고 셋부터 틀이다."""
     nounPileMin: int = 5
     """명사가 몇 개 이어지면 나열로 보는가. 넷은 `파이썬 데이터프레임 라이브러리` 같은 정상 표현이라 다섯부터."""
+    usageKind: str | None = None
+    """용례 빈도표의 종류. None 이면 프리셋이 정한다 (USAGE_OF). "" 는 어떤 프리셋에서도 용례를 보지 않는다."""
+    usageMin: int = 3
+    """명사 연쇄가 몇 편의 문서에 나와야 그 종류의 용례로 보는가. 둘은 우연이고 셋부터 관용이다 (bridgeRepeatMin 과
+    같은 셈). 실측: 사업보고서 961편에서 nounPile 이 짚은 연쇄 5,011건 가운데 다른 문서 2편 이상에 나온 것이 22.4%,
+    3편 이상이 21.0%, 10편 이상이 18.7% 였다. 둘과 셋의 차이는 작고 셋이 우연을 거른다 (2026-09-19)."""
     endingRun: int = 4
     """같은 종결어미가 몇 문장 이어지면 반복으로 보는가. im-not-ai E-2 의 4 를 출발점으로."""
     factListMinSentences: int = 3
@@ -281,6 +293,8 @@ class Config:
     def __post_init__(self) -> None:
         if not isinstance(self.enforceStyle, list) or any(name not in ENFORCEABLE for name in self.enforceStyle):
             raise ValueError(f"enforceStyle 은 {', '.join(ENFORCEABLE)}의 배열이다")
+        if self.usageKind is not None and self.usageKind != "" and self.usageKind not in USAGE_KINDS:
+            raise ValueError(f"usageKind 는 {', '.join(USAGE_KINDS)} 가운데 하나이거나 빈 문자열이다: {shown(self.usageKind)}")
         if not isinstance(self.protectedTerms, list) or not all(
             isinstance(item, str) and item.strip() for item in self.protectedTerms
         ):

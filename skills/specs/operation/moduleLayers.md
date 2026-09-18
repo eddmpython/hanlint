@@ -28,7 +28,8 @@ status: curated
 | `document`, `blueprint`, `evidence`, `entailment` | 문서 모델 / 원문 없는 구조 예산 / 사실별 근거 원장 / 외부 함의 평가기 benchmark | config / config, data / config / data |
 | `analysis` | 표층 분석 (문장 분리, 어절 판정) 과 어절 판정과 무관한 한국어 형태 층 (grammar). 문서 모델을 모른다 | config, data |
 | `fingerprint` | 문장·문단·절·글 지문. 사전 매치 포함 | document, analysis, config, data |
-| `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint 와 그 아래 |
+| `usage` | 용례. 글 종류별 명사 연쇄 빈도표 (실린다) 와 문장 역인덱스 (사용자 기계). fingerprint 의 형제 | analysis, config, data |
+| `rules`, `audit`, `profile` | 지문 위의 세 형제. 서로 import 하지 않는다 | fingerprint, usage 와 그 아래 |
 | `report`, `edit`, `coverage`, `baseline`, `learn`, `guard` | Finding 과 지문을 보고서, 파일, 고침 후보와 사실 계약 결과로 옮기는 여섯 층. 서로 import 하지 않는다 | rules, audit, profile 과 그 아래 |
 | `arena` | 두 생성 결과의 guard 안전성과 블라인드 사람 선호를 분리하는 작법 대조 | guard 와 그 아래 |
 | `cli` | 명령 | 전부 |

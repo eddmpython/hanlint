@@ -15,7 +15,7 @@ from .readerContract import (
     loadContract,
     parseContract,
 )
-from .settings import DEFAULT_PRESET, PRESET_NAMES, PRESETS, PROFILE_OF, Config
+from .settings import DEFAULT_PRESET, PRESET_NAMES, PRESETS, PROFILE_OF, USAGE_KINDS, USAGE_OF, Config
 from .writingBrief import (
     BRIEF_VERSION,
     EVIDENCE_BRIEF_VERSION,
@@ -36,6 +36,8 @@ __all__ = [
     "PRESETS",
     "PRESET_NAMES",
     "PROFILE_OF",
+    "USAGE_KINDS",
+    "USAGE_OF",
     "AtomicFact",
     "EvidenceRecord",
     "Config",

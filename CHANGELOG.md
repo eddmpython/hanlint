@@ -25,6 +25,13 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 - 저장소 모드의 표 위에 규칙별 칩이 생겼다. 누르면 그 규칙의 행만 보이고 `제안 있음` 은 고침이 미리 채워진 행이다.
 - 저장소 모드가 같은 blob sha 의 파일과 기본 브랜치를 페이지가 살아 있는 동안 다시 받지 않는다.
 - `tests/gates/testNoBytecodeCache.py` 가 저장소 안 `__pycache__` 를 잡고, `tests/conftest.py` 가 pytest 의 바이트코드 쓰기를 끈다.
+- 용례 (usage) 층과 report 빈도표. `data/usageCounts.report.json` 은 사업보고서 961편에서 명사 연쇄가 나온 문서 수를 든
+  표이고 (`scripts/derive/usageCounts.py` 가 만든다), nounPile 은 문장의 긴 연쇄가 전부 usageMin (기본 3) 편 이상의
+  문서에 나온 관용 (`정관상 배당절차 개선방안 이행 가부`) 이면 짚지 않는다. 종류는 프리셋이 정하고 (report 만) 설정
+  `usageKind` 와 `usageMin` 이 덮는다. 사업보고서 문장은 싣지 않고 통계만 싣는다 (라이선스 판정은 `operation.usage`).
+- `scripts/fetch/dartReports.py` 가 OpenDART 사업보고서 본문 문단을 `~/.cache/hanlint/corpus/dart/` 에 받고,
+  `scripts/measure/reports.py` 가 그 말뭉치의 문장 프로파일과 규칙 지적률과 명사 연쇄 빈도를 잰다.
+- `analysis.nounRuns` 가 문장의 명사 연쇄를 어절째 돌려준다. `longestNounRun` 은 그 위의 최댓값이다.
 
 ### Changed
 

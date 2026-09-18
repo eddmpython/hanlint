@@ -122,31 +122,47 @@ def isBareNoun(core: str) -> bool:
     return tailOf(core, "josa.txt") is None and tailOf(core, "verbTails.txt") is None
 
 
-def longestNounRun(text: str) -> int:
-    """명사 어절 연속의 최대 길이. 수사와 바로 뒤의 단위 (여덟 개) 는 수량이라 세지도 끊지도 않는다.
+def nounRuns(text: str) -> list[tuple[list[str], int]]:
+    """명사 어절 연속마다 (어절들, 센 길이). 수사와 바로 뒤의 단위 (여덟 개) 는 수량이라 세지도 끊지도 않고 어절에도 안 넣는다.
 
     의존명사와 관형사와 부사 (`수`, `몇`, `직접`) 는 조사도 어미도 안 붙어 표층으로는 명사로 보이지만
-    명사 쌓기의 재료가 아니다. `data/nonNouns.txt` 가 그 목록이고 연속을 끊는다.
+    명사 쌓기의 재료가 아니다. `data/nonNouns.txt` 가 그 목록이고 연속을 끊는다. 잇달은 영문 어절은 하나로 센다
+    (어절은 둘 다 둔다). 용례 빈도표 (usage) 가 같은 어절들을 키로 세므로 다른 곳에서 연쇄를 다시 정의하지 않는다.
     """
-    longest = run = 0
+    runs: list[tuple[list[str], int]] = []
+    chain: list[str] = []
+    run = 0
     previousAscii = False
     afterNumeral = False
+
+    def close() -> None:
+        nonlocal chain, run, previousAscii
+        if run:
+            runs.append((chain, run))
+        chain, run, previousAscii = [], 0, False
+
     for word in words(text):
         if word.opens:
-            run, previousAscii = 0, False
+            close()
         transparent = isNumeral(word.core) or afterNumeral or isQuantity(word.core)
         afterNumeral = isNumeral(word.core)
         if word.particle or word.core in nonNouns() or not isBareNoun(word.core) or isCopulaAdnominal(word.core):
-            run, previousAscii = 0, False
+            close()
         elif not transparent:
             isAscii = not HANGUL.search(word.core)
             if not (isAscii and previousAscii):
                 run += 1
+            chain.append(word.core)
             previousAscii = isAscii
-            longest = max(longest, run)
         if word.endsClause:
-            run, previousAscii = 0, False
-    return longest
+            close()
+    close()
+    return runs
+
+
+def longestNounRun(text: str) -> int:
+    """명사 어절 연속의 최대 길이. nounRuns 의 센 길이 가운데 가장 큰 것."""
+    return max((length for _, length in nounRuns(text)), default=0)
 
 
 def genitiveSpans(text: str) -> list[tuple[int, int]]:

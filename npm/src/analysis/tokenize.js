@@ -130,32 +130,47 @@ export function isBareNoun(core) {
  * 표층으로는 명사로 보이지만 명사 쌓기의 재료가 아니다. data/nonNouns.txt 가 그 목록이고 연속을 끊는다.
  * @param {string} text
  */
-export function longestNounRun(text) {
-  let longest = 0;
+/**
+ * 명사 어절 연속마다 [어절들, 센 길이]. 뜻은 파이썬 analysis/tokenize.py 의 nounRuns 가 소유한다.
+ * 수사와 단위는 세지도 끊지도 않고 어절에도 안 넣는다. 잇달은 영문 어절은 하나로 센다.
+ * @param {string} text @returns {[string[], number][]}
+ */
+export function nounRuns(text) {
+  /** @type {[string[], number][]} */
+  const runs = [];
+  /** @type {string[]} */
+  let chain = [];
   let run = 0;
   let previousAscii = false;
   let afterNumeral = false;
+  const close = () => {
+    if (run) runs.push([chain, run]);
+    chain = [];
+    run = 0;
+    previousAscii = false;
+  };
   for (const word of words(text)) {
-    if (word.opens) {
-      run = 0;
-      previousAscii = false;
-    }
+    if (word.opens) close();
     const transparent = isNumeral(word.core) || afterNumeral || isQuantity(word.core);
     afterNumeral = isNumeral(word.core);
     if (word.particle || nonNouns().has(word.core) || !isBareNoun(word.core) || isCopulaAdnominal(word.core)) {
-      run = 0;
-      previousAscii = false;
+      close();
     } else if (!transparent) {
       const isAscii = !HANGUL.test(word.core);
       if (!(isAscii && previousAscii)) run += 1;
+      chain.push(word.core);
       previousAscii = isAscii;
-      longest = Math.max(longest, run);
     }
-    if (word.endsClause) {
-      run = 0;
-      previousAscii = false;
-    }
+    if (word.endsClause) close();
   }
+  close();
+  return runs;
+}
+
+/** 명사 어절 연속의 최대 길이. nounRuns 의 센 길이 가운데 가장 큰 것. @param {string} text */
+export function longestNounRun(text) {
+  let longest = 0;
+  for (const [, length] of nounRuns(text)) longest = Math.max(longest, length);
   return longest;
 }
 

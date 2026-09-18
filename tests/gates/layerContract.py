@@ -21,6 +21,7 @@ LAYERS: dict[str, int] = {
     "entailment": 2,
     "analysis": 3,
     "fingerprint": 4,
+    "usage": 4,
     "rules": 5,
     "audit": 5,
     "profile": 5,

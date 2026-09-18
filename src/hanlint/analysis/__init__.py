@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 from .splitSentences import Sentence, splitSentences
-from .tokenize import doublePassives, doublePassiveSpans, euiAdjacent, euiCount, longestNounRun
+from .tokenize import doublePassives, doublePassiveSpans, euiAdjacent, euiCount, longestNounRun, nounRuns
 
 __all__ = [
     "Sentence",
@@ -20,5 +20,6 @@ __all__ = [
     "euiAdjacent",
     "euiCount",
     "longestNounRun",
+    "nounRuns",
     "splitSentences",
 ]

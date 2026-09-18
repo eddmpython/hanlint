@@ -123,6 +123,11 @@ export const PROFILE_OF = {
   screen: null,
 };
 
+/** 프리셋 → 용례 빈도표의 종류. 정본은 파이썬 config/settings.py 의 USAGE_OF 다. @type {Record<string, string>} */
+export const USAGE_OF = { report: "report" };
+/** 실린 빈도표의 종류. */
+export const USAGE_KINDS = [...new Set(Object.values(USAGE_OF))].sort();
+
 export const PRESET_NAMES = Object.keys(PRESETS);
 /** 설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다. */
 export const DEFAULT_PRESET = PRESET_NAMES[0];
@@ -152,6 +157,8 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {number} headingSentenceMaxLevel
  * @property {number} bridgeRepeatMin
  * @property {number} nounPileMin
+ * @property {string | null} usageKind 용례 빈도표의 종류. null 이면 프리셋이 정하고 "" 면 보지 않는다
+ * @property {number} usageMin 명사 연쇄가 몇 편의 문서에 나와야 용례로 보는가
  * @property {number} endingRun
  * @property {number} factListMinSentences
  * @property {number} factListMaxMeanLength
@@ -191,6 +198,8 @@ export function defaultConfig() {
     headingSentenceMaxLevel: 6,
     bridgeRepeatMin: 3,
     nounPileMin: 5,
+    usageKind: null,
+    usageMin: 3,
     endingRun: 4,
     factListMinSentences: 3,
     factListMaxMeanLength: 8.0,
@@ -235,6 +244,11 @@ export function configFromMapping(data) {
         throw new Error(`enforceStyle 은 ${ENFORCEABLE.join(", ")}의 배열이다`);
       }
       config.enforceStyle = [...value];
+    } else if (key === "usageKind") {
+      if (value !== null && value !== "" && !USAGE_KINDS.includes(/** @type {string} */ (value))) {
+        throw new Error(`usageKind 는 ${USAGE_KINDS.join(", ")} 가운데 하나이거나 빈 문자열이다: ${JSON.stringify(value)}`);
+      }
+      config.usageKind = /** @type {string | null} */ (value);
     } else if (key === "dictionary") {
       config.dictionary = { .../** @type {Record<string, unknown[]>} */ (value) };
     } else if (key === "exemplars") {
