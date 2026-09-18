@@ -85,17 +85,18 @@ JSON 형식과 전체 조건은
 ## 브라우저와 수정 사례
 
 [한린트 편집기](https://eddmpython.github.io/hanlint/)는 같은 npm 코어로 검사, 고침,
-원문 비교와 개인 기록을 제공한다. 사용 방법은
+원문 비교와 개인 기록, 그리고 공개 GitHub 저장소 주소 하나로 만드는 화면 글 시트를 제공한다. 사용 방법은
 [편집기 안내](https://eddmpython.github.io/hanlint/guide.html)에서 확인한다.
 
-다음 API는 **main과 현재 웹 편집기에 먼저 반영되어 있으며, npm 0.0.10에는 없다.**
-배포 여부는 [변경 이력](https://github.com/eddmpython/hanlint/blob/main/CHANGELOG.md)에서 확인한다.
+다음 API는 **main과 현재 웹 편집기에 먼저 반영된다.** 어느 npm 버전에 들어갔는지는
+[변경 이력](https://github.com/eddmpython/hanlint/blob/main/CHANGELOG.md)에서 확인한다.
 
 | API | 결과 |
 |---|---|
 | `inspectText(text, config)` | 지적, 문체 본보기, 승인 고침 후보와 지문 |
 | `learnText(before, after, config)` | 사람이 확인하고 승인할 문장 고침과 표면 치환 후보 |
 | `compareRevision(before, after, config)` | 자유 원고의 숫자, 링크, 코드와 H2 제목 변화 |
+| `sheetRows(sources, config, everything)` | `{ label, source }` 마다 화면 글을 뽑아 규칙을 돌린 시트 행. CLI `sheet` 와 브라우저가 같은 함수를 쓴다 |
 
 브라우저에서 코어를 실행하려면 사전과 모듈을 함께 조립한다.
 저장소의 [정적 사이트 빌드 절차](https://github.com/eddmpython/hanlint/blob/main/skills/specs/operation/webEditor.md)를 따른다.

@@ -7,7 +7,7 @@
   <meta name="google-site-verification" content="Apib7-x98H0j5cPqHWwSMm6dNU4GmODRoqxLiDzdx9I">
   <meta name="theme-color" content="#f6f8fc" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0c101a" media="(prefers-color-scheme: dark)">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>한린트 · 내 문장을, 더 나답게</title>
   <link rel="icon" type="image/png" href="./brand.png">
   <link rel="preload" href="./pretendard.woff2" as="font" type="font/woff2" crossorigin>
@@ -30,14 +30,15 @@
 
     <section class="workGrid" aria-label="원문 입력과 검사 결과">
       <div class="inputPanel">
-        <div class="panelHeader"><h2><span class="sectionIndex">01</span>원문</h2><label class="presetLabel" for="preset"><span class="srOnly">글 종류</span><select id="preset"><option value="blog">블로그</option><option value="docs">기술 문서</option><option value="report">보고서</option><option value="guide">안내서</option><option value="essay">수필</option><option value="fiction">소설</option><option value="encyclopedia">백과</option><option value="chat">대화</option><option value="screen">화면</option></select></label></div>
+        <div class="panelHeader"><h2><span class="sectionIndex">01</span><span id="sourceTitle">원문</span></h2><label class="presetLabel" for="preset"><span class="srOnly">글 종류</span><select id="preset"><option value="blog">블로그</option><option value="docs">기술 문서</option><option value="report">보고서</option><option value="guide">안내서</option><option value="essay">수필</option><option value="fiction">소설</option><option value="encyclopedia">백과</option><option value="chat">대화</option><option value="screen">화면</option></select></label></div>
         <textarea id="sourceInput" aria-label="검사할 원문" spellcheck="false" maxlength="60000" placeholder="여기에 글을 붙여 넣으세요.&#10;&#10;어떤 문장이든 괜찮아요. 함께 살펴볼게요."></textarea>
-        <div class="panelFooter"><span id="sourceStats">원고를 준비하고 있어요</span><div class="quietActions"><button id="sampleButton" class="textButton">예문</button><label class="fileLabel" for="fileInput">파일 열기<input type="file" id="fileInput" accept=".md,.markdown,.txt,text/plain,text/markdown" hidden></label><button id="newButton" class="textButton">새 글</button></div></div>
+        <div id="repoPanel" class="repoPanel" hidden><div class="repoForm"><input id="repoUrl" type="text" inputmode="url" spellcheck="false" autocomplete="off" placeholder="github.com/계정/저장소 또는 .../tree/main/src" aria-label="GitHub 저장소 주소"><button id="repoLoadButton" class="primary small">불러오기</button></div><label class="repoAll"><input type="checkbox" id="repoAll">지적 없는 글도 표에</label><ul id="repoFiles" class="repoFiles" aria-label="검사할 파일"></ul></div>
+        <div class="panelFooter"><span id="sourceStats">원고를 준비하고 있어요</span><div class="quietActions"><button id="sampleButton" class="textButton">예문</button><label class="fileLabel" id="fileLabel" for="fileInput">파일 열기<input type="file" id="fileInput" accept=".md,.markdown,.txt,text/plain,text/markdown" hidden></label><button id="newButton" class="textButton">새 글</button><button id="repoButton" class="textButton">저장소 열기</button><button id="repoLeaveButton" class="textButton" hidden>글로 돌아가기</button></div></div>
       </div>
       <aside class="resultPanel" aria-label="검사 결과">
         <div class="panelHeader"><h2><span class="sectionIndex">02</span><span id="resultTitle">검사 결과</span><span id="findingCount" class="countBadge">·</span></h2><span id="resultOrigin" class="resultOrigin">원문</span></div>
         <div class="resultBody" id="findingsPanel"><p id="reviewSummary" class="reviewSummary" role="status">문장을 읽고 있어요.</p><div id="findings" class="findingList"></div></div>
-        <div class="panelFooter"><span>확정할 수 있는 표현만 수정합니다</span><button id="fixAllButton" class="primary small" disabled>한 번에 고치기 <span aria-hidden="true">↗</span></button></div>
+        <div class="panelFooter"><span id="resultHint">확정할 수 있는 표현만 수정합니다</span><button id="fixAllButton" class="primary small" disabled>한 번에 고치기 <span aria-hidden="true">↗</span></button><button id="sheetDownloadButton" class="primary small" hidden disabled>시트 내려받기 <span aria-hidden="true">↗</span></button></div>
       </aside>
     </section>
     <p class="localNote"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="4" y="7" width="8" height="7" rx="2"/><path d="M5.5 7V4a2.5 2.5 0 0 1 5 0v3"/></svg>글은 이 브라우저 안에서 검사합니다.</p>

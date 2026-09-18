@@ -23,7 +23,7 @@
     </div>
     <nav class="guideNav" aria-label="안내 목차">
       <a href="#start">처음 쓰기</a><a href="#records">수정본 기록</a><a href="#memory">고침 기억</a>
-      <a href="#github">GitHub 보관</a><a href="#contribute">사례 기여</a><a href="#fork">내 사이트 운영</a><a href="#help">문제 해결</a>
+      <a href="#github">GitHub 보관</a><a href="#repo">저장소 시트</a><a href="#contribute">사례 기여</a><a href="#fork">내 사이트 운영</a><a href="#help">문제 해결</a>
     </nav>
     <section class="guideSection" id="start" aria-labelledby="startTitle">
       <p class="eyebrow">01 · 글 다듬기</p>
@@ -70,15 +70,28 @@
       <p>기록은 저장소의 <code>hanlint/workspace.json</code>에 남습니다. 토큰은 현재 탭의 메모리에만 있고, 기록 파일이나 브라우저 저장소에는 들어가지 않습니다. 새로고침하거나 연결 정보를 지우면 다시 입력해야 합니다.</p>
       <aside class="guideCallout"><strong>다른 기기에서 바꾼 기록이 있다면</strong><p>충돌을 알리고 저장을 멈춥니다. 지금 글을 파일로 보관한 뒤 최신 기록을 가져와 주세요. 여러 기기의 변경을 자동으로 합치지는 않습니다.</p></aside>
     </section>
+    <section class="guideSection" id="repo" aria-labelledby="repoTitle">
+      <p class="eyebrow">05 · 저장소 시트</p>
+      <h2 id="repoTitle">앱의 화면 글은 저장소 주소 하나로 봅니다</h2>
+      <p>원문 칸에 공개 GitHub 저장소 주소를 붙여 넣으면 (커서 위치와 상관없이) 소스 파일의 한국어 글 (단추, 이름표, 안내) 을 표 하나로 모읍니다. 마크다운이나 텍스트 파일의 주소를 붙여 넣으면 그 글이 원고로 열립니다. 아래의 <strong>저장소 열기</strong>를 눌러도 같습니다. <code>github.com/계정/저장소/tree/main/src</code> 처럼 폴더까지 적으면 그 안만 봅니다. 글 종류는 <strong>화면</strong>으로 바뀌고 바꿔 볼 수 있습니다.</p>
+      <div class="guideTableWrap"><table class="guideTable"><caption>표의 칸</caption><thead><tr><th scope="col">칸</th><th scope="col">내용</th></tr></thead><tbody>
+        <tr><th scope="row">자리</th><td>파일과 줄. 누르면 GitHub 의 그 줄이 열립니다.</td></tr>
+        <tr><th scope="row">글</th><td>소스에서 뽑은 화면 글 그대로.</td></tr>
+        <tr><th scope="row">지적</th><td>규칙 이름과 이유. <strong>지적 없는 글도 표에</strong>를 켜면 지적이 없는 글도 함께 봅니다.</td></tr>
+        <tr><th scope="row">고침</th><td>새 글을 적는 칸. 적은 뒤 <strong>시트 내려받기</strong>를 누릅니다.</td></tr>
+      </tbody></table></div>
+      <p>내려받은 시트는 저장소를 받은 폴더에서 <code>hanlint sheet apply 시트.md</code> 로 그 자리에 되돌려 씁니다. 터미널의 <code>hanlint sheet src/ --preset screen</code> 과 같은 표라 어느 쪽에서 시작해도 됩니다. 소스는 GitHub 에서만 받고 이 브라우저 안에서 검사합니다. 비공개 저장소는 아직 다루지 않습니다.</p>
+      <aside class="guideCallout"><strong>파일이 많으면 폴더를 좁혀 주세요</strong><p>한 번에 받는 소스는 300개, 8MB 까지이고 1MB 가 넘는 파일 (번들, 생성물) 은 세어서 뺍니다. 넘으면 <code>/tree/main/src</code> 처럼 경로를 좁히라는 안내가 뜹니다. GitHub 는 비인증 요청을 시간당 60회로 제한하므로 같은 저장소를 여러 번 열면 잠시 기다려야 할 수 있습니다.</p></aside>
+    </section>
     <section class="guideSection" id="contribute" aria-labelledby="contributeTitle">
-      <p class="eyebrow">05 · 함께 개선하기</p>
+      <p class="eyebrow">06 · 함께 개선하기</p>
       <h2 id="contributeTitle">좋은 수정과 틀린 지적을 알려 주세요</h2>
       <p>지적이 맞지 않으면 <strong>이 지적은 맞지 않아요</strong>로 판단을 남길 수 있습니다. 이 판단은 개인 기록에 포함되며, 한린트 운영자에게 자동 전송되지 않습니다.</p>
       <p>공유할 수정본은 <strong>내 기록</strong>에서 사례 파일로 내보내고, <a href="https://github.com/eddmpython/hanlint/issues/new/choose" target="_blank" rel="noopener noreferrer">GitHub Issues</a>의 맞는 양식에 첨부해 주세요. 어디가 왜 나아졌는지 함께 적으면 검토에 도움이 됩니다.</p>
       <p>사례 파일에는 원문과 수정 후 전문이 들어갑니다. 공유 전에 개인정보와 비공개 내용을 확인해 주세요. 사례 제출 뒤에도 검토를 거쳐야 공통 규칙에 반영됩니다.</p>
     </section>
     <section class="guideSection" id="fork" aria-labelledby="forkTitle">
-      <p class="eyebrow">06 · 내 사이트 운영</p>
+      <p class="eyebrow">07 · 내 사이트 운영</p>
       <h2 id="forkTitle">내 GitHub Pages에도 띄울 수 있습니다</h2>
       <ol class="guideSteps">
         <li><a href="https://github.com/eddmpython/hanlint/fork" target="_blank" rel="noopener noreferrer">한린트 저장소를 Fork</a>합니다.</li>

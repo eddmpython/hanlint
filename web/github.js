@@ -18,7 +18,8 @@ function decodeContent(content) {
 }
 
 export class GitHubStore {
-  constructor(request = fetch) { this.request = request; this.repository = ""; this.token = ""; this.sha = undefined; }
+  // 기본값이 `fetch` 그 자체가 아닌 이유: `this.request(...)` 로 부르면 브라우저가 Illegal invocation 을 던진다 (실측 2026-09-18).
+  constructor(request = (url, options) => fetch(url, options)) { this.request = request; this.repository = ""; this.token = ""; this.sha = undefined; }
 
   connect(repository, token) {
     if (!/^[A-Za-z0-9][A-Za-z0-9-]*\/[A-Za-z0-9_.-]+$/.test(repository) || repository.split("/")[1] === "." || repository.split("/")[1] === "..") throw new Error("저장소를 계정/저장소 형식으로 입력해 주세요.");

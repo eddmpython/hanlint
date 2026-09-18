@@ -6,6 +6,25 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- 브라우저 편집기의 저장소 모드. 원문 칸에 공개 GitHub 저장소 주소 (`github.com/계정/저장소`, `.../tree/브랜치/경로`) 를
+  붙여 넣거나 `저장소 열기` 를 누르면 소스의 화면 글을 CLI `hanlint sheet` 와 같은 표로 보여 주고, 고침 칸을 적어
+  `hanlint sheet apply` 가 그대로 읽는 시트를 내려받는다. 트리는 api.github.com 한 번, 파일은 raw.githubusercontent.com 에서
+  받으며 제3자 CDN 은 없다. 워커에 `sourceSuffixes`, `sheet`, `sheetText` 액션이 생겼다.
+- `sheetRows(sources, config, everything)` 를 hanlint 와 npm 의 공개 표면에 더했다. CLI `sheet` 의 행 조립을 report 층으로
+  옮긴 것이라 출력은 같다.
+
+### Changed
+
+- 랜딩의 중요 색을 심볼의 네 색 (파랑, 보라, 코랄, 시안) 에서 파생한다. 히어로 강조어의 파랑→보라 흐름과 뒤의 글로우,
+  코랄 지적, 시안 승인. 원색은 흰 바탕에서 AA 를 못 넘어 라이트는 어둡게 파생했다.
+
+### Fixed
+
+- 브라우저의 GitHub 보관이 `fetch` 를 다른 `this` 로 불러 Chrome 에서 항상 "연결하지 못했습니다" 로 끝나던 것을
+  고쳤다 (Illegal invocation). 회귀 시험을 두었다.
+
 ## [0.0.17] - 2026-09-18
 
 ### Fixed

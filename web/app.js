@@ -6,6 +6,8 @@ import { renderFindings, renderProtection, renderMemory } from "./views.js";
 import { GitHubStore } from "./github.js";
 import { EngineClient } from "./engineClient.js";
 import { registerEditorTools } from "./modelTools.js";
+import { RepoMode, isTextFileUrl } from "./repoMode.js";
+import { isRepoUrl, parseRepoUrl } from "./repoSource.js";
 import { newDraft, emptyWorkspace, parseWorkspace, serializeWorkspace, addRecord, contribution, storageKeyFor, MAX_TEXT, MAX_ARCHIVE_BYTES } from "./records.js";
 
 const SAMPLE = "초안 작성 후 문장 구조 검토 과정을 거칩니다. 결과가 저장되어집니다.\n\n문장을 다듬으면서 생각도 조금씩 또렷해집니다. 내가 쓴 말투는 남기고, 읽다가 걸리는 표현만 고치고 싶습니다.";
@@ -16,7 +18,7 @@ const engine = new EngineClient(worker, (error) => {
   get("reviewSummary").textContent = error.message;
   notify(error.message, true);
 });
-let editVersion = 0, analysis = null, timer, noticeTimer, undo = [], storageEnabled = true, revisionActive = false;
+let editVersion = 0, analysis = null, timer, noticeTimer, undo = [], storageEnabled = true, revisionActive = false, repoActive = false;
 let workspace = emptyWorkspace(newDraft(SAMPLE, "처음 만나는 한린트"));
 
 function notify(message, error = false) {
@@ -75,7 +77,7 @@ function isRecorded() {
 }
 
 function renderResult() {
-  if (!analysis) return;
+  if (!analysis || repoActive) return;
   renderFindings(analysis, { locate, reject: rejectFinding, fix: (index) => fix(index), patch: (index) => fix(index, "patch") });
   renderProtection(analysis);
   renderMemory(analysis, workspace.patches, isRecorded(), { approve, forget });
@@ -108,8 +110,10 @@ function changed() {
   clearTimeout(timer);
   get("fixAllButton").disabled = true;
   get("saveButton").disabled = true;
-  get("reviewSummary").textContent = "수정한 문장을 다시 읽고 있어요.";
-  get("findings").replaceChildren();
+  if (!repoActive) {
+    get("reviewSummary").textContent = "수정한 문장을 다시 읽고 있어요.";
+    get("findings").replaceChildren();
+  }
   get("protection").replaceChildren(element("p", "emptyState", "수정한 원고의 보호 조건을 확인하고 있어요."));
   get("memory").replaceChildren(element("p", "emptyState", "수정 전후를 다시 비교하고 있어요."));
   highlight(workspace.draft.text, []);
@@ -294,9 +298,17 @@ try {
 
 get("sourceInput").addEventListener("paste", (event) => {
   const area = get("sourceInput");
-  if (revisionActive || area.selectionStart !== 0 || area.selectionEnd !== area.value.length) return;
   const text = event.clipboardData?.getData("text/plain");
   if (!text) return;
+  // 주소만 붙여 넣으면 (선택 상태와 무관하게) 저장소 모드다. 글 사이의 주소는 글로 둔다 (isRepoUrl 은 전체가 주소일 때만 참).
+  // 글 파일 (md, txt) 주소는 그 내용을 원고로 연다.
+  if (isRepoUrl(text)) {
+    event.preventDefault();
+    const parsed = parseRepoUrl(text);
+    if (isTextFileUrl(parsed)) return openTextFile(parsed);
+    return repoMode.enter(text.trim());
+  }
+  if (revisionActive || area.selectionStart !== 0 || area.selectionEnd !== area.value.length) return;
   event.preventDefault();
   if (text.length > MAX_TEXT) return notify("원고는 60,000자 이하로 붙여 넣어 주세요.", true);
   try { if (workspace.draft.text) addRecord(workspace, analysis?.version ?? "unknown"); }
@@ -328,7 +340,10 @@ for (const id of ["sourceInput", "draft"]) get(id).addEventListener("composition
 });
 get("draft").addEventListener("scroll", () => { get("highlights").scrollTop = get("draft").scrollTop; });
 get("title").addEventListener("input", () => { workspace.draft.title = get("title").value; persist(); });
-get("preset").addEventListener("change", () => { workspace.draft.preset = get("preset").value; changed(); });
+get("preset").addEventListener("change", () => {
+  if (repoActive) return repoMode.runSheet();
+  workspace.draft.preset = get("preset").value; changed();
+});
 get("fixAllButton").onclick = () => fix(null);
 get("undoButton").onclick = () => { if (undo.length) replaceText(undo.pop(), false); };
 get("compareButton").onclick = () => {
@@ -337,6 +352,19 @@ get("compareButton").onclick = () => {
   get("editColumns").classList.toggle("comparing", show);
   get("compareButton").setAttribute("aria-pressed", String(show));
 };
+const repoMode = new RepoMode({
+  engine, notify,
+  onEnter() { repoActive = true; editVersion++; clearTimeout(timer); },
+  onLeave() { repoActive = false; analysis = null; editVersion++; clearTimeout(timer); renderDraft(); analyze(); get("sourceInput").focus(); },
+});
+async function openTextFile(parsed) {
+  get("reviewSummary").textContent = "GitHub 에서 글 파일을 받는 중";
+  try {
+    const { text, title } = await repoMode.fetchText(parsed);
+    if (text.length > MAX_TEXT) return notify("원고는 60,000자 이하 파일을 사용해 주세요.", true);
+    await startDraft(text, title.slice(0, 100));
+  } catch (error) { get("reviewSummary").textContent = error.message; notify(error.message, true); }
+}
 get("sampleButton").onclick = () => startDraft(SAMPLE, "처음 만나는 한린트");
 get("newButton").onclick = () => startDraft("", "새 원고");
 get("downloadButton").onclick = () => download(`${workspace.draft.title || "원고"}.md`, workspace.draft.text, "text/markdown;charset=utf-8");
@@ -371,7 +399,7 @@ get("importInput").onchange = async (event) => {
 };
 get("clearButton").onclick = async () => {
   if (!await confirmAction("이 브라우저의 원고, 수정 이력과 승인 고침을 모두 삭제할까요? GitHub 기록은 남습니다. 필요한 기록은 먼저 내보내 주세요.", "브라우저 기록 삭제")) return;
-  try { localStorage.removeItem(storageKey); } catch (error) { return notify(error.message, true); }
+  try { localStorage.removeItem(storageKey); repoMode.forget(); } catch (error) { return notify(error.message, true); }
   workspace = emptyWorkspace(newDraft("", "새 원고")); storageEnabled = true; undo = [];
   get("historyDialog").close(); renderDraft(true); changed();
 };

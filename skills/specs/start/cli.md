@@ -98,6 +98,9 @@ hanlint sheet apply 시트.md
 실패로 적는다. 표를 뽑은 뒤 파일이 바뀌어 칸이 어긋나면 표를 다시 뽑는다. 글을 지우거나 요소를 없애는
 일은 코드를 열어 손으로 한다. 주석과 개발자용 줄 (`new Error(`, `console.`, `assert`) 은 표에 안 나온다.
 
+설치 없이 보려면 [브라우저 편집기](https://eddmpython.github.io/hanlint/) 의 원문 칸에 공개 GitHub 저장소 주소를 붙여
+넣는다. 같은 표가 뜨고 내려받은 시트를 `hanlint sheet apply` 가 그대로 읽는다.
+
 ## 프리셋과 설정
 
 글의 목적이 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
