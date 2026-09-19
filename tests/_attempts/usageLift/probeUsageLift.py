@@ -9,7 +9,9 @@
 
 주 지표 genreHit: 고친 문장의 이웃 어절 쌍 (조사를 뗀 core 의 인접 쌍) 가운데 **원문에 없던 새 쌍** 만 골라, 그것이
 B 색인의 문서 MIN_PAIR_DOCUMENTS 편 이상에 나오는 비율. 모델이 새로 고른 결합이 그 종류의 실제 글에도 있는지를 묻는다.
-쌍은 표본이 아니라 두 낱말의 postings 교집합으로 확인한다.
+쌍은 표본도 교집합 캡도 쓰지 않는다. 채점에 필요한 쌍을 전부 모은 뒤 채점 말뭉치를 한 번 훑어 문서 수를 정확히 센다
+(3회차 첫 채점이 교집합 400개에서 끊는 캡 때문에 `금융 관련` 같은 흔한 결합을 없다고 셌다. 흔한 낱말일수록 틀렸고
+편향이 용례 조건에 불리했다. 2026-09-19 에 고쳤다).
 부 지표는 규칙 해결, 새 error, 명사 보존, 길이 비다.
 
 판정 조건은 돌리기 전에 못박는다 (probeUsageLift_log.md 의 사전 등록). 짝 부호 검정 p 와 중앙값 차이를 둘 다 본다.
@@ -19,7 +21,7 @@ python -X utf8 -B tests/_attempts/usageLift/probeUsageLift.py split --root <색�
 python -X utf8 -B tests/_attempts/usageLift/probeUsageLift.py prepare --root <색인 폴더> --output manifest.json --per-rule 100
 python -X utf8 -B tests/_attempts/usageLift/probeUsageLift.py prompts manifest.json --output-dir <폴더>
 python -X utf8 -B tests/_attempts/usageLift/probeUsageLift.py run manifest.json --ollama-model qwen3:8b --output responses.json
-python -X utf8 -B tests/_attempts/usageLift/probeUsageLift.py score manifest.json responses.json --root <색인 폴더>
+python -X utf8 -B tests/_attempts/usageLift/probeUsageLift.py score manifest.json responses.json
 ```
 """
 
@@ -46,7 +48,7 @@ from hanlint import Config, fingerprint, lintText  # noqa: E402
 from hanlint.analysis import nounRuns  # noqa: E402
 from hanlint.analysis.tokenize import isBareNoun, stripJosa, words  # noqa: E402
 from hanlint.usage import buildIndex, loadIndex, queryCores  # noqa: E402
-from hanlint.usage.sentences import TERMINAL  # noqa: E402
+from hanlint.usage.sentences import TERMINAL, sentencesOf  # noqa: E402
 
 CONDITIONS = ("reasonOnly", "withUsage", "withWords")
 """reasonOnly 는 규칙과 이유만, withUsage 는 문장 다섯, withWords 는 문장 다섯에 함께 쓰는 말까지."""
@@ -62,10 +64,9 @@ EVIDENCE = 5
 QUERY_WORDS = 3
 MIN_PAIR_DOCUMENTS = 2
 """이웃 쌍이 채점 말뭉치의 몇 편에 나와야 그 종류의 결합으로 보는가. 한 편은 한 회사의 버릇이다."""
-PAIR_CHECK = 400
-"""쌍 하나를 확인할 때 읽을 문장 수 상한. 두 낱말이 함께 든 문장만 읽고 MIN_PAIR_DOCUMENTS 편을 찾으면 바로 멈춘다."""
-CACHE_POSTINGS = 4_000_000
-"""기억할 postings 항목 수 상한. 넘으면 비운다 (문장 55만 개 색인에서 몇백 MB)."""
+COMMON_WORD = 100
+"""낯선 결합을 셀 때 두 낱말이 각각 나와야 하는 문서 수. 이 아래는 고유명사와 제품 이름이라 결합이 없는 것이 정상이다.
+실측: 사람이 쓴 보고서 문장에서 이 문턱으로 걸리는 문장이 11.3% 다 (문턱 없음 25.3%, 1,000편 5.0%. 2026-09-19)."""
 
 
 def promptFor(sentence: str, rule: str, why: str, evidence: list[dict] | None = None, wordsUsed: list[dict] | None = None) -> str:
@@ -137,62 +138,24 @@ def halves(root: Path) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
 
 
 def splitIndexes(corpus: Path, root: Path) -> None:
-    first, second = halves(corpus)
-    for kind, chosen in ((INDEX_A, first), (INDEX_B, second)):
-        result = buildIndex(kind, chosen, root)
-        print(f"{root / kind}: 문서 {result.documents}편, 문장 {result.sentences}개, 토큰 {result.terms}종", flush=True)
+    """근거 색인 (A 절반) 만 만든다. 채점 (B 절반) 은 색인이 아니라 말뭉치를 한 번 훑는 census 다."""
+    first, _ = halves(corpus)
+    result = buildIndex(INDEX_A, first, root)
+    print(f"{root / INDEX_A}: 문서 {result.documents}편, 문장 {result.sentences}개, 토큰 {result.terms}종", flush=True)
 
 
-class PairOracle:
-    """이웃 쌍이 채점 말뭉치의 문서 둘 이상에 나오나. 두 낱말의 postings 를 교집합해 그 문장만 읽고 일찍 멈춘다.
-
-    표본이 아니라 교집합이라 `없음` 은 진짜 없음이다 (PAIR_CHECK 안에서 못 찾은 경우만 예외이고 그때는 흔한 쌍이
-    아니라는 뜻이다). 한 번 본 쌍과 낱말의 postings 는 기억한다."""
-
-    def __init__(self, index) -> None:
-        self.index = index
-        self.pairs: dict[tuple[str, str], bool] = {}
-        self.postings: dict[str, list[int]] = {}
-        self.cached = 0
-
-    def sentencesFor(self, term: str) -> list[int]:
-        known = self.postings.get(term)
-        if known is not None:
-            return known
-        found = self.index.lookup(term)
-        ids = [sentenceId for sentenceId, _ in self.index.postingsAt(found[1], found[2])] if found else []
-        if self.cached > CACHE_POSTINGS:
-            self.postings.clear()
-            self.cached = 0
-        self.postings[term] = ids
-        self.cached += len(ids)
-        return ids
-
-    def attested(self, pair: tuple[str, str]) -> bool:
-        known = self.pairs.get(pair)
-        if known is not None:
-            return known
-        left, right = pair
-        leftIds, rightIds = self.sentencesFor(left), self.sentencesFor(right)
-        found = False
-        if leftIds and rightIds:
-            smaller, larger = (leftIds, set(rightIds)) if len(leftIds) <= len(rightIds) else (rightIds, set(leftIds))
-            sources: set[str] = set()
-            checked = 0
-            for sentenceId in smaller:
-                if sentenceId not in larger:
-                    continue
-                checked += 1
-                if checked > PAIR_CHECK:
-                    break
-                _, source, text = self.index.sentence(sentenceId)
-                if pair in neighbourPairs(text):
-                    sources.add(source)
-                    if len(sources) >= MIN_PAIR_DOCUMENTS:
-                        found = True
-                        break
-        self.pairs[pair] = found
-        return found
+def pairCensus(wanted: set[tuple[str, str]], documents) -> dict[tuple[str, str], int]:
+    """쌍 -> 그 쌍이 붙어 나온 문서 수. wanted 에 있는 쌍만, 말뭉치를 한 번만 훑어 정확히 센다."""
+    counts = dict.fromkeys(wanted, 0)
+    for _, text in documents:
+        seen = set()
+        for sentence in sentencesOf(text):
+            for pair in neighbourPairs(sentence):
+                if pair in counts:
+                    seen.add(pair)
+        for pair in seen:
+            counts[pair] += 1
+    return counts
 
 
 def collectTasks(config: Config, perRule: int, root: Path, corpus: Path) -> list[dict]:
@@ -321,13 +284,25 @@ def termRetention(sentence: str, output: str) -> float:
     return sum(core in output for core in cores) / len(cores)
 
 
-def resultOf(task: dict, response: dict, config: Config, oracle: PairOracle) -> dict:
+def strangeRate(sentence: str, counts: dict[tuple[str, str], int], common) -> tuple[int, int]:
+    """(흔한 낱말끼리인데 결합이 없는 쌍, 흔한 낱말끼리인 쌍). AI 글이 사람 글보다 낯선 결합이 많은지 보는 자리다."""
+    checked = strange = 0
+    for pair in neighbourPairs(sentence):
+        if common(pair[0]) >= COMMON_WORD and common(pair[1]) >= COMMON_WORD:
+            checked += 1
+            if counts.get(pair, 0) < MIN_PAIR_DOCUMENTS:
+                strange += 1
+    return strange, checked
+
+
+def resultOf(task: dict, response: dict, config: Config, counts: dict[tuple[str, str], int], common) -> dict:
     output = response["output"]
     before = Counter(f.rule for f in lintText(task["sentence"], config) if f.severity == "error")
     after = lintText(output, config)
     afterErrors = Counter(f.rule for f in after if f.severity == "error")
     newPairs = neighbourPairs(output) - neighbourPairs(task["sentence"])
-    attested = sum(1 for pair in newPairs if oracle.attested(pair))
+    strange, strangeChecked = strangeRate(output, counts, common)
+    attested = sum(1 for pair in newPairs if counts.get(pair, 0) >= MIN_PAIR_DOCUMENTS)
     return {
         "resolved": bool(output) and all(f.rule != task["rule"] for f in after),
         "unchanged": output == task["sentence"],
@@ -335,6 +310,8 @@ def resultOf(task: dict, response: dict, config: Config, oracle: PairOracle) -> 
         "newPairs": len(newPairs),
         "attestedPairs": attested,
         "genreHit": round(attested / len(newPairs), 4) if newPairs else None,
+        "strange": strange,
+        "strangeChecked": strangeChecked,
         "termRetention": round(termRetention(task["sentence"], output), 4),
         "lengthRatio": round(len(output) / len(task["sentence"]), 3) if task["sentence"] else 0,
     }
@@ -358,20 +335,42 @@ def median(values: list[float]) -> float:
     return ordered[middle] if len(ordered) % 2 else (ordered[middle - 1] + ordered[middle]) / 2
 
 
-def scoreResponses(manifest: dict, responses: dict, config: Config, root: Path) -> str:
-    index = loadIndex(INDEX_B, root)
+def scoreResponses(manifest: dict, responses: dict, config: Config, corpus: Path, root: Path) -> str:
+    index = loadIndex(INDEX_A, root)
     if index is None:
-        raise SystemExit(f"{root / INDEX_B} 색인이 없다. split 을 먼저 돌린다")
-    oracle = PairOracle(index)
+        raise SystemExit(f"{root / INDEX_A} 색인이 없다. split 을 먼저 돌린다 (낱말 빈도를 여기서 본다)")
+    frequency: dict[str, int] = {}
+
+    def common(term: str) -> int:
+        if term not in frequency:
+            found = index.lookup(term)
+            frequency[term] = found[0] if found else 0
+        return frequency[term]
+
     tasks = {task["id"]: task for task in manifest["tasks"]}
+    wanted: set[tuple[str, str]] = set()
+    for response in responses["responses"]:
+        wanted |= neighbourPairs(response["output"])
+    for task in tasks.values():
+        wanted |= neighbourPairs(task["sentence"])
+    _, second = halves(corpus)
+    print(f"확인할 쌍 {len(wanted)}종, 채점 말뭉치 문서 {len(second)}편", file=sys.stderr, flush=True)
+    census = pairCensus(wanted, second)
     results: dict[tuple[str, str], dict] = {}
     for number, response in enumerate(responses["responses"], 1):
         task = tasks[response["taskId"]]
-        results[(task["id"], response["condition"])] = resultOf(task, response, config, oracle)
-        if number % 100 == 0:
+        results[(task["id"], response["condition"])] = resultOf(task, response, config, census, common)
+        if number % 300 == 0:
             print(f"채점 {number}/{len(responses['responses'])}", file=sys.stderr, flush=True)
-    counts = ", ".join(f"{rule} {sum(t['rule'] == rule for t in tasks.values())}" for rule in RULES)
-    lines = [f"과제 {len(tasks)}개 ({counts}), 채점 말뭉치 {INDEX_B} 문서 {index.documents}편", ""]
+    ruleCounts = ", ".join(f"{rule} {sum(t['rule'] == rule for t in tasks.values())}" for rule in RULES)
+    lines = [f"과제 {len(tasks)}개 ({ruleCounts}), 채점 말뭉치 문서 {len(second)}편 (전수 census, 쌍 {len(wanted)}종)", ""]
+    humanStrange = humanChecked = 0
+    for task in tasks.values():
+        strange, checked = strangeRate(task["sentence"], census, common)
+        humanStrange += strange
+        humanChecked += checked
+    share = humanStrange / humanChecked if humanChecked else 0
+    lines.append(f"  사람 원문   낯선 결합 {humanStrange}/{humanChecked} ({share:.1%})")
     for condition in CONDITIONS:
         chosen = [result for (_, kind), result in results.items() if kind == condition]
         hits = [result["genreHit"] for result in chosen if result["genreHit"] is not None]
@@ -385,6 +384,9 @@ def scoreResponses(manifest: dict, responses: dict, config: Config, root: Path) 
             f"새 쌍 {sum(r['newPairs'] for r in chosen)}개 중 {sum(r['attestedPairs'] for r in chosen)}개 확인, "
             f"명사 보존 {sum(r['termRetention'] for r in chosen) / len(chosen):.3f}"
         )
+        strange = sum(r["strange"] for r in chosen)
+        checked = sum(r["strangeChecked"] for r in chosen)
+        lines.append(f"             낯선 결합 {strange}/{checked} ({strange / checked:.1%})" if checked else "")
     lines.extend(["", "짝 비교 (reasonOnly 대)"])
     for condition in CONDITIONS[1:]:
         pairs = [
@@ -437,6 +439,7 @@ def main() -> None:
     score = sub.add_parser("score")
     score.add_argument("manifest", type=Path)
     score.add_argument("responses", type=Path)
+    score.add_argument("--corpus", type=Path, default=corpusRoot())
     score.add_argument("--root", type=Path, required=True)
     args = parser.parse_args()
     config = Config(preset="report")
@@ -460,7 +463,7 @@ def main() -> None:
         writeJson(args.output, responses)
         print(f"{args.output}: 응답 {len(responses['responses'])}개")
     else:
-        print(scoreResponses(readJson(args.manifest), readJson(args.responses), config, args.root))
+        print(scoreResponses(readJson(args.manifest), readJson(args.responses), config, args.corpus, args.root))
 
 
 if __name__ == "__main__":
