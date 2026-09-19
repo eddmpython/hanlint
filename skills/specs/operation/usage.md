@@ -31,7 +31,7 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 | 위키백과 받기 | `scripts/fetch/koWikipedia.py` (encyclopedia) | 도구 |
 | 규칙 | `nounPile` 이 관용 연쇄를 접고, 사전 규칙 다섯 (translationese, hardWord, cliche, redundantPair, japaneseLoan) 이 관용 항목을 접는다 (`rules/shared/dictionaryRule.py`) | rules |
 | 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds` (두 판) | cli |
-| 스킬 | `write-korean` 3단계 (쓰려는 용어의 쓰임을 본다) 와 `use-hanlint` 4단계 (막힌 자리) 가 `usage` 를 부른다 | |
+| 스킬 | `write-korean` 의 `더 있는 것` 과 `use-hanlint` 4단계 (막힌 자리) 가 `usage` 를 가리킨다 | |
 
 프리셋 → 종류는 `config.USAGE_OF` 가 정한다 (report 만). 설정 `usageKind` 가 덮고 빈 문자열이면 보지 않는다.
 `usageMin` (기본 3) 은 연쇄가 몇 편의 문서에 나와야 관용으로 보는지, `usageShare` (기본 0.9) 는 사전 항목이 문서 몇 할에
@@ -88,8 +88,42 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
   `리스부채`, `적용되며` 와 `적용된다` 를 잇는다. 문장 절반 넘게 나오는 토큰은 조회에서 뺀다.
 - 순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 낱말 겹침이지 글의 판정이 아니다. 두 판의
   log 가 마지막 자리에서 갈릴 수 있어 1e6 배의 정수로 내려 견준다.
-- 크기와 시간 (2026-09-19, 3,193편 1,056,316문장): 색인 414 MB, 만들기 node 4분 30초 (파이썬은 그 두 배 안팎),
-  조회 node 0.5초 (함께 쓰는 말 없이), 파이썬 2초 안팎 (함께 쓰는 말 셋 포함). 같은 색인을 두 판이 같은 순서로 답한다.
+- 크기와 시간 (2026-09-19). report (사업보고서 3,193편, 문장 1,056,316개): 색인 414 MB, 만들기 node 4분 30초,
+  조회 1초 안팎. encyclopedia (위키백과 592,264편, 문장 8,844,533개, 토큰 679만 종): 색인 2.4 GB, 만들기 node
+  29분 40초, 조회 node 2.6초 파이썬 4.4초 (대부분 함께 쓰는 말의 표본 4,000문장을 디스크에서 찾아 읽는 시간).
+  메모리는 길이 표와 문서 수 표와 접은 문장의 해시만 드므로 문장 884만 개에서도 1 GB 안쪽이다.
+
+## AI 가 바로 쓰기
+
+에이전트가 한국어를 쓰기 전에 부르는 자리다. 세 줄이면 된다.
+
+```console
+hanlint usage kinds                                   # 이 기계에 어떤 종류의 색인이 있나
+hanlint usage "리스부채" --kind report --format json   # 함께 쓰는 말과 문장
+hanlint usage build report 글들/                      # 없으면 만든다 (사용자가 정한다)
+```
+
+`--format json` 의 꼴 (`version` 2):
+
+```json
+{
+  "kind": "report", "query": "리스부채", "documents": 3193, "sentences": 1056316,
+  "words": [{"term": "리스부채", "sampled": 4000,
+             "predicates": [["인식", 411], ["포함", 175]],
+             "following": [["제거", 164]], "preceding": [["경우", 17]]}],
+  "hits": [{"text": "…", "documents": 1, "source": "20260331004385", "score": 29557084}]
+}
+```
+
+- `words[].predicates` 는 그 낱말 바로 뒤에 오는 용언의 어간과 **문서 수** 다. `following` 과 `preceding` 은 뒤와 앞의
+  명사다. `sampled` 는 그 수를 센 문장 수다 (표본이지 전수가 아니다).
+- `hits[].source` 는 출처다. report 는 DART 접수번호 (`https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<번호>`),
+  encyclopedia 는 위키백과 글 제목이다.
+- `score` 는 낱말 겹침의 크기이지 글의 판정이 아니다. 문장의 사실과 숫자를 결과로 옮기지 않는다.
+- 색인이 없으면 종료 코드 2 와 함께 있는 종류와 만드는 법을 낸다. 에이전트는 거기서 멈추고 사용자에게 묻는다.
+- 스킬은 `write-korean` 의 `더 있는 것` 과 `use-hanlint` 4단계 (고치다 막힌 자리) 가 이 명령을 가리킨다. 둘 다 묻는
+  자리에서 부르는 것이지 절차의 필수 단계가 아니다. 프롬프트에 붙이면 고침이 나아진다는 실측은 아직 없다
+  (`tests/_attempts/usageLift`: 45쌍 두 표본에서 방향이 엇갈렸다).
 
 ## 다시 만들기
 
@@ -113,6 +147,8 @@ python -X utf8 -B -m hanlint usage build report ~/.cache/hanlint/corpus/dart
   빈도표만 싣는다.** 출처는 접수번호와 DART 주소다.
 - 정책브리핑 (korea.kr) 의 공공누리 제1유형 텍스트는 출처 표시로 자유 이용이다. 문장까지 실을 수 있는 다음 report
   말뭉치 후보다.
+- 위키백과 (encyclopedia) 는 CC BY-SA 4.0 이다. 출처 (글 제목) 를 붙이면 문장도 나눌 수 있고 같은 조건으로 나눠야
+  한다. 그래도 색인은 사용자 기계에만 둔다 (2.4 GB 는 패키지에 실을 크기가 아니다).
 
 ## 실측 (사업보고서 961편, 2026-09-19)
 

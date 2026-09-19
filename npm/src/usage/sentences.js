@@ -35,7 +35,7 @@ export const SCORE_SCALE = 1_000_000;
 const MAX_DF_SHARE = 0.5;
 const MIN_FILTER_SENTENCES = 1000;
 const SHARD_SENTENCES = 250_000;
-const COLLOCATION_SAMPLE = 5000;
+const COLLOCATION_SAMPLE = 4000;
 const COLLOCATION_TOP = 8;
 const PREDICATE_STEMS = ["하였", "되었", "시켰", "했", "됐", "하", "되"];
 const PREDICATE_TAILS = ["하지", "되지", "하거나", "되거나", "하기", "되기"];
@@ -622,7 +622,9 @@ export class UsageIndex {
   collocations(term) {
     const found = this.lookup(term);
     if (!found) return null;
-    const sample = this.postingsAt(found[1], found[2]).slice(0, COLLOCATION_SAMPLE);
+    const postings = this.postingsAt(found[1], found[2]);
+    const stride = Math.max(1, Math.floor(postings.length / COLLOCATION_SAMPLE));
+    const sample = postings.filter((_, index) => index % stride === 0).slice(0, COLLOCATION_SAMPLE);
     /** @type {Map<string, Set<string>>} */
     const predicates = new Map();
     /** @type {Map<string, Set<string>>} */

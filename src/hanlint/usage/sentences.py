@@ -28,10 +28,11 @@ core 는 낱말 그대로를 맞히고 bigram 은 `금융리스부채` 와 `리�
 순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 질의와 문장의 낱말 겹침이지 글의 좋고 나쁨이
 아니다. 두 판의 log 가 마지막 자리에서 다를 수 있어 값을 SCORE_SCALE 배의 정수로 내린 뒤 견준다 (npm 판과 같은 셈).
 
-함께 쓰는 말 (collocations): 표를 따로 만들지 않고 조회 때 그 낱말의 postings 앞 COLLOCATION_SAMPLE 문장을 읽어 바로 앞뒤
-어절을 센다. 뒤에 오는 용언 (꼬리 사전으로 어간을 뗀 것), 뒤에 오는 명사, 앞에 오는 명사를 문서 수로 세어 상위만 보인다.
-원시 횟수가 아니라 문서 수인 까닭은 한 문서의 되풀이가 관용이 아니기 때문이고, 표본을 자르는 까닭은 `회사` 같은 흔한
-낱말의 postings 가 수십만이기 때문이다. 표본은 postings 순 (문장 번호 순) 이라 결정적이다.
+함께 쓰는 말 (collocations): 표를 따로 만들지 않고 조회 때 그 낱말의 postings 에서 COLLOCATION_SAMPLE 문장을 읽어 바로
+앞뒤 어절을 센다. 뒤에 오는 용언 (꼬리 사전으로 어간을 뗀 것), 뒤에 오는 명사, 앞에 오는 명사를 문서 수로 세어 상위만
+보인다. 원시 횟수가 아니라 문서 수인 까닭은 한 문서의 되풀이가 관용이 아니기 때문이고, 표본을 자르는 까닭은 `회사` 같은
+흔한 낱말의 postings 가 수십만이기 때문이다. 앞에서부터가 아니라 일정 간격으로 (stride) 고르므로 말뭉치 앞쪽 문서에
+쏠리지 않는다. 간격은 postings 수로 정해지니 표본은 여전히 결정적이다.
 """
 
 from __future__ import annotations
@@ -62,8 +63,9 @@ MIN_FILTER_SENTENCES = 1000
 그 시간이 없고, 문장 몇 개짜리 색인에서는 모든 토큰이 절반을 넘어 아무것도 안 나온다 (검증 실측, 2026-09-19)."""
 SHARD_SENTENCES = 250_000
 """postings 를 조각 파일로 내리는 문장 수. 조각 하나가 토큰 1천만 개 안팎이라 메모리 몇백 MB 다."""
-COLLOCATION_SAMPLE = 5000
-"""함께 쓰는 말을 셀 때 읽는 문장 수 상한. 문장 하나 읽기가 수십 µs 라 상한에서 0.3초 안이다."""
+COLLOCATION_SAMPLE = 4000
+"""함께 쓰는 말을 셀 때 읽는 문장 수 상한. 문장 하나 읽기가 디스크 자리 이동이라 수백 µs 다. 위키백과 색인 (문장
+884만, 문장 파일 1.4 GB) 에서 4,000이 2초 안팎이다 (2026-09-19)."""
 COLLOCATION_TOP = 8
 PREDICATE_STEMS = ("하였", "되었", "시켰", "했", "됐", "하", "되")
 """꼬리를 뗀 뒤 남는 활용 조각. `감소하였습니다` 는 꼬리 `습니다` 를 떼면 `감소하였` 이라 `하였` 을 더 떼어 `감소` 로 센다."""
@@ -539,7 +541,9 @@ class UsageIndex:
         found = self.lookup(term)
         if not found:
             return None
-        sample = self.postingsAt(found[1], found[2])[:COLLOCATION_SAMPLE]
+        postings = self.postingsAt(found[1], found[2])
+        stride = max(1, len(postings) // COLLOCATION_SAMPLE)
+        sample = postings[::stride][:COLLOCATION_SAMPLE]
         predicates: dict[str, set[str]] = {}
         following: dict[str, set[str]] = {}
         preceding: dict[str, set[str]] = {}

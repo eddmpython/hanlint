@@ -33,10 +33,11 @@ from scripts.fetch.dartReports import readCorpus  # noqa: E402
 from hanlint import Config, fingerprint, lintText  # noqa: E402
 from hanlint.analysis import nounRuns  # noqa: E402
 from hanlint.analysis.tokenize import isBareNoun, stripJosa, words  # noqa: E402
-from hanlint.usage import defaultUsageRoot, loadIndex  # noqa: E402
+from hanlint.usage import defaultUsageRoot, loadIndex, queryCores  # noqa: E402
 from hanlint.usage.sentences import TERMINAL  # noqa: E402
 
-CONDITIONS = ("reasonOnly", "withUsage")
+CONDITIONS = ("reasonOnly", "withUsage", "withWords")
+"""withUsage 는 문장 다섯, withWords 는 거기에 함께 쓰는 말 (뒤 용언, 앞뒤 명사, 문서 수) 을 더 받는다."""
 RULES = ("nounPile", "euiChain", "translationese")
 OLLAMA_ENDPOINT = "http://127.0.0.1:11434"
 OLLAMA_OPTIONS = {"temperature": 0, "seed": 42, "num_predict": 512}
@@ -47,7 +48,7 @@ MAX_WORDS = 45
 EVIDENCE = 5
 
 
-def promptFor(sentence: str, rule: str, why: str, evidence: list[dict] | None = None) -> str:
+def promptFor(sentence: str, rule: str, why: str, evidence: list[dict] | None = None, words: list[dict] | None = None) -> str:
     lines = [
         "사업보고서의 한국어 문장 하나를 고친다.",
         "원문의 뜻과 사실과 숫자와 고유명사와 전문 용어를 보존한다.",
@@ -57,6 +58,12 @@ def promptFor(sentence: str, rule: str, why: str, evidence: list[dict] | None = 
         f"규칙: {rule}",
         f"이유: {why}",
     ]
+    if words:
+        lines.append("다른 사업보고서에서 이 낱말과 함께 쓰인 말 (문서 수. 결합을 고를 때 참고한다):")
+        for item in words:
+            for label, key in (("뒤 용언", "predicates"), ("뒤 명사", "following"), ("앞 명사", "preceding")):
+                if item[key]:
+                    lines.append(f"- {item['term']} {label}: " + ", ".join(f"{term} {count}편" for term, count in item[key]))
     if evidence:
         lines.append("같은 낱말이 다른 사업보고서에서 쓰인 문장 (참고만 한다. 사실과 숫자는 옮기지 않는다):")
         lines.extend(f"- {item['text']} (문서 {item['documents']}편)" for item in evidence)
@@ -120,15 +127,29 @@ def collectTasks(config: Config, perRule: int, documentLimit: int) -> list[dict]
             query = queryFor(task["sentence"], rule)
             hits = [hit for hit in index.search(query, EVIDENCE + 1) if hit.text != task["sentence"]][:EVIDENCE]
             evidence = [{"text": hit.text, "documents": hit.documents, "source": hit.source} for hit in hits]
+            words = []
+            for core in queryCores(query)[:3]:
+                found = index.collocations(core)
+                if found is not None and (found.predicates or found.following or found.preceding):
+                    words.append(
+                        {
+                            "term": core,
+                            "predicates": list(found.predicates),
+                            "following": list(found.following),
+                            "preceding": list(found.preceding),
+                        }
+                    )
             tasks.append(
                 {
                     **task,
                     "preset": config.preset,
                     "query": query,
                     "evidence": evidence,
+                    "words": words,
                     "prompts": {
                         "reasonOnly": promptFor(task["sentence"], rule, task["why"]),
                         "withUsage": promptFor(task["sentence"], rule, task["why"], evidence),
+                        "withWords": promptFor(task["sentence"], rule, task["why"], evidence, words),
                     },
                 }
             )
@@ -272,25 +293,24 @@ def scoreResponses(manifest: dict, responses: dict, config: Config) -> str:
                 errors = sum(r["newErrors"] for r in selected)
                 retention = sum(r["termRetention"] for r in selected) / len(selected)
                 lines.append(f"    {condition:10} 해결 {resolved}/{len(selected)}, 새 error {errors}, 명사 보존 {retention:.2f}")
-    paired = [
-        (results[(t, "reasonOnly")], results[(t, "withUsage")])
-        for t in tasks
-        if (t, "reasonOnly") in results and (t, "withUsage") in results
-    ]
-    usageWins = sum(not a["resolved"] and b["resolved"] for a, b in paired)
-    reasonWins = sum(a["resolved"] and not b["resolved"] for a, b in paired)
-    lines.extend(
-        [
-            "",
-            "짝 비교",
-            f"  용례만 해결 {usageWins}개, 이유만 해결 {reasonWins}개, 같은 결과 {len(paired) - usageWins - reasonWins}개",
+    lines.append("")
+    lines.append("짝 비교 (reasonOnly 대)")
+    for condition in CONDITIONS[1:]:
+        paired = [
+            (results[(t, "reasonOnly")], results[(t, condition)])
+            for t in tasks
+            if (t, "reasonOnly") in results and (t, condition) in results
         ]
-    )
-    retentionUp = sum(b["termRetention"] > a["termRetention"] for a, b in paired)
-    retentionDown = sum(b["termRetention"] < a["termRetention"] for a, b in paired)
-    lines.append(
-        f"  명사 보존: 용례 쪽이 높음 {retentionUp}개, 낮음 {retentionDown}개, 같음 {len(paired) - retentionUp - retentionDown}개"
-    )
+        if not paired:
+            continue
+        wins = sum(not a["resolved"] and b["resolved"] for a, b in paired)
+        losses = sum(a["resolved"] and not b["resolved"] for a, b in paired)
+        up = sum(b["termRetention"] > a["termRetention"] for a, b in paired)
+        down = sum(b["termRetention"] < a["termRetention"] for a, b in paired)
+        lines.append(
+            f"  {condition:10} 해결 {wins} 대 {losses} (같음 {len(paired) - wins - losses}), "
+            f"명사 보존 높음 {up} 낮음 {down} 같음 {len(paired) - up - down}"
+        )
     return "\n".join(lines)
 
 
