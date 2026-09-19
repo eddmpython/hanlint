@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
-from hanlint.usage import buildIndex, indexTokens, loadIndex, readDocuments
-from hanlint.usage.sentences import FILES, decodeVarints, encodeVarint, paragraphsOf, sentenceKey, sentencesOf
+from hanlint.usage import buildIndex, indexTokens, listIndexes, loadIndex, queryCores, readDocuments
+from hanlint.usage.sentences import (
+    FILES,
+    decodeVarints,
+    encodeVarint,
+    neighbourOf,
+    paragraphsOf,
+    predicateStem,
+    sentenceKey,
+    sentencesOf,
+)
 
 CORPUS = Path(__file__).resolve().parents[1] / "fixtures" / "usage" / "corpus"
 SHARED = "회사는 창고 임차료를 계약 첫날에 한꺼번에 내지 않고 달마다 나누어 냅니다."
@@ -47,9 +57,57 @@ def testBuildIsDeterministicAndFoldsSharedSentences(tmp_path: Path):
     for name in FILES:
         assert (tmp_path / "one" / "report" / name).read_bytes() == (tmp_path / "two" / "report" / name).read_bytes()
     lines = (tmp_path / "one" / "report" / "sentences.tsv").read_text(encoding="utf-8").splitlines()
-    assert lines[0] == f"3\ta001\t{SHARED}"
+    assert lines[0] == f"a001\t{SHARED}"
+    documents = (tmp_path / "one" / "report" / "documents.bin").read_bytes()
+    assert int.from_bytes(documents[:4], "little") == 3 and len(documents) == 4 * 11
     assert not any("창고 임차 계약의 요약" in line for line in lines), "제목은 문장이 아니다"
     assert not any("영업이익 = 매출" in line for line in lines), "코드 펜스 안은 문장이 아니다"
+
+
+def testShardSizeDoesNotChangeTheBytes(tmp_path: Path):
+    """조각으로 내려 병합한 색인은 한 번에 만든 것과 같다. 조각 넷이면 문장 11개가 조각 셋에 걸친다."""
+    whole = buildIndex("report", readDocuments(CORPUS), tmp_path / "whole")
+    sharded = buildIndex("report", readDocuments(CORPUS), tmp_path / "sharded", 4)
+    assert whole == sharded
+    for name in FILES:
+        assert (tmp_path / "whole" / "report" / name).read_bytes() == (tmp_path / "sharded" / "report" / name).read_bytes(), name
+
+
+def testJsonlLinesAreDocuments(tmp_path: Path):
+    """jsonl 은 줄 하나가 문서 하나다. 위키백과처럼 문서가 많은 말뭉치의 꼴이다."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    rows = [
+        {"source": "w1", "text": f"{SHARED}\n"},
+        {"source": "w2", "text": f"# 제목\n\n{SHARED}\n둘째 문장입니다.\n"},
+    ]
+    (corpus / "wiki.jsonl").write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n", encoding="utf-8")
+    assert [source for source, _ in readDocuments(corpus)] == ["w1", "w2"]
+    result = buildIndex("wiki", readDocuments(corpus), tmp_path)
+    index = loadIndex("wiki", tmp_path)
+    assert result.documents == 2 and result.sentences == 2 and index is not None
+    assert index.search("임차료", 1)[0].documents == 2
+    assert [meta["kind"] for meta in listIndexes(tmp_path)] == ["wiki"]
+
+
+def testCollocationsCountNeighboursByDocument(tmp_path: Path):
+    buildIndex("report", readDocuments(CORPUS), tmp_path)
+    index = loadIndex("report", tmp_path)
+    assert index is not None
+    found = index.collocations("임차료")
+    assert found is not None and found.sampled == 3
+    assert found.following == (("계약", 1),) and found.predicates == (("줄어듭", 1),)
+    assert index.collocations("없는낱말") is None
+    assert queryCores("임차료를 계약과 K-IFRS 12%") == ["임차료", "계약"]
+    assert predicateStem("감소하였습니다") == "감소" and predicateStem("인식됩니다") == "인식"
+    assert predicateStem("측정하며") == "측정" and predicateStem("인식하지") == "인식" and predicateStem("리스부채") is None
+    assert predicateStem("대하여") == "" and predicateStem("또한") is None and predicateStem("기업회계기준서") is None
+    assert predicateStem("감소하며") == "감소"
+    # 꼬리 사전이 `서` 를 용언 꼬리로 보므로 isBareNoun 도 거짓이다. 표층 분석의 한계를 그대로 둔다.
+    assert neighbourOf("기업회계기준서") is None
+    assert neighbourOf("인식하지") == ("predicate", "인식") and neighbourOf("전년대비") == ("noun", "전년대비")
+    assert neighbourOf("및") is None and neighbourOf("따라") is None and neighbourOf("중") is None
+    assert neighbourOf("2025년") is None and neighbourOf("대하여") is None and neighbourOf("않아") is None
 
 
 def testSearchRanksAndDescribes(tmp_path: Path):

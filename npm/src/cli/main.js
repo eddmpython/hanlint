@@ -49,7 +49,14 @@ import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runA
 import { MARKDOWN, SKIPPED_FOLDERS, isSkipped, markdownUnder } from "./walk.js";
 import { SOURCE_SUFFIXES } from "../document/sourceText.js";
 import { applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows } from "../report/sheet.js";
-import { buildIndex as buildUsageIndex, defaultRoot as defaultUsageRoot, loadIndex as loadUsageIndex, readDocuments as readUsageDocuments } from "../usage/sentences.js";
+import {
+  buildIndex as buildUsageIndex,
+  defaultRoot as defaultUsageRoot,
+  listIndexes as listUsageIndexes,
+  loadIndex as loadUsageIndex,
+  queryCores as usageQueryCores,
+  readDocuments as readUsageDocuments,
+} from "../usage/sentences.js";
 import { USAGE_KINDS } from "../config/settings.js";
 import { welcome } from "./welcome.js";
 import { rootHelp } from "./help.js";
@@ -1052,13 +1059,22 @@ function applySheet(sheetPath, dryRun) {
   return [applied, failed];
 }
 
-/** 색인이 없을 때의 안내. 뜻은 파이썬 cli/commands/usage.py 의 missingIndex 가 소유한다. @param {string} kind */
-function missingIndex(kind) {
-  return `${kind} 색인이 없다. hanlint usage build ${kind} <글 폴더> 로 만든다 (txt 와 md, 하위 폴더 포함). 사업보고서는 scripts/fetch/dartReports.py 가 받는다`;
+/** 색인이 없을 때의 안내. 뜻은 파이썬 cli/commands/usage.py 의 missingIndex 가 소유한다. @param {string} kind @param {string} root */
+function missingIndex(kind, root) {
+  const kinds = listUsageIndexes(root).map((meta) => String(meta.kind)).join(", ") || "없음";
+  return `${kind} 색인이 없다 (있는 것: ${kinds}). hanlint usage build ${kind} <글 폴더> 로 만든다 (txt, md, jsonl. 하위 폴더 포함). 사업보고서는 scripts/fetch/dartReports.py, 위키백과는 scripts/fetch/koWikipedia.py 가 받는다`;
+}
+
+/** 함께 쓰는 말 낱말 수 상한. 뜻은 파이썬 QUERY_WORDS 가 소유한다. */
+const USAGE_QUERY_WORDS = 3;
+
+/** @param {[string, number][]} pairs */
+function pairText(pairs) {
+  return pairs.map(([term, count]) => `${term} ${count}편`).join(", ");
 }
 
 /**
- * `hanlint usage "낱말 …" --kind report --limit 5` 와 `hanlint usage build report 글폴더/`. 뜻은 파이썬
+ * `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds`. 뜻은 파이썬
  * cli/commands/usage.py 가 소유한다.
  * @param {string[]} args
  */
@@ -1066,7 +1082,23 @@ function runUsage(args) {
   const { options, positionals } = parseArgs(args);
   const output = /** @type {string | undefined} */ (options["--output"]);
   const root = /** @type {string} */ (options["--root"] ?? defaultUsageRoot());
+  const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
   if (!positionals.length) throw new UsageError('hanlint usage "낱말 …" 또는 hanlint usage build <종류> <글 폴더>');
+  if (positionals[0] === "kinds") {
+    const found = listUsageIndexes(root);
+    if (format === "json") {
+      emit(JSON.stringify({ version: 1, root, kinds: found }, null, 2), output);
+      return 0;
+    }
+    if (!found.length) {
+      emit(`${root} 에 색인이 없다. hanlint usage build <종류> <글 폴더> 로 만든다`, output);
+      return 0;
+    }
+    const lines = [`색인 ${found.length}개 (${root})`];
+    for (const meta of found) lines.push(`  ${meta.kind}: 문서 ${meta.documents}편, 문장 ${meta.sentences}개, 토큰 ${meta.terms}종`);
+    emit(lines.join("\n"), output);
+    return 0;
+  }
   if (positionals[0] === "build") {
     if (positionals.length !== 3) {
       emit("hanlint usage build <종류> <글 폴더> 꼴로 준다", output);
@@ -1084,20 +1116,30 @@ function runUsage(args) {
   const kind = /** @type {string} */ (options["--kind"] ?? USAGE_KINDS[0]);
   const limit = Math.max(Number(options["--limit"] ?? 5), 0);
   if (!Number.isInteger(limit)) throw new UsageError("--limit 은 정수다");
-  const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
   const query = positionals.join(" ");
   const index = loadUsageIndex(kind, root);
   if (!index) {
-    emit(missingIndex(kind), output);
+    emit(missingIndex(kind, root), output);
     return 2;
   }
+  const words = usageQueryCores(query)
+    .slice(0, USAGE_QUERY_WORDS)
+    .map((core) => index.collocations(core))
+    .filter((item) => item !== null && (item.predicates.length || item.following.length || item.preceding.length));
   const hits = index.search(query, limit);
   if (format === "json") {
-    const data = { version: 1, kind, query, documents: index.documents, sentences: index.sentences, hits };
+    const data = { version: 2, kind, query, documents: index.documents, sentences: index.sentences, words, hits };
     emit(JSON.stringify(data, null, 2), output);
     return 0;
   }
   const lines = [`${kind} 용례 (문서 ${index.documents}편, 문장 ${index.sentences}개): ${query}`];
+  for (const item of words) {
+    if (!item) continue;
+    lines.push(`함께 쓰는 말 (${item.term}, 문장 ${item.sampled}개에서)`);
+    for (const [label, pairs] of [["뒤 용언", item.predicates], ["뒤 명사", item.following], ["앞 명사", item.preceding]]) {
+      if (pairs.length) lines.push(`   ${label}: ${pairText(/** @type {[string, number][]} */ (pairs))}`);
+    }
+  }
   if (!hits.length && limit > 0) lines.push("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다");
   hits.forEach((hit, index) => {
     lines.push(`${index + 1}. ${hit.text}`);

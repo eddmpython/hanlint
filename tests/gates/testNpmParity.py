@@ -605,7 +605,7 @@ def testUsageIndexAgrees(tmp_path):
     assert python.stdout.replace(str(pythonRoot), "") == node.stdout.replace(str(nodeRoot), "")
     for name in FILES:
         assert (pythonRoot / "report" / name).read_bytes() == (nodeRoot / "report" / name).read_bytes(), name
-    for query in (["임차료", "계약"], ["영업이익 줄어든 원인"], ["무상증자"], ["없는낱말"], ["K-IFRS", "12%"]):
+    for query in (["kinds"], ["임차료", "계약"], ["영업이익 줄어든 원인"], ["무상증자"], ["없는낱말"], ["K-IFRS", "12%"]):
         for extra in ([], ["--format", "json"], ["--limit", "1"], ["--limit", "0"]):
             python, node = runBoth(["usage", *query, "--root", str(pythonRoot), *extra])
             assert python.returncode == node.returncode == 0, node.stderr

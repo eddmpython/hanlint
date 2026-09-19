@@ -5,4 +5,4 @@
  * fingerprint 와 같은 층이다. rules 와 cli 가 쓰고, analysis 와 config 와 data 만 쓴다.
  */
 export { attested, chainDocuments, conventional, patternDocuments, usageKindOf, usageTable } from "./counts.js";
-export { UsageIndex, buildIndex, defaultRoot as defaultUsageRoot, indexTokens, loadIndex, readDocuments } from "./sentences.js";
+export { UsageIndex, buildIndex, defaultRoot as defaultUsageRoot, indexTokens, listIndexes, loadIndex, queryCores, readDocuments } from "./sentences.js";

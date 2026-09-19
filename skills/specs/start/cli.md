@@ -105,21 +105,36 @@ hanlint sheet apply 시트.md
 
 ## 실제 글에서 낱말의 쓰임 보기
 
-지적을 고칠 때 "이 종류의 실제 글은 이 낱말을 어떻게 쓰나" 가 막히는 자리다. `usage` 는 그 종류의 말뭉치를 문장 단위로
-색인해 두고 질의의 낱말이 쓰인 문장을 BM25 순서로 보인다. 좋은 문장을 고르지 않는다. 쓰인 문장을 보이고 판정은 읽는
-쪽이 한다. 같은 질의는 같은 순서다.
+쓰거나 고칠 때 "이 종류의 실제 글은 이 낱말을 어떻게 쓰나" 가 막히는 자리다. `usage` 는 그 종류의 말뭉치를 문장 단위로
+색인해 두고, 낱말마다 **함께 쓰는 말** (바로 뒤에 오는 용언, 뒤와 앞에 오는 명사, 각각 몇 편의 문서에서) 을 먼저 보이고
+그다음 질의 낱말이 쓰인 문장을 BM25 순서로 보인다. 좋은 문장을 고르지 않는다. 쓰인 것을 세어 보이고 판정은 읽는 쪽이 한다.
+같은 질의는 같은 순서다.
 
 ```console
+hanlint usage kinds
+hanlint usage "리스부채" --kind report
+hanlint usage "영업이익 감소 원인" --kind report --limit 5 --format json
 hanlint usage build report 보고서들/
-hanlint usage "리스부채 최초 인식" --kind report --limit 5
-hanlint usage "영업이익 감소 원인" --format json
+hanlint usage build encyclopedia ~/.cache/hanlint/corpus/wiki
+```
+
+```text
+report 용례 (문서 3193편, 문장 1056316개): 리스부채
+함께 쓰는 말 (리스부채, 문장 5000개에서)
+   뒤 용언: 인식 411편, 포함 175편, 측정 131편, 재측정 86편, 관련 71편, 차감 14편, 계상 11편, 재평가 10편
+   뒤 명사: 제거 164편, 최초 107편, 다음 52편, 리스개시일 36편, 만기분석 34편, 유동성분류 34편, 이자부 34편, 상환 30편
+   앞 명사: 경우 17편, 전기말 9편, 금액 6편, 유형별 6편, 이후 6편, 관련 4편, 당기말 4편, 당기중 3편
+1. …
 ```
 
 색인은 사용자 기계 (`~/.cache/hanlint/usage/<종류>/`) 에만 있고 패키지에 실리지 않는다. `build` 는 폴더 (하위 포함) 의
-txt 와 md 를 읽어 마침표로 끝난 한국어 문장만 색인하고, 같은 문장은 하나로 접어 몇 편의 문서에 나왔는지 센다. 결과
-줄마다 문서 수와 출처 (파일 이름) 가 붙는다. 사업보고서는 `scripts/fetch/dartReports.py` 가 받고 출처는 접수번호라
-`https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<접수번호>` 로 원문을 연다. 색인이 없으면 만드는 법을 알리고 2 로
-끝난다. 규칙 쪽의 용례 (nounPile 이 접는 관용 연쇄) 는 `operation.usage` 가 설명한다.
+txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하나, `{"source": …, "text": …}`) 을 읽어 마침표로 끝난
+한국어 문장만 색인하고, 같은 문장은 하나로 접어 몇 편의 문서에 나왔는지 센다. 문서 수만큼씩 조각으로 내려 병합하므로
+위키백과 규모 (문서 수십만, 문장 천만) 도 만든다. node 판이 파이썬보다 빠르다 (`npx hanlint usage build …`). 결과
+줄마다 문서 수와 출처 (파일 이름이나 글 제목) 가 붙는다. 사업보고서는 `scripts/fetch/dartReports.py` 가 받고 출처는
+접수번호라 `https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<접수번호>` 로 원문을 연다. 위키백과는
+`scripts/fetch/koWikipedia.py` 가 덤프를 받아 jsonl 로 떨군다. 색인이 없으면 있는 종류를 알리고 2 로 끝난다. 규칙
+쪽의 용례 (nounPile 과 사전 규칙이 접는 관용) 는 `operation.usage` 가 설명한다.
 
 ## 프리셋과 설정
 
@@ -241,8 +256,9 @@ hanlint 글.md --format github --errors-only
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
 | `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py, html, vue, svelte) 의 한국어 글을 표 하나로 떨군다. `--all` 은 지적 없는 글도 | 예 |
 | `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 자리에 되돌려 쓴다. `--dry-run` 은 보기만 | 예 |
-| `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 낱말이 쓰인 문장을 BM25 순서로. `--limit`, `--format json` | 예 |
-| `hanlint usage build report 글들/` | 폴더의 txt 와 md 로 사용자 기계에 문장 색인을 만든다 | 예 |
+| `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 낱말이 함께 쓰는 말 (뒤 용언, 앞뒤 명사, 문서 수) 과 쓰인 문장을 BM25 순서로. `--limit`, `--format json` | 예 |
+| `hanlint usage build report 글들/` | 폴더의 txt, md, jsonl 로 사용자 기계에 문장 색인을 만든다. 위키백과 규모도 된다 | 예 |
+| `hanlint usage kinds` | 기계에 있는 색인 (종류, 문서 수, 문장 수) 을 센다 | 예 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
 | `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |

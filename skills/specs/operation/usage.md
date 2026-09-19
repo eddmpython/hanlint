@@ -27,10 +27,11 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 | 빈도표 만들기 | `scripts/derive/usageCounts.py` | 도구 |
 | 말뭉치 받기 | `scripts/fetch/dartReports.py` (report) | 도구 |
 | 실측 | `scripts/measure/reports.py` | 도구 |
-| 문장 역인덱스 만들기와 조회 (`buildIndex`, `loadIndex`, `UsageIndex.search`) | `src/hanlint/usage/sentences.py`, `npm/src/usage/sentences.js` | usage |
+| 문장 역인덱스 만들기와 조회 (`buildIndex`, `loadIndex`, `UsageIndex.search`, `UsageIndex.collocations`) | `src/hanlint/usage/sentences.py`, `npm/src/usage/sentences.js` | usage |
+| 위키백과 받기 | `scripts/fetch/koWikipedia.py` (encyclopedia) | 도구 |
 | 규칙 | `nounPile` 이 관용 연쇄를 접고, 사전 규칙 다섯 (translationese, hardWord, cliche, redundantPair, japaneseLoan) 이 관용 항목을 접는다 (`rules/shared/dictionaryRule.py`) | rules |
-| 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>` (두 판) | cli |
-| 스킬 | `skills/use-hanlint/SKILL.md` 4단계가 막힌 자리에서 `usage` 를 부른다 | |
+| 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds` (두 판) | cli |
+| 스킬 | `write-korean` 3단계 (쓰려는 용어의 쓰임을 본다) 와 `use-hanlint` 4단계 (막힌 자리) 가 `usage` 를 부른다 | |
 
 프리셋 → 종류는 `config.USAGE_OF` 가 정한다 (report 만). 설정 `usageKind` 가 덮고 빈 문자열이면 보지 않는다.
 `usageMin` (기본 3) 은 연쇄가 몇 편의 문서에 나와야 관용으로 보는지, `usageShare` (기본 0.9) 는 사전 항목이 문서 몇 할에
@@ -65,6 +66,19 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
 
 `hanlint usage build <종류> <글 폴더>` 가 `~/.cache/hanlint/usage/<종류>/` 에 만든다. 파일 꼴과 토큰과 순서는
 `src/hanlint/usage/sentences.py` 의 docstring 이 소유하고 npm 판은 같은 바이트를 만든다 (`testUsageIndexAgrees`).
+색인이 유일한 구조다. 임베딩과 예측 모델은 두지 않는다. 이 판단은 agipath (같은 운영자의 연구) 가 위키 1,341만 문장과
+우리말샘 134만 문장에서 임베딩과 예측을 다 시도한 뒤 "역인덱스가 유일한 기본 구조" 로 돌아온 기록 위에 있다. 여기서는
+만드는 건 LLM 이고 색인은 사실을 댄다.
+
+- 입력: 폴더의 txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하나). 문서 순서는 폴더 기준 posix 경로의
+  코드 포인트 순이라 OS 와 판이 달라도 같다.
+- 만들기: 문장 표와 위치 표는 바로 파일에 쓰고 postings 는 25만 문장마다 조각으로 내린 뒤 토큰 순으로 병합한다. 결과는
+  한 번에 만든 것과 바이트 단위로 같다 (시험이 조각 4 로 줄여 견준다). 같은 문장은 SHA-256 앞 8바이트로 접어 문장
+  1,300만 개의 키를 글자로 들지 않는다.
+- 함께 쓰는 말: 표를 따로 만들지 않는다. 조회 때 그 낱말의 postings 앞 5,000문장을 읽어 바로 앞뒤 어절을 문서 수로
+  센다. 뒤 용언은 꼬리 사전으로 어간을 떼고 (`감소하였습니다` → 감소), 한 글자 꼬리 (서, 고, 며) 는 하/되 뒤에서만
+  용언으로 보며, 연결 어절 (`data/collocationStops.txt`: 및, 따라, 인해 …) 과 의존명사 (`nonNouns.txt`) 는 세지 않는다.
+  실측: `리스부채` 뒤 용언 인식 411편, 포함 175편, 측정 131편 (사업보고서 3,193편, 2026-09-19).
 
 - 문장: 마침표나 물음표나 느낌표로 끝난 한국어 문장만. 제목과 항목 이름은 낱말의 쓰임이 아니라 이름이라 빈도표 쪽이다.
   코드 펜스 안과 표 줄은 넘기고 목록 표시와 항목 번호는 뗀다.
@@ -74,13 +88,15 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
   `리스부채`, `적용되며` 와 `적용된다` 를 잇는다. 문장 절반 넘게 나오는 토큰은 조회에서 뺀다.
 - 순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 낱말 겹침이지 글의 판정이 아니다. 두 판의
   log 가 마지막 자리에서 갈릴 수 있어 1e6 배의 정수로 내려 견준다.
-- 크기와 시간 (2026-09-19, 961편): 색인 133 MB (문장 83 MB, postings 38 MB, 토큰 표 12 MB), 만들기 파이썬 약 70초,
-  조회 1.5초 (그 가운데 토큰 표 읽기가 대부분). 같은 파이썬 색인을 npm 판이 같은 순서로 답한다.
+- 크기와 시간 (2026-09-19, 3,193편 1,056,316문장): 색인 414 MB, 만들기 node 4분 30초 (파이썬은 그 두 배 안팎),
+  조회 node 0.5초 (함께 쓰는 말 없이), 파이썬 2초 안팎 (함께 쓰는 말 셋 포함). 같은 색인을 두 판이 같은 순서로 답한다.
 
 ## 다시 만들기
 
 ```
-DART_API_KEY=... python -X utf8 -B scripts/fetch/dartReports.py --count 1000
+python -X utf8 -B scripts/fetch/koWikipedia.py            # 위키백과 덤프 → ~/.cache/hanlint/corpus/wiki/kowiki.jsonl
+npx hanlint usage build encyclopedia ~/.cache/hanlint/corpus/wiki
+DART_API_KEY=... python -X utf8 -B scripts/fetch/dartReports.py --count 4000
 python -X utf8 -B scripts/derive/usageCounts.py --kind report
 python -X utf8 -B scripts/derive/npmData.py
 python -X utf8 -B scripts/measure/reports.py

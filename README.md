@@ -40,7 +40,7 @@
 |---|---|
 | 글을 붙여 넣고 바로 다듬기 | [브라우저 편집기][editor] |
 | 앱의 화면 글을 표 하나로 보기 | [브라우저 편집기][editor] 에 GitHub 저장소 주소 붙여 넣기, 또는 `hanlint sheet src/ --preset screen` |
-| 실제 글에서 낱말의 쓰임 보기 | `hanlint usage build report 글들/` 뒤에 `hanlint usage "낱말 낱말"` |
+| 실제 글에서 낱말의 쓰임 보기 (AI 가 쓰기 전에 묻는다) | `hanlint usage "낱말" --kind report` 가 함께 쓰는 말과 문장을 낸다. 색인은 `hanlint usage build <종류> 글들/` |
 | 마크다운 파일과 폴더 검사 | Python의 `hanlint 글.md` 또는 Node의 `npx hanlint 글.md` |
 | 앱에서 검사 결과 사용 | Python의 `lintText`, [npm 공개 API][npm] |
 | 문서 변경을 커밋과 CI에서 검사 | [pre-commit과 GitHub Actions][integrations] |
