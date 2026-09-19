@@ -50,9 +50,12 @@ class Entry:
     fix: str | None
     to: tuple[tuple[re.Pattern[str], str], ...] = ()
     """문장 전체를 다시 쓰는 (from, into) 규칙. 앞의 것부터 시도해 처음 맞는 것이 제안이다. 화면 문장 사전이 쓴다."""
+    raw: str = ""
+    """pattern 의 원문. 자리표시자를 펼치기 전의 글자라 두 판과 빈도표가 같은 키를 갖는다. 내장 항목만 갖고 설정으로
+    더한 항목은 빈 글자라 어떤 종류의 관용으로도 접히지 않는다. 프로젝트가 스스로 넣은 낱말은 프로젝트가 짚고 싶은 것이다."""
 
 
-def entryFrom(dictionary: str, raw: dict | str) -> Entry:
+def entryFrom(dictionary: str, raw: dict | str, builtin: bool = False) -> Entry:
     if isinstance(raw, str):
         raw = {"pattern": raw}
     return Entry(
@@ -62,6 +65,7 @@ def entryFrom(dictionary: str, raw: dict | str) -> Entry:
         raw.get("source", "설정"),
         raw.get("fix"),
         tuple((re.compile(expandClasses(source)), into) for source, into in raw.get("to", ())),
+        raw["pattern"] if builtin else "",
     )
 
 
@@ -69,7 +73,7 @@ def entryFrom(dictionary: str, raw: dict | str) -> Entry:
 def builtinEntries() -> tuple[Entry, ...]:
     entries = []
     for dictionary, name in DICTIONARY_FILES.items():
-        entries.extend(entryFrom(dictionary, raw) for raw in loadToml(name))
+        entries.extend(entryFrom(dictionary, raw, builtin=True) for raw in loadToml(name))
     return tuple(entries)
 
 
@@ -105,7 +109,7 @@ def matchesIn(text: str, entries: tuple[Entry, ...]) -> tuple[DictionaryMatch, .
             rewrite = rewriteBy(text, entry.to) if entry.to else None
             found.append(
                 DictionaryMatch(
-                    entry.dictionary, match.group(0), match.start(), match.end(), entry.why, entry.source, fix, rewrite
+                    entry.dictionary, match.group(0), match.start(), match.end(), entry.why, entry.source, fix, rewrite, entry.raw
                 )
             )
     found.sort(key=lambda m: m.start)

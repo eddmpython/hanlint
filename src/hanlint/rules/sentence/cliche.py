@@ -20,5 +20,6 @@ def cliche(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     고치기: 그 표현이 맡은 일이 있으면 그 일을 직접 쓴다. 핵심은 X 다 는 X 다 로, 살펴보겠습니다 는
         살펴본 결과로.
     안 잡는 것: 사전에 없는 표현. 사전이 없어도 목적어가 흐린 문장은 나쁘지만 그것은 사람 평가자 몫이다.
+        그 종류의 글이 다 쓰는 항목 (report 프리셋, 사업보고서 문서의 usageShare 이상) 은 짚지 않는다 (usage.conventional).
     """
-    yield from dictionaryFindings(doc, "cliches", "cliche")
+    yield from dictionaryFindings(doc, "cliches", "cliche", config=config)

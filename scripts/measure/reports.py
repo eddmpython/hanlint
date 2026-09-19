@@ -4,10 +4,13 @@
 낼 수 있게 남는다. 무엇을 재나:
 
 - 프로파일: 문장 길이 (어절), 쉼표, 명사 연속 길이, `의` 수의 분포.
-- 지적률: report 프리셋으로 규칙을 돌려 1,000문장당 지적 수. nounPile 은 기본이 꺼져 있어 enforceStyle 로 켠다.
+- 지적률: report 프리셋으로 규칙을 돌려 1,000문장당 지적 수. 용례를 보지 않는 설정 (usageKind "") 으로도 한 번 더 돌려
+  같은 문서에서 용례가 접은 만큼을 보인다.
 - 명사 연쇄: `nounRuns` 가 뽑은 연쇄의 출현 수와 문서 수. nounPileMin 이상인 연쇄는 따로 센다.
 - 용례 접기 예상: 연쇄가 다른 문서 몇 편에 나오면 (leave-one-out) nounPile 지적 가운데 몇 건이 접히는지.
 - 중복: 같은 문장이 둘 이상의 문서에 나오는 비율. 정형 문장은 색인에서 눌러야 한다.
+- 사전 항목: 산문 사전 (translationese, cliches, redundantPair, japaneseLoan, easyWords) 의 항목마다 나온 문서 수와
+  문장 수. 어느 항목이 그 종류의 관용인지 (문서 절반 넘게 나오는지) 가 여기서 보인다.
 
 결과 JSON 은 --output 으로 준 자리 (저장소 밖) 에 쓰고 요약을 표준 출력에 찍는다.
 """
@@ -31,11 +34,13 @@ from scripts.fetch.dartReports import defaultRoot, readCorpus  # noqa: E402
 
 from hanlint import Config, fingerprint  # noqa: E402
 from hanlint.analysis import nounRuns  # noqa: E402
+from hanlint.fingerprint.dictionaries import builtinEntries  # noqa: E402
 from hanlint.rules import runAll  # noqa: E402
 
 SPACE = re.compile(r"\s+")
 TOP = 50
 ATTEST_LEVELS = (2, 3, 5, 10, 20)
+PROSE_DICTIONARIES = ("translationese", "cliches", "redundantPair", "japaneseLoan", "easyWords")
 """연쇄가 다른 문서 몇 편에 나와야 용례로 볼지 견줄 후보. 결과가 usageMin 의 기본값을 정한다."""
 
 
@@ -50,11 +55,13 @@ def normalized(text: str) -> str:
 
 def measure(root: Path, limit: int | None) -> dict:
     config = Config(preset="report", enforceStyle=["nounPile"])
+    plain = Config(preset="report", enforceStyle=["nounPile"], usageKind="")
     lengths: list[int] = []
     commas: list[int] = []
     nounRunHistogram: Counter[int] = Counter()
     euiHistogram: Counter[int] = Counter()
     ruleCounts: Counter[str] = Counter()
+    plainCounts: Counter[str] = Counter()
     ruleDocuments: defaultdict[str, set[str]] = defaultdict(set)
     chainCounts: Counter[tuple[str, ...]] = Counter()
     chainDocuments: defaultdict[tuple[str, ...], set[str]] = defaultdict(set)
@@ -62,6 +69,9 @@ def measure(root: Path, limit: int | None) -> dict:
     sentenceDocuments: defaultdict[str, set[str]] = defaultdict(set)
     sentenceOccurrences: Counter[str] = Counter()
     ruleSamples: defaultdict[str, list[str]] = defaultdict(list)
+    entries = [entry for entry in builtinEntries() if entry.dictionary in PROSE_DICTIONARIES]
+    patternDocuments: defaultdict[tuple[str, str], set[str]] = defaultdict(set)
+    patternSentences: Counter[tuple[str, str]] = Counter()
     documents = 0
     paragraphs = 0
     started = time.perf_counter()
@@ -78,6 +88,11 @@ def measure(root: Path, limit: int | None) -> dict:
             key = normalized(sentence.text)
             sentenceDocuments[key].add(rceptNo)
             sentenceOccurrences[key] += 1
+            for entry in entries:
+                if entry.pattern.search(sentence.text):
+                    key = (entry.dictionary, entry.pattern.pattern)
+                    patternDocuments[key].add(rceptNo)
+                    patternSentences[key] += 1
             for chain, length in nounRuns(sentence.text):
                 if length < 2:
                     continue
@@ -86,6 +101,8 @@ def measure(root: Path, limit: int | None) -> dict:
                 chainDocuments[key].add(rceptNo)
                 if length >= config.nounPileMin:
                     pileChains.append((rceptNo, key))
+        for finding in runAll(doc, plain):
+            plainCounts[finding.rule] += 1
         for finding in runAll(doc, config):
             ruleCounts[finding.rule] += 1
             ruleDocuments[finding.rule].add(rceptNo)
@@ -125,12 +142,26 @@ def measure(root: Path, limit: int | None) -> dict:
         "nounRunAtLeastMin": round(sum(v for k, v in nounRunHistogram.items() if k >= config.nounPileMin) / sentences, 3),
         "eui": {str(key): value for key, value in sorted(euiHistogram.items())},
         "rules": {
-            rule: {"count": ruleCounts[rule], "perThousand": perThousand[rule], "documents": len(ruleDocuments[rule])}
-            for rule in perThousand
+            rule: {
+                "count": ruleCounts[rule],
+                "perThousand": perThousand[rule],
+                "documents": len(ruleDocuments[rule]),
+                "withoutUsage": round(plainCounts[rule] * 1000 / sentences, 1),
+            }
+            for rule in sorted(set(perThousand) | set(plainCounts), key=lambda rule: -plainCounts[rule])
         },
         "ruleSamples": dict(ruleSamples),
         "chains": {"distinct": len(chainCounts), "top": topChains},
         "piles": {"occurrences": len(pileChains), "distinct": len(pileCounter), "top": topPiles, "foldedByLevel": folded},
+        "patterns": {
+            f"{dictionary}: {pattern}": {
+                "documents": len(patternDocuments[(dictionary, pattern)]),
+                "documentShare": round(len(patternDocuments[(dictionary, pattern)]) / documents, 3),
+                "sentences": patternSentences[(dictionary, pattern)],
+                "perThousand": round(patternSentences[(dictionary, pattern)] * 1000 / sentences, 2),
+            }
+            for dictionary, pattern in sorted(patternDocuments, key=lambda key: -len(patternDocuments[key]))
+        },
         "duplicates": {
             "distinctSentences": len(sentenceOccurrences),
             "occurrencesInTwoOrMoreDocuments": duplicatedOccurrences,
@@ -141,6 +172,8 @@ def measure(root: Path, limit: int | None) -> dict:
 
 def summary(result: dict) -> str:
     length = result["length"]
+    patterns = list(result["patterns"].items())
+    rules = list(result["rules"].items())
     lines = [
         f"문서 {result['documents']}편, 문단 {result['paragraphs']:,}개, 문장 {result['sentences']:,}개 ({result['seconds']}초)",
         f"길이 평균 {length['mean']} 중앙 {length['median']} p90 {length['p90']} 최대 {length['max']} 어절,"
@@ -148,7 +181,8 @@ def summary(result: dict) -> str:
         f"쉼표 평균 {result['commas']['mean']} p90 {result['commas']['p90']}",
         f"명사 연속 분포 {result['nounRun']}, nounPileMin 이상 {result['nounRunAtLeastMin']:.1%}",
         f"의 분포 {result['eui']}",
-        "규칙 (1,000문장당): " + ", ".join(f"{rule} {item['perThousand']}" for rule, item in list(result["rules"].items())[:12]),
+        "규칙 (1,000문장당, 용례 없이 → 있이): "
+        + ", ".join(f"{rule} {item['withoutUsage']} → {item['perThousand']}" for rule, item in rules[:12]),
         f"연쇄 종류 {result['chains']['distinct']:,}, 상위: "
         + ", ".join(f"{item['chain']} ({item['count']}/{item['documents']}편)" for item in result["chains"]["top"][:10]),
         f"nounPileMin 이상 연쇄 {result['piles']['occurrences']:,}건 {result['piles']['distinct']:,}종, 상위: "
@@ -156,6 +190,8 @@ def summary(result: dict) -> str:
         "다른 문서 N편에 나온 연쇄를 접으면: "
         + ", ".join(f"N={level} {item['share']:.1%}" for level, item in result["piles"]["foldedByLevel"].items()),
         f"둘 이상의 문서에 같은 문장 {result['duplicates']['share']:.1%} (종류 {result['duplicates']['distinctSentences']:,})",
+        "사전 항목 (문서 비율, 1,000문장당): "
+        + ", ".join(f"{key} {item['documentShare']:.0%}/{item['perThousand']}" for key, item in patterns[:15]),
     ]
     return "\n".join(lines)
 

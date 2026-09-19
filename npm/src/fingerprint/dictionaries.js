@@ -45,6 +45,7 @@ export function expandClasses(pattern) {
  * @property {string} source
  * @property {string | null} fix
  * @property {{ pattern: import("../regex.js").Pattern, into: string }[]} to 문장 전체를 다시 쓰는 규칙. 앞의 것부터 시도한다
+ * @property {string} raw pattern 의 원문. 내장 항목만 갖고 설정 항목은 빈 글자라 관용으로 접히지 않는다
  */
 
 /**
@@ -57,10 +58,11 @@ export function expandClasses(pattern) {
  * @property {string} source
  * @property {string | null} fix
  * @property {string | null} rewrite 항목의 to 규칙으로 문장 전체를 다시 쓴 제안. 없거나 안 맞으면 null
+ * @property {string} pattern 맞은 항목의 pattern 원문. 용례 빈도표의 키다
  */
 
-/** @param {string} dictionary @param {Record<string, unknown> | string} raw @returns {Entry} */
-export function entryFrom(dictionary, raw) {
+/** @param {string} dictionary @param {Record<string, unknown> | string} raw @param {boolean} [builtin] @returns {Entry} */
+export function entryFrom(dictionary, raw, builtin = false) {
   const data = typeof raw === "string" ? { pattern: raw } : raw;
   return {
     dictionary,
@@ -69,6 +71,7 @@ export function entryFrom(dictionary, raw) {
     source: /** @type {string} */ (data.source ?? "설정"),
     fix: /** @type {string | null} */ (data.fix ?? null),
     to: (/** @type {[string, string][]} */ (data.to ?? [])).map(([source, into]) => ({ pattern: compile(expandClasses(source)), into })),
+    raw: builtin ? /** @type {string} */ (data.pattern) : "",
   };
 }
 
@@ -78,7 +81,7 @@ export function builtinEntries() {
   if (!builtinCache) {
     builtinCache = [];
     for (const [dictionary, name] of Object.entries(DICTIONARY_FILES)) {
-      for (const raw of loadEntries(name)) builtinCache.push(entryFrom(dictionary, raw));
+      for (const raw of loadEntries(name)) builtinCache.push(entryFrom(dictionary, raw, true));
     }
   }
   return builtinCache;
@@ -133,6 +136,7 @@ export function matchesIn(text, entries) {
         source: entry.source,
         fix: entry.fix ? applyFix(match, entry.fix) : null,
         rewrite: entry.to.length ? rewriteBy(text, entry.to) : null,
+        pattern: entry.raw,
       });
     }
   }

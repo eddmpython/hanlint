@@ -1,6 +1,7 @@
 // @ts-check
 /** 사전 규칙의 공통 구현. cliche, translationese, redundantPair, japaneseLoan 이 사전 이름만 바꿔 쓴다. */
 import { fitJosa } from "../../analysis/grammar/josa.js";
+import { conventional, usageKindOf } from "../../usage/counts.js";
 import { ERROR, SENTENCE, finding } from "../finding.js";
 
 /**
@@ -41,11 +42,24 @@ function matchFinding(sentence, match, ruleName, severity) {
   );
 }
 
-export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR) {
+/**
+ * 사전의 매치를 지적으로. config 를 주면 그 종류의 관용 항목 (usage.conventional) 은 넘긴다. 뜻은 파이썬
+ * rules/shared/dictionaryRule.py 의 dictionaryFindings 가 소유한다.
+ * @param {import("../../fingerprint/build.js").DocumentPrint} doc
+ * @param {string} dictionary
+ * @param {string} ruleName
+ * @param {string} [severity]
+ * @param {import("../../config/settings.js").Config | null} [config]
+ * @returns {import("../finding.js").Finding[]}
+ */
+export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR, config = null) {
   const findings = [];
+  const kind = config ? usageKindOf(config) : null;
   for (const sentence of doc.sentences) {
     for (const match of sentence.matches) {
-      if (match.dictionary === dictionary) findings.push(matchFinding(sentence, match, ruleName, severity));
+      if (match.dictionary !== dictionary) continue;
+      if (kind && config && conventional(dictionary, match.pattern, kind, config.usageShare)) continue;
+      findings.push(matchFinding(sentence, match, ruleName, severity));
     }
   }
   return findings;

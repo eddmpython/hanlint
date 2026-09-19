@@ -16,6 +16,8 @@ core 는 낱말 그대로를 맞히고 bigram 은 `금융리스부채` 와 `리�
 - offsets.bin: 문장마다 sentences.tsv 안의 바이트 위치 (8바이트 little endian). 번호로 바로 읽는다.
 - lengths.bin: 문장마다 토큰 수 (4바이트 little endian). BM25 의 길이 보정에 쓰므로 통째로 든다.
 - terms.tsv: `토큰 \\t 문서 빈도 \\t postings.bin 위치 \\t 바이트 수`. 토큰 순 (코드 포인트 순).
+- termOffsets.bin: 토큰마다 terms.tsv 안의 바이트 위치 (8바이트 little endian). 토큰 표를 통째로 읽지 않고 이 위치로
+  이분 탐색한다. 실측: 961편 색인의 토큰 표 12 MB 를 읽는 데 조회 시간 1.5초 가운데 1초가 들었다 (2026-09-19).
 - postings.bin: 토큰마다 (문장 번호 차이, 빈도) 를 LEB128 부호 없는 varint 로 이어 쓴 것.
 
 순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 질의와 문장의 낱말 겹침이지 글의 좋고 나쁨이
@@ -35,7 +37,7 @@ from pathlib import Path
 from ..analysis import splitSentences
 from ..analysis.tokenize import COPULA, EDGE_PUNCTUATION, josaSet, stripJosa
 
-FORMAT = 1
+FORMAT = 2
 K1 = 1.5
 B = 0.75
 SCORE_SCALE = 1_000_000
@@ -63,7 +65,7 @@ TERMINAL = re.compile(r"(?<![0-9])[.!?][\"'”’)\]]*$")
 숫자 뒤의 마침표 (`평가 보고6.`, DART 원문에서 항목 번호가 붙은 제목) 도 문장 끝이 아니다."""
 FENCE = "```"
 TEXT_SUFFIXES = (".txt", ".md")
-FILES = ("meta.json", "sentences.tsv", "offsets.bin", "lengths.bin", "terms.tsv", "postings.bin")
+FILES = ("meta.json", "sentences.tsv", "offsets.bin", "lengths.bin", "terms.tsv", "termOffsets.bin", "postings.bin")
 
 
 def defaultRoot() -> Path:
@@ -217,7 +219,13 @@ def buildIndex(kind: str, documents: Iterable[tuple[str, str]], root: Path) -> B
             offset = handle.tell()
             handle.write(chunk)
             termLines.append(f"{term}\t{len(postingIds[term])}\t{offset}\t{len(chunk)}\n")
+    termOffsets = bytearray()
+    position = 0
+    for line in termLines:
+        termOffsets += position.to_bytes(8, "little")
+        position += len(line.encode("utf-8"))
     (target / "terms.tsv").write_bytes("".join(termLines).encode("utf-8"))
+    (target / "termOffsets.bin").write_bytes(bytes(termOffsets))
     meta = {
         "format": FORMAT,
         "kind": kind,
@@ -242,21 +250,38 @@ class Hit:
 
 
 class UsageIndex:
-    """폴더 하나의 색인. terms.tsv 와 lengths.bin 은 통째로 들고 문장과 postings 는 자리로 읽는다."""
+    """폴더 하나의 색인. lengths.bin 만 통째로 들고 토큰 표와 문장과 postings 는 자리로 읽는다."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
         self.meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
         if self.meta.get("format") != FORMAT:
             raise ValueError(f"{folder} 의 색인 format 이 {self.meta.get('format')} 이다. {FORMAT} 으로 다시 만든다")
-        self.terms: dict[str, tuple[int, int, int]] = {}
-        for line in (folder / "terms.tsv").read_text(encoding="utf-8").split("\n"):
-            if not line:
-                continue
-            term, df, offset, size = line.split("\t")
-            self.terms[term] = (int(df), int(offset), int(size))
         self.lengths = array("I")
         self.lengths.frombytes((folder / "lengths.bin").read_bytes())
+
+    def lineAt(self, name: str, offsetsName: str, index: int) -> str:
+        """offsetsName 의 index 번째 위치에서 name 의 한 줄."""
+        with (self.folder / offsetsName).open("rb") as handle:
+            handle.seek(index * 8)
+            offset = int.from_bytes(handle.read(8), "little")
+        with (self.folder / name).open("rb") as handle:
+            handle.seek(offset)
+            return handle.readline().decode("utf-8").rstrip("\n")
+
+    def lookup(self, term: str) -> tuple[int, int, int] | None:
+        """(문서 빈도, postings 위치, 바이트 수). 토큰 표를 코드 포인트 순으로 이분 탐색한다. 없으면 None."""
+        low, high = 0, int(self.meta["terms"])
+        while low < high:
+            middle = (low + high) // 2
+            found, df, offset, size = self.lineAt("terms.tsv", "termOffsets.bin", middle).split("\t")
+            if found < term:
+                low = middle + 1
+            elif found > term:
+                high = middle
+            else:
+                return int(df), int(offset), int(size)
+        return None
 
     @property
     def kind(self) -> str:
@@ -271,10 +296,10 @@ class UsageIndex:
         return self.meta["sentences"]
 
     def postings(self, term: str) -> list[tuple[int, int]]:
-        found = self.terms.get(term)
-        if not found:
-            return []
-        _, offset, size = found
+        found = self.lookup(term)
+        return self.postingsAt(found[1], found[2]) if found else []
+
+    def postingsAt(self, offset: int, size: int) -> list[tuple[int, int]]:
         with (self.folder / "postings.bin").open("rb") as handle:
             handle.seek(offset)
             values = decodeVarints(handle.read(size))
@@ -287,13 +312,7 @@ class UsageIndex:
 
     def sentence(self, sentenceId: int) -> tuple[int, str, str]:
         """(문서 수, 출처, 글)."""
-        with (self.folder / "offsets.bin").open("rb") as handle:
-            handle.seek(sentenceId * 8)
-            offset = int.from_bytes(handle.read(8), "little")
-        with (self.folder / "sentences.tsv").open("rb") as handle:
-            handle.seek(offset)
-            line = handle.readline().decode("utf-8").rstrip("\n")
-        documents, source, text = line.split("\t", 2)
+        documents, source, text = self.lineAt("sentences.tsv", "offsets.bin", sentenceId).split("\t", 2)
         return int(documents), source, text
 
     def search(self, query: str, limit: int) -> list[Hit]:
@@ -303,12 +322,12 @@ class UsageIndex:
         averageLength = self.meta["tokens"] / self.sentences
         scores: dict[int, float] = {}
         for token in tokens:
-            found = self.terms.get(token)
+            found = self.lookup(token)
             if not found or (self.sentences >= MIN_FILTER_SENTENCES and found[0] > self.sentences * MAX_DF_SHARE):
                 continue
-            df = found[0]
+            df, offset, size = found
             idf = math.log(1 + (self.sentences - df + 0.5) / (df + 0.5))
-            for sentenceId, tf in self.postings(token):
+            for sentenceId, tf in self.postingsAt(offset, size):
                 norm = tf + K1 * (1 - B + B * self.lengths[sentenceId] / averageLength)
                 scores[sentenceId] = scores.get(sentenceId, 0.0) + idf * (tf * (K1 + 1)) / norm
         scaled = ((math.floor(score * SCORE_SCALE), sentenceId) for sentenceId, score in scores.items())

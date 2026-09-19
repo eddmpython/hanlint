@@ -22,25 +22,31 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 | 일 | 자리 | 층 |
 |---|---|---|
 | 명사 연쇄 뽑기 `nounRuns` | `src/hanlint/analysis/tokenize.py`, `npm/src/analysis/tokenize.js` | analysis |
-| 빈도표 읽기와 조회 (`usageKindOf`, `attested`, `chainDocuments`) | `src/hanlint/usage/counts.py`, `npm/src/usage/counts.js` | usage |
+| 빈도표 읽기와 조회 (`usageKindOf`, `attested`, `conventional`) | `src/hanlint/usage/counts.py`, `npm/src/usage/counts.js` | usage |
 | 빈도표 자료 | `src/hanlint/data/usageCounts.<종류>.json` (npm 은 투영) | data |
 | 빈도표 만들기 | `scripts/derive/usageCounts.py` | 도구 |
 | 말뭉치 받기 | `scripts/fetch/dartReports.py` (report) | 도구 |
 | 실측 | `scripts/measure/reports.py` | 도구 |
 | 문장 역인덱스 만들기와 조회 (`buildIndex`, `loadIndex`, `UsageIndex.search`) | `src/hanlint/usage/sentences.py`, `npm/src/usage/sentences.js` | usage |
-| 규칙 | `nounPile` 이 관용 연쇄를 접는다 | rules |
+| 규칙 | `nounPile` 이 관용 연쇄를 접고, 사전 규칙 다섯 (translationese, hardWord, cliche, redundantPair, japaneseLoan) 이 관용 항목을 접는다 (`rules/shared/dictionaryRule.py`) | rules |
 | 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>` (두 판) | cli |
 | 스킬 | `skills/use-hanlint/SKILL.md` 4단계가 막힌 자리에서 `usage` 를 부른다 | |
 
 프리셋 → 종류는 `config.USAGE_OF` 가 정한다 (report 만). 설정 `usageKind` 가 덮고 빈 문자열이면 보지 않는다.
-`usageMin` (기본 3) 은 연쇄가 몇 편의 문서에 나와야 관용으로 보는지다.
+`usageMin` (기본 3) 은 연쇄가 몇 편의 문서에 나와야 관용으로 보는지, `usageShare` (기본 0.9) 는 사전 항목이 문서 몇 할에
+나와야 관용으로 보는지다. 연쇄는 존재를 묻고 (셋만 있어도 낱말이다) 항목은 비율을 묻는다 (번역투는 어디에나 조금은 있다).
 
 ## 빈도표의 계약
+
+표 하나에 두 절이 있다. `chains` (명사 연쇄 → 문서 수) 와 `patterns` (사전 → 항목 pattern 원문 → 문서 수).
 
 - 키는 `nounRuns` 가 뽑은 어절들을 빈칸 하나로 이은 것. 규칙이 같은 함수로 뽑아 그대로 찾으므로 연쇄의 뜻은 한 곳
   (`analysis/tokenize.py`) 에만 있다.
 - 값은 그 연쇄가 나온 **문서 수** 다. 한 문서 안의 반복은 한 번이다. 한 회사의 버릇은 관용이 아니다.
-- 센 길이 4 미만과 한 문서에만 나온 연쇄는 넣지 않는다. 글자 하나짜리 어절만 이어진 연쇄 (띄어 쓴 제목의 잔해) 도 뺀다.
+- 센 길이 4 미만과 문서 셋 미만에 나온 연쇄는 넣지 않는다 (usageMin 의 기본과 같다). 글자 하나짜리 어절만 이어진 연쇄
+  (띄어 쓴 제목의 잔해) 도 뺀다.
+- `patterns` 는 산문 사전 다섯 (translationese, cliches, redundantPair, japaneseLoan, easyWords) 의 내장 항목만 든다. 키는
+  사전 파일에 적힌 pattern 원문이라 두 판이 같은 키를 갖는다. 설정으로 더한 항목은 표에 없어 늘 짚는다.
 - 파일 하나가 256 KiB 를 넘지 않는다. 패키지와 브라우저 묶음에 그대로 실린다.
 - `tests/gates/testUsageCounts.py` 가 위를 지킨다. 상수의 정본은 `scripts/derive/usageCounts.py` 다.
 
@@ -49,6 +55,11 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usageMin 편 이상으로 있을 때만 그 문장을 넘긴다.
 관용 연쇄에 명사를 하나 더 얹은 것 (`정관상 배당절차 개선방안 이행 가부 검토 결과`) 은 여전히 쌓기다. 부분 일치와
 창 (window) 으로 접지 않는다. 관용 낱말 둘을 붙인 것도 관계가 표시되지 않은 쌓기이기 때문이다.
+
+사전 규칙은 맞은 항목이 그 종류의 문서 usageShare 이상에 나오면 그 매치를 넘긴다. 사업보고서 3,193편에서 translationese
+항목 여덟 (`에 대한`, `에 관한`, `에 대해`, `로부터`, `을 위해`, `에 의해`, `로 인해`, `을 통해`) 이 99% 이상, `상기` 97%,
+`를 가지고 있` 93% 에 나왔고 다음은 `에 있어서` 74% 다. 열 편 가운데 아홉 편이 쓰는 표현은 그 종류의 말이고, 그것을 report
+에서 짚는 것은 결함이 아니라 문체를 짚는 것이다. blog 와 docs 에는 표가 없어 그대로 짚는다.
 
 ## 문장 역인덱스
 
@@ -90,6 +101,25 @@ python -X utf8 -B -m hanlint usage build report ~/.cache/hanlint/corpus/dart
 ## 실측 (사업보고서 961편, 2026-09-19)
 
 수치는 `scripts/measure/reports.py` 가 다시 낸다. `nounPile` docstring 과 `config.usageMin` 이 근거로 인용한다.
+
+### 3,193편 표와 1,000편 실측 (같은 날, 뒤에 한 것)
+
+표는 3,193편 전부에서 만들었다 (연쇄 1,602종, 사전 항목 87개, 78 KB). 지적률은 앞 1,000편 (814,000문장) 을 용례 없이
+(`usageKind = ""`) 와 있이 두 번 돌려 같은 문서에서 견줬다 (1,000문장당).
+
+| 규칙 | 용례 없이 | 용례 있이 |
+|---|---:|---:|
+| translationese | 290.9 | 9.0 |
+| hardWord | 22.1 | 9.9 |
+| nounPile | 6.6 | 4.9 |
+| 그 밖 (euiChain, longSentence, paraFragment …) | 347.9 | 347.9 |
+| 합계 | 667.6 | 371.8 |
+
+report 프리셋의 지적이 44% 준다. 준 것은 전부 문서의 90% 이상이 쓰는 표현이고 남은 translationese 9.0 은 `에 있어서`,
+`가능하다`, `으로의`, `에도 불구하고` 처럼 보고서 안에서도 고칠 수 있는 자리다. 문장 역인덱스는 3,193편 1,056,316문장,
+414 MB, 만들기 3분 24초, 조회 파이썬 1.3초 (그중 실행기 시작 0.4초) 와 node 0.5초다.
+
+### 961편 (처음 잰 것)
 
 - 문단 514,211개, 문장 747,583개. 문장 길이 평균 14.7 어절 (중앙 12, p90 28), longSentenceMax 30 초과 8.2%.
   명사 연속 5 이상인 문장 0.6%. `의` 3회 이상인 문장 9.0%.

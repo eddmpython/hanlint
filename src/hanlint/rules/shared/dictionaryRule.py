@@ -13,7 +13,9 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 from ...analysis.grammar import fitJosa
+from ...config import Config
 from ...fingerprint import DocumentPrint
+from ...usage import conventional, usageKindOf
 from ..finding import ERROR, SENTENCE, Finding
 
 
@@ -36,11 +38,22 @@ def matchFinding(sentence, match, ruleName: str, severity: str) -> Finding:
     )
 
 
-def dictionaryFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:
+def dictionaryFindings(
+    doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR, config: Config | None = None
+) -> Iterator[Finding]:
+    """사전의 매치를 지적으로. config 를 주면 그 종류의 관용 항목 (usage.conventional) 은 넘긴다.
+
+    사업보고서 200편에서 translationese 항목 8개가 문서의 100% 에, `에 대한` 하나가 1,000문장당 88번 나왔다. 그 종류의
+    모든 글이 쓰는 표현을 그 종류에서 짚는 것은 결함이 아니라 문체를 짚는 것이다. 종류는 프리셋이 정하고 (config.USAGE_OF)
+    비율은 config.usageShare 다. 설정의 dictionary 로 더한 항목은 표에 없어 늘 짚는다."""
+    kind = usageKindOf(config) if config is not None else None
     for sentence in doc.sentences:
         for match in sentence.matches:
-            if match.dictionary == dictionary:
-                yield matchFinding(sentence, match, ruleName, severity)
+            if match.dictionary != dictionary:
+                continue
+            if kind and conventional(dictionary, match.pattern, kind, config.usageShare):
+                continue
+            yield matchFinding(sentence, match, ruleName, severity)
 
 
 def overridingFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:

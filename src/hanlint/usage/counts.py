@@ -34,3 +34,17 @@ def chainDocuments(chain: Sequence[str], kind: str) -> int:
 def attested(chain: Sequence[str], kind: str, minimum: int) -> bool:
     """연쇄가 minimum 편 이상의 문서에 나왔으면 그 종류의 관용이다."""
     return chainDocuments(chain, kind) >= minimum
+
+
+def patternDocuments(dictionary: str, pattern: str, kind: str) -> int:
+    """사전 항목 (pattern 원문) 이 그 종류의 말뭉치에서 몇 편의 문서에 나왔나. 표에 없으면 0."""
+    return usageTable(kind).get("patterns", {}).get(dictionary, {}).get(pattern, 0)
+
+
+def conventional(dictionary: str, pattern: str, kind: str, share: float) -> bool:
+    """사전 항목이 그 종류의 문서 share 이상에 나오면 그 종류의 관용이다. 연쇄와 달리 존재가 아니라 비율을 묻는다.
+
+    연쇄는 셋만 있어도 낱말이지만 (무기명식 이권부 무보증 사모 전환사채), 번역투 항목은 어디에나 조금은 있어 존재로는
+    가를 수 없다. 열 편 가운데 아홉 편이 쓰면 그 종류의 말이다 (config.usageShare)."""
+    table = usageTable(kind)
+    return patternDocuments(dictionary, pattern, kind) >= share * table["documents"]

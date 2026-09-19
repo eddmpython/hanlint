@@ -32,10 +32,15 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 - `scripts/fetch/dartReports.py` 가 OpenDART 사업보고서 본문 문단을 `~/.cache/hanlint/corpus/dart/` 에 받고,
   `scripts/measure/reports.py` 가 그 말뭉치의 문장 프로파일과 규칙 지적률과 명사 연쇄 빈도를 잰다.
 - `analysis.nounRuns` 가 문장의 명사 연쇄를 어절째 돌려준다. `longestNounRun` 은 그 위의 최댓값이다.
+- 사전 규칙 다섯 (translationese, hardWord, cliche, redundantPair, japaneseLoan) 이 그 종류의 문서 `usageShare` (기본 0.9)
+  이상에 나오는 항목을 짚지 않는다. 빈도표의 `patterns` 절이 사전 항목마다 문서 수를 들고, 사업보고서 3,193편에서
+  `에 대한` 등 여덟 항목과 `상기`, `를 가지고 있` 이 93~100% 에 나왔다. 실측 (1,000편): report 프리셋의 translationese
+  지적이 1,000문장당 290.9건에서 9.0건으로, 전체 지적이 667.6건에서 371.8건으로 준다. 설정으로 더한 항목은 늘 짚는다.
 - `hanlint usage "낱말 …" --kind report --limit 5` (두 판). 그 종류의 실제 글에서 낱말이 쓰인 문장을 BM25 순서로
   보인다 (문서 수와 출처 포함, `--format json`). `hanlint usage build <종류> <글 폴더>` 가 사용자 기계
   (`~/.cache/hanlint/usage/`) 에 문장 역인덱스를 만들고 두 판이 같은 바이트를 만든다. 색인이 없으면 만드는 법을
-  알리고 2 로 끝난다. 스킬의 4단계가 막힌 자리에서 부른다.
+  알리고 2 로 끝난다. 스킬의 4단계가 막힌 자리에서 부른다. 색인은 토큰 표를 통째로 읽지 않고 디스크에서 이분 탐색한다
+  (3,193편 1,056,316문장 색인에서 조회 node 0.5초).
 
 ### Changed
 

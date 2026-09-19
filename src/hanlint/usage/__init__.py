@@ -8,7 +8,7 @@ fingerprint 와 같은 층 (4) 이다. rules 와 cli 가 쓰고, analysis 와 co
 
 from __future__ import annotations
 
-from .counts import attested, chainDocuments, usageKindOf, usageTable
+from .counts import attested, chainDocuments, conventional, patternDocuments, usageKindOf, usageTable
 from .sentences import BuildResult, Hit, UsageIndex, buildIndex, indexTokens, loadIndex, readDocuments
 from .sentences import defaultRoot as defaultUsageRoot
 
@@ -19,9 +19,11 @@ __all__ = [
     "attested",
     "buildIndex",
     "chainDocuments",
+    "conventional",
     "defaultUsageRoot",
     "indexTokens",
     "loadIndex",
+    "patternDocuments",
     "readDocuments",
     "usageKindOf",
     "usageTable",

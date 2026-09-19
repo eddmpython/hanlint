@@ -159,6 +159,7 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
  * @property {number} nounPileMin
  * @property {string | null} usageKind 용례 빈도표의 종류. null 이면 프리셋이 정하고 "" 면 보지 않는다
  * @property {number} usageMin 명사 연쇄가 몇 편의 문서에 나와야 용례로 보는가
+ * @property {number} usageShare 사전 항목이 그 종류의 문서 몇 할에 나오면 관용으로 보는가
  * @property {number} endingRun
  * @property {number} factListMinSentences
  * @property {number} factListMaxMeanLength
@@ -200,6 +201,7 @@ export function defaultConfig() {
     nounPileMin: 5,
     usageKind: null,
     usageMin: 3,
+    usageShare: 0.9,
     endingRun: 4,
     factListMinSentences: 3,
     factListMaxMeanLength: 8.0,

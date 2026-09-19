@@ -938,10 +938,12 @@ export function renderInit(preset = "blog") {
   }
   lines.push(
     "",
-    "# 용례. nounPile 은 그 종류의 실제 글에서 usageMin 편 이상의 문서에 나온 명사 연쇄를 짚지 않는다.",
+    "# 용례. nounPile 은 그 종류의 실제 글에서 usageMin 편 이상의 문서에 나온 명사 연쇄를 짚지 않고, 사전 규칙은",
+    "# 그 종류의 문서 usageShare 이상에 나오는 항목 (사업보고서의 `에 대한`) 을 짚지 않는다.",
     "# 종류는 프리셋이 정한다 (report 만 있다). 빈 문자열이면 어떤 프리셋에서도 용례를 보지 않는다",
     '# usageKind = ""',
     "# usageMin = 3",
+    "# usageShare = 0.9",
     "",
     "# 사전에 더할 항목. 키는 cliches, translationese, redundantPair, japaneseLoan, easyWords,",
     "# screenSentence, screenNarration, screenTone, screenWord",

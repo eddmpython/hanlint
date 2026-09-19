@@ -18,5 +18,6 @@ def redundantPair(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         사전은 data/redundantPair.toml.
     고치기: 하나만 남긴다. 역전 앞 은 역 앞, 그때 당시 는 그때.
     안 잡는 것: 뜻을 강조하려고 일부러 겹친 말. 사전에 없는 겹말.
+        그 종류의 글이 다 쓰는 항목 (report 프리셋, 사업보고서 문서의 usageShare 이상) 은 짚지 않는다 (usage.conventional).
     """
-    yield from dictionaryFindings(doc, "redundantPair", "redundantPair")
+    yield from dictionaryFindings(doc, "redundantPair", "redundantPair", config=config)

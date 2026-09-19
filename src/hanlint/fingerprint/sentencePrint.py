@@ -19,6 +19,8 @@ class DictionaryMatch:
     """맞은 자리를 그대로 바꿀 수 있을 때만 있다. 그룹 치환을 마친 값이다."""
     rewrite: str | None = None
     """항목의 to 규칙으로 문장 전체를 다시 쓴 제안. 화면 문장을 낱말로 줄이는 자리에 쓴다. 규칙이 없거나 안 맞으면 없다."""
+    pattern: str = ""
+    """맞은 항목의 pattern 원문 (사전 파일에 적힌 글자). 용례 빈도표가 이 글자를 키로 들어 그 종류의 관용인지 본다."""
 
 
 @dataclass(frozen=True)

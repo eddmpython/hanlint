@@ -19,6 +19,10 @@ def translationese(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         kubernetes.io 한국어 현지화 가이드. 사전은 data/translationese.toml.
     고치기: 항목마다 고친 예가 있다. 에 있어서 는 에서, 로부터 는 에게, 음에도 불구하고 는 지만.
         기계가 바꿀 수 있는 것은 fix 로 준다.
-    안 잡는 것: 사전에 없는 번역투. 무생물 주어 타동사 구문처럼 구문 분석이 필요한 것은 잡지 않는다.
+    안 잡는 것: 사전에 없는 번역투. 무생물 주어 타동사 구문처럼 구문 분석이 필요한 것은 잡지 않는다. 그 종류의
+        글이 다 쓰는 항목: report 프리셋에서 사업보고서 문서의 usageShare (0.9) 이상에 나온 항목 (`에 대한`, `을 통해`,
+        `로부터`, `에 관한`, `로 인해`, `을 위해`, `에 대해`, `에 의해`) 은 그 종류의 말이라 짚지 않는다. 실측: 200편
+        171,276문장에서 translationese 지적 289.8건/1,000문장 가운데 이 여덟이 254건이었다 (2026-09-19,
+        scripts/measure/reports.py). 판정은 rules/shared/dictionaryRule.py 와 usage.conventional.
     """
-    yield from dictionaryFindings(doc, "translationese", "translationese")
+    yield from dictionaryFindings(doc, "translationese", "translationese", config=config)

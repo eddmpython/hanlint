@@ -12,7 +12,7 @@ import { splitSentences } from "../analysis/splitSentences.js";
 import { COPULA, EDGE_PUNCTUATION, josaSet, stripJosa } from "../analysis/tokenize.js";
 import { splitLines, splitWords, stripChars } from "../text.js";
 
-export const FORMAT = 1;
+export const FORMAT = 2;
 const K1 = 1.5;
 const B = 0.75;
 export const SCORE_SCALE = 1_000_000;
@@ -28,7 +28,7 @@ const BULLET = /^(?:(?:[-*·•※]|\([0-9a-z]{1,2}\)|[0-9]{1,2}[.)])\s+|(?:\([�
 const TERMINAL = /(?<![0-9])[.!?]["'”’)\]]*$/;
 const FENCE = "```";
 const TEXT_SUFFIXES = new Set([".txt", ".md"]);
-export const FILES = ["meta.json", "sentences.tsv", "offsets.bin", "lengths.bin", "terms.tsv", "postings.bin"];
+export const FILES = ["meta.json", "sentences.tsv", "offsets.bin", "lengths.bin", "terms.tsv", "termOffsets.bin", "postings.bin"];
 
 export function defaultRoot() {
   return join(homedir(), ".cache", "hanlint", "usage");
@@ -249,7 +249,14 @@ export function buildIndex(kind, documents, root) {
     offset += bytes.length;
   }
   writeFileSync(join(target, "postings.bin"), Buffer.concat(postingChunks));
+  const termOffsets = Buffer.alloc(termLines.length * 8);
+  let termPosition = 0;
+  termLines.forEach((line, index) => {
+    termOffsets.writeBigUInt64LE(BigInt(termPosition), index * 8);
+    termPosition += Buffer.byteLength(line, "utf-8");
+  });
   writeFileSync(join(target, "terms.tsv"), termLines.join(""), "utf-8");
+  writeFileSync(join(target, "termOffsets.bin"), termOffsets);
   const meta = { format: FORMAT, kind, documents: documentCount, sentences: texts.length, tokens: tokenTotal, terms: terms.length };
   writeFileSync(join(target, "meta.json"), `${JSON.stringify(meta, null, 2)}\n`, "utf-8");
   return { documents: documentCount, sentences: texts.length, terms: terms.length };
@@ -263,12 +270,6 @@ export class UsageIndex {
     this.folder = folder;
     this.meta = JSON.parse(readFileSync(join(folder, "meta.json"), "utf-8"));
     if (this.meta.format !== FORMAT) throw new Error(`${folder} 의 색인 format 이 ${this.meta.format} 이다. ${FORMAT} 으로 다시 만든다`);
-    /** @type {Map<string, [number, number, number]>} */
-    this.terms = new Map();
-    for (const line of splitLines(readFileSync(join(folder, "terms.tsv"), "utf-8"))) {
-      const [term, df, offset, size] = line.split("\t");
-      this.terms.set(term, [Number(df), Number(offset), Number(size)]);
-    }
     const lengthBytes = readFileSync(join(folder, "lengths.bin"));
     this.lengths = new Uint32Array(lengthBytes.buffer, lengthBytes.byteOffset, lengthBytes.length / 4);
   }
@@ -297,11 +298,46 @@ export class UsageIndex {
     }
   }
 
+  /** offsetsName 의 index 번째 위치에서 name 의 한 줄. @param {string} name @param {string} offsetsName @param {number} index */
+  lineAt(name, offsetsName, index) {
+    const offset = Number(this.readAt(offsetsName, index * 8, 8).readBigUInt64LE(0));
+    const size = statSync(join(this.folder, name)).size;
+    let span = 4096;
+    let chunk = this.readAt(name, offset, Math.min(size - offset, span));
+    while (chunk.indexOf(0x0a) < 0 && offset + span < size) {
+      span *= 4;
+      chunk = this.readAt(name, offset, Math.min(size - offset, span));
+    }
+    const end = chunk.indexOf(0x0a);
+    return chunk.subarray(0, end < 0 ? chunk.length : end).toString("utf-8");
+  }
+
+  /**
+   * [문서 빈도, postings 위치, 바이트 수]. 토큰 표를 코드 포인트 순으로 이분 탐색한다. 뜻은 파이썬 lookup 이 소유한다.
+   * @param {string} term @returns {[number, number, number] | null}
+   */
+  lookup(term) {
+    let low = 0;
+    let high = Number(this.meta.terms);
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      const [found, df, offset, size] = this.lineAt("terms.tsv", "termOffsets.bin", middle).split("\t");
+      const order = compareCodePoints(found, term);
+      if (order < 0) low = middle + 1;
+      else if (order > 0) high = middle;
+      else return [Number(df), Number(offset), Number(size)];
+    }
+    return null;
+  }
+
   /** @param {string} term @returns {[number, number][]} */
   postings(term) {
-    const found = this.terms.get(term);
-    if (!found) return [];
-    const [, offset, size] = found;
+    const found = this.lookup(term);
+    return found ? this.postingsAt(found[1], found[2]) : [];
+  }
+
+  /** @param {number} offset @param {number} size @returns {[number, number][]} */
+  postingsAt(offset, size) {
     const values = decodeVarints(this.readAt("postings.bin", offset, size));
     /** @type {[number, number][]} */
     const result = [];
@@ -315,16 +351,7 @@ export class UsageIndex {
 
   /** (문서 수, 출처, 글). @param {number} sentenceId @returns {[number, string, string]} */
   sentence(sentenceId) {
-    const offset = Number(this.readAt("offsets.bin", sentenceId * 8, 8).readBigUInt64LE(0));
-    const size = statSync(join(this.folder, "sentences.tsv")).size;
-    let span = 4096;
-    let chunk = this.readAt("sentences.tsv", offset, Math.min(size - offset, span));
-    while (chunk.indexOf(0x0a) < 0 && offset + span < size) {
-      span *= 4;
-      chunk = this.readAt("sentences.tsv", offset, Math.min(size - offset, span));
-    }
-    const end = chunk.indexOf(0x0a);
-    const line = chunk.subarray(0, end < 0 ? chunk.length : end).toString("utf-8");
+    const line = this.lineAt("sentences.tsv", "offsets.bin", sentenceId);
     const first = line.indexOf("\t");
     const second = line.indexOf("\t", first + 1);
     return [Number(line.slice(0, first)), line.slice(first + 1, second), line.slice(second + 1)];
@@ -338,11 +365,11 @@ export class UsageIndex {
     /** @type {Map<number, number>} */
     const scores = new Map();
     for (const token of tokens) {
-      const found = this.terms.get(token);
+      const found = this.lookup(token);
       if (!found || (this.sentences >= MIN_FILTER_SENTENCES && found[0] > this.sentences * MAX_DF_SHARE)) continue;
-      const df = found[0];
+      const [df, offset, size] = found;
       const idf = Math.log(1 + (this.sentences - df + 0.5) / (df + 0.5));
-      for (const [sentenceId, tf] of this.postings(token)) {
+      for (const [sentenceId, tf] of this.postingsAt(offset, size)) {
         const norm = tf + K1 * (1 - B + (B * this.lengths[sentenceId]) / averageLength);
         scores.set(sentenceId, (scores.get(sentenceId) ?? 0) + (idf * (tf * (K1 + 1))) / norm);
       }

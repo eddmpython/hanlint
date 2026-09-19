@@ -6,7 +6,7 @@
 import { USAGE_OF } from "../config/settings.js";
 import { readText } from "../data/load.js";
 
-/** @typedef {{ kind: string, source: string, documents: number, minLength: number, minDocuments: number, chains: Record<string, number> }} UsageTable */
+/** @typedef {{ kind: string, source: string, documents: number, minLength: number, minDocuments: number, chains: Record<string, number>, patterns?: Record<string, Record<string, number>> }} UsageTable */
 
 /** @type {Map<string, UsageTable>} */
 const tables = new Map();
@@ -38,4 +38,17 @@ export function chainDocuments(chain, kind) {
 /** 연쇄가 minimum 편 이상의 문서에 나왔으면 그 종류의 관용이다. @param {string[]} chain @param {string} kind @param {number} minimum */
 export function attested(chain, kind, minimum) {
   return chainDocuments(chain, kind) >= minimum;
+}
+
+/** 사전 항목이 그 종류의 말뭉치에서 몇 편의 문서에 나왔나. @param {string} dictionary @param {string} pattern @param {string} kind */
+export function patternDocuments(dictionary, pattern, kind) {
+  return usageTable(kind).patterns?.[dictionary]?.[pattern] ?? 0;
+}
+
+/**
+ * 사전 항목이 그 종류의 문서 share 이상에 나오면 관용이다. 뜻은 파이썬 usage/counts.py 의 conventional 이 소유한다.
+ * @param {string} dictionary @param {string} pattern @param {string} kind @param {number} share
+ */
+export function conventional(dictionary, pattern, kind, share) {
+  return patternDocuments(dictionary, pattern, kind) >= share * usageTable(kind).documents;
 }

@@ -20,6 +20,8 @@ def hardWord(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     고치기: 항목마다 쉬운 말을 fix 로 제안한다. 문맥에 따라 다른 말이 맞을 수 있어 hanlint fix 는 적용하지
         않고 사람이 고른다.
     안 잡는 것: 사전에 없는 말. 고유명사와 제품 이름. 백틱과 따옴표 안의 인용. 전문 용어가 정확해서 꼭
-        필요한 자리 (그때는 이 규칙을 끄거나 인라인 제어로 그 문단만 끈다). 제안이라 notice 로만 낸다.
+        필요한 자리 (그때는 이 규칙을 끄거나 인라인 제어로 그 문단만 끈다). 제안이라 notice 로만 낸다. 그 종류의
+        글이 다 쓰는 말: report 프리셋에서 사업보고서 문서의 usageShare 이상에 나온 항목 (`상기`, 96%) 은 그 종류의 말이라
+        짚지 않는다 (usage.conventional, 2026-09-19).
     """
-    yield from dictionaryFindings(doc, "easyWords", "hardWord", NOTICE)
+    yield from dictionaryFindings(doc, "easyWords", "hardWord", NOTICE, config=config)

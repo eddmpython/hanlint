@@ -6,7 +6,7 @@ import test from "node:test";
 import { nounRuns } from "../src/analysis/index.js";
 import { USAGE_KINDS, USAGE_OF, configFromMapping } from "../src/config/settings.js";
 import { lintText } from "../src/index.js";
-import { attested, chainDocuments, usageKindOf, usageTable } from "../src/usage/index.js";
+import { attested, chainDocuments, conventional, patternDocuments, usageKindOf, usageTable } from "../src/usage/index.js";
 
 const ATTESTED = "정관상 배당절차 개선방안 이행 가부";
 const PILE = "가상환경 생성 후 패키지 설치 확인";
@@ -125,4 +125,31 @@ test("build is deterministic, folds shared sentences, and search ranks", () => {
   assert.equal(loadIndex("report", join(root, "none")), null);
   writeFileSync(join(root, "one", "report", "meta.json"), '{"format": 99}');
   assert.throws(() => loadIndex("report", join(root, "one")), /format/);
+});
+
+const CONVENTIONAL = "당사는 시장 상황에 대한 분석을 통해 대응 방안을 마련하였고 상기 계획을 이사회에서 정했습니다.";
+const RARE = "그 계획은 이사회에 있어서 승인되었습니다.";
+
+/** @param {string} text @param {Record<string, unknown>} mapping */
+function dictionaryRules(text, mapping) {
+  return lintText(text, configFromMapping(mapping))
+    .filter((f) => f.rule === "translationese" || f.rule === "hardWord")
+    .map((f) => `${f.rule}:${f.quote.split(" ")[0]}`);
+}
+
+test("report skips conventional dictionary entries", () => {
+  assert.deepEqual(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "report" }), []);
+  assert.equal(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "blog" }).length, 3);
+  assert.deepEqual(dictionaryRules(`${RARE}\n`, { preset: "report" }), ["translationese:그"]);
+  assert.notDeepEqual(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "report", usageKind: "" }), []);
+  assert.notDeepEqual(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "report", usageShare: 1.01 }), []);
+  assert.ok(conventional("translationese", "에 대한", "report", 0.9));
+  assert.ok(!conventional("translationese", "에 있어서", "report", 0.9));
+  assert.ok(conventional("translationese", "에 있어서", "report", 0.5));
+  assert.equal(patternDocuments("translationese", "없는 항목", "report"), 0);
+});
+
+test("config dictionary entries are never conventional", () => {
+  const mapping = { preset: "report", dictionary: { translationese: [{ pattern: "에 대한", fix: "의" }] } };
+  assert.deepEqual(dictionaryRules("시장에 대한 분석입니다.\n", mapping), ["translationese:시장에"]);
 });
