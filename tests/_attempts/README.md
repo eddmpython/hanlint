@@ -27,6 +27,7 @@ dartlab 의 `tests/_attempts/` 에서 가져온 꼴이다. 주제 하나가 폴�
 |---|---|
 | `fixReach/` | 지적 가운데 기계가 고쳐 주는 비율. 나머지는 글쓴이의 몫으로 남는다 |
 | `exemplarLift/` | 같은 수정 과제에서 본보기 유무만 바꿔 규칙 해결과 새 error 를 견준다 |
+| `usageLift/` | 같은 수정 과제에서 용례 (`hanlint usage`) 유무만 바꿔 규칙 해결, 새 error, 명사 보존을 견준다. 사업보고서 45쌍, qwen3:8b 와 fresh-context 에이전트 |
 | `koreanStyleBooks/` | 한국 글쓰기 책들이 드는 자리가 실제 글에 얼마나 있나. 규칙이 될 만한지 |
 | `patchMemory/` | cue 기반 선택을 폐기하고 승인 원문 완전 일치 재생만 일반 본보기보다 안전한지 |
 | `operationMemory/` | 공개 Git 고침에서 뽑은 작은 표면 연산이 다른 원문에서도 사실과 뜻을 지키며 향상되는지 |
