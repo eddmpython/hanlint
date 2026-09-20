@@ -39,6 +39,7 @@ from hanlint import Config, buildFingerprint  # noqa: E402
 from hanlint.document import parseMarkdown  # noqa: E402
 
 ARMS = ("plain", "craft")
+"""1, 2회차의 갈래. 3회차는 ("shipped", "revised") 를 --arms 로 준다. 기준선이 plain 이 아니라 내보낸 판이다."""
 SEED = 42
 LONG = 30
 """긴 문장의 어절 수. 사람은 4.6~15.5%, 기계는 0.2~0.3% 였다 (aiTells 4회차)."""
@@ -57,10 +58,10 @@ TELLS = {
 COMPILED = {name: re.compile(pattern) for name, pattern in TELLS.items()}
 
 
-def arms(root: Path) -> dict[str, dict[str, str]]:
+def arms(root: Path, names: tuple[str, str] = ARMS) -> dict[str, dict[str, str]]:
     """{갈래: {과제 이름: 글}}. 두 갈래에 다 있는 과제만 남긴다."""
-    found = {arm: {p.stem: p.read_text(encoding="utf-8") for p in sorted((root / arm).glob("*.md"))} for arm in ARMS}
-    shared = set(found[ARMS[0]]) & set(found[ARMS[1]])
+    found = {arm: {p.stem: p.read_text(encoding="utf-8") for p in sorted((root / arm).glob("*.md"))} for arm in names}
+    shared = set(found[names[0]]) & set(found[names[1]])
     return {arm: {name: text for name, text in texts.items() if name in shared} for arm, texts in found.items()}
 
 
@@ -113,9 +114,9 @@ def follow(root: Path) -> str:
     return "\n".join(lines)
 
 
-def judgePrompts(root: Path, outDir: Path, batch: int) -> str:
-    found = arms(root)
-    names = sorted(found["plain"])
+def judgePrompts(root: Path, outDir: Path, batch: int, armNames: tuple[str, str] = ARMS) -> str:
+    found = arms(root, armNames)
+    names = sorted(found[armNames[0]])
     outDir.mkdir(parents=True, exist_ok=True)
     order = []
     made = []
@@ -134,7 +135,7 @@ def judgePrompts(root: Path, outDir: Path, batch: int) -> str:
         ]
         for name in chunk:
             rng = random.Random(f"{SEED}-{name}")
-            pair = list(ARMS)
+            pair = list(armNames)
             rng.shuffle(pair)
             order.append({"taskId": name, "order": pair})
             body.append(f"## {name}")
@@ -187,6 +188,7 @@ def main() -> None:
     two.add_argument("root", type=Path)
     two.add_argument("--output-dir", dest="outputDir", type=Path, required=True)
     two.add_argument("--batch", type=int, default=24)
+    two.add_argument("--arms", default=",".join(ARMS), help="견줄 갈래 둘. 쉼표로 나눈다")
     three = sub.add_parser("score")
     three.add_argument("root", type=Path)
     three.add_argument("--judgments", type=Path, required=True)
@@ -195,7 +197,8 @@ def main() -> None:
     if args.command == "follow":
         print(follow(args.root))
     elif args.command == "judge":
-        print(judgePrompts(args.root, args.outputDir, args.batch))
+        names = tuple(args.arms.split(","))
+        print(judgePrompts(args.root, args.outputDir, args.batch, names))
     else:
         print(score(args.root, args.judgments, args.orders))
 
