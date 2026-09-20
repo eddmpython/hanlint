@@ -28,7 +28,7 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 | 말뭉치 받기 | `scripts/fetch/dartReports.py` (report) | 도구 |
 | 실측 | `scripts/measure/reports.py` | 도구 |
 | 문장 역인덱스 만들기와 조회 (`buildIndex`, `loadIndex`, `UsageIndex.search`, `UsageIndex.collocations`) | `src/hanlint/usage/sentences.py`, `npm/src/usage/sentences.js` | usage |
-| 위키백과 받기 | `scripts/fetch/koWikipedia.py` (encyclopedia) | 도구 |
+| 위키백과 받기 | `scripts/fetch/koWikipedia.py` (`--namespaces` 가 장르를 고른다. 0 본문, 4 지침, 12 도움말) | 도구 |
 | 규칙 | `nounPile` 이 관용 연쇄를 접고, 사전 규칙 다섯 (translationese, hardWord, cliche, redundantPair, japaneseLoan) 이 관용 항목을 접는다 (`rules/shared/dictionaryRule.py`) | rules |
 | 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds` (두 판) | cli |
 | 스킬 | `write-korean` 의 `더 있는 것` 과 `use-hanlint` 4단계 (막힌 자리) 가 `usage` 를 가리킨다 | |
@@ -128,7 +128,8 @@ hanlint usage build report 글들/                      # 없으면 만든다 (�
 ## 다시 만들기
 
 ```
-python -X utf8 -B scripts/fetch/koWikipedia.py            # 위키백과 덤프 → ~/.cache/hanlint/corpus/wiki/kowiki.jsonl
+python -X utf8 -B scripts/fetch/koWikipedia.py            # 위키백과 본문 → ~/.cache/hanlint/corpus/wiki/kowiki.jsonl
+python -X utf8 -B scripts/fetch/koWikipedia.py --namespaces 4,12   # 지침과 도움말 → kowiki.ns4-12.jsonl (덤프 재사용)
 npx hanlint usage build encyclopedia ~/.cache/hanlint/corpus/wiki
 DART_API_KEY=... python -X utf8 -B scripts/fetch/dartReports.py --count 4000
 python -X utf8 -B scripts/derive/usageCounts.py --kind report

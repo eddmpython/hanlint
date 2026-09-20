@@ -34,6 +34,10 @@ from scripts.fetch.dartReports import defaultRoot, readCorpus  # noqa: E402
 from hanlint.analysis import splitSentences  # noqa: E402
 
 WIKI = Path.home() / ".cache" / "hanlint" / "corpus" / "wiki" / "kowiki.jsonl"
+GUIDE = Path.home() / ".cache" / "hanlint" / "corpus" / "wiki" / "kowiki.ns4-12.jsonl"
+"""위키백과 `위키백과:` 와 `도움말:` 이름공간. 같은 덤프에서 `--namespaces 4,12` 로 뽑는다."""
+TALK = ("사랑방", "토론", "보존문서", "/보존")
+"""이 말이 제목에 들면 토론 아카이브다. 설명체가 아니라 대화체라 따로 센다. 실측: ns4 의 절반이 이쪽이다."""
 
 TELLS: dict[str, dict[str, str]] = {
     "부정 병렬": {
@@ -112,6 +116,23 @@ def wikiTexts(limit: int):
             yield json.loads(line).get("text", "")
 
 
+def jsonlTexts(path: Path, wantTalk: bool | None = None, limit: int | None = None):
+    """jsonl 말뭉치. wantTalk 가 True 면 토론만, False 면 토론을 뺀 나머지, None 이면 전부."""
+    if not path.exists():
+        raise SystemExit(f"{path} 가 없다")
+    seen = 0
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            talk = any(one in row.get("source", "") for one in TALK)
+            if wantTalk is not None and talk != wantTalk:
+                continue
+            seen += 1
+            if limit is not None and seen > limit:
+                return
+            yield row.get("text", "")
+
+
 def folderTexts(folder: Path):
     for path in sorted(folder.rglob("*")):
         if path.suffix.lower() in (".txt", ".md") and path.is_file():
@@ -142,6 +163,46 @@ def render(label: str, total: int, counts: dict[str, dict[str, int]]) -> str:
     return "\n".join(lines)
 
 
+def many(wiki: int, reports: int, ai: Path) -> str:
+    """사람 말뭉치 넷과 기계 말뭉치 하나를 같은 표로 견준다.
+
+    장르가 서로 다른 사람 말뭉치를 여럿 두는 것이 이 실험의 설계다. 사람 쪽에서 장르마다 크게 흔들리는 패턴은
+    임계를 정할 수 없어 규칙이 못 된다. 흔들리지 않으면서 기계 쪽만 높은 패턴만 규칙 후보다.
+    """
+    corpora = [
+        ("백과체 (위키 본문)", wikiTexts(wiki)),
+        ("설명체 (위키 지침)", jsonlTexts(GUIDE, wantTalk=False)),
+        ("대화체 (위키 토론)", jsonlTexts(GUIDE, wantTalk=True)),
+        ("공문서체 (보고서)", (text for _, text in readCorpus(defaultRoot(), reports))),
+        ("기계", folderTexts(ai)),
+    ]
+    measured = []
+    for label, texts in corpora:
+        total, counts = tally(texts)
+        measured.append((label, total, counts))
+        print(f"{label}: 문장 {total:,}개", file=sys.stderr, flush=True)
+
+    lines = ["말뭉치: " + ", ".join(f"{label} {total:,}문장" for label, total, _ in measured), ""]
+    lines.append(f"{'패턴':<20}" + "".join(f"{label.split()[0]:>10}" for label, _, _ in measured) + f"{'사람 흔들림':>12}")
+    rows = []
+    for group, items in COMPILED.items():
+        for name in items:
+            rates = [counts[group][name] / total * 1000 for _, total, counts in measured]
+            humanRates = rates[:-1]
+            low, high = min(humanRates), max(humanRates)
+            spread = high / low if low > 0 else (float("inf") if high > 0 else 1.0)
+            lift = rates[-1] / high if high > 0 else (float("inf") if rates[-1] > 0 else 0.0)
+            rows.append((lift, spread, rates, name))
+    rows.sort(key=lambda one: (-one[0], one[1]))
+    for _lift, spread, rates, name in rows:
+        shown = f"{spread:.1f}배" if spread != float("inf") else "한쪽 0"
+        lines.append(f"{name:<20}" + "".join(f"{one:>10.2f}" for one in rates) + f"{shown:>12}")
+    lines.append("")
+    lines.append("마지막 열은 사람 말뭉치 넷 사이의 최대/최소 비율이다. 이 값이 크면 장르를 타는 패턴이라 규칙이 못 된다.")
+    lines.append("차례는 기계 비율을 사람 최대 비율로 나눈 값의 내림차순이다.")
+    return "\n".join(lines)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -150,7 +211,14 @@ def main() -> None:
     human.add_argument("--reports", type=int, default=300)
     ai = sub.add_parser("ai")
     ai.add_argument("folder", type=Path)
+    both = sub.add_parser("many")
+    both.add_argument("ai", type=Path)
+    both.add_argument("--wiki", type=int, default=3000)
+    both.add_argument("--reports", type=int, default=300)
     args = parser.parse_args()
+    if args.command == "many":
+        print(many(args.wiki, args.reports, args.ai))
+        return
     if args.command == "human":
         parts = []
         if args.wiki:
