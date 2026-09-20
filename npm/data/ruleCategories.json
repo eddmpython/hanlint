@@ -41,6 +41,7 @@
   "numberOrphan": "sentence",
   "outsideProfile": "sentence",
   "paraFragment": "paragraph",
+  "phraseRepeat": "sentence",
   "platformApi": "code",
   "promiseRecall": "document",
   "redundantPair": "sentence",

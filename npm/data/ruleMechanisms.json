@@ -41,6 +41,7 @@
   "numberOrphan": "reader",
   "outsideProfile": "threshold",
   "paraFragment": "repeat",
+  "phraseRepeat": "repeat",
   "platformApi": "dictionary",
   "promiseRecall": "reader",
   "redundantPair": "dictionary",

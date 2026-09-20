@@ -27,6 +27,7 @@ import * as paraFragment from "./paragraph/paraFragment.js";
 import * as cliche from "./sentence/cliche.js";
 import * as hardWord from "./sentence/hardWord.js";
 import * as connectorRepeat from "./sentence/connectorRepeat.js";
+import * as phraseRepeat from "./sentence/phraseRepeat.js";
 import * as danglingDeixis from "./sentence/danglingDeixis.js";
 import * as draftHistory from "./sentence/draftHistory.js";
 import * as numberOrphan from "./sentence/numberOrphan.js";
@@ -72,6 +73,7 @@ import * as screenWord from "./screen/screenWord.js";
 export const RULES = [
   cliche,
   connectorRepeat,
+  phraseRepeat,
   danglingDeixis,
   dash,
   draftHistory,

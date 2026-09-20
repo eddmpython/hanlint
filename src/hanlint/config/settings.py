@@ -105,6 +105,7 @@ PRESETS["chat"] = CONVERSATION + SCREEN
 SCREEN_OFF = (
     "cliche",
     "connectorRepeat",
+    "phraseRepeat",
     "danglingDeixis",
     "deixis",
     "doubleNegative",

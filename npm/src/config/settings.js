@@ -66,6 +66,7 @@ PRESETS.chat = [...CONVERSATION, ...SCREEN];
 const SCREEN_OFF = [
   "cliche",
   "connectorRepeat",
+  "phraseRepeat",
   "danglingDeixis",
   "deixis",
   "doubleNegative",

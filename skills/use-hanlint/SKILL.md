@@ -14,7 +14,7 @@ Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --repl
 
 ## 결과
 
-`hanlint 글.md` 가 `집은 자리 없음` 을 내고 종료 코드 0 인 상태. 그다음에야 사람과 LLM 평가로 넘어간다.
+`hanlint 글.md` 가 `집은 자리 없음` 을 내고 종료 코드 0 인 상태. 그러고 나서야 사람과 LLM 평가로 넘어간다.
 
 ## 순서
 
