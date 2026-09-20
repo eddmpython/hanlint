@@ -259,7 +259,6 @@ hanlint 글.md --format github --errors-only
 | `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 낱말이 함께 쓰는 말 (뒤 용언, 앞뒤 명사, 문서 수) 과 쓰인 문장을 BM25 순서로. `--limit`, `--format json` | 예 |
 | `hanlint usage build report 글들/` | 폴더의 txt, md, jsonl 로 사용자 기계에 문장 색인을 만든다. 위키백과 규모도 된다 | 예 |
 | `hanlint usage kinds` | 기계에 있는 색인 (종류, 문서 수, 문장 수) 을 센다 | 예 |
-| `hanlint candidates 글.md` | 지적마다 말뭉치가 뒷받침하고 규칙이 풀리는 고침 후보를 낸다. 문장 색인이 있어야 한다 | 아니오 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
 | `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |

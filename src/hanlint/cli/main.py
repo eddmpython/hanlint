@@ -53,7 +53,6 @@ from .commands import (
     audit,
     baselineCommand,
     blueprint,
-    candidates,
     contract,
     coverage,
     diff,
@@ -121,7 +120,6 @@ COMMANDS = {
     "terms": terms,
     "sheet": sheet,
     "usage": usage,
-    "candidates": candidates,
     "verify-patch": verifyPatchCommand,
 }
 

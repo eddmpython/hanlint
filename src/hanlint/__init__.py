@@ -5,7 +5,7 @@
 ```python
 from hanlint import (
     auditText, entailmentCases, evaluateEntailment, evidenceLedger, fingerprint,
-    guardText, lintFile, lintText, rhetoricalBlueprint, usageCandidates, writingPacket,
+    guardText, lintFile, lintText, rhetoricalBlueprint, writingPacket,
     loadPanelTrialSet, preparePanelAssignment, preparePanelReviewHtml,
     preparePanelSuite, recordPanelAssignmentReview, summarizePanelJudgeConsistency,
 )
@@ -14,7 +14,6 @@ findings = lintFile("글.md")       # list[Finding]
 shape = auditText(text)            # AuditResult. 점수 없이 분포와 자리
 prints = fingerprint(text)         # DocumentPrint. 지문 그대로
 packet = writingPacket(text)       # 초안과 대조 자료와 고침 근거
-choices = usageCandidates(text)    # 말뭉치가 뒷받침하고 규칙이 풀리는 고침 후보. 등수 없음
 guard = guardText(brief, text)     # 구조화 요구와 결과의 결정적 표면 계약
 blueprint = rhetoricalBlueprint(brief)  # 원문 없는 종류별 구조 예산
 evidence = evidenceLedger(brief)    # 사실별 고정 근거 연결과 해시 검증
@@ -91,7 +90,6 @@ from .config import (
     parseContract,
 )
 from .document import SOURCE_SUFFIXES, parseMarkdown, replaceLiteral, sourceLiterals
-from .edit import usageCandidates
 from .entailment import (
     EntailmentEvaluationResult,
     EntailmentPrediction,
@@ -212,7 +210,6 @@ __all__ = [
     "ruleNames",
     "ruleSummary",
     "verifyPatch",
-    "usageCandidates",
     "writingPacket",
 ]
 __version__ = "0.0.17"

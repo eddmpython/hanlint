@@ -29,6 +29,7 @@ import random
 import sys
 import time
 import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
@@ -38,17 +39,257 @@ sys.path.insert(0, str(REPO))
 from scripts.fetch.dartReports import defaultRoot, readCorpus  # noqa: E402
 
 from hanlint import Config, lintText  # noqa: E402
-from hanlint.analysis import isBareNoun, stripJosa, words  # noqa: E402
-from hanlint.edit.usageCandidates import (  # noqa: E402
-    JOINT_RULES,
-    MAX_CANDIDATES,
-    candidatesFor,
-    euiChainSlots,
-    nounPileSlots,
-    sentenceTally,
-    slotCandidates,
+from hanlint.analysis.grammar import fitJosa  # noqa: E402
+from hanlint.analysis.tokenize import (  # noqa: E402
+    EDGE_PUNCTUATION,
+    genitiveSpans,
+    isBareNoun,
+    nounRuns,
+    stripJosa,
+    words,
 )
-from hanlint.usage import Joints, defaultUsageRoot, loadIndex  # noqa: E402
+from hanlint.document import parseMarkdown  # noqa: E402
+from hanlint.fingerprint import buildFingerprint  # noqa: E402
+from hanlint.rules import Candidate, runAll  # noqa: E402
+from hanlint.usage import UsageIndex, defaultUsageRoot, loadIndex  # noqa: E402
+
+
+def wordSpans(text: str) -> list[tuple[int, int]]:
+    """어절마다 앞뒤 부호를 뺀 핵의 (시작, 끝) 글자 자리. words() 와 같은 차례다."""
+    spans: list[tuple[int, int]] = []
+    at = 0
+    for raw in text.split():
+        at = text.index(raw, at)
+        end = at + len(raw)
+        start = at
+        while start < end and text[start] in EDGE_PUNCTUATION:
+            start += 1
+        while end > start and text[end - 1] in EDGE_PUNCTUATION:
+            end -= 1
+        spans.append((start, end))
+        at += len(raw)
+    return spans
+
+
+# ---- 잰 대상. 2026-09-20 에 제품에서 되돌렸으므로 (실패했다) 탐침이 들고 있다. 되살리려면 커밋 dcb62a1 ----
+
+JOINT_SAMPLE = 800
+"""한 이음을 셀 때 읽을 문장 수 상한. 두 낱말이 함께 든 문장을 일정 간격으로 고르므로 조사의 상대 빈도는 치우치지
+않는다. 문서 수는 이 표본 안의 수라 말뭉치 전체보다 작다. 있고 없고가 아니라 그 자리에 어느 조사가 흔한지를 묻는
+자리라 표본으로 충분하다. 800 은 흔한 낱말 쌍 (교집합 1만 문장) 에서도 한 이음이 1초 안에 끝나는 크기다."""
+MIN_JOINT_DOCUMENTS = 2
+"""그 조사를 쓴 문서가 표본에서 몇 편 이상이어야 이음으로 보는가. 한 편은 한 회사의 버릇이다."""
+
+
+@dataclass(frozen=True)
+class Joint:
+    particle: str
+    """왼쪽 어절에 붙어 있던 조사. 빈 문자열이면 조사 없이 붙여 썼다는 뜻이다 (쌓은 꼴)."""
+    documents: int
+    """표본 안에서 그렇게 쓴 문서 수."""
+
+
+def jointParticles(index: UsageIndex, left: str, right: str, sample: int = JOINT_SAMPLE) -> tuple[Joint, ...]:
+    """두 어절 핵이 나란히 온 자리의 조사를 문서 수 내림차순으로. 빈 조사도 넣는다 (쌓은 꼴의 근거다)."""
+    leftFound, rightFound = index.lookup(left), index.lookup(right)
+    if not leftFound or not rightFound:
+        return ()
+    first = index.postingsAt(leftFound[1], leftFound[2])
+    second = index.postingsAt(rightFound[1], rightFound[2])
+    if len(first) > len(second):
+        first, second = second, first
+    other = {sentenceId for sentenceId, _ in second}
+    shared = [sentenceId for sentenceId, _ in first if sentenceId in other]
+    if not shared:
+        return ()
+    stride = max(1, len(shared) // sample)
+    tally: dict[str, set[str]] = {}
+    for sentenceId in shared[::stride][:sample]:
+        _, source, text = index.sentence(sentenceId)
+        found = words(text)
+        for position in range(len(found) - 1):
+            before, after = found[position], found[position + 1]
+            if before.endsClause or before.particle or after.particle:
+                continue
+            if stripJosa(before.core) != left or stripJosa(after.core) != right:
+                continue
+            tally.setdefault(before.core[len(left) :], set()).add(source)
+    ranked = sorted(tally.items(), key=lambda item: (-len(item[1]), item[0]))
+    return tuple(Joint(particle, len(sources)) for particle, sources in ranked)
+
+
+class Joints:
+    """색인에 이음을 묻고 답을 기억한다. 한 글에서 같은 이음을 여러 지적이 묻는다."""
+
+    def __init__(self, index: UsageIndex, sample: int = JOINT_SAMPLE, minimum: int = MIN_JOINT_DOCUMENTS) -> None:
+        self.index = index
+        self.sample = sample
+        self.minimum = minimum
+        self.queries = 0
+        """색인을 실제로 읽은 횟수. 기억한 답을 다시 쓰면 늘지 않는다."""
+        self._known: dict[tuple[str, str], tuple[Joint, ...]] = {}
+
+    def particles(self, left: str, right: str) -> tuple[Joint, ...]:
+        """문서 수가 minimum 편 이상인 이음. 빈 조사도 그대로 준다.
+
+        빈 조사의 뜻은 쓰는 쪽에서 갈린다. 명사 쌓기에서는 원문이 이미 그 꼴이라 고침이 아니고, `의` 사슬에서는
+        `의` 를 빼는 고침이다 (`이사회의 결의` -> `이사회 결의`). 여기서 거르면 그 고침이 사라진다.
+        """
+        key = (left, right)
+        if key not in self._known:
+            self.queries += 1
+            self._known[key] = jointParticles(self.index, left, right, self.sample)
+        return tuple(joint for joint in self._known[key] if joint.documents >= self.minimum)
+
+
+JOINT_RULES = ("nounPile", "euiChain")
+"""이음으로 고칠 수 있는 규칙. 둘 다 고치기가 조사 하나를 넣거나 바꾸는 일이다."""
+MAX_CANDIDATES = 6
+"""한 지적에 실을 후보 수 상한. 고르는 쪽이 한눈에 읽을 크기다. 등수가 아니라 근거 문서 수 내림차순의 앞부분이다."""
+MAX_SLOTS = 10
+"""한 문장에서 볼 자리 수 상한. 근거가 많은 차례로 앞에서 자른다.
+
+자리가 이보다 많은 문장은 조사를 끼워 고칠 문장이 아니라 다시 쓸 문장이다. 상한이 없으면 사업보고서의 긴 한 문장
+(`의` 자리 수십 개) 이 후보 수백 개를 만들고, 후보마다 검사를 다시 도느라 글 하나가 분 단위로 늘어진다."""
+
+
+@dataclass(frozen=True)
+class Slot:
+    """고칠 수 있는 한 자리. 말뭉치가 그 자리에 쓴 조사 하나가 자리 하나다."""
+
+    at: int
+    stop: int
+    """[at, stop) 을 particle 로 바꾼다. 넣기만 할 때는 둘이 같다."""
+    particle: str
+    documents: int
+    """그 조사를 쓴 글의 수. 근거지 등수가 아니다."""
+    why: str
+
+
+def applyEdits(text: str, slots: list[Slot]) -> str:
+    """자리들을 뒤에서부터 적용한다. 앞을 먼저 고치면 뒤 자리가 밀린다."""
+    for slot in sorted(slots, key=lambda one: -one.at):
+        text = text[: slot.at] + slot.particle + text[slot.stop :]
+    return text
+
+
+def jointWhy(left: str, joint: Joint, right: str) -> str:
+    """후보의 근거 한 줄. 자기 도구가 검사하는 글이라 조사를 받침에 맞춘다."""
+    shown = f"{left}{joint.particle} {right}"
+    return f"`{shown}`{fitJosa(shown, '로')} 쓴 글 {joint.documents}편"
+
+
+def chainBoundaries(text: str, minimum: int) -> list[int]:
+    """임계 이상인 명사 연쇄 안의 어절 경계. words() 차례의 왼쪽 어절 index 다."""
+    piles = {tuple(chain) for chain, length in nounRuns(text) if length >= minimum}
+    if not piles:
+        return []
+    cores = [word.core for word in words(text)]
+    places: set[int] = set()
+    for chain in piles:
+        for start in range(len(cores) - len(chain) + 1):
+            if cores[start : start + len(chain)] == list(chain):
+                places.update(range(start, start + len(chain) - 1))
+    return sorted(places)
+
+
+def nounPileSlots(text: str, joints: Joints, minimum: int) -> list[Slot]:
+    """명사 쌓기 경계마다 넣을 수 있는 조사. 말뭉치가 붙여서만 쓰는 경계는 자리가 아니다."""
+    spans = wordSpans(text)
+    cores = [stripJosa(word.core) for word in words(text)]
+    slots: list[Slot] = []
+    for position in chainBoundaries(text, minimum):
+        left, right = cores[position], cores[position + 1]
+        at = spans[position][1]
+        for joint in joints.particles(left, right):
+            if not joint.particle:
+                continue
+            slots.append(Slot(at, at, joint.particle, joint.documents, jointWhy(left, joint, right)))
+    return slots
+
+
+def euiChainSlots(text: str, joints: Joints) -> list[Slot]:
+    """`의` 자리마다 바꿔 넣을 수 있는 조사. 빈 조사는 `의` 를 빼는 고침이다."""
+    spans = wordSpans(text)
+    found = words(text)
+    cores = [stripJosa(word.core) for word in found]
+    starts = {span[0]: position for position, span in enumerate(spans)}
+    slots: list[Slot] = []
+    for start, end in genitiveSpans(text):
+        position = starts.get(start)
+        if position is None or position + 1 >= len(found) or not text[start:end].endswith("의"):
+            continue
+        left, right = cores[position], cores[position + 1]
+        for joint in joints.particles(left, right):
+            if joint.particle == "의":
+                continue
+            slots.append(Slot(end - 1, end, joint.particle, joint.documents, jointWhy(left, joint, right)))
+    return slots
+
+
+def slotCandidates(text: str, slots: list[Slot]) -> list[tuple[str, str]]:
+    """자리 하나씩 고친 꼴과, 자리 여럿을 함께 고친 꼴.
+
+    하나씩 고친 꼴을 근거가 많은 차례로 먼저 낸다 (같으면 원문에서 앞선 자리). 등수가 아니라 읽는 차례다.
+    한 자리만 고쳐서는 안 풀리는 지적이 많아 (`의` 가 넷이면 하나 바꿔도 셋이다) 자리를 쌓은 꼴을 뒤에 붙인다.
+    쌓는 쪽은 자리를 원문 차례대로 더할 뿐 조합을 다 펼치지 않고, 자리마다 그 자리에서 근거가 가장 많은 조사를 쓴다.
+    """
+    made: list[tuple[str, str]] = []
+    seen = {text}
+    for slot in sorted(slots, key=lambda one: (-one.documents, one.at, one.particle)):
+        candidate = applyEdits(text, [slot])
+        if candidate not in seen:
+            seen.add(candidate)
+            made.append((candidate, slot.why))
+    best: dict[int, Slot] = {}
+    for slot in sorted(slots, key=lambda one: (-one.documents, one.particle)):
+        best.setdefault(slot.at, slot)
+    ordered = [best[at] for at in sorted(best)]
+    for count in range(2, len(ordered) + 1):
+        chosen = ordered[:count]
+        candidate = applyEdits(text, chosen)
+        if candidate not in seen:
+            seen.add(candidate)
+            made.append((candidate, f"자리 {count}곳을 함께. " + " / ".join(slot.why for slot in chosen)))
+    return made
+
+
+def sentenceTally(text: str, config: Config) -> dict[str, int]:
+    """규칙 이름별 지적 수. 한 문장만 넣으므로 문단과 문서 규칙은 돌지 않는다."""
+    counts: dict[str, int] = {}
+    for finding in runAll(buildFingerprint(parseMarkdown(text), config), config):
+        counts[finding.rule] = counts.get(finding.rule, 0) + 1
+    return counts
+
+
+def keeps(candidate: str, rule: str, before: dict[str, int], config: Config) -> bool:
+    """겨눈 규칙이 줄고 **다른 어떤 규칙도 늘지 않으면** 남는다. 고치다 새 결함을 만드는 길을 막는 자리다.
+
+    error 총수로 보면 안 된다. 쌓기 하나가 사라지고 `의` 사슬 하나가 생기면 총수가 같아 그대로 남는다.
+    그것이 실측에서 새 error 를 2건에서 10건으로 늘린 바로 그 꼴이다 (tests/_attempts/usageLift).
+    notice 도 막는다. 지적은 지적이고, 여기서 둘을 갈라 예외를 두기 시작하면 목록이 늘어난다.
+    """
+    after = sentenceTally(candidate, config)
+    if after.get(rule, 0) >= before.get(rule, 0):
+        return False
+    return all(count <= before.get(name, 0) for name, count in after.items())
+
+
+def candidatesFor(text: str, rule: str, joints: Joints, config: Config, limit: int = MAX_CANDIDATES) -> tuple[Candidate, ...]:
+    """한 문장의 한 규칙에 대한 닫힌 후보 목록. 말뭉치가 뒷받침하고 다시 검사해도 규칙이 풀리는 것만."""
+    slots = nounPileSlots(text, joints, config.nounPileMin) if rule == "nounPile" else euiChainSlots(text, joints)
+    slots = sorted(slots, key=lambda one: (-one.documents, one.at, one.particle))[:MAX_SLOTS]
+    if not slots:
+        return ()
+    before = sentenceTally(text, config)
+    kept = []
+    for candidate, why in slotCandidates(text, slots):
+        if len(kept) >= limit:
+            break
+        if keeps(candidate, rule, before, config):
+            kept.append(Candidate(candidate, why))
+    return tuple(kept)
+
 
 SEED = 42
 MAX_SENTENCE = 200

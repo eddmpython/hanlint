@@ -71,7 +71,6 @@ import { exemplarInRegister, patternInRegister } from "../report/registerMatch.j
 const COMMANDS = ["lint", "fix", "print", "rules", "explain", "patterns", "primer", "spec", "hook", "baseline", "doctor", "init", "contract", "check", "verify-patch", "sheet", "usage"];
 const PYTHON_ONLY = [
   "audit",
-  "candidates",
   "map",
   "watch",
   "profile",
