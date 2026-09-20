@@ -8,6 +8,18 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- `hanlint candidates 글.md` 와 `usageCandidates(text, config)`. 명사 쌓기 (`nounPile`) 와 `의` 사슬 (`euiChain`) 지적마다
+  **말뭉치가 그 자리에 실제로 쓴 조사만으로** 만든 닫힌 고침 목록을 낸다. 조사를 지어내지 않고 문장 색인에 묻고
+  (`usage/joints.py` 의 이음), 후보마다 검사를 다시 돌려 겨눈 규칙이 풀리고 다른 규칙이 늘지 않는 꼴만 남긴다.
+  등수도 점수도 매기지 않으며 어느 후보가 뜻에 맞는지는 고르는 쪽이 정한다. 문장 색인이 있어야 돌고 (`usage build`)
+  없으면 만드는 법을 알리고 2 로 끝난다. 실측: 사업보고서 300편의 지적 400건에서 후보가 남는 비율이 nounPile 44%,
+  euiChain 49% 이고, 규칙은 풀지만 다른 규칙을 늘리는 후보 39개를 거르기가 쳐냈다 (`tests/_attempts/jointCatalog/`).
+- `analysis.wordSpans(text)`. 어절 핵의 글자 자리. 조사를 원문 그 자리에 넣거나 바꾸려면 자리를 알아야 한다.
+
+### Changed
+
+- 문장 색인이 연 파일을 계속 쓴다. 줄 하나를 읽을 때마다 파일 둘을 새로 열던 것을 고쳤다.
+
 - 브라우저 편집기의 저장소 모드. 원문 칸에 공개 GitHub 저장소 주소 (`github.com/계정/저장소`, `.../tree/브랜치/경로`) 를
   붙여 넣거나 `저장소 열기` 를 누르면 소스의 화면 글을 CLI `hanlint sheet` 와 같은 표로 보여 주고, 고침 칸을 적어
   `hanlint sheet apply` 가 그대로 읽는 시트를 내려받는다. 트리는 api.github.com 한 번, 파일은 raw.githubusercontent.com 에서

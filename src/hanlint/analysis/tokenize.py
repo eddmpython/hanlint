@@ -101,6 +101,26 @@ def words(text: str) -> list[Word]:
     return result
 
 
+def wordSpans(text: str) -> list[tuple[int, int]]:
+    """어절마다 앞뒤 부호를 뺀 핵의 (시작, 끝) 글자 자리. words() 와 같은 차례다.
+
+    조사를 넣거나 바꾸려면 원문의 어느 글자 자리인지를 알아야 한다. words() 는 꼴만 주고 자리를 주지 않는다.
+    """
+    spans: list[tuple[int, int]] = []
+    at = 0
+    for raw in text.split():
+        at = text.index(raw, at)
+        end = at + len(raw)
+        start = at
+        while start < end and text[start] in EDGE_PUNCTUATION:
+            start += 1
+        while end > start and text[end - 1] in EDGE_PUNCTUATION:
+            end -= 1
+        spans.append((start, end))
+        at += len(raw)
+    return spans
+
+
 def tailOf(core: str, name: str) -> str | None:
     for tail in tails(name):
         if core.endswith(tail) and len(core) > len(tail):

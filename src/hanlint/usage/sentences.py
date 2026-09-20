@@ -48,6 +48,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
+from typing import BinaryIO
 
 from ..analysis import splitSentences
 from ..analysis.tokenize import COPULA, EDGE_PUNCTUATION, isBareNoun, josaSet, nonNouns, stripJosa, tailOf, words
@@ -457,6 +458,23 @@ class UsageIndex:
         self.lengths.frombytes((folder / "lengths.bin").read_bytes())
         self.documentCounts = array("I")
         self.documentCounts.frombytes((folder / "documents.bin").read_bytes())
+        self._handles: dict[str, BinaryIO] = {}
+
+    def handle(self, name: str) -> BinaryIO:
+        """한 번 연 파일을 계속 쓴다. 한 줄 읽을 때마다 새로 열면 여는 값이 읽는 값을 넘는다.
+
+        실측: 이음 하나가 문장 800개를 읽는데 줄마다 파일 둘을 새로 열어 색인 질의가 초 단위로 늘어졌다.
+        색인은 만든 뒤에 안 바뀌므로 들고 있어도 낡지 않는다. 프로세스가 끝날 때 닫히고 close 로도 닫는다.
+        """
+        found = self._handles.get(name)
+        if found is None:
+            found = self._handles[name] = (self.folder / name).open("rb")
+        return found
+
+    def close(self) -> None:
+        for handle in self._handles.values():
+            handle.close()
+        self._handles.clear()
 
     @property
     def kind(self) -> str:
@@ -472,12 +490,12 @@ class UsageIndex:
 
     def lineAt(self, name: str, offsetsName: str, index: int) -> str:
         """offsetsName 의 index 번째 위치에서 name 의 한 줄."""
-        with (self.folder / offsetsName).open("rb") as handle:
-            handle.seek(index * 8)
-            offset = int.from_bytes(handle.read(8), "little")
-        with (self.folder / name).open("rb") as handle:
-            handle.seek(offset)
-            return handle.readline().decode("utf-8").rstrip("\n")
+        offsets = self.handle(offsetsName)
+        offsets.seek(index * 8)
+        offset = int.from_bytes(offsets.read(8), "little")
+        lines = self.handle(name)
+        lines.seek(offset)
+        return lines.readline().decode("utf-8").rstrip("\n")
 
     def lookup(self, term: str) -> tuple[int, int, int] | None:
         """(문서 빈도, postings 위치, 바이트 수). 토큰 표를 코드 포인트 순으로 이분 탐색한다. 없으면 None."""
@@ -498,9 +516,9 @@ class UsageIndex:
         return self.postingsAt(found[1], found[2]) if found else []
 
     def postingsAt(self, offset: int, size: int) -> list[tuple[int, int]]:
-        with (self.folder / "postings.bin").open("rb") as handle:
-            handle.seek(offset)
-            values = decodeVarints(handle.read(size))
+        handle = self.handle("postings.bin")
+        handle.seek(offset)
+        values = decodeVarints(handle.read(size))
         result: list[tuple[int, int]] = []
         sentenceId = 0
         for index in range(0, len(values), 2):
