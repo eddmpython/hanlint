@@ -262,9 +262,7 @@ def prepareTasks(limit: int, perRule: int, kind: str) -> dict:
                     "rule": rule,
                     "sentence": sentence,
                     "why": why,
-                    "candidates": [
-                        {"text": one.text, "why": one.why, "change": windowDiff(sentence, one.text)} for one in made
-                    ],
+                    "candidates": [{"text": one.text, "why": one.why, "change": windowDiff(sentence, one.text)} for one in made],
                     "prompts": {
                         "free": freePrompt(sentence, rule, why),
                         "pick": pickPrompt(sentence, rule, why, shown),
@@ -309,7 +307,7 @@ def writePrompts(manifest: dict, outDir: Path, batch: int) -> str:
                 "",
                 f"아래 과제 {len(chunk)}개를 차례대로 푼다. 각 과제의 지시를 그대로 따른다.",
                 "",
-                "답은 JSON 배열 하나로만 낸다. 항목은 {\"taskId\": ..., \"output\": ...} 이고 과제 차례를 지킨다.",
+                '답은 JSON 배열 하나로만 낸다. 항목은 {"taskId": ..., "output": ...} 이고 과제 차례를 지킨다.',
                 "`free` 묶음의 output 은 고친 문장 한 줄이고, `pick` 묶음의 output 은 번호 문자열 하나다.",
                 "설명, 코드펜스, 다른 키를 넣지 않는다.",
                 "",
