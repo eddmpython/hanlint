@@ -8,6 +8,16 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 
 ### Added
 
+- 규칙 `phraseRepeat`. 한 글이 같은 문형 수법에 기대는 자리를 글 안의 비율로 짚는다 (두 번 이상이고 산문 문장의
+  8% 를 넘을 때. notice). 사전은 `data/phraseRepeat.toml` 이고 지금은 `X가 아니라 Y다` 하나다. `cliche` 사전에
+  `~하는 이유가 여기 있다` 와 문두 `그다음` 을 더했다. 셋 다 사람 글 155만 문장 네 장르와 기계 글 360편을 견줘
+  넣었고, 사람 글 0.12~0.14% 대 기계 글 10.83~20.28% 다 (`tests/_attempts/aiTells`).
+- `skills/write-korean/koreanProse.md`. 같은 실측에서 뽑은 한국어 산문 일곱 줄이고 `write-korean` 스킬이 다섯
+  단계보다 먼저 읽는다. 이 목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드 심판 96건에서 67 대 29,
+  부호검정 p 0.0001. `tests/_attempts/craftLift`).
+- `scripts/fetch/koWikipedia.py --namespaces`. 같은 덤프에서 본문(0) 말고 `위키백과:` 지침(4) 과 `도움말:`(12) 을
+  뽑는다. 한 말뭉치 안에서 문체가 다른 자료를 얻는 자리다.
+
 ### Changed
 
 - 문장 색인이 연 파일을 계속 쓴다. 줄 하나를 읽을 때마다 파일 둘을 새로 열던 것을 고쳤다.
