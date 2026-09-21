@@ -41,6 +41,8 @@ def phraseRepeat(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         tests/_attempts/aiTells/ 다. 꼴 자체는 두 말뭉치를 대조해 캤다 (천문장당 사람 7.05 대 기계 65.55).
         `~하는 편이 낫다` 는 후보였다가 2회 조건에서 기계 1% 만 걸려 뺐다.
     고치기: 되풀이된 자리 가운데 힘이 덜한 것을 곧은 문장으로 바꾼다. 한 편에 한 번은 남겨도 된다.
+        **걸린 자리를 전부 센다.** 지적은 하나지만 이유에 줄 번호를 모두 적는다. 하나만 인용하면 고치는 쪽이
+        나머지를 정규식으로 다시 찾아야 한다. 한 줄에 여러 문장이 있으면 그 줄은 한 번만 적는다.
     안 잡는 것: 산문 문장이 MIN_SENTENCES 개 아래인 글. 종결어미가 없는 줄 (제목, 항목명, 표의 칸). 임계 아래의
         되풀이. **MIN_HITS 번 미만**. 한 번 쓴 글은 비율이 임계를 넘어도 조용하다. 표층 근사라 notice 다.
     """
@@ -51,11 +53,12 @@ def phraseRepeat(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         hit = [one for one in prose if pattern.search(one.text)]
         if len(hit) < MIN_HITS or len(hit) / len(prose) <= share:
             continue
+        lines = ", ".join(str(one) for one in sorted({one.line for one in hit}))
         yield Finding(
             "phraseRepeat",
             hit[0].line,
             hit[0].text,
-            f"`{label}` 꼴이 산문 {len(prose)}문장 가운데 {len(hit)}번이다 (상한 {share:.0%}). {why} ({source})",
+            f"`{label}` 꼴이 산문 {len(prose)}문장 가운데 {len(hit)}번이다 ({lines}줄. 상한 {share:.0%}). {why} ({source})",
             None,
             NOTICE,
             DOCUMENT,

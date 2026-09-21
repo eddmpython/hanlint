@@ -34,13 +34,14 @@ export function run(doc, config) {
   for (const { pattern, share, label, why, source } of entries()) {
     const hit = prose.filter((one) => pattern.search(one.text) !== null);
     if (hit.length < MIN_HITS || hit.length / prose.length <= share) continue;
+    const lines = [...new Set(hit.map((one) => one.line))].sort((a, b) => a - b).join(", ");
     const share100 = `${Math.round(share * 100)}%`;
     findings.push(
       finding(
         name,
         hit[0].line,
         hit[0].text,
-        `\`${label}\` 꼴이 산문 ${prose.length}문장 가운데 ${hit.length}번이다 (상한 ${share100}). ${why} (${source})`,
+        `\`${label}\` 꼴이 산문 ${prose.length}문장 가운데 ${hit.length}번이다 (${lines}줄. 상한 ${share100}). ${why} (${source})`,
         null,
         NOTICE,
         DOCUMENT,
