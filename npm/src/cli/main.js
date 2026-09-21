@@ -10,8 +10,8 @@
  * hanlint rules                 규칙 목록을 부류로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
- * hanlint primer --preset <종류> 쓰기 전에 읽는 한 장. 켜진 규칙의 고치는 법과 본보기 전후
- * hanlint hook                  Claude Code가 쓴 마크다운을 같은 턴에 비차단 검사
+ * hanlint primer --preset <종류> 쓰기 전에 읽는 한 장. 작법서 일곱 줄과 켜진 규칙의 고치는 법, 본보기 전후
+ * hanlint hook                  에이전트 훅. --prime 은 쓰기 전 작법서, 나머지는 쓴 마크다운의 비차단 검사
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint doctor                설정과 꺼진 규칙
@@ -43,6 +43,7 @@ import { loadConfig } from "../config/loadConfig.js";
 import { defaultConfig, offRules, PRESET_NAMES, PRESETS } from "../config/settings.js";
 import { applyFixes } from "../edit/applyFixes.js";
 import { exemplarFor } from "../data/exemplars.js";
+import { proseGuide, proseSections } from "../data/prose.js";
 import { patterns, patternsAvoiding } from "../data/patterns.js";
 import { HAPNIDA, REGISTERS } from "../analysis/grammar/index.js";
 import { CATEGORY_TITLES, MECHANISMS, ruleCategory, ruleFix, ruleMechanism, runAll } from "../rules/registry.js";
@@ -132,6 +133,7 @@ const OPTION_KINDS = {
   "--names": "flag",
   "--force": "flag",
   "--reply": "flag",
+  "--prime": "flag",
   "--reader": "value",
   "--goal": "value",
   "--outline": "value",
@@ -766,9 +768,16 @@ function primerEntries(config, register) {
   return entries;
 }
 
+/** 작법서를 절마다 한 줄로. 제목 두 칸 띄고 본문이다. 파이썬 proseLines 와 같다. */
+function proseLines() {
+  return proseSections().map(([title, body]) => `${title}  ${body.split(/\s+/).filter(Boolean).join(" ")}`);
+}
+
 /** 사람과 AI 가 읽는 한 장. 파이썬 renderPrimer 와 글자 단위로 같다. @param {ReturnType<typeof primerEntries>} entries @param {string} preset @param {string} register */
 function renderPrimer(entries, preset, register) {
   const lines = [
+    ...proseLines(),
+    "",
     `hanlint primer  ${preset} 종류, ${register}체, 규칙 ${entries.length}개. 줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (같은 뜻으로 통과하는 글) 순서다. 본보기의 줄바꿈은 ¶ 다`,
   ];
   for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
@@ -790,7 +799,7 @@ function runPrimer(args) {
   const output = /** @type {string | undefined} */ (options["--output"]);
   const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
   if (format === "json") {
-    emit(JSON.stringify({ version: 1, preset: config.preset, register, rules: entries }, null, 2), output);
+    emit(JSON.stringify({ version: 1, preset: config.preset, register, prose: proseGuide(), rules: entries }, null, 2), output);
     return 0;
   }
   emit(renderPrimer(entries, config.preset, register), output);
@@ -815,24 +824,32 @@ function runSpec(args) {
   return 0;
 }
 
-/** Claude Code가 다음 모델 요청에 넣는 비차단 Finding 문맥. */
-function hookContext(eventName, name, findings) {
+/** 작법서를 싣는 이벤트. Claude Code와 Codex 모두 이 둘의 additionalContext를 모델 문맥에 넣는다. */
+const PRIME_EVENTS = ["SessionStart", "UserPromptSubmit"];
+
+/** 에이전트가 다음 모델 요청에 넣는 비차단 문맥. @param {string} eventName @param {string} context */
+function hookContext(eventName, context) {
+  return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: context } });
+}
+
+/** Finding을 되먹이는 문맥의 본문. @param {string} eventName @param {string} name @param {import("../rules/finding.js").Finding[]} findings */
+function findingContext(eventName, name, findings) {
   const where = eventName === "Stop" ? "마지막 답변" : "방금 쓴 마크다운";
-  return JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: eventName,
-      additionalContext: `hanlint가 ${where}에서 센 Finding입니다.\n${renderCompact(name, findings)}`,
-    },
-  });
+  return `hanlint가 ${where}에서 센 Finding입니다.\n${renderCompact(name, findings)}`;
 }
 
 /** 명령 훅 JSON을 stdin에서 읽어 저장 파일이나 마지막 답변을 검사한다. 언제나 종료 코드 0이다. @param {string[]} args */
 function runHook(args) {
+  if (args.includes("--prime") && args.includes("--reply")) throw new UsageError("--prime 과 --reply 는 함께 쓰지 않는다");
   try {
     const { options, positionals } = parseArgs(args);
     if (positionals.length) return 0;
     const payload = JSON.parse(readFileSync(0, "utf-8"));
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) return 0;
+    if (options["--prime"]) {
+      if (PRIME_EVENTS.includes(payload.hook_event_name)) process.stdout.write(`${hookContext(payload.hook_event_name, proseGuide())}\n`);
+      return 0;
+    }
     let eventName;
     let name;
     let findings;
@@ -861,7 +878,7 @@ function runHook(args) {
       findings = lintText(readFileSync(rawPath, "utf-8"), config, name);
       if (config.baseline) findings = loadBaseline(config.baseline).keep(name, findings);
     }
-    if (findings.length) process.stdout.write(`${hookContext(eventName, name, findings)}\n`);
+    if (findings.length) process.stdout.write(`${hookContext(eventName, findingContext(eventName, name, findings))}\n`);
   } catch {
     return 0;
   }

@@ -16,6 +16,7 @@ from .operations import (
 )
 from .patches import READER_KINDS, Patch, flatCue, flatSentence, patchFor, projectPatches
 from .patterns import Pattern, patterns, patternsAvoiding
+from .prose import proseGuide, proseSections
 
 __all__ = [
     "Exemplar",
@@ -45,6 +46,8 @@ __all__ = [
     "projectExemplars",
     "projectOperations",
     "projectPatches",
+    "proseGuide",
+    "proseSections",
     "termsIn",
     "vocabularyEntries",
     "vocabularyMetadata",

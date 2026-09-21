@@ -1,8 +1,10 @@
-"""`hanlint primer`. 글을 쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후 한 쌍.
+"""`hanlint primer`. 글을 쓰기 전에 읽는 한 장. 작법서 일곱 줄과, 켜진 규칙마다 고치는 법과 본보기 전후 한 쌍.
 
 `explain` 은 규칙 하나를 깊게, `rules` 는 목록을, `primer` 는 쓰기 전의 AI 와 사람이 한 번에 읽는 한 장을 준다.
-손으로 쓴 문장은 없다. 규칙 docstring 의 고치기 절과 exemplars 를 등록부 순서대로 결정적으로 늘어놓는다. 그래서
-규칙이 바뀌면 이 장도 같이 바뀐다. 후는 게이트가 error 0 을 보장한다 (tests/gates/testPrimer.py).
+첫머리는 작법서 (data/koreanProse.txt) 를 절마다 한 줄로 편 것이다. 읽고 쓴 글이 블라인드 선호에서 이긴 유일한
+쓰기 전 자료라 맨 앞에 둔다. 그 아래는 손으로 쓴 문장이 없다. 규칙 docstring 의 고치기 절과 exemplars 를 등록부
+순서대로 결정적으로 늘어놓으므로 규칙이 바뀌면 이 장도 같이 바뀐다. 후는 게이트가 error 0 을 보장한다
+(tests/gates/testPrimer.py).
 
 한 장은 세션 앞머리에 얹는 자리라 줄 수가 자리세다. 규칙 하나가 한 줄이고 어느 프리셋과 문체에서도 LINE_LIMIT
 안이다. 문장 규칙의 본보기는 원래 한 줄이고 절과 문단을 보이는 본보기는 줄바꿈을 ¶ 로 눕혀 한 줄로 보인다. 항목과
@@ -17,14 +19,14 @@ from dataclasses import dataclass
 
 from ...analysis.grammar import HAPNIDA, REGISTERS
 from ...config import Config
-from ...data import exemplarFor
+from ...data import exemplarFor, proseGuide, proseSections
 from ...report import exemplarInRegister
 from ...rules import CATEGORY_TITLES, ruleCategories, ruleFix, ruleNames
 from .shared import addCommonOptions, configFrom, emit
 
 HELP = "쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후"
 LINE_LIMIT = 100
-"""한 장의 줄 수 상한. 규칙 50개가 전부 켜진 blog 도 이 안에 들어야 한다. 게이트가 모든 프리셋과 문체에서 잰다."""
+"""한 장의 줄 수 상한. 작법서와 규칙 50개가 전부 켜진 blog 도 이 안에 들어야 한다. 게이트가 모든 프리셋과 문체에서 잰다."""
 
 
 @dataclass(frozen=True)
@@ -73,11 +75,18 @@ def primerEntries(config: Config, register: str = HAPNIDA) -> list[PrimerEntry]:
     return entries
 
 
+def proseLines() -> list[str]:
+    """작법서를 절마다 한 줄로. 제목 두 칸 띄고 본문이다. 본문의 줄바꿈은 공백 하나가 된다."""
+    return [f"{title}  {' '.join(body.split())}" for title, body in proseSections()]
+
+
 def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
-    """사람과 AI 가 읽는 한 장. 첫 줄이 읽는 법, 부류마다 제목 하나, 규칙 하나가 한 줄이다."""
+    """사람과 AI 가 읽는 한 장. 작법서 일곱 줄 다음에 읽는 법 한 줄, 부류마다 제목 하나, 규칙 하나가 한 줄이다."""
     lines = [
+        *proseLines(),
+        "",
         f"hanlint primer  {preset} 종류, {register}체, 규칙 {len(entries)}개. "
-        "줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (같은 뜻으로 통과하는 글) 순서다. 본보기의 줄바꿈은 ¶ 다"
+        "줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (같은 뜻으로 통과하는 글) 순서다. 본보기의 줄바꿈은 ¶ 다",
     ]
     for category, title in CATEGORY_TITLES.items():
         inside = [entry for entry in entries if entry.category == category]
@@ -92,8 +101,9 @@ def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
 
 
 def asJson(entries: list[PrimerEntry], preset: str, register: str) -> str:
-    """기계가 읽는 꼴. 항목마다 규칙, 부류, 고치는 법, 전, 후다."""
-    data = {"version": 1, "preset": preset, "register": register, "rules": [entry.asDict() for entry in entries]}
+    """기계가 읽는 꼴. prose 는 작법서 본문 그대로이고, 항목마다 규칙, 부류, 고치는 법, 전, 후다."""
+    rules = [entry.asDict() for entry in entries]
+    data = {"version": 1, "preset": preset, "register": register, "prose": proseGuide(), "rules": rules}
     return json.dumps(data, ensure_ascii=False, indent=2)
 
 

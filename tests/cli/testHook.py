@@ -1,4 +1,4 @@
-"""Claude Code 훅 입력을 비차단 Finding 문맥으로 바꾸는 계약."""
+"""에이전트 훅 입력을 쓰기 전 작법서와 비차단 Finding 문맥으로 바꾸는 계약."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from hanlint.cli.main import main
+from hanlint.data import proseGuide
 
 
 def runHook(monkeypatch, capsys, args: list[str], payload: object | str) -> tuple[int, str, str]:
@@ -58,6 +59,39 @@ def testReplyUsesChatPresetOnce(monkeypatch, capsys, tmp_path):
 
     payload["stop_hook_active"] = True
     assert runHook(monkeypatch, capsys, ["--reply"], payload) == (0, "", "")
+
+
+def testPrimeCarriesTheGuideBeforeWriting(monkeypatch, capsys):
+    """Claude Code와 Codex가 같은 꼴을 받는다. 이벤트 이름을 그대로 돌려주고 본문은 작법서 파일 그대로다."""
+    for eventName in ("SessionStart", "UserPromptSubmit"):
+        code, out, err = runHook(monkeypatch, capsys, ["--prime"], {"hook_event_name": eventName, "cwd": "."})
+        assert code == 0 and err == ""
+        hookOutput = json.loads(out)["hookSpecificOutput"]
+        assert hookOutput == {"hookEventName": eventName, "additionalContext": proseGuide()}
+
+
+def testPrimeStaysSilentOutsideItsEvents(tmp_path, monkeypatch, capsys):
+    draft = tmp_path / "초안.md"
+    draft.write_text("## 절\n\n핵심은 속도입니다.\n", encoding="utf-8")
+    cases: list[object | str] = [
+        {"hook_event_name": "Stop", "last_assistant_message": "결과가 저장되어집니다."},
+        postPayload(draft),
+        {},
+        "not json",
+    ]
+    for payload in cases:
+        assert runHook(monkeypatch, capsys, ["--prime"], payload) == (0, "", "")
+
+
+def testPrimeAndReplyAreExclusive(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "stdin", io.StringIO("{}"))
+    try:
+        main(["hook", "--prime", "--reply"])
+    except SystemExit as stop:
+        assert stop.code == 2
+    else:
+        raise AssertionError("--prime 과 --reply 를 함께 받았다")
+    assert "not allowed with" in capsys.readouterr().err
 
 
 def testHookLabelsStyleNotices(tmp_path, monkeypatch, capsys):

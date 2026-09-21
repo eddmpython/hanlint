@@ -12,9 +12,12 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   8% 를 넘을 때. notice). 사전은 `data/phraseRepeat.toml` 이고 지금은 `X가 아니라 Y다` 하나다. `cliche` 사전에
   `~하는 이유가 여기 있다` 와 문두 `그다음` 을 더했다. 셋 다 사람 글 155만 문장 네 장르와 기계 글 360편을 견줘
   넣었고, 사람 글 0.12~0.14% 대 기계 글 10.83~20.28% 다 (`tests/_attempts/aiTells`).
-- `skills/write-korean/koreanProse.md`. 같은 실측에서 뽑은 한국어 산문 일곱 줄이고 `write-korean` 스킬이 다섯
-  단계보다 먼저 읽는다. 이 목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드 심판 96건에서 67 대 29,
-  부호검정 p 0.0001. `tests/_attempts/craftLift`).
+- `hanlint hook --prime`. SessionStart 와 UserPromptSubmit 입력에 작법서 본문을 additionalContext 로 낸다.
+  Claude Code 와 Codex 가 같은 JSON 을 받는다. `hanlint primer` 는 첫머리에 같은 작법서를 절마다 한 줄로
+  싣고, JSON 은 `prose` 로 본문을 준다.
+- 작법서 `src/hanlint/data/koreanProse.txt`. 같은 실측에서 뽑은 한국어 산문 일곱 줄이고 배포물에 실린다.
+  `write-korean` 스킬이 다섯 단계보다 먼저 읽는다. 이 목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드
+  심판 96건에서 67 대 29, 부호검정 p 0.0001. 필자와 심판은 claude-opus-5. `tests/_attempts/craftLift`).
 - `scripts/fetch/koWikipedia.py --namespaces`. 같은 덤프에서 본문(0) 말고 `위키백과:` 지침(4) 과 `도움말:`(12) 을
   뽑는다. 한 말뭉치 안에서 문체가 다른 자료를 얻는 자리다.
 

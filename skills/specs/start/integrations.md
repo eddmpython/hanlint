@@ -81,6 +81,34 @@ hanlint 글.md --format json
 [`write-korean`](../../write-korean/SKILL.md)은 글을 쓰면서 같은 규칙을 확인하는 절차다.
 스킬을 쓰는 제품의 설치 방식에 맞춰 연결한다. 자동화에서도 사실과 뜻, 독자의 과업은 사람이 확인한다.
 
+## 쓰기 전 작법서 훅
+
+`hanlint hook --prime`은 SessionStart와 UserPromptSubmit 입력에 작법서 본문을 additionalContext로 낸다.
+본문은 `hanlint primer` 첫머리와 같은 `src/hanlint/data/koreanProse.txt`다. 다른 이벤트와 깨진 입력에는
+아무것도 내지 않고 항상 종료 코드 0으로 끝난다.
+
+Claude Code에서는 SessionStart에 건다. 세션을 열거나 이어 가거나 문맥을 압축한 뒤마다 한 번 실린다.
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "uvx", "args": ["hanlint", "hook", "--prime"] }] }
+    ]
+  }
+}
+```
+
+Claude Code 2.1.278에서 이 훅을 건 세션은 작법서 4번 줄의 제목을 그대로 답했고, 훅이 없는 세션은 없다고
+답했다.
+
+Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`이나 신뢰한 프로젝트의 `.codex/hooks.json`에
+`"command": "uvx hanlint hook --prime"`으로 건다. 신뢰하지 않은 프로젝트의 `.codex/` 층은 읽히지 않는다.
+Codex 0.154.0에서 SessionStart의 additionalContext가 거부된다는 보고가 있으므로
+([openai/codex#45999](https://github.com/openai/codex/issues/45999)), 그 판에서는 UserPromptSubmit에 건다.
+UserPromptSubmit은 요청마다 본문 (1,249자)을 다시 싣는다. 작법서가 GPT 필자에게도 이기는지는
+`tests/_attempts/codexCraft`가 잰다.
+
 ## Claude Code의 저장·답변 훅
 
 `hanlint hook`은 PostToolUse 입력에서 `Write` 또는 `Edit`가 저장한 마크다운 한 파일을 검사한다.

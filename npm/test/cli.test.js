@@ -73,6 +73,30 @@ test("hook returns non-blocking context only for findings", () => {
   for (const item of silent) assert.deepEqual(item, { code: 0, out: "", err: "" });
 });
 
+test("hook --prime carries the guide before writing", () => {
+  const guide = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "data", "koreanProse.txt"), "utf-8");
+  for (const eventName of ["SessionStart", "UserPromptSubmit"]) {
+    const result = runHook(["--prime"], { hook_event_name: eventName });
+    assert.equal(result.code, 0);
+    assert.equal(result.err, "");
+    assert.deepEqual(JSON.parse(result.out).hookSpecificOutput, { hookEventName: eventName, additionalContext: guide });
+  }
+  for (const payload of [{ hook_event_name: "Stop" }, { hook_event_name: "PostToolUse", tool_name: "Write" }, "not json"]) {
+    assert.deepEqual(runHook(["--prime"], payload), { code: 0, out: "", err: "" });
+  }
+  assert.equal(runHook(["--prime", "--reply"], {}).code, 2);
+});
+
+test("primer leads with the guide", () => {
+  const result = run(["primer", "--preset", "docs"]);
+  assert.equal(result.code, 0);
+  const lines = result.out.split("\n");
+  assert.ok(lines[0].startsWith("한국어 산문 일곱 줄  한국어 글을 쓰기 전에 읽는다."));
+  assert.ok(lines[7].startsWith("7. 앞의 여섯을 피하느라 글을 망치지 마라  "));
+  assert.equal(lines[8], "");
+  assert.ok(lines[9].startsWith("hanlint primer  docs 종류"));
+});
+
 test("severity, compact, stdin, summary", () => {
   const mixed = join(dir, "mixed.md");
   writeFileSync(mixed, "## 절\n\n핵심은 속도입니다. 파일을 엽니다. 표가 보입니다. 열이 다섯입니다. 값을 고칩니다.\n", "utf-8");

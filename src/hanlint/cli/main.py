@@ -11,9 +11,9 @@ hanlint print 글.md                지문 계층 JSON
 hanlint rules                      규칙 목록을 부류로 묶어서
 hanlint explain <규칙>             규칙의 기술서
 hanlint patterns --rule <규칙>     그 규칙을 피하는 문장 틀
-hanlint primer --preset <종류>     쓰기 전에 읽는 한 장. 켜진 규칙의 고치는 법과 본보기 전후
+hanlint primer --preset <종류>     쓰기 전에 읽는 한 장. 작법서 일곱 줄과 켜진 규칙의 고치는 법, 본보기 전후
 hanlint spec --preset <종류>       같은 규칙판과 종류 프로파일의 쓰기 전 숫자 사양
-hanlint hook                       Claude Code가 쓴 마크다운을 같은 턴에 비차단 검사
+hanlint hook                       에이전트 훅. --prime 은 쓰기 전 작법서, 나머지는 쓴 마크다운의 비차단 검사
 hanlint baseline 글들/             지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
 hanlint doctor                     설정과 꺼진 규칙
 hanlint init                       주석 달린 hanlint.toml. --output 과 --preset blog|report|docs

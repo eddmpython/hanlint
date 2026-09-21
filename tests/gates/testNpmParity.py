@@ -78,6 +78,9 @@ def testHookGivesTheSameContextOrSilence(tmp_path):
             },
         ),
         (["hook"], "not json"),
+        (["hook", "--prime"], {"hook_event_name": "SessionStart", "source": "startup"}),
+        (["hook", "--prime"], {"hook_event_name": "UserPromptSubmit", "prompt": "글을 써 줘"}),
+        (["hook", "--prime"], {"hook_event_name": "Stop"}),
     )
     for args, payload in payloads:
         raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)

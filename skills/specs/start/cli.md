@@ -247,10 +247,11 @@ hanlint 글.md --format github --errors-only
 | `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
 | `hanlint hook`, `hanlint hook --reply` | Claude Code가 저장한 마크다운과 마지막 답변을 같은 턴에 비차단 검사한다 | 예 |
+| `hanlint hook --prime` | SessionStart와 UserPromptSubmit에 작법서 본문을 싣는다. Claude Code와 Codex가 같은 꼴을 받는다 | 예 |
 | `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |
-| `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
+| `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 작법서 일곱 줄과, 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
 | `hanlint spec --preset blog --chars 800` | 같은 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
