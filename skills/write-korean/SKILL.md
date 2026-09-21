@@ -15,8 +15,8 @@ hanlint 는 글을 만들지 않는다. 세어서 확정되는 결함을 잡고,
 
 작법서 일곱 줄이다. `hanlint primer` 의 첫머리에 한 줄씩 나오고, 본문 정본은 `src/hanlint/data/koreanProse.txt`
 다. 사람이 쓴 한국어 155만 문장과 기계가 쓴 360편을 견줘 뽑았고, 줄마다 사람과 기계의 비율이 붙어 있다. 이
-목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드 심판 96건에서 67 대 29, 부호검정 p 0.0001. 필자와 심판은
-claude-opus-5. `tests/_attempts/craftLift`). 아래 다섯 단계보다 먼저 읽는다. 에이전트 훅에 `hanlint hook --prime`
+목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다. 블라인드 심판 96건에서 필자가 claude-opus-5 일 때 67 대 29
+(`tests/_attempts/craftLift`), Codex 일 때 90 대 6 (`tests/_attempts/codexCraft`) 이다. 아래 다섯 단계보다 먼저 읽는다. 에이전트 훅에 `hanlint hook --prime`
 이 걸려 있으면 세션 문맥에 이미 들어 있다.
 
 hanlint 가 기계로 잡는 것은 그 가운데 일부다. 나머지는 쓰는 쪽이 지킨다.

@@ -106,8 +106,8 @@ Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`이나 신뢰한 프로�
 `"command": "uvx hanlint hook --prime"`으로 건다. 신뢰하지 않은 프로젝트의 `.codex/` 층은 읽히지 않는다.
 Codex 0.154.0에서 SessionStart의 additionalContext가 거부된다는 보고가 있으므로
 ([openai/codex#45999](https://github.com/openai/codex/issues/45999)), 그 판에서는 UserPromptSubmit에 건다.
-UserPromptSubmit은 요청마다 본문 (1,249자)을 다시 싣는다. 작법서가 GPT 필자에게도 이기는지는
-`tests/_attempts/codexCraft`가 잰다.
+UserPromptSubmit은 요청마다 본문 (1,249자)을 다시 싣는다. 작법서는 Codex 필자에서도 이겼다 (블라인드 심판
+96건에서 90 대 6, `tests/_attempts/codexCraft`).
 
 ## Claude Code의 저장·답변 훅
 

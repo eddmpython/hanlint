@@ -2,7 +2,8 @@
 
 `hanlint primer` 는 절마다 한 줄로 펴서 첫머리에 싣고, `hanlint hook --prime` 은 본문을 그대로 에이전트 문맥에
 넣는다. 두 자리가 같은 파일을 읽으므로 작법서를 고치면 둘이 같이 바뀐다. 이 본문을 읽고 쓴 글이 읽지 않고 쓴
-글을 블라인드 심판 96건에서 67 대 29 로 이겼다 (tests/_attempts/craftLift). 필자와 심판은 claude-opus-5 였다.
+글을 블라인드 심판 96건에서 이겼다. 필자가 claude-opus-5 일 때 67 대 29 (tests/_attempts/craftLift), Codex
+(gpt-5.6-sol) 일 때 90 대 6 (tests/_attempts/codexCraft) 이다.
 """
 
 from __future__ import annotations
