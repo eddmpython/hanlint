@@ -102,9 +102,13 @@ Claude Code에서는 SessionStart에 건다. 세션을 열거나 이어 가거�
 Claude Code 2.1.278에서 이 훅을 건 세션은 작법서 4번 줄의 제목을 그대로 답했고, 훅이 없는 세션은 없다고
 답했다.
 
-Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`이나 신뢰한 프로젝트의 `.codex/hooks.json`에
-`"command": "uvx hanlint hook --prime"`으로 건다. 신뢰하지 않은 프로젝트의 `.codex/` 층은 읽히지 않는다.
-Codex 0.154.0에서 SessionStart의 additionalContext가 거부된다는 보고가 있으므로
+Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`의 SessionStart에 `"command": "uvx hanlint hook --prime"`으로
+건다. 프로젝트의 `.codex/hooks.json`은 그 프로젝트를 신뢰해야 읽힌다 (Codex 훅 문서). 새로 더한 훅은 Codex의 훅
+검토에서 신뢰하기 전에는 돌지 않는다.
+
+명령을 따옴표로 시작하지 않는다. 윈도우의 Codex 0.155.1에서 `"C:/.../python.exe" -X utf8 ...`처럼 따옴표 친
+경로로 시작한 훅은 `Failed`로 끝났고, 따옴표를 뺀 같은 명령은 세션 기록에 작법서를 실었다. Codex 0.154.0에서
+SessionStart의 additionalContext가 거부된다는 보고가 있으므로
 ([openai/codex#45999](https://github.com/openai/codex/issues/45999)), 그 판에서는 UserPromptSubmit에 건다.
 UserPromptSubmit은 요청마다 본문 (1,249자)을 다시 싣는다. 작법서는 Codex 필자에서도 이겼다 (블라인드 심판
 96건에서 90 대 6, `tests/_attempts/codexCraft`).
