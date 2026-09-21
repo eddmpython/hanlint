@@ -159,3 +159,9 @@ python -X utf8 -B tests/_attempts/craftLift/probeCraftLift.py score <시험 폴�
 
 주 심판은 묶음 파일 하나씩을 받은 fresh-context 에이전트 넷이다. 받은 지시는 "그 파일을 읽고 그 지시를 그대로
 따르고 JSON 배열만 낸다" 뿐이다. 답은 `claudeJudgments/judge-0N.json` 에 그대로 두었다.
+
+## 후속 (2026-09-22)
+
+위 "진 6건이 모두 1번 줄에서 졌다" 절의 "필자 가족이 바뀌어도 1번 줄 하나만 글을 망친다" 는 틀린 읽기였다.
+`tests/_attempts/craftLineOne` 에서 1번 줄을 지운 판을 내보낸 판과 견주니 Codex 필자에서는 지운 판이 졌다 (주 심판
+39 대 57, 보조 심판 34 대 62). 진 자리의 이유만 모으면 그 줄의 비용만 보이고 이득은 안 보인다.
