@@ -133,6 +133,7 @@ const OPTION_KINDS = {
   "--names": "flag",
   "--force": "flag",
   "--reply": "flag",
+  "--agent": "value",
   "--prime": "flag",
   "--reader": "value",
   "--goal": "value",
@@ -832,53 +833,96 @@ function hookContext(eventName, context) {
   return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: context } });
 }
 
-/** Finding을 되먹이는 문맥의 본문. @param {string} eventName @param {string} name @param {import("../rules/finding.js").Finding[]} findings */
-function findingContext(eventName, name, findings) {
+/** Finding을 되먹이는 문맥의 본문. 파일마다 한 덩어리다. 파이썬 findingContext 와 같다. @param {string} eventName @param {[string, import("../rules/finding.js").Finding[]][]} found */
+function findingContext(eventName, found) {
   const where = eventName === "Stop" ? "마지막 답변" : "방금 쓴 마크다운";
-  return `hanlint가 ${where}에서 센 Finding입니다.\n${renderCompact(name, findings)}`;
+  return `hanlint가 ${where}에서 센 Finding입니다.\n${found.map(([name, items]) => renderCompact(name, items)).join("\n")}`;
+}
+
+/** Codex apply_patch 본문에서 쓴 파일을 가리키는 머리 줄 (Codex 훅 문서, 2026-09-21 확인). */
+const PATCH_HEADS = ["*** Add File: ", "*** Update File: ", "*** Move to: "];
+
+/** apply_patch 본문이 쓴 파일 경로. 나온 차례대로 한 번씩이다. @param {string} patch */
+function patchPaths(patch) {
+  /** @type {string[]} */
+  const paths = [];
+  for (const line of patch.split(/\r?\n/)) {
+    for (const head of PATCH_HEADS) {
+      if (!line.startsWith(head)) continue;
+      const path = line.slice(head.length).trim();
+      if (path && !paths.includes(path)) paths.push(path);
+    }
+  }
+  return paths;
+}
+
+/** PostToolUse 입력이 쓴 파일 경로. 모르는 도구면 빈 목록이다. @param {any} payload @returns {string[]} */
+function writtenPaths(payload) {
+  const toolInput = payload.tool_input;
+  if (!toolInput || typeof toolInput !== "object" || Array.isArray(toolInput)) return [];
+  if (["Write", "Edit"].includes(payload.tool_name)) {
+    const path = toolInput.file_path;
+    return typeof path === "string" && path ? [path] : [];
+  }
+  if (payload.tool_name === "apply_patch") return typeof toolInput.command === "string" ? patchPaths(toolInput.command) : [];
+  return [];
+}
+
+/** 쓴 마크다운마다 [이름, Finding]. 상대 경로는 입력의 cwd에서 찾는다. @param {any} payload @param {Record<string, unknown>} options */
+function writtenFindings(payload, options) {
+  const base = typeof payload.cwd === "string" && payload.cwd ? payload.cwd : null;
+  /** @type {[string, import("../rules/finding.js").Finding[]][]} */
+  const found = [];
+  for (const rawPath of writtenPaths(payload)) {
+    const path = base !== null && !isAbsolute(rawPath) ? join(base, rawPath) : rawPath;
+    if (!MARKDOWN.includes(extname(path).toLowerCase())) continue;
+    try {
+      if (!statSync(path).isFile()) continue;
+    } catch {
+      continue;
+    }
+    const config = configFrom(options, [path]);
+    let findings = lintText(readFileSync(path, "utf-8"), config, rawPath);
+    if (config.baseline) findings = loadBaseline(config.baseline).keep(rawPath, findings);
+    found.push([rawPath, findings]);
+  }
+  return found;
 }
 
 /** 명령 훅 JSON을 stdin에서 읽어 저장 파일이나 마지막 답변을 검사한다. 언제나 종료 코드 0이다. @param {string[]} args */
 function runHook(args) {
   if (args.includes("--prime") && args.includes("--reply")) throw new UsageError("--prime 과 --reply 는 함께 쓰지 않는다");
+  const { options, positionals } = parseArgs(args);
+  const agent = choose(/** @type {string} */ (options["--agent"] ?? "claude"), ["claude", "codex"], "--agent");
   try {
-    const { options, positionals } = parseArgs(args);
     if (positionals.length) return 0;
     const payload = JSON.parse(readFileSync(0, "utf-8"));
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) return 0;
+    const eventName = payload.hook_event_name;
     if (options["--prime"]) {
-      if (PRIME_EVENTS.includes(payload.hook_event_name)) process.stdout.write(`${hookContext(payload.hook_event_name, proseGuide())}\n`);
+      if (PRIME_EVENTS.includes(eventName)) process.stdout.write(`${hookContext(eventName, proseGuide())}\n`);
       return 0;
     }
-    let eventName;
-    let name;
-    let findings;
+    /** @type {[string, import("../rules/finding.js").Finding[]][]} */
+    let found;
     if (options["--reply"]) {
-      if (payload.hook_event_name !== "Stop" || payload.stop_hook_active === true) return 0;
+      if (eventName !== "Stop" || payload.stop_hook_active === true) return 0;
       const text = payload.last_assistant_message;
       if (typeof text !== "string" || !text.trim()) return 0;
       const start = typeof payload.cwd === "string" && payload.cwd ? payload.cwd : process.cwd();
       const config = configFrom(options, [], start);
       config.preset = "chat";
-      eventName = "Stop";
-      name = "<assistant>";
-      findings = lintText(text, config, name);
+      found = [["<assistant>", lintText(text, config, "<assistant>")]];
+    } else if (eventName === "PostToolUse") {
+      found = writtenFindings(payload, options);
     } else {
-      if (payload.hook_event_name !== "PostToolUse" || !["Write", "Edit"].includes(payload.tool_name)) return 0;
-      const rawPath = payload.tool_input?.file_path;
-      if (typeof rawPath !== "string" || !rawPath || !MARKDOWN.includes(extname(rawPath).toLowerCase())) return 0;
-      try {
-        if (!statSync(rawPath).isFile()) return 0;
-      } catch {
-        return 0;
-      }
-      const config = configFrom(options, [rawPath]);
-      eventName = "PostToolUse";
-      name = rawPath;
-      findings = lintText(readFileSync(rawPath, "utf-8"), config, name);
-      if (config.baseline) findings = loadBaseline(config.baseline).keep(name, findings);
+      return 0;
     }
-    if (findings.length) process.stdout.write(`${hookContext(eventName, findingContext(eventName, name, findings))}\n`);
+    found = found.filter(([, items]) => items.length);
+    if (!found.length) return 0;
+    const context = findingContext(eventName, found);
+    if (options["--reply"] && agent === "codex") process.stdout.write(`${JSON.stringify({ systemMessage: context })}\n`);
+    else process.stdout.write(`${hookContext(eventName, context)}\n`);
   } catch {
     return 0;
   }

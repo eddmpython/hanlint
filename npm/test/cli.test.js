@@ -87,6 +87,29 @@ test("hook --prime carries the guide before writing", () => {
   assert.equal(runHook(["--prime", "--reply"], {}).code, 2);
 });
 
+test("hook reads codex apply_patch and answers codex stop with systemMessage", () => {
+  const base = mkdtempSync(join(tmpdir(), "hanlintPatch-"));
+  writeFileSync(join(base, "초안.md"), BAD, "utf-8");
+  writeFileSync(join(base, "clean.md"), CLEAN, "utf-8");
+  const patch = "*** Begin Patch\n*** Add File: 초안.md\n+x\n*** Update File: clean.md\n*** End Patch";
+  const result = runHook([], { hook_event_name: "PostToolUse", cwd: base, tool_name: "apply_patch", tool_input: { command: patch } });
+  assert.equal(result.code, 0);
+  const context = JSON.parse(result.out).hookSpecificOutput.additionalContext;
+  assert.ok(context.includes("초안.md:3 [cliche]") && !context.includes("clean.md"));
+  const silent = runHook([], { hook_event_name: "PostToolUse", cwd: base, tool_name: "exec_command", tool_input: { command: patch } });
+  assert.deepEqual(silent, { code: 0, out: "", err: "" });
+
+  const reply = runHook(["--reply", "--agent", "codex"], {
+    hook_event_name: "Stop",
+    cwd: base,
+    stop_hook_active: false,
+    last_assistant_message: "결과가 저장되어집니다.",
+  });
+  assert.deepEqual(Object.keys(JSON.parse(reply.out)), ["systemMessage"]);
+  assert.ok(JSON.parse(reply.out).systemMessage.includes("<assistant>:1 [doublePassive]"));
+  assert.equal(runHook(["--reply", "--agent", "grok"], {}).code, 2);
+});
+
 test("primer leads with the guide", () => {
   const result = run(["primer", "--preset", "docs"]);
   assert.equal(result.code, 0);

@@ -113,7 +113,7 @@ SessionStart의 additionalContext가 거부된다는 보고가 있으므로
 UserPromptSubmit은 요청마다 본문 (1,249자)을 다시 싣는다. 작법서는 Codex 필자에서도 이겼다 (블라인드 심판
 96건에서 90 대 6, `tests/_attempts/codexCraft`).
 
-## Claude Code의 저장·답변 훅
+## 저장·답변 훅 (Claude Code, Codex)
 
 `hanlint hook`은 PostToolUse 입력에서 `Write` 또는 `Edit`가 저장한 마크다운 한 파일을 검사한다.
 `hanlint hook --reply`는 Stop 입력의 마지막 답변을 `chat` 프리셋으로 검사한다.
@@ -153,6 +153,25 @@ Stop 항목은 `command`를 `npx --yes hanlint hook --reply`로 바꾼다. 정�
 저장 훅은 저장한 파일에서 찾은 저장소 설정과 baseline을 사용한다. 답변 훅은 같은 설정에서 프리셋을
 `chat`으로 바꾼다. `stop_hook_active` 재진입에는 결과를 내지 않는다. 깨진 입력이나 읽을 수 없는 파일은
 검사를 생략하므로, 파일을 반드시 검사해야 하는 발행 단계에는 일반 CLI나 CI 검사를 함께 사용한다.
+
+Codex에서도 같은 명령을 쓴다. PostToolUse에서는 Codex가 파일을 고칠 때 보내는 `apply_patch` 입력을 읽는다.
+패치 본문 (`tool_input.command`)에서 `*** Add File:`, `*** Update File:`, `*** Move to:` 줄에 적힌 경로를 모으고,
+입력이 준 `cwd`에서 찾은 마크다운을 모두 검사한다. 결과는 Claude Code와 같은 additionalContext로 낸다. Stop에는 `--agent codex`를
+붙인다. Codex의 Stop 훅은 additionalContext를 받지 않으므로 막지 않는 `systemMessage`로 사용자에게 보인다. 이
+경우 모델에는 전달되지 않는다. `~/.codex/hooks.json`에는 다음처럼 건다.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{ "hooks": [{ "type": "command", "command": "uvx hanlint hook" }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "uvx hanlint hook --reply --agent codex" }] }]
+  }
+}
+```
+
+Stop 입력의 필드 (`last_assistant_message`, `stop_hook_active`, `cwd`) 는 Codex 0.155.1의 실물 입력으로 확인했다.
+`apply_patch` 입력은 Codex 훅 문서의 꼴을 따랐다. 이 기계에서는 Codex 샌드박스가 임시 폴더의 파일 쓰기를
+거부해 실물 입력으로 확인하지 못했다.
 
 ## 편집기를 내 계정에 배포하기
 

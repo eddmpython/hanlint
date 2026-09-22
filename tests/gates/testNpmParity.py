@@ -81,6 +81,24 @@ def testHookGivesTheSameContextOrSilence(tmp_path):
         (["hook", "--prime"], {"hook_event_name": "SessionStart", "source": "startup"}),
         (["hook", "--prime"], {"hook_event_name": "UserPromptSubmit", "prompt": "글을 써 줘"}),
         (["hook", "--prime"], {"hook_event_name": "Stop"}),
+        (
+            ["hook"],
+            {
+                "hook_event_name": "PostToolUse",
+                "cwd": str(tmp_path),
+                "tool_name": "apply_patch",
+                "tool_input": {"command": "*** Begin Patch\n*** Add File: 초안.md\n+핵심은 속도입니다.\n*** End Patch"},
+            },
+        ),
+        (
+            ["hook", "--reply", "--agent", "codex"],
+            {
+                "hook_event_name": "Stop",
+                "cwd": str(tmp_path),
+                "stop_hook_active": False,
+                "last_assistant_message": "결과가 저장되어집니다.",
+            },
+        ),
     )
     for args, payload in payloads:
         raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)

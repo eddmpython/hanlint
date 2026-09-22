@@ -15,6 +15,8 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
 - `hanlint hook --prime`. SessionStart 와 UserPromptSubmit 입력에 작법서 본문을 additionalContext 로 낸다.
   Claude Code 와 Codex 가 같은 JSON 을 받는다. `hanlint primer` 는 첫머리에 같은 작법서를 절마다 한 줄로
   싣고, JSON 은 `prose` 로 본문을 준다.
+- `hanlint hook` 이 Codex 입력을 읽는다. PostToolUse 의 `apply_patch` 패치 본문에서 쓴 마크다운을 모두 찾아
+  검사하고, `hook --reply --agent codex` 는 Codex Stop 이 받는 `systemMessage` 로 낸다 (막지 않는다).
 - 작법서 `src/hanlint/data/koreanProse.txt`. 같은 실측에서 뽑은 한국어 산문 일곱 줄이고 배포물에 실린다.
   `write-korean` 스킬이 다섯 단계보다 먼저 읽는다. 이 목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드
   심판 96건에서 67 대 29, 부호검정 p 0.0001. 필자와 심판은 claude-opus-5. `tests/_attempts/craftLift`).

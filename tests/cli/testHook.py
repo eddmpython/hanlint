@@ -94,6 +94,82 @@ def testPrimeAndReplyAreExclusive(monkeypatch, capsys):
     assert "not allowed with" in capsys.readouterr().err
 
 
+def patchPayload(cwd: Path, patch: str, toolName: str = "apply_patch") -> dict:
+    """Codex 훅 문서의 PostToolUse 꼴. 패치 본문은 tool_input.command 에 온다."""
+    return {"hook_event_name": "PostToolUse", "cwd": str(cwd), "tool_name": toolName, "tool_input": {"command": patch}}
+
+
+def testCodexPatchChecksEveryWrittenMarkdown(tmp_path, monkeypatch, capsys):
+    (tmp_path / "초안.md").write_text("## 절\n\n핵심은 속도입니다.\n", encoding="utf-8")
+    (tmp_path / "clean.md").write_text("## 절\n\n파일을 엽니다. 그러면 표가 생길까요? 작업 폴더에 생깁니다.\n", encoding="utf-8")
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "new.md").write_text("## 절\n\n결과가 저장되어집니다.\n", encoding="utf-8")
+    (tmp_path / "note.txt").write_text("핵심은 속도입니다.\n", encoding="utf-8")
+    patch = "\n".join(
+        [
+            "*** Begin Patch",
+            "*** Add File: 초안.md",
+            "+핵심은 속도입니다.",
+            "*** Update File: clean.md",
+            "@@",
+            "*** Update File: docs/old.md",
+            "*** Move to: docs/new.md",
+            "*** Update File: note.txt",
+            "*** End Patch",
+        ]
+    )
+    code, out, err = runHook(monkeypatch, capsys, [], patchPayload(tmp_path, patch))
+
+    assert code == 0 and err == ""
+    context = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert context.startswith("hanlint가 방금 쓴 마크다운에서 센 Finding입니다.\n")
+    assert "초안.md:3 [cliche]" in context
+    assert "docs/new.md:3 [doublePassive]" in context
+    assert "clean.md" not in context and "note.txt" not in context and "old.md" not in context
+
+
+def testCodexPatchStaysSilentOutsideWrites(tmp_path, monkeypatch, capsys):
+    (tmp_path / "clean.md").write_text("## 절\n\n파일을 엽니다. 그러면 표가 생길까요? 작업 폴더에 생깁니다.\n", encoding="utf-8")
+    cases: list[object] = [
+        patchPayload(tmp_path, "*** Begin Patch\n*** Update File: clean.md\n*** End Patch"),
+        patchPayload(tmp_path, "*** Begin Patch\n*** Delete File: 초안.md\n*** End Patch"),
+        patchPayload(tmp_path, "*** Add File: 초안.md", toolName="exec_command"),
+        {"hook_event_name": "PostToolUse", "cwd": str(tmp_path), "tool_name": "apply_patch", "tool_input": {}},
+    ]
+    for payload in cases:
+        assert runHook(monkeypatch, capsys, [], payload) == (0, "", "")
+
+
+def testCodexReplyUsesSystemMessage(monkeypatch, capsys, tmp_path):
+    """Codex 의 Stop 은 additionalContext 를 받지 않는다. 막지 않는 systemMessage 로 사용자에게 보인다."""
+    payload = {
+        "hook_event_name": "Stop",
+        "cwd": str(tmp_path),
+        "turn_id": "t",
+        "stop_hook_active": False,
+        "last_assistant_message": "결과가 저장되어집니다.",
+    }
+    code, out, err = runHook(monkeypatch, capsys, ["--reply", "--agent", "codex"], payload)
+
+    assert code == 0 and err == ""
+    result = json.loads(out)
+    assert list(result) == ["systemMessage"]
+    assert "<assistant>:1 [doublePassive]" in result["systemMessage"]
+    payload["stop_hook_active"] = True
+    assert runHook(monkeypatch, capsys, ["--reply", "--agent", "codex"], payload) == (0, "", "")
+
+
+def testUnknownAgentIsUsageError(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "stdin", io.StringIO("{}"))
+    try:
+        main(["hook", "--reply", "--agent", "grok"])
+    except SystemExit as stop:
+        assert stop.code == 2
+    else:
+        raise AssertionError("모르는 --agent 를 받았다")
+    assert "invalid choice" in capsys.readouterr().err
+
+
 def testHookLabelsStyleNotices(tmp_path, monkeypatch, capsys):
     draft = tmp_path / "draft.md"
     draft.write_text("가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.", encoding="utf-8")

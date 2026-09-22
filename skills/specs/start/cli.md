@@ -246,7 +246,7 @@ hanlint 글.md --format github --errors-only
 | `hanlint check contract.json 글.md --format text` | 보호 표면, 제목 구조, Finding, 글 요약과 다음 행동을 한 영수증으로 본다 | 예 |
 | `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
-| `hanlint hook`, `hanlint hook --reply` | Claude Code가 저장한 마크다운과 마지막 답변을 같은 턴에 비차단 검사한다 | 예 |
+| `hanlint hook`, `hanlint hook --reply` | Claude Code와 Codex가 저장한 마크다운과 마지막 답변을 같은 턴에 비차단 검사한다. Codex의 Stop에는 `--agent codex` | 예 |
 | `hanlint hook --prime` | SessionStart와 UserPromptSubmit에 작법서 본문을 싣는다. Claude Code와 Codex가 같은 꼴을 받는다 | 예 |
 | `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
