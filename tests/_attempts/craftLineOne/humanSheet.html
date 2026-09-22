@@ -1,0 +1,248 @@
+<title>블라인드 산문 판정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #f3f5f4;
+    --surface: #ffffff;
+    --ink: #1c2320;
+    --muted: #5e6a64;
+    --line: #d7ddd9;
+    --accent: #2f5d8a;
+    --accentSoft: #e2ebf4;
+    --accentInk: #ffffff;
+    --warn: #8a4b12;
+    --warnSoft: #f7ecdf;
+    --ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    --prose: "Noto Serif KR", "AppleMyungjo", "Batang", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121614;
+      --surface: #1a1f1d;
+      --ink: #e4e9e6;
+      --muted: #9aa59f;
+      --line: #2d3532;
+      --accent: #8db2de;
+      --accentSoft: #1f2c3a;
+      --accentInk: #0f1a26;
+      --warn: #e2b27c;
+      --warnSoft: #2e2419;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121614;
+    --surface: #1a1f1d;
+    --ink: #e4e9e6;
+    --muted: #9aa59f;
+    --line: #2d3532;
+    --accent: #8db2de;
+    --accentSoft: #1f2c3a;
+    --accentInk: #0f1a26;
+    --warn: #e2b27c;
+    --warnSoft: #2e2419;
+  }
+  body { background: var(--ground); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.6; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px; }
+  header { display: grid; gap: 12px; }
+  h1 { font-size: 26px; line-height: 1.3; margin: 0; font-weight: 600; text-wrap: balance; }
+  .lead { margin: 0; max-width: 68ch; color: var(--muted); }
+  .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    background: var(--ground); padding-block: 10px; border-bottom: 1px solid var(--line); }
+  .count { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .meter { flex: 1 1 160px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .meter span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  .notice { margin: 0; padding: 10px 12px; border-radius: 6px; background: var(--warnSoft); color: var(--warn); }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .ghost { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; }
+  .ghost:hover { border-color: var(--accent); }
+  .pair { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px; display: grid; gap: 16px; scroll-margin-top: 72px; }
+  .pair h2 { margin: 0; font-size: 17px; font-weight: 600; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .pair h2 .no { color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 500; letter-spacing: .02em; }
+  .texts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 820px) { .texts { grid-template-columns: 1fr; } }
+  .text { display: grid; gap: 8px; align-content: start; }
+  .text .tag { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: var(--muted); }
+  .text .body { font-family: var(--prose); font-size: 16px; line-height: 1.85; max-width: 62ch; }
+  .text .body p { margin: 0 0 .8em; }
+  .text .body p:last-child { margin-bottom: 0; }
+  .decide { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border-top: 1px solid var(--line); padding-top: 14px; }
+  .choices { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .choices button { background: none; border: 0; padding: 8px 16px; border-right: 1px solid var(--line); }
+  .choices button:last-child { border-right: 0; }
+  .choices button:hover { background: var(--accentSoft); }
+  .choices button[aria-pressed="true"] { background: var(--accent); color: var(--accentInk); font-weight: 600; }
+  .note { flex: 1 1 220px; min-width: 0; font: inherit; color: inherit; background: var(--ground); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; }
+  .saved { font-size: 13px; color: var(--muted); min-width: 4em; }
+  button:focus-visible, .note:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .meter span { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>블라인드 산문 판정</h1>
+    <p class="lead">같은 주제로 쓴 한국어 산문 두 편을 30번 견줍니다. 쌍마다 더 나은 한국어 산문을 고르세요. 내용의 정확함이
+      비슷하면 읽기와 글의 힘으로 고르고, 사실상 같으면 <b>비슷하다</b>를 누릅니다. 글쓴이와 쓴 방식은 가려져 있습니다.
+      고른 즉시 저장되니 나중에 다시 열어 이어서 해도 됩니다.</p>
+    <p class="notice" id="notice" hidden></p>
+  </header>
+  <div class="bar">
+    <span class="count" id="count">0 / 30</span>
+    <div class="meter" aria-hidden="true"><span id="meter"></span></div>
+    <button class="ghost" id="next" type="button">다음 미판정으로</button>
+  </div>
+  <main id="list" style="display:grid;gap:20px"></main>
+</div>
+
+<script>
+const PAIRS = /*PAIRS*/;
+const state = {};
+const views = {};
+const queues = {};
+let db = null;
+
+function paragraphs(text) {
+  const box = document.createElement("div");
+  box.className = "body";
+  for (const chunk of text.split(/\n\s*\n/)) {
+    if (!chunk.trim()) continue;
+    const p = document.createElement("p");
+    p.textContent = chunk.trim();
+    box.append(p);
+  }
+  return box;
+}
+
+function build() {
+  const list = document.getElementById("list");
+  PAIRS.forEach((pair, index) => {
+    const section = document.createElement("section");
+    section.className = "pair";
+    section.id = pair.id;
+    const title = document.createElement("h2");
+    const no = document.createElement("span");
+    no.className = "no";
+    no.textContent = String(index + 1).padStart(2, "0");
+    const topic = document.createElement("span");
+    topic.textContent = pair.topic;
+    title.append(no, topic);
+    const texts = document.createElement("div");
+    texts.className = "texts";
+    for (const side of ["A", "B"]) {
+      const col = document.createElement("div");
+      col.className = "text";
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = side;
+      col.append(tag, paragraphs(pair[side.toLowerCase()]));
+      texts.append(col);
+    }
+    const decide = document.createElement("div");
+    decide.className = "decide";
+    const choices = document.createElement("div");
+    choices.className = "choices";
+    choices.setAttribute("role", "group");
+    choices.setAttribute("aria-label", "판정");
+    const buttons = {};
+    for (const [value, label] of [["A", "A가 낫다"], ["same", "비슷하다"], ["B", "B가 낫다"]]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.id = `${pair.id}-${value}`;
+      b.textContent = label;
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", () => choose(pair.id, value));
+      buttons[value] = b;
+      choices.append(b);
+    }
+    const note = document.createElement("input");
+    note.className = "note";
+    note.id = `${pair.id}-note`;
+    note.placeholder = "고른 이유 (선택)";
+    note.addEventListener("change", () => {
+      state[pair.id] = { ...(state[pair.id] || {}), note: note.value };
+      if (state[pair.id].choice) save(pair.id);
+    });
+    const saved = document.createElement("span");
+    saved.className = "saved";
+    decide.append(choices, note, saved);
+    section.append(title, texts, decide);
+    list.append(section);
+    views[pair.id] = { buttons, note, saved };
+  });
+}
+
+function paint() {
+  let done = 0;
+  for (const pair of PAIRS) {
+    const s = state[pair.id] || {};
+    const v = views[pair.id];
+    for (const [value, b] of Object.entries(v.buttons)) b.setAttribute("aria-pressed", String(s.choice === value));
+    if (document.activeElement !== v.note) v.note.value = s.note || "";
+    if (s.choice) done += 1;
+  }
+  document.getElementById("count").textContent = `${done} / ${PAIRS.length}`;
+  document.getElementById("meter").style.width = `${(done / PAIRS.length) * 100}%`;
+}
+
+function notice(text) {
+  const el = document.getElementById("notice");
+  el.textContent = text;
+  el.hidden = !text;
+}
+
+function save(id) {
+  const v = views[id];
+  if (!db) {
+    v.saved.textContent = "저장 안 됨";
+    return;
+  }
+  const body = { choice: state[id].choice, note: state[id].note || "", at: new Date().toISOString() };
+  v.saved.textContent = "저장 중";
+  queues[id] = (queues[id] || Promise.resolve())
+    .then(() => db.doc(`verdicts/${id}`).set(body))
+    .then(() => { v.saved.textContent = "저장됨"; })
+    .catch((e) => {
+      v.saved.textContent = "저장 실패";
+      if (e && e.code === "quota_exceeded") notice("저장 공간이 찼습니다. 판정은 이 화면에만 남습니다.");
+    });
+}
+
+function choose(id, value) {
+  state[id] = { ...(state[id] || {}), choice: value };
+  paint();
+  save(id);
+}
+
+document.getElementById("next").addEventListener("click", () => {
+  const open = PAIRS.find((pair) => !(state[pair.id] || {}).choice);
+  if (open) document.getElementById(open.id).scrollIntoView({ behavior: "smooth", block: "start" });
+  else notice("30쌍을 모두 골랐습니다. 고친 판정도 바로 저장됩니다.");
+});
+
+build();
+paint();
+
+(async () => {
+  try {
+    db = await window.claude?.use?.("db");
+  } catch {
+    db = null;
+  }
+  if (!db) {
+    notice("이 보기에서는 저장 기능을 쓸 수 없어 판정이 이 화면에만 남습니다. claude.ai 에서 이 페이지를 열어 주세요.");
+    return;
+  }
+  db.collection("verdicts").onSnapshot(
+    (snap) => {
+      for (const doc of snap.docs) {
+        const body = doc.data() || {};
+        if (typeof body.choice === "string") state[doc.id] = { choice: body.choice, note: body.note || "" };
+        if (views[doc.id] && !views[doc.id].saved.textContent) views[doc.id].saved.textContent = "저장됨";
+      }
+      paint();
+    },
+    () => notice("저장된 판정을 불러오지 못했습니다. 새로 고른 판정은 계속 저장을 시도합니다."),
+  );
+})();
+</script>

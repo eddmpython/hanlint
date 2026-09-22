@@ -214,6 +214,74 @@ def gptJudge(batchDir: Path, outDir: Path, workers: int) -> str:
     return f"묶음 {sum(results)}개 판정, 실패 {len(results) - sum(results)}개"
 
 
+HUMAN_SEED = 20260922
+HUMAN_SPLIT = (24, 6)
+"""사람 판정 30쌍. 두 심판이 갈린 쌍에서 24, 같았던 쌍에서 6 (사전 등록)."""
+SHEET = HERE / "humanSheet.html"
+
+
+def humanSheet(root: Path, outDir: Path) -> str:
+    """Claude 필자 쌍에서 사람 판정지와 가림 풀이표를 만든다. 풀이표는 판정지에 싣지 않는다."""
+    import random
+
+    writerRoot = root / "claude"
+    tasks = json.loads(TASKS.read_text(encoding="utf-8"))
+    primary, secondary = verdicts(writerRoot, "claudeJudgments"), verdicts(writerRoot, "gptJudgments")
+    split = sorted(t for t in primary if primary[t] != secondary[t])
+    same = sorted(t for t in primary if primary[t] == secondary[t])
+    rng = random.Random(HUMAN_SEED)
+    chosen = [(t, "split") for t in rng.sample(split, HUMAN_SPLIT[0])]
+    chosen += [(t, "same") for t in rng.sample(same, HUMAN_SPLIT[1])]
+    rng.shuffle(chosen)
+    found = readArms(writerRoot, ARMS)
+    pairs, key = [], {}
+    for index, (taskId, stratum) in enumerate(chosen, start=1):
+        order = [ARMS[0], ARMS[1]]
+        rng.shuffle(order)
+        pairId = f"p{index:02d}"
+        pairs.append({"id": pairId, "topic": tasks[taskId], "a": found[order[0]][taskId], "b": found[order[1]][taskId]})
+        key[pairId] = {"taskId": taskId, "stratum": stratum, "A": order[0], "B": order[1]}
+    data = json.dumps(pairs, ensure_ascii=False).replace("</", "<\\/")
+    outDir.mkdir(parents=True, exist_ok=True)
+    (outDir / "humanSheet.html").write_text(SHEET.read_text(encoding="utf-8").replace("/*PAIRS*/", data), "utf-8")
+    (outDir / "key.json").write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    counts = f"갈린 쌍 {len(split)}개에서 {HUMAN_SPLIT[0]}, 같았던 쌍 {len(same)}개에서 {HUMAN_SPLIT[1]}"
+    return f"{outDir} 에 판정지와 풀이표를 썼다. {counts}"
+
+
+def humanScore(root: Path, keyFile: Path, verdictFile: Path) -> str:
+    """사람 판정을 두 심판과 견준다. verdictFile 은 {짝: {choice}} 이다 (판정지의 verdicts 모음)."""
+    writerRoot = root / "claude"
+    key = json.loads(keyFile.read_text(encoding="utf-8"))
+    human = json.loads(verdictFile.read_text(encoding="utf-8"))
+    primary, secondary = verdicts(writerRoot, "claudeJudgments"), verdicts(writerRoot, "gptJudgments")
+    agree: Counter[str] = Counter()
+    prefer: Counter[str] = Counter()
+    decided = 0
+    for pairId, row in key.items():
+        choice = (human.get(pairId) or {}).get("choice")
+        if choice not in ("A", "B", "same"):
+            continue
+        decided += 1
+        arm = "same" if choice == "same" else row[choice]
+        prefer[arm] += 1
+        if row["stratum"] == "split" and arm != "same":
+            agree["claude" if primary[row["taskId"]] == arm else "codex" if secondary[row["taskId"]] == arm else "neither"] += 1
+        if row["stratum"] == "same":
+            agree["both" if primary[row["taskId"]] == arm else "neither"] += 1
+    lines = [f"판정한 쌍 {decided}/{len(key)}"]
+    lines.append(
+        f"갈린 쌍: 사람이 Claude 심판과 {agree['claude']}, Codex 심판과 {agree['codex']} "
+        f"(부호검정 p {signTest(agree['claude'], agree['codex']):.4f})"
+    )
+    lines.append(f"같았던 쌍: 두 심판과 같음 {agree['both']}, 다름 {agree['neither']}")
+    lines.append(
+        f"사람 선호 (표본이 갈린 쌍으로 기울었다): noLong {prefer['noLong']}, shipped {prefer['shipped']}, "
+        f"비슷하다 {prefer['same']}"
+    )
+    return "\n".join(lines)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -234,7 +302,20 @@ def main() -> None:
     five = sub.add_parser("prompt", help="갈래 하나의 프롬프트를 그대로 찍는다")
     five.add_argument("arm", choices=ARMS)
     five.add_argument("taskId")
+    six = sub.add_parser("humanSheet", help="사람 판정지와 가림 풀이표를 만든다")
+    six.add_argument("root", type=Path)
+    six.add_argument("--output-dir", dest="outputDir", type=Path, required=True)
+    seven = sub.add_parser("humanScore", help="사람 판정을 두 심판과 견준다")
+    seven.add_argument("root", type=Path)
+    seven.add_argument("--key", type=Path, required=True)
+    seven.add_argument("--verdicts", type=Path, required=True)
     args = parser.parse_args()
+    if args.command == "humanSheet":
+        print(humanSheet(args.root, args.outputDir))
+        return
+    if args.command == "humanScore":
+        print(humanScore(args.root, args.key, args.verdicts))
+        return
     if args.command == "write":
         print(write(args.root, args.writer, args.workers, args.limit))
     elif args.command == "follow":

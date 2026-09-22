@@ -137,3 +137,32 @@ python -X utf8 -B tests/_attempts/craftLineOne/probeLineOne.py score <폴더> --
 
 주 심판은 필자마다 묶음 파일 하나씩을 받은 fresh-context 에이전트 넷이고, 받은 지시는 "그 파일을 읽고 그 지시를
 그대로 따르고 JSON 배열만 낸다" 뿐이다. 답은 `<필자>/claudeJudgments/judge-0N.json` 에 그대로 두었다.
+
+## 사람 판정 사전 등록 (2026-09-22, 판정 전에 적는다)
+
+**물음.** Claude 필자의 noLong 대 shipped 에서 두 심판이 갈렸다 (Claude 심판 73 대 23, Codex 심판 49 대 47). 사람은
+어느 심판과 맞는가.
+
+**표본 30쌍.** Claude 필자 96쌍 가운데 두 심판이 갈린 34쌍에서 24쌍, 같았던 62쌍에서 6쌍을 씨앗 20260922 로
+뽑는다 (`probeLineOne.py humanSheet`). 갈린 쌍에서 사람이 A나 B를 고르면 그 선택은 정확히 한 심판과 맞는다.
+같았던 6쌍은 사람이 두 심판과 함께 가는지 보는 대조다.
+
+**보이는 것.** 주제와 두 글뿐이다. A/B 차례는 새 씨앗으로 섞고, 작법서, 갈래 이름, 심판 판정은 보이지 않는다.
+짝과 갈래의 대응 (`key.json`) 은 판정지 밖에 둔다. 지시는 AI 심판과 같다. 더 나은 한국어 산문 하나를 고르고,
+내용의 정확함이 비슷하면 읽기와 글의 힘으로 고르며, 사실상 같으면 비슷하다를 고른다.
+
+**판정.**
+
+- 갈린 24쌍에서 사람이 한 심판과 맞은 수를 다른 심판과 맞은 수와 부호검정으로 견준다 (비슷하다는 뺀다).
+  p < 0.05 면 그 심판이 이 물음에서 사람의 대리가 된다. 24쌍이 다 결정되면 18 대 6 이 그 선이다.
+- Claude 심판 쪽이면, 에이전트마다 다른 작법서를 싣는 안 (Claude 에 noLong) 을 따로 사전 등록해 잰다.
+- Codex 심판 쪽이면, 같은 가족 심판이 긴 문장을 과하게 벌한다고 적고 앞으로 작법 실측의 주 심판을 필자와 다른
+  가족으로 둔다. 작법서는 그대로다.
+- 어느 쪽도 아니면 결론 없음으로 적는다.
+- 30쌍 전체에서 사람이 고른 noLong 대 shipped 도 적되 표본을 갈린 쌍으로 기울였으므로 전체 선호의 추정으로
+  쓰지 않는다.
+
+**판정지.** `probeLineOne.py humanSheet` 가 `~/.cache/hanlint/attempts/craftLineOne/human/` 에 판정지와 풀이표
+(`key.json`) 를 쓴다. 판정지는 claude.ai 아티팩트로 발행했고 (https://claude.ai/artifact/491AGwscHTEoeVhh91MmUb,
+비공개) 고른 판정을 그 아티팩트의 `verdicts` 모음에 쌍마다 문서 하나로 저장한다. 채점은 그 모음을
+`{짝: {choice}}` JSON 으로 옮긴 뒤 `probeLineOne.py humanScore <시험 폴더> --key <key.json> --verdicts <그 JSON>` 이다.
