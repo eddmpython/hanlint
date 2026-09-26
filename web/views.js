@@ -19,7 +19,10 @@ function findingDetail(result, index, handlers) {
   const actions = element("div", "findingActions");
   actions.append(button("이 지적은 맞지 않아요", () => handlers.reject(finding)));
   if (finding.patch) actions.append(button("기억한 고침 적용", () => handlers.patch(index), "secondary small"));
-  else if (result.findings[index].replacement !== null) actions.append(button("이대로 고치기", () => handlers.fix(index), "secondary small"));
+  else if (result.findings[index].replacement !== null) {
+    const label = result.findings[index].severity === "notice" ? "제안 적용" : "이대로 고치기";
+    actions.append(button(label, () => handlers.fix(index), "secondary small"));
+  }
   else actions.append(button("문장으로 이동 ↗", () => handlers.locate(finding)));
   detail.append(actions);
   return detail;

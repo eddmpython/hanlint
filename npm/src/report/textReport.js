@@ -63,7 +63,7 @@ export function renderText(path, findings, register = null, preset = null, custo
   for (const f of shown) {
     const tag = `[${f.rule}]` + (f.severity === "notice" ? " 확인" : "");
     lines.push(`${path}:${f.line}  ${tag}`, `  ${f.quote}`, `  ${f.why}`);
-    if (f.fix) lines.push(`  고친 뒤: ${f.fix}`);
+    if (f.fix) lines.push(`  ${f.severity === "notice" ? "검토할 대안" : "고친 뒤"}: ${f.fix}`);
     lines.push("");
   }
   if (folded.length) lines.push(...noticeLines(folded), "");

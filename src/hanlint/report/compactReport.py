@@ -21,6 +21,7 @@ def renderCompact(path: str, findings: list[Finding]) -> str:
         label = "notice: " if finding.severity == "notice" else ""
         line = f"{path}:{finding.line} [{finding.rule}] {label}{flat(finding.why)}"
         if finding.fix:
-            line += f"  고친 뒤: {flat(finding.fix)}"
+            fixLabel = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+            line += f"  {fixLabel}: {flat(finding.fix)}"
         lines.append(line)
     return "\n".join(lines)

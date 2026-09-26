@@ -9,6 +9,10 @@ function flat(text) {
 /** @param {string} path @param {import("../rules/finding.js").Finding[]} findings */
 export function renderCompact(path, findings) {
   return findings
-    .map((f) => `${path}:${f.line} [${f.rule}] ${f.severity === "notice" ? "notice: " : ""}${flat(f.why)}` + (f.fix ? `  고친 뒤: ${flat(f.fix)}` : ""))
+    .map((f) => {
+      const label = f.severity === "notice" ? "notice: " : "";
+      const fixLabel = f.severity === "notice" ? "검토할 대안" : "고친 뒤";
+      return `${path}:${f.line} [${f.rule}] ${label}${flat(f.why)}` + (f.fix ? `  ${fixLabel}: ${flat(f.fix)}` : "");
+    })
     .join("\n");
 }

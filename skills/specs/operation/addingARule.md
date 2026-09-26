@@ -45,7 +45,9 @@ status: curated
 - **사전 규칙** (cliche, translationese, spelling, spacing, confusable, easyWords): 코드가 아니라 `data/*.toml`
   에 항목을 더한다. 항목마다 pattern, fix, why, source 를 적고 source 에는 국립국어원 조항이나 사전 표제어를
   적는다. `{ㄹ}` `{ㄴ}` 은 그 받침으로 끝나는 음절 부류, `{조사}` 는 낱말 경계다. 뜻에 따라 둘 다 맞는 자리는
-  넣지 않는다 (`start.product` 의 잡지 않는 것).
+  넣지 않는다 (`start.product` 의 잡지 않는 것). 특히 `easyWords`는 다듬은 말 목록에 대체어가 있어도 그 말이
+  모든 분야에서 같은 뜻이라는 보증은 아니다. `fix`가 현재 pattern에 걸리는 정상 문맥에서도 대상과 뜻을 지키는지 본다.
+  반례가 나오면 pattern을 좁히고 `catch`와 `spare`를 짝지어 검증한다. 표층으로 못 가르면 기본 사전에서 뺀다.
 - **code 부류** (inputFileSource, installImport, platformApi): 읽기와 쓰기 함수, 모듈과 패키지 대응, 숨은
   의존성, 플랫폼 API 는 각각 규칙 파일의 정규식과 `data/pythonPackages.txt`, `data/hiddenDeps.txt`,
   `data/platformApis.txt` 가 정본이다.

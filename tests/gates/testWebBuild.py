@@ -65,8 +65,8 @@ globalThis.document = {
   createTextNode() { return makeNode(); },
 };
 const config = configFromMapping({ preset: "blog" });
-const noticeText = "피드백을 남깁니다.";
-const mixedText = "피드백을 남깁니다. 결과가 저장되어집니다.";
+const noticeText = "금일 회의를 엽니다.";
+const mixedText = "금일 회의를 엽니다. 결과가 저장되어집니다.";
 const notice = inspectText(noticeText, config);
 const mixed = inspectText(mixedText, config);
 assert.ok(notice.findings.some((item) => item.rule === "hardWord" && item.severity === "notice"));
@@ -90,8 +90,8 @@ function fix(text, index) {
   return reply.result.text;
 }
 assert.equal(fix(noticeText, null), noticeText);
-assert.equal(fix(mixedText, null), "피드백을 남깁니다. 결과가 저장됩니다.");
-assert.equal(fix(noticeText, notice.findings.findIndex((item) => item.rule === "hardWord")), "의견을 남깁니다.");
+assert.equal(fix(mixedText, null), "금일 회의를 엽니다. 결과가 저장됩니다.");
+assert.equal(fix(noticeText, notice.findings.findIndex((item) => item.rule === "hardWord")), "오늘 회의를 엽니다.");
 """
     result = subprocess.run(
         [node, "--input-type=module", "-e", script], cwd=output, capture_output=True, text=True, encoding="utf-8"

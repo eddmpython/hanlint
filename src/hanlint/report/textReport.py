@@ -89,7 +89,8 @@ def renderText(
         lines.append(f"  {finding.quote}")
         lines.append(f"  {finding.why}")
         if finding.fix:
-            lines.append(f"  고친 뒤: {finding.fix}")
+            label = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+            lines.append(f"  {label}: {finding.fix}")
         lines.append("")
     if folded:
         lines.extend([*noticeLines(folded), ""])

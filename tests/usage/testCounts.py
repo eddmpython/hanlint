@@ -54,8 +54,8 @@ def testLongerRunAroundAnAttestedChainIsStillAPile():
     assert nounPiles(f"{ATTESTED} 검토 결과를 적었습니다.\n", preset="report") == [f"{ATTESTED} 검토 결과를 적었습니다."]
 
 
-CONVENTIONAL = "당사는 시장 상황에 대한 분석을 통해 대응 방안을 마련하였고 상기 계획을 이사회에서 정했습니다."
-"""`에 대한`, `을 통해` 는 사업보고서 문서의 100%, `상기` 는 97% 에 나온다. `에 있어서` 는 76% 라 짚는다."""
+CONVENTIONAL = "당사는 시장 상황에 대한 분석을 통해 대응 방안을 마련하였고 계획을 이사회에서 정했습니다."
+"""`에 대한`, `을 통해` 는 사업보고서 문서의 100%에 나온다. `에 있어서` 는 76%라 짚는다."""
 RARE = "그 계획은 이사회에 있어서 승인되었습니다."
 
 
@@ -66,7 +66,7 @@ def dictionaryRules(text: str, **mapping) -> list[str]:
 
 def testReportSkipsConventionalDictionaryEntries():
     assert dictionaryRules(CONVENTIONAL + "\n", preset="report") == []
-    assert len(dictionaryRules(CONVENTIONAL + "\n", preset="blog")) == 3
+    assert len(dictionaryRules(CONVENTIONAL + "\n", preset="blog")) == 2
     assert dictionaryRules(RARE + "\n", preset="report") == ["translationese:그"]
     assert dictionaryRules(CONVENTIONAL + "\n", preset="report", usageKind="") != []
     assert dictionaryRules(CONVENTIONAL + "\n", preset="report", usageShare=1.01) != []

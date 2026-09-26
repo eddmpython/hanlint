@@ -42,6 +42,13 @@ def testTextReportWhenClean():
     assert renderText("글.md", []) == "글.md  집은 자리 없음"
 
 
+def testNoticeFixIsOnlyAReviewAlternative():
+    findings = [finding for finding in lintText("금일 회의를 엽니다.", Config(preset="docs")) if finding.rule == "hardWord"]
+    assert len(findings) == 1 and findings[0].severity == "notice"
+    assert "검토할 대안: 오늘 회의를 엽니다." in renderText("글.md", findings, unfoldNotices=True)
+    assert "검토할 대안: 오늘 회의를 엽니다." in renderCompact("글.md", findings)
+
+
 def testJsonReportIsParseableAndCarriesFields():
     findings = lintText(SAMPLE, path="글.md")
     data = json.loads(renderJson({"글.md": findings}, {"글.md": auditText(SAMPLE)}))

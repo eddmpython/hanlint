@@ -38,7 +38,8 @@ def cellStyle(finding: Finding | None) -> tuple[str, str, str]:
     if not finding:
         return "cell", "", ""
     kind = kindOf(finding.rule)
-    title = f"[{finding.rule}] {finding.why}" + (f"  고친 뒤: {finding.fix}" if finding.fix else "")
+    label = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+    title = f"[{finding.rule}] {finding.why}" + (f"  {label}: {finding.fix}" if finding.fix else "")
     return "cell hole", f"background:{kind.hex}", escape(title, quote=True)
 
 

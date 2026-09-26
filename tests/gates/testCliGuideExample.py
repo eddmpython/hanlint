@@ -34,7 +34,8 @@ def testExampleMatchesRealFindings():
         assert f"글.md:{finding.line}  [{finding.rule}]" in block, f"예시에 없는 지적: {finding.rule} {finding.line}번째 줄"
         assert finding.why in block, f"예시의 이유 문구가 낡았다. 지금 문구는:\n  {finding.why}"
         if finding.fix is not None:
-            assert f"고친 뒤: {finding.fix}" in block, f"예시의 고침이 낡았다. 지금 고침은:\n  {finding.fix}"
+            label = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+            assert f"{label}: {finding.fix}" in block, f"예시의 고침이 낡았다. 지금 고침은:\n  {finding.fix}"
 
 
 def testExampleCountsMatch():

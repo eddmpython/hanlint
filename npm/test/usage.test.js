@@ -185,7 +185,7 @@ test("build is deterministic, folds shared sentences, and search ranks", () => {
   assert.throws(() => loadIndex("report", join(root, "one")), /format/);
 });
 
-const CONVENTIONAL = "당사는 시장 상황에 대한 분석을 통해 대응 방안을 마련하였고 상기 계획을 이사회에서 정했습니다.";
+const CONVENTIONAL = "당사는 시장 상황에 대한 분석을 통해 대응 방안을 마련하였고 계획을 이사회에서 정했습니다.";
 const RARE = "그 계획은 이사회에 있어서 승인되었습니다.";
 
 /** @param {string} text @param {Record<string, unknown>} mapping */
@@ -197,7 +197,7 @@ function dictionaryRules(text, mapping) {
 
 test("report skips conventional dictionary entries", () => {
   assert.deepEqual(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "report" }), []);
-  assert.equal(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "blog" }).length, 3);
+  assert.equal(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "blog" }).length, 2);
   assert.deepEqual(dictionaryRules(`${RARE}\n`, { preset: "report" }), ["translationese:그"]);
   assert.notDeepEqual(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "report", usageKind: "" }), []);
   assert.notDeepEqual(dictionaryRules(`${CONVENTIONAL}\n`, { preset: "report", usageShare: 1.01 }), []);

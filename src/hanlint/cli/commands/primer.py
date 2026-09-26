@@ -40,7 +40,7 @@ class PrimerEntry:
     before: str
     """그 규칙에 잡히는 글. 본보기 원문 그대로다."""
     after: str
-    """같은 뜻으로 통과하는 글."""
+    """그 본보기에서 규칙을 피한 글. 다른 문맥에 그대로 적용할 치환표는 아니다."""
 
     def asDict(self) -> dict:
         """JSON 항목."""
@@ -86,7 +86,7 @@ def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
         *proseLines(),
         "",
         f"hanlint primer  {preset} 종류, {register}체, 규칙 {len(entries)}개. "
-        "줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (같은 뜻으로 통과하는 글) 순서다. 본보기의 줄바꿈은 ¶ 다",
+        "줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (그 본보기에서 고친 글) 순서다. 본보기의 줄바꿈은 ¶ 다",
     ]
     for category, title in CATEGORY_TITLES.items():
         inside = [entry for entry in entries if entry.category == category]
@@ -96,7 +96,9 @@ def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
         lines.append(f"{title} ({len(inside)})")
         lines.extend(f"{entry.rule}  {entry.fix}  전: {flat(entry.before)}  후: {flat(entry.after)}" for entry in inside)
     lines.append("")
-    lines.append("후는 전부 hanlint 를 error 0 으로 통과한다 (게이트가 확인한다). 규칙 하나를 깊게 보려면 hanlint explain <규칙>")
+    lines.append(
+        "후는 모두 error 0 으로 통과한다. 본보기의 치환을 다른 문맥에 쓰지 않는다. 규칙을 더 보려면 hanlint explain <규칙>"
+    )
     return "\n".join(lines)
 
 

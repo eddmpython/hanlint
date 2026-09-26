@@ -779,7 +779,7 @@ function renderPrimer(entries, preset, register) {
   const lines = [
     ...proseLines(),
     "",
-    `hanlint primer  ${preset} 종류, ${register}체, 규칙 ${entries.length}개. 줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (같은 뜻으로 통과하는 글) 순서다. 본보기의 줄바꿈은 ¶ 다`,
+    `hanlint primer  ${preset} 종류, ${register}체, 규칙 ${entries.length}개. 줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (그 본보기에서 고친 글) 순서다. 본보기의 줄바꿈은 ¶ 다`,
   ];
   for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
     const inside = entries.filter((entry) => entry.category === category);
@@ -787,7 +787,7 @@ function renderPrimer(entries, preset, register) {
     lines.push("", `${title} (${inside.length})`);
     for (const entry of inside) lines.push(`${entry.rule}  ${entry.fix}  전: ${flat(entry.before)}  후: ${flat(entry.after)}`);
   }
-  lines.push("", "후는 전부 hanlint 를 error 0 으로 통과한다 (게이트가 확인한다). 규칙 하나를 깊게 보려면 hanlint explain <규칙>");
+  lines.push("", "후는 모두 error 0 으로 통과한다. 본보기의 치환을 다른 문맥에 쓰지 않는다. 규칙을 더 보려면 hanlint explain <규칙>");
   return lines.join("\n");
 }
 

@@ -132,6 +132,10 @@ test("severity, compact, stdin, summary", () => {
   const notices = run([mixed, "--severity", "notice", "--format", "json"]);
   const findings = JSON.parse(notices.out).files[0].findings;
   assert.ok(findings.length && findings.every((f) => f.severity === "notice"));
+  const noticeDraft = join(dir, "notice.md");
+  writeFileSync(noticeDraft, "금일 회의를 엽니다.\n", "utf-8");
+  const noticeOutput = run([noticeDraft, "--severity", "notice", "--format", "compact", "--quiet"]);
+  assert.ok(noticeOutput.out.includes("검토할 대안: 오늘 회의를 엽니다."));
   const piped = spawnSync(process.execPath, [BIN, "-", "--path", "초안.md", "--format", "compact", "--quiet"], { encoding: "utf-8", input: BAD });
   assert.equal(piped.status, 1);
   assert.ok(piped.stdout.startsWith("초안.md:3 [cliche]"));
