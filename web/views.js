@@ -32,7 +32,7 @@ export function renderFindings(result, handlers) {
   get("findingCount").textContent = String(findings.length);
   const errors = findings.filter((item) => item.severity === "error").length;
   get("reviewSummary").textContent = findings.length ? `고칠 곳 ${errors} · 살펴볼 곳 ${findings.length - errors}` : "현재 기준에서 발견한 지적이 없어요.";
-  get("fixAllButton").disabled = !result.findings.some((item) => item.replacement !== null);
+  get("fixAllButton").disabled = !result.findings.some((item) => item.severity === "error" && item.replacement !== null);
   if (!findings.length) empty(root, result.document.sentences.length ? "이제 한 번 읽어 보세요." : "어떤 글을 쓰고 있나요?", result.document.sentences.length ? "뜻과 말투까지 마음에 드는지는 직접 확인해 주세요." : "왼쪽에 글을 넣으면 고칠 곳을 함께 살펴볼게요.");
   findings.forEach((finding, index) => {
     const key = JSON.stringify([finding.line, finding.quote]);

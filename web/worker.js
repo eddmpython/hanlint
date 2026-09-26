@@ -14,7 +14,7 @@ self.onmessage = ({ data }) => {
     if (data.action === "analyze") self.postMessage({ id: data.id, result: analyze(data) });
     else if (data.action === "fix") {
       const inspection = inspectText(data.text, config);
-      const selected = data.index === null ? inspection.findings : [inspection.findings[data.index]].filter(Boolean);
+      const selected = data.index === null ? inspection.findings.filter((item) => item.severity === "error") : [inspection.findings[data.index]].filter(Boolean);
       const fixed = applyFixes(data.text, selected);
       const protection = compareRevision(data.text, fixed.text, config);
       const before = inspection, after = inspectText(fixed.text, config);

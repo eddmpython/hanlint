@@ -18,7 +18,8 @@ def nounPile(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         끼워 넣어야 읽힐 수 있다. 표층 근사라 기본 notice이며 enforceStyle로 선택한 정책에서만 error다.
     어디서: 글쓰기 스킬의 설명을 풀어 쓰기 (명사를 쌓지 말고 동사로 되돌린다). im-not-ai A-13, F-4.
         임계는 config.nounPileMin. 파이썬 데이터프레임 라이브러리 가 넷이라 다섯부터 짚는다 (PRD 부록 A).
-    고치기: 동사로 되돌린다. 가상환경을 만든 뒤 패키지가 설치됐는지 확인한다.
+    고치기: 기술 용어는 그대로 두고 명사 사이의 관계를 조사와 동사로 밝힌다. 가상환경을 만든 뒤
+        패키지가 설치됐는지 확인한다.
     안 잡는 것: 쉼표로 나열한 고유명사 (pandas, Polars, DuckDB). 쉼표가 연속을 끊는다. 임계 아래의 복합어.
         용례가 있는 연쇄: 문장의 긴 연쇄가 전부 그 종류의 빈도표 (data/usageCounts.<종류>.json) 에 usageMin 편
         이상의 문서로 있으면 관용이다. 정관상 배당절차 개선방안 이행 가부 는 사업보고서의 낱말이지 쌓은 것이 아니다.

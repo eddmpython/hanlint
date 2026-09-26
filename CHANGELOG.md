@@ -17,14 +17,16 @@ hanlint 의 눈에 띄는 변경을 이 파일에 적는다. 형식은 [Keep a C
   싣고, JSON 은 `prose` 로 본문을 준다.
 - `hanlint hook` 이 Codex 입력을 읽는다. PostToolUse 의 `apply_patch` 패치 본문에서 쓴 마크다운을 모두 찾아
   검사하고, `hook --reply --agent codex` 는 Codex Stop 이 받는 `systemMessage` 로 낸다 (막지 않는다).
-- 작법서 `src/hanlint/data/koreanProse.txt`. 같은 실측에서 뽑은 한국어 산문 일곱 줄이고 배포물에 실린다.
-  `write-korean` 스킬이 다섯 단계보다 먼저 읽는다. 이 목록을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드
+- 작법서 `src/hanlint/data/koreanProse.txt`. 실측에서 뽑은 여섯 항목과 과잉 교정을 막는 일곱째를 배포물에 싣는다.
+  `write-korean` 스킬이 다섯 단계보다 먼저 읽는다. 기존 판본을 읽고 쓴 글이 읽지 않고 쓴 글을 이겼다 (블라인드
   심판 96건에서 67 대 29, 부호검정 p 0.0001. 필자와 심판은 claude-opus-5. `tests/_attempts/craftLift`).
 - `scripts/fetch/koWikipedia.py --namespaces`. 같은 덤프에서 본문(0) 말고 `위키백과:` 지침(4) 과 `도움말:`(12) 을
   뽑는다. 한 말뭉치 안에서 문체가 다른 자료를 얻는 자리다.
 
 ### Changed
 
+- 작법서와 작문 스킬에 통용 기술 용어를 낯선 번역어로 바꾸지 않는 기준을 명시했다. `hardWord`의
+  `필터링 → 거르기` 제안을 뺐고, 브라우저의 일괄 고침은 CLI처럼 `error`만 적용한다. `notice`는 개별 선택으로 남는다.
 - 문장 색인이 연 파일을 계속 쓴다. 줄 하나를 읽을 때마다 파일 둘을 새로 열던 것을 고쳤다.
 
 ### Added
