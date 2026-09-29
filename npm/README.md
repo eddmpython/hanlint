@@ -50,7 +50,7 @@ for (const finding of lintText(text, config)) {
 파일과 설정 경로를 읽는 API는 Node 전용이다. 문자열 API에 설정을 생략하면 기본 설정을 쓴다.
 
 `blog`, `report`, `docs`, `guide`, `essay`, `fiction`, `encyclopedia`, `chat`, `screen`의 아홉 프리셋이 있다.
-`screen`은 화면의 글 (단추, 이름표, 상태, 빈 상태) 이다. 낱말 자리의 문장과 화면 해설, 접객 말투를 잡고 산문 규칙은 끈다.
+`screen`은 화면의 글 (버튼, 라벨, 상태, 빈 상태) 이다. 낱말 자리의 문장과 화면 해설, 접객 말투를 잡고 산문 규칙은 끈다.
 프로젝트 설정은 `npx hanlint init --preset docs`로 만들고 `npx hanlint doctor`로 확인한다.
 규칙 목록은 `npx hanlint rules`, 개별 규칙의 근거는 `npx hanlint explain translationese`에서 본다.
 
@@ -102,7 +102,7 @@ JSON 형식과 전체 조건은
 저장소의 [정적 사이트 빌드 절차](https://github.com/eddmpython/hanlint/blob/main/skills/specs/operation/webEditor.md)를 따른다.
 
 Python의 `hanlint learn 전.md 승인본.md --format toml`로 만든 후보는 사람이 검토한 뒤
-`hanlint.toml`의 `[[patches]]`와 `[[operations]]`로 승인할 수 있다. 두 판이 같은 설정을 읽는다.
+`hanlint.toml`의 `[[patches]]`와 `[[operations]]`로 승인할 수 있다. 두 구현이 같은 설정을 읽는다.
 원문 일치와 문맥 조건을 통과한 고침만 제안하며, 모호한 곳에서는 기권한다.
 보호할 고유명사와 프로젝트 용어는 `protectedTerms`에 넣는다.
 후보 생성, 개인 승인과 공통 규칙 반영은 별도 단계다.
@@ -113,7 +113,7 @@ GitHub Actions, pre-commit과 Claude Code 훅의 전체 설정은
 [자동화 연결 안내](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/integrations.md)에 있다.
 훅은 후속 작업에 지적을 전달하며, CI의 종료 코드 검사와는 목적이 다르다.
 
-Python 판과 공유하는 검사는 같은 사전과 적합성 자료로 검증한다.
+Python 구현과 공유하는 검사는 같은 사전과 적합성 자료로 검증한다.
 `audit`, `map`, `diff`, `learn`, `profile`, `coverage` 등 분석·실험 명령은 Python 쪽에 있다.
 전체 명령의 구분은 [명령과 설정](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md)을 참고한다.
 

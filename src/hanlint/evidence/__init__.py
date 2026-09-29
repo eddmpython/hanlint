@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from ..config import EVIDENCE_BRIEF_VERSION, WritingBrief
 
 EVIDENCE_MEANING = (
-    "ledgerValid는 근거 연결, 출처 판, 조각 해시와 라이선스가 형식상 맞는다는 뜻뿐이다. "
+    "ledgerValid는 근거 연결, 출처 버전, 조각 해시와 라이선스가 형식상 맞는다는 뜻뿐이다. "
     "URL 존재, 인용 조각의 진위와 사실의 진실·함의를 보장하지 않는다"
 )
 

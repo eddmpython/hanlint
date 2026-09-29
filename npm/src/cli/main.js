@@ -265,7 +265,7 @@ function configFrom(options, paths, start = null) {
 function configLabel(config) {
   if (config.source === null) return "기본값";
   const rel = relative(process.cwd(), config.source);
-  // 경로 구분자는 언제나 /. 설정이 작업 폴더 밖일 때 두 판의 첫 줄이 갈렸다. 파이썬과 같다.
+  // 경로 구분자는 언제나 /. 설정이 작업 폴더 밖일 때 두 구현의 첫 줄이 갈렸다. 파이썬과 같다.
   const label = !rel || rel.startsWith("..") || isAbsolute(rel) ? config.source : rel;
   return label.split(sep).join("/");
 }
@@ -370,7 +370,7 @@ function nextStep(results, fixable = 0) {
     if (patternsAvoiding(rule).length) return `다음: error ${errors.length}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule ${rule}`;
     return `다음: error ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
   }
-  if (notices) return `다음: error 0. 확인할 자리 ${notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다`;
+  if (notices) return `다음: error 0. 확인 권고 ${notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다`;
   return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다";
 }
 

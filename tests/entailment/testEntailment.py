@@ -124,8 +124,8 @@ def testAllAbstainKeepsMacroF1AndCoverageVisible():
     ("change", "message"),
     [
         (lambda data: data.update(version=True), "version 또는 kind"),
-        (lambda data: data.update(benchmarkSha256="0" * 64), "고정 benchmark 판"),
-        (lambda data: data["evaluator"].update(revision="latest"), "고정 판"),
+        (lambda data: data.update(benchmarkSha256="0" * 64), "고정 benchmark 버전"),
+        (lambda data: data["evaluator"].update(revision="latest"), "고정 버전"),
         (lambda data: data["predictions"].pop(), "사례 36개"),
         (lambda data: data["predictions"][1].update(caseId="KEN001"), "caseId가 겹친다"),
         (lambda data: data["predictions"][-1].update(caseId="KEN999"), "모르는 caseId"),

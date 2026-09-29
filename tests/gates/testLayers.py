@@ -1,7 +1,7 @@
 """층 구조 게이트. import 가 아래로만 가는지, 형제와 규칙끼리 교차하지 않는지 본다.
 
 판정은 순수 함수 `layerViolations(files)` 이고 실제 소스 트리와 합성 fixture 양쪽에 돌린다.
-소스가 아직 없으면 실제 트리 검사는 건너뛴다고 말하고 fixture 검사만으로 이빨을 증명한다.
+소스가 아직 없으면 실제 트리 검사는 건너뛴다고 말하고 fixture 검사만으로 실제로 막는지 증명한다.
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ def realTree() -> dict[str, str]:
 def testRealTreeHasNoLayerViolations():
     files = realTree()
     if not files:
-        pytest.skip("src/hanlint 가 아직 없다. fixture 검사가 이빨을 증명한다")
+        pytest.skip("src/hanlint 가 아직 없다. fixture 검사가 실제로 막는지 증명한다")
     assert layerViolations(files) == []
 
 

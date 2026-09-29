@@ -37,7 +37,7 @@ export class EngineClient {
       this.pending.delete(data.id); clearTimeout(item.timer);
       if (data.error) item.reject(new Error(data.error)); else item.resolve(data.result);
     };
-    worker.onerror = () => { if (worker === this.worker) this.fail(new Error("검사기를 불러오지 못했습니다. 원고를 내려받아 보관한 뒤 새로고침해 주세요.")); };
+    worker.onerror = () => { if (worker === this.worker) this.fail(new Error("검사기를 불러오지 못했습니다. 원고를 다운로드해 보관한 뒤 새로고침해 주세요.")); };
   }
 
   /** 기다리던 요청을 모두 끝내고 워커를 새로 띄운다. 연달아 RESTARTS 번 넘게 실패하면 멈춘다. */

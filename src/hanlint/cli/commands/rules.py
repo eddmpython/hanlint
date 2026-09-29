@@ -18,12 +18,12 @@ HELP = "규칙 이름과 한 줄 설명을 부류별로 나열한다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--names", action="store_true", help="이름만. 스크립트가 읽는 꼴이다")
+    parser.add_argument("--names", action="store_true", help="이름만. 스크립트가 읽는 형식이다")
     addCommonOptions(parser, ("text", "json"))
 
 
 def asJson(names: list[str], off: set[str], preset: str, customExemplars=()) -> str:
-    """규칙 전부를 기계가 읽는 꼴로. 기술서와 본보기까지 든다. 에이전트가 규칙을 훑을 때 쓴다."""
+    """규칙 전부를 기계가 읽는 형식으로. 기술서와 본보기까지 든다. 에이전트가 규칙을 훑을 때 쓴다."""
     categories = ruleCategories()
     rules = []
     for name in names:

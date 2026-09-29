@@ -1,4 +1,4 @@
-"""OpenDART 에서 사업보고서 원본을 받아 본문 문단만 글로 떨군다. 용례 엔진 (usage) 의 report 말뭉치 재료다.
+"""OpenDART 에서 사업보고서 원본을 받아 본문 문단만 글로 내보낸다. 용례 엔진 (usage) 의 report 말뭉치 재료다.
 
 무엇을 받나: 공시검색 (list.json, pblntf_detail_ty=A001 사업보고서) 으로 접수번호를 모으고, 공시서류원본파일
 (document.xml) 의 zip 에서 본문 XML (14자리 접수번호.xml) 을 읽는다. 표 (`<TABLE>`) 는 통째로 빼고 `<P>` 문단의 글만

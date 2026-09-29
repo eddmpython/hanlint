@@ -1,4 +1,4 @@
-"""`hanlint spec`. 현재 규칙판을 쓰기 전 숫자 사양으로 편다."""
+"""`hanlint spec`. 현재 규칙 세트를 쓰기 전 숫자 사양으로 편다."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from ...analysis.grammar import HAPNIDA, REGISTERS
 from ...report import renderWritingSpec, writingSpec
 from .shared import addCommonOptions, configFrom, emit
 
-HELP = "현재 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로"
+HELP = "현재 규칙 세트와 종류 프로파일을 쓰기 전 숫자 사양으로"
 
 
 def positiveInt(value: str) -> int:

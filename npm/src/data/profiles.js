@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 참조 분포 (프로파일) 의 자료형과 읽기. 파이썬 data/profiles.py 와 같다. 종류별 프로파일은 profiles.json (투영) 에서,
- * 사용자 프로파일은 `hanlint profile build` 가 만든 파일에서 읽는다. 히스토그램은 정확한 계수라 두 판의 셈이 같다.
+ * 사용자 프로파일은 `hanlint profile build` 가 만든 파일에서 읽는다. 히스토그램은 정확한 계수라 두 구현의 셈이 같다.
  */
 import { readExternal } from "./read.js";
 
@@ -52,7 +52,7 @@ function histogramFromDict(data) {
   return { total: Number(data.total), counts, percentiles };
 }
 
-/** 값이 이 이상인 것의 몫을 천분율 정수로. 정수 셈이라 두 판의 글자가 같다. @param {Histogram} hist @param {number} value */
+/** 값이 이 이상인 것의 몫을 천분율 정수로. 정수 셈이라 두 구현의 글자가 같다. @param {Histogram} hist @param {number} value */
 export function shareAtOrAbove(hist, value) {
   const capped = Math.min(value, CAP);
   let above = 0;

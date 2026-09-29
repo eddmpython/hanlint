@@ -43,7 +43,7 @@ class Histogram:
         return self.percentiles[p]
 
     def shareAtOrAbove(self, value: int) -> int:
-        """값이 이 이상인 것의 몫을 천분율 정수로. 정수 셈이라 두 판의 글자가 같다."""
+        """값이 이 이상인 것의 몫을 천분율 정수로. 정수 셈이라 두 구현의 글자가 같다."""
         capped = min(value, CAP)
         above = sum(count for seen, count in self.counts.items() if seen >= capped)
         return above * 1000 // self.total if self.total else 0

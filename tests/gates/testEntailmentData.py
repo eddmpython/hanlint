@@ -1,4 +1,4 @@
-"""배포 함의 평가판에서 gold 누출, 중복, 출처·라이선스와 해시 변조를 막는다."""
+"""배포 함의 평가 데이터에서 gold 누출, 중복, 출처·라이선스와 해시 변조를 막는다."""
 
 import tomllib
 from copy import deepcopy
@@ -54,7 +54,7 @@ def testEntailmentBuilderProjectionAndPackageLicenseStayPinned():
             "전제나 가설이 겹친다",
         ),
         (lambda data: data["cases"][0].update(license="MIT"), "라이선스"),
-        (lambda data: data["source"].update(license="MIT"), "고정 KLUE-NLI 판"),
+        (lambda data: data["source"].update(license="MIT"), "고정 KLUE-NLI 버전"),
         (lambda data: data["cases"][0].update(caseSha256="0" * 64), "caseSha256"),
         (lambda data: data.update(contentSha256="0" * 64), "contentSha256"),
     ],

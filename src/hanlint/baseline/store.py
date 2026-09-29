@@ -16,7 +16,7 @@
 
 기한도 비율도 없이 글을 고칠 때마다 잠금이 저절로 줄어든다. 그것이 이 설계의 값이다.
 
-파일은 사람이 읽는 꼴이다. 해시로 줄이면 작아지지만 PR 을 보는 사람이 무엇이 잠겼는지 못 본다. 잠근 것을
+파일은 사람이 읽는 형식이다. 해시로 줄이면 작아지지만 PR 을 보는 사람이 무엇이 잠겼는지 못 본다. 잠근 것을
 리뷰할 수 있어야 baseline 이 빚을 감추는 자리가 되지 않는다.
 
 경로는 **잠금 파일이 있는 폴더 기준의 상대 경로**로 적는다. 팀이 커밋해 함께 쓰는 파일이라 친 그대로
@@ -82,7 +82,7 @@ def build(results: dict[str, list[Finding]], target: str | Path | None = None) -
 
 
 def render(baseline: Baseline) -> str:
-    """사람이 읽고 리뷰하는 꼴. 파일 이름과 (규칙, 인용문) 을 정렬해 담아 같은 입력에 같은 파일이 나온다."""
+    """사람이 읽고 리뷰하는 형식. 파일 이름과 (규칙, 인용문) 을 정렬해 담아 같은 입력에 같은 파일이 나온다."""
     files = {
         path: [{"rule": rule, "quote": quote} for rule, quote in sorted(entries)]
         for path, entries in sorted(baseline.locked.items())

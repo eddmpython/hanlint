@@ -27,7 +27,7 @@ from ..data.patches import Patch, projectPatches
 SCREEN = ("screenNarration", "screenSentence", "screenTone", "screenWord")
 """화면의 글에서만 켜는 것. 산문의 모든 종류가 처음부터 끈다.
 
-단추, 이름표, 상태, 빈 상태 같은 화면의 글은 낱말이고 종결어미가 보이면 문장이다. 산문에서는 `설정에서 언제든 바꿀 수
+버튼, 라벨, 상태, 빈 상태 같은 화면의 글은 낱말이고 종결어미가 보이면 문장이다. 산문에서는 `설정에서 언제든 바꿀 수
 있습니다` 가 정상 문장이라 이 넷을 켜면 글마다 오탐이 난다. 실측: Taxly 의 화면 소스에서 낱말 자리의 문장 325건과 화면
 해설·접객 말투 329건이 났고 산문 규칙 50개는 그 가운데 하나도 짚지 못했다 (2026-09-17). 프리셋 screen 이 이 넷을 켜고,
 산문 프리셋에서 해설과 말투만 잡으려면 enforceStyle 에 screenNarration 과 screenTone 을 넣는다."""
@@ -149,7 +149,7 @@ SCREEN_OFF = (
 """화면의 글에서 끄는 것. 문장과 문단과 글의 짜임을 재는 규칙은 화면의 글 한 마디에 전제가 없다.
 
 남는 것은 SCREEN 셋과 낱말 안에서 결정되는 것 (dash, spelling, spacing, confusable, hardWord, japaneseLoan,
-doublePassive, translationese, redundantPair) 이다. nounPile 은 끈다. `수임처 자료 수집 실패` 처럼 화면의 낱말은 명사가
+doublePassive, translationese, redundantPair) 이다. nounPile 은 끈다. `수임처 데이터 수집 실패` 처럼 화면의 낱말은 명사가
 이어지는 것이 정상이다. imperativePeriod 와 cliche 와 doubleNegative 는 문장을 전제하므로 끈다. 종결어미 자체를
 screenSentence 가 잡는다 (2026-09-17)."""
 PRESETS["screen"] = SCREEN_OFF
@@ -196,7 +196,7 @@ ENFORCEABLE = ("noQuestion", "nounPile", "screenNarration", "screenTone", "scree
 
 
 def shown(value: object) -> str:
-    """오류 문구에 적는 설정 값. JSON 꼴이라 npm 판 (JSON.stringify) 과 글자가 같다. 검증에서 true 와 True 가 갈렸다."""
+    """오류 문구에 적는 설정 값. JSON 형식이라 npm 구현 (JSON.stringify) 과 글자가 같다. 검증에서 true 와 True 가 갈렸다."""
     return json.dumps(value, ensure_ascii=False, default=str)
 
 

@@ -55,7 +55,7 @@ status: curated
   `ruleCategories.json` 도 같이 바뀐다.
 - **한 종류의 글에만 안 맞는 규칙은 빼지 말고 프리셋에 넣는다.** 참고 문서에 `noQuestion` 이 도는 것은
   규칙이 틀린 것이 아니라 글의 종류가 다른 것이다. `config/settings.py` 의 `PRESETS` 에 그 규칙 이름을
-  더하고 npm 의 같은 표도 같은 작업에서 고친다. `testInitPresetsAgree` 가 두 판을 견준다.
+  더하고 npm 의 같은 표도 같은 작업에서 고친다. `testInitPresetsAgree` 가 두 구현을 견준다.
 - 겹침 비율 (`hanlint coverage review.json 글.md`) 이 규칙을 더하는 근거다. 못 집은 유형 목록에서 후보를 고른다.
 
 ## 오탐 보고가 오면

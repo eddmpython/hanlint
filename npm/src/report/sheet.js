@@ -35,7 +35,7 @@ function prefilledFix(literal, findings) {
 }
 
 /**
- * (이름표, 소스) 마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error` 만 남긴다.
+ * (라벨, 소스) 마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error` 만 남긴다.
  * 소스를 읽는 쪽 (CLI 는 디스크, 브라우저는 저장소) 이 다르므로 읽기는 밖에 두고 문자열만 받는다.
  * @param {Iterable<{ label: string, source: string }>} sources
  * @param {import("../config/settings.js").Config} config
@@ -197,7 +197,7 @@ export function renderSheet(rows, preset, fileCount) {
   return lines.join("\n");
 }
 
-/** 기계가 읽는 꼴. @param {SheetRow[]} rows @param {string} preset @param {number} fileCount */
+/** 기계가 읽는 형식. @param {SheetRow[]} rows @param {string} preset @param {number} fileCount */
 export function renderSheetJson(rows, preset, fileCount) {
   const data = {
     version: 1,

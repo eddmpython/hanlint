@@ -34,7 +34,7 @@ function selectedProfile(config) {
 }
 
 /**
- * 현재 규칙판을 쓰기 전 숫자 사양으로 편다. 품질 점수나 새 임계는 만들지 않는다.
+ * 현재 규칙 세트를 쓰기 전 숫자 사양으로 편다. 품질 점수나 새 임계는 만들지 않는다.
  * @param {import("./settings.js").Config} [config]
  * @param {string} [register]
  * @param {number | null} [targetChars]
@@ -161,11 +161,11 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   };
 }
 
-/** 사람이 읽는 꼴. basis는 JSON에서 확인한다. @param {ReturnType<typeof writingSpec>} spec */
+/** 사람이 읽는 형식. basis는 JSON에서 확인한다. @param {ReturnType<typeof writingSpec>} spec */
 export function renderWritingSpec(spec) {
   const target = spec.targetChars !== null ? `, ${spec.targetChars}자` : "";
   const lines = [
-    `hanlint spec  ${spec.preset} 종류, ${spec.register}체${target}. 같은 규칙판의 임계와 ${spec.profile} 프로파일을 쓰기 전 숫자로 편다`,
+    `hanlint spec  ${spec.preset} 종류, ${spec.register}체${target}. 같은 규칙 세트의 임계와 ${spec.profile} 프로파일을 쓰기 전 숫자로 편다`,
   ];
   const width = Math.max(...spec.rows.map((row) => row.label.length));
   for (const row of spec.rows) lines.push(`  ${row.label.padEnd(width)}  ${row.guidance}`);

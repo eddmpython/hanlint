@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * 저장소 모드. GitHub 주소 하나로 소스의 화면 글을 표로 보고, 고침 칸을 적어 시트로 내려받는다.
- * 코어는 CLI `hanlint sheet` 와 같은 sheetRows 이고 (워커의 `sheet` 액션), 내려받은 시트는 `hanlint sheet apply` 가 그대로 읽는다.
+ * 저장소 모드. GitHub 주소 하나로 소스의 화면 글을 표로 보고, 고침 칸을 적어 시트로 다운로드한다.
+ * 코어는 CLI `hanlint sheet` 와 같은 sheetRows 이고 (워커의 `sheet` 액션), 다운로드한 시트는 `hanlint sheet apply` 가 그대로 읽는다.
  * 저장소의 글은 문자열로만 다루고 textContent 로만 그린다.
  */
 import { get, element, button, download } from "./dom.js";
@@ -136,7 +136,7 @@ export class RepoMode {
     get("sourceTitle").textContent = on ? "저장소" : "원문";
     get("resultTitle").textContent = on ? "화면 글 시트" : "검사 결과";
     get("resultOrigin").textContent = on ? "저장소" : "원문";
-    get("resultHint").textContent = on ? "고침 칸을 적고 시트를 내려받아 hanlint sheet apply 로 되돌려 씁니다" : "확정할 수 있는 표현만 수정합니다";
+    get("resultHint").textContent = on ? "고침 칸을 적고 시트를 다운로드해 hanlint sheet apply 로 되돌려 씁니다" : "확정할 수 있는 표현만 수정합니다";
   }
 
   summary(text) {
@@ -177,8 +177,8 @@ export class RepoMode {
       if (!files.length) throw new Error(`검사할 소스 파일 (${suffixes.join(", ")}) 이 없습니다.`);
       checkBudget(files, bytes);
       this.renderFiles(target, files, oversized);
-      this.summary(`파일 내려받는 중 0 / ${files.length}`);
-      const sources = await this.source.fetchSources(target, files, (done, total) => { if (!stale()) this.summary(`파일 내려받는 중 ${done} / ${total}`); }, controller.signal);
+      this.summary(`파일 다운로드 중 0 / ${files.length}`);
+      const sources = await this.source.fetchSources(target, files, (done, total) => { if (!stale()) this.summary(`파일 다운로드 중 ${done} / ${total}`); }, controller.signal);
       if (stale()) return;
       this.target = target;
       this.files = files;

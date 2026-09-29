@@ -21,14 +21,14 @@
 .venv/Scripts/python.exe -X utf8 -B scripts/fetch/corpus.py --check
 ```
 
-수집기는 저장소 안에 원문이나 임시 압축 파일을 두지 않는다. 내려받는 동안 필요한 파일은 공통 실행
+수집기는 저장소 안에 원문이나 임시 압축 파일을 두지 않는다. 다운로드하는 동안 필요한 파일은 공통 실행
 공간에 만들고 작업이 끝나면 지운다. 각 문서는 출처 주소와 라이선스를 외부 말뭉치의 `metadata.json` 에
 함께 기록한다.
 
 ## 지문 표와 프로파일
 
 `scripts/derive/prints.py` 는 말뭉치의 문장, 문단, 글을 한 행씩 Parquet 로 저장소 밖 `prints/` 에 둔다 (dependency group
-`corpus`, `uv sync --group corpus` 로 깐다). 탐침이 글을 다시 세지 않고 이것을 묻는다. `scripts/derive/profiles.py` 는 종류마다 문장 지표의 히스토그램과
+`corpus`, `uv sync --group corpus` 로 깐다). 실험 스크립트가 글을 다시 세지 않고 이것을 묻는다. `scripts/derive/profiles.py` 는 종류마다 문장 지표의 히스토그램과
 백분위를 세어 `src/hanlint/data/profiles.json` 에 쓴다. 제품이 싣는 것은 이 파일뿐이고 규칙 outsideProfile 이 읽는다.
 
 `scripts/derive/blueprints.py`는 같은 1,600편에서 절 수, 절별 문단·문장·산문 글자 수, 문단과 문장 길이,

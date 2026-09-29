@@ -15,7 +15,7 @@ inputs:
     required: false
     default: "false"
   command:
-    description: hanlint 실행 명령. 기본은 npx 로 npm 판을 받는다. 이 저장소 안에서는 node npm/bin/hanlint.js 를 준다
+    description: hanlint 실행 명령. 기본은 npx 로 npm 패키지를 받는다. 이 저장소 안에서는 node npm/bin/hanlint.js 를 준다
     required: false
     default: npx --yes hanlint
 

@@ -109,8 +109,8 @@ Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`의 SessionStart에 `"co
 명령을 따옴표로 시작하지 않는다. 윈도우의 Codex 0.155.1에서 `"C:/.../python.exe" -X utf8 ...`처럼 따옴표 친
 경로로 시작한 훅은 `Failed`로 끝났고, 따옴표를 뺀 같은 명령은 세션 기록에 작법서를 실었다. Codex 0.154.0에서
 SessionStart의 additionalContext가 거부된다는 보고가 있으므로
-([openai/codex#45999](https://github.com/openai/codex/issues/45999)), 그 판에서는 UserPromptSubmit에 건다.
-UserPromptSubmit은 요청마다 작법서 본문을 다시 싣는다. 이전 판본의 작법서는 Codex 필자에서도 이겼다 (블라인드 심판
+([openai/codex#45999](https://github.com/openai/codex/issues/45999)), 그 버전에서는 UserPromptSubmit에 건다.
+UserPromptSubmit은 요청마다 작법서 본문을 다시 싣는다. 이전 버전의 작법서는 Codex 필자에서도 이겼다 (블라인드 심판
 96건에서 90 대 6, `tests/_attempts/codexCraft`).
 
 ## 저장·답변 훅 (Claude Code, Codex)

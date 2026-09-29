@@ -91,7 +91,7 @@ def doublePassive(prints, config):
 
 - 규칙 하나에 fixture 하나 (`tests/fixtures/rules/<규칙>.json`, `catch` 와 `spare`). 테스트는 fixture 를 읽어
   두 분석기 모두에 돌린다.
-- 게이트는 순수 함수 + 양성·음성 fixture 로 이빨을 증명한다. 통과만 확인한 게이트는 게이트가 아니다.
+- 게이트는 순수 함수 + 양성·음성 fixture 로 실제로 막는지 증명한다. 통과만 확인한 게이트는 게이트가 아니다.
 - 테스트 이름은 무엇을 확인하는지 읽히게. `testSparesSimplePassive`.
 
 ## 도구

@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * 기계가 읽는 꼴. 평가 루프의 0층 입력이다. 파이썬 json.dumps(indent=2, ensure_ascii=False) 와 같은 글자다.
+ * 기계가 읽는 형식. 평가 루프의 0층 입력이다. 파이썬 json.dumps(indent=2, ensure_ascii=False) 와 같은 글자다.
  * 지적마다 `exemplar` 를 붙인다. 승인 원문 완전 일치 `patch`는 맞는 지적에만 별도로 붙인다.
- * 실제 수정 차이는 파이썬의 exemplarLift와 patchMemory 탐침에서 따로 잰다.
+ * 실제 수정 차이는 파이썬의 exemplarLift와 patchMemory 실험 스크립트에서 따로 잰다.
  */
 import { exemplarFor } from "../data/exemplars.js";
 import { findingAsDict } from "../rules/finding.js";

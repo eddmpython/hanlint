@@ -32,7 +32,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--kind", default=DEFAULT_KIND, help=f"글의 종류. 기본 {DEFAULT_KIND}")
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"보일 문장 수. 기본 {DEFAULT_LIMIT}")
     parser.add_argument("--root", type=Path, default=None, help="색인 폴더. 기본 ~/.cache/hanlint/usage")
-    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 형식. 기본 text")
     addOutputOption(parser)
 
 

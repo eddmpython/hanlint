@@ -2,7 +2,7 @@
 /**
  * 문장 역인덱스. 뜻과 파일 꼴은 파이썬 usage/sentences.py 가 소유한다. 같은 글에서 같은 바이트를 만들고 같은 순서로 답한다.
  * 토큰은 조사를 뗀 어절과 한글 어절의 글자 두 개짜리 조각, 순서는 BM25 (k1 1.5, b 0.75) 값, 값은 SCORE_SCALE 배의
- * 정수로 내려 견준다 (두 판의 log 가 마지막 자리에서 다를 수 있다). 만들기는 문장 표를 바로 쓰고 postings 를 조각으로
+ * 정수로 내려 견준다 (두 구현의 log 가 마지막 자리에서 다를 수 있다). 만들기는 문장 표를 바로 쓰고 postings 를 조각으로
  * 내렸다가 병합한다 (파이썬과 같은 조각 크기, 같은 병합 결과). 함께 쓰는 말은 조회 때 postings 앞 문장을 읽어 센다.
  */
 import { createHash } from "node:crypto";
@@ -78,7 +78,7 @@ export function compareCodePoints(a, b) {
   return left.length - right.length;
 }
 
-/** 두 판이 같은 글자를 보게 한다. 뜻은 파이썬 normalized 가 소유한다. @param {string} text */
+/** 두 구현이 같은 글자를 보게 한다. 뜻은 파이썬 normalized 가 소유한다. @param {string} text */
 export function normalized(text) {
   return text.replace(BOM, "").replace(STRAY, " ");
 }

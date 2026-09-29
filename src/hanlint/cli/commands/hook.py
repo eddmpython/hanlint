@@ -1,4 +1,4 @@
-"""`hanlint hook`. 에이전트 훅에서 쓰기 전에는 작법서를 싣고, 쓴 뒤에는 같은 규칙판으로 되먹임한다.
+"""`hanlint hook`. 에이전트 훅에서 쓰기 전에는 작법서를 싣고, 쓴 뒤에는 같은 규칙 세트로 되먹임한다.
 
 명령 훅의 JSON을 stdin에서 읽는다. `--prime`에서는 SessionStart와 UserPromptSubmit 입력에 작법서
 (data/koreanProse.txt) 본문을 additionalContext로 낸다. Claude Code와 Codex가 같은 JSON 꼴을 받는다.
@@ -36,7 +36,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--prime", action="store_true", help="SessionStart나 UserPromptSubmit에 작법서 본문을 싣는다")
     mode.add_argument("--reply", action="store_true", help="Stop의 마지막 답변을 chat 프리셋으로 검사한다")
-    parser.add_argument("--agent", choices=AGENTS, default="claude", help="Stop 출력 꼴. codex는 systemMessage로 낸다")
+    parser.add_argument("--agent", choices=AGENTS, default="claude", help="Stop 출력 형식. codex는 systemMessage로 낸다")
     parser.add_argument("--config", type=Path, help="설정 파일. 없으면 쓴 파일이나 현재 폴더에서 찾는다")
     parser.add_argument("--preset", help="저장한 파일에 적용할 글 종류. --reply에서는 chat으로 고정한다")
     parser.add_argument("--disable", action="append", default=[], metavar="RULE", help="이번 실행에서 끌 규칙")

@@ -46,7 +46,7 @@ status: curated
 
 판정 정본은 `hooks/commitMessage.py` 이고 `.githooks/commit-msg` 가 부른다. 훅은 얇다. 판정을 sh 와
 파이썬에 이중화하면 두 판정이 표류한다. `tests/gates/testCommitMessage.py` 가 양성·음성 fixture 로
-판정기의 이빨을 매 실행마다 증명한다.
+판정기가 실제로 막는지 매 실행마다 증명한다.
 
 ### 분류
 

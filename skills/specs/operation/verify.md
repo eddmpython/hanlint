@@ -51,7 +51,7 @@ node --test npm/test/*.test.js
 | `tests/gates/testPrimer.py` | `primer` 에서 켜진 규칙이 빠지거나 겹치는 것, 후가 error 를 내는 것, 한 장이 100줄을 넘는 것 | 항목을 뺀 장과 틀린 후를 든 항목으로 양방향 |
 | `.githooks/pre-push` 의 `derive/profiles.py --check`, `derive/blueprints.py --check` | 말뭉치에서 다시 센 파생 자료가 커밋된 것과 다른 것. 말뭉치가 없는 기계는 건너뛴다고 말한다 | 코드를 바꾸고 파생 자료를 안 만들면 red. 2026-09-02 에 profiles.json 의 deixis 분포가 4일 낡은 채 잡혔다 |
 
-신설 게이트는 음성 시험으로 이빨을 증명하고서야 게이트다. 통과만 확인한 게이트는 없는 게이트보다 나쁘다.
+신설 게이트는 음성 시험으로 실제로 막는지 증명하고서야 게이트다. 통과만 확인한 게이트는 없는 게이트보다 나쁘다.
 
 ## 자기 검사
 

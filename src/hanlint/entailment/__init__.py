@@ -103,7 +103,7 @@ def checkedBenchmark(data: object) -> dict:
         "license": "CC-BY-SA-4.0",
         "attribution": "KLUE Benchmark contributors",
     }:
-        raise ValueError("benchmark source가 고정 KLUE-NLI 판·라이선스와 다르다")
+        raise ValueError("benchmark source가 고정 KLUE-NLI 버전·라이선스와 다르다")
     selection = exactKeys(
         data["selection"],
         {
@@ -214,7 +214,7 @@ def checkedBenchmark(data: object) -> dict:
             or item["locator"] != sourceGuid
             or item["license"] != source["license"]
         ):
-            raise ValueError(f"{where}의 출처 판·locator·라이선스가 정본과 다르다")
+            raise ValueError(f"{where}의 출처 버전·locator·라이선스가 정본과 다르다")
         caseSha = checkedSha(item["caseSha256"], f"{where}.caseSha256")
         if caseSha != stableDigest({key: value for key, value in item.items() if key != "caseSha256"}):
             raise ValueError(f"{where}.caseSha256이 내용과 다르다")
@@ -226,9 +226,9 @@ def checkedBenchmark(data: object) -> dict:
     if contentSha != stableDigest({key: value for key, value in data.items() if key != "contentSha256"}):
         raise ValueError("benchmark.contentSha256이 내용과 다르다")
     if contentSha != BENCHMARK_SHA256:
-        raise ValueError("benchmark.contentSha256이 고정 평가판과 다르다")
+        raise ValueError("benchmark.contentSha256이 고정 평가 버전과 다르다")
     if benchmarkId != BENCHMARK_ID:
-        raise ValueError("benchmarkId가 고정 평가판과 다르다")
+        raise ValueError("benchmarkId가 고정 평가 버전과 다르다")
     return data
 
 
@@ -275,7 +275,7 @@ class EntailmentPredictions:
         benchmarkId = checkedString(data["benchmarkId"], "predictions.benchmarkId")
         benchmarkSha = checkedSha(data["benchmarkSha256"], "predictions.benchmarkSha256")
         if benchmarkId != benchmark["benchmarkId"] or benchmarkSha != benchmark["contentSha256"]:
-            raise ValueError("함의 predictions가 고정 benchmark 판을 가리키지 않는다")
+            raise ValueError("함의 predictions가 고정 benchmark 버전을 가리키지 않는다")
         evaluator = exactKeys(
             data["evaluator"],
             {"id", "kind", "revision", "promptSha256"},
@@ -285,7 +285,7 @@ class EntailmentPredictions:
         evaluatorKind = checkedLabel(evaluator["kind"], EVALUATOR_KINDS, "evaluator.kind")
         evaluatorRevision = checkedString(evaluator["revision"], "evaluator.revision")
         if evaluatorRevision.casefold() in {"head", "latest", "main", "master"}:
-            raise ValueError("evaluator.revision은 움직이는 별칭이 아니라 고정 판이어야 한다")
+            raise ValueError("evaluator.revision은 움직이는 별칭이 아니라 고정 버전이어야 한다")
         promptSha = checkedSha(evaluator["promptSha256"], "evaluator.promptSha256")
         rawPredictions = data["predictions"]
         if not isinstance(rawPredictions, list) or len(rawPredictions) != CASE_COUNT:

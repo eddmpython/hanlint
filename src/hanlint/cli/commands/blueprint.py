@@ -16,7 +16,7 @@ HELP = "구조화 brief에 맞는 원문 없는 절·문단·문장 예산을 �
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("file", type=Path, help="writing brief JSON")
     parser.add_argument("--strategy", choices=STRATEGIES, default=STRATEGIES[0], help="구조 전략")
-    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 형식. 기본 text")
     addOutputOption(parser)
 
 

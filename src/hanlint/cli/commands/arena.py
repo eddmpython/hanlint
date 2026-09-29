@@ -32,7 +32,7 @@ HELP = "기준 글과 후보 글의 안전 계약과 블라인드 선호를 따�
 
 
 def outputOptions(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--format", choices=("text", "json"), default="json", help="출력 꼴. 기본 json")
+    parser.add_argument("--format", choices=("text", "json"), default="json", help="출력 형식. 기본 json")
     addOutputOption(parser)
 
 

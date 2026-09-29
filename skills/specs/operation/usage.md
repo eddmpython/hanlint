@@ -30,7 +30,7 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 | 문장 역인덱스 만들기와 조회 (`buildIndex`, `loadIndex`, `UsageIndex.search`, `UsageIndex.collocations`) | `src/hanlint/usage/sentences.py`, `npm/src/usage/sentences.js` | usage |
 | 위키백과 받기 | `scripts/fetch/koWikipedia.py` (`--namespaces` 가 장르를 고른다. 0 본문, 4 지침, 12 도움말) | 도구 |
 | 규칙 | `nounPile` 이 관용 연쇄를 접고, 사전 규칙 다섯 (translationese, hardWord, cliche, redundantPair, japaneseLoan) 이 관용 항목을 접는다 (`rules/shared/dictionaryRule.py`) | rules |
-| 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds` (두 판) | cli |
+| 명령 | `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds` (두 구현) | cli |
 | 스킬 | `write-korean` 의 `더 있는 것` 과 `use-hanlint` 4단계 (막힌 자리) 가 `usage` 를 가리킨다 | |
 
 프리셋 → 종류는 `config.USAGE_OF` 가 정한다 (report 만). 설정 `usageKind` 가 덮고 빈 문자열이면 보지 않는다.
@@ -47,7 +47,7 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 - 센 길이 4 미만과 문서 셋 미만에 나온 연쇄는 넣지 않는다 (usageMin 의 기본과 같다). 글자 하나짜리 어절만 이어진 연쇄
   (띄어 쓴 제목의 잔해) 도 뺀다.
 - `patterns` 는 산문 사전 다섯 (translationese, cliches, redundantPair, japaneseLoan, easyWords) 의 내장 항목만 든다. 키는
-  사전 파일에 적힌 pattern 원문이라 두 판이 같은 키를 갖는다. 설정으로 더한 항목은 표에 없어 늘 짚는다.
+  사전 파일에 적힌 pattern 원문이라 두 구현이 같은 키를 갖는다. 설정으로 더한 항목은 표에 없어 늘 짚는다.
 - 파일 하나가 256 KiB 를 넘지 않는다. 패키지와 브라우저 묶음에 그대로 실린다.
 - `tests/gates/testUsageCounts.py` 가 위를 지킨다. 상수의 정본은 `scripts/derive/usageCounts.py` 다.
 
@@ -65,7 +65,7 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
 ## 문장 역인덱스
 
 `hanlint usage build <종류> <글 폴더>` 가 `~/.cache/hanlint/usage/<종류>/` 에 만든다. 파일 꼴과 토큰과 순서는
-`src/hanlint/usage/sentences.py` 의 docstring 이 소유하고 npm 판은 같은 바이트를 만든다 (`testUsageIndexAgrees`).
+`src/hanlint/usage/sentences.py` 의 docstring 이 소유하고 npm 구현은 같은 바이트를 만든다 (`testUsageIndexAgrees`).
 색인이 유일한 구조다. 임베딩과 예측 모델은 두지 않는다. 이 판단은 agipath (같은 운영자의 연구) 가 위키 1,341만 문장과
 우리말샘 134만 문장에서 임베딩과 예측을 다 시도한 뒤 "역인덱스가 유일한 기본 구조" 로 돌아온 기록 위에 있다. 여기서는
 만드는 건 LLM 이고 색인은 사실을 댄다.
@@ -86,7 +86,7 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
   실측: 사업보고서 961편에서 마침표로 끝난 문장을 접으니 343,149문장이 남았다.
 - 토큰: 조사를 뗀 어절 (core) 과 세 글자 이상 한글 어절의 글자 두 개짜리 조각 (bigram). bigram 이 `금융리스부채` 와
   `리스부채`, `적용되며` 와 `적용된다` 를 잇는다. 문장 절반 넘게 나오는 토큰은 조회에서 뺀다.
-- 순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 낱말 겹침이지 글의 판정이 아니다. 두 판의
+- 순서: BM25 (k1 1.5, b 0.75) 값 내림차순, 같으면 문장 번호 오름차순. 이 값은 낱말 겹침이지 글의 판정이 아니다. 두 구현의
   log 가 마지막 자리에서 갈릴 수 있어 1e6 배의 정수로 내려 견준다.
 - 크기와 시간 (2026-09-19). report (사업보고서 3,193편, 문장 1,056,316개): 색인 414 MB, 만들기 node 4분 30초,
   조회 1초 안팎. encyclopedia (위키백과 592,264편, 문장 8,844,533개, 토큰 679만 종): 색인 2.4 GB, 만들기 node

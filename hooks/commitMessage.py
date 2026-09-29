@@ -2,7 +2,7 @@
 
 규칙 문장의 정본은 skills/specs/operation/sourceControl.md 이고 이 파일은 그 문장을 판정 가능한 술어로
 옮긴 것이다. .githooks/commit-msg 가 부르고 tests/gates/testCommitMessage.py 가 양성과 음성 fixture 로
-이빨을 증명한다. 안 무는 게이트는 없는 게이트보다 나쁘다.
+실제로 막는지 증명한다. 막지 못하는 게이트는 없는 게이트보다 나쁘다.
 
 제목 길이는 문자 수 계약이다. sh 와 awk 는 UTF-8 을 바이트로 세서 한국어 제목이 3배로 왜곡되므로
 파이썬으로 센다. 표준 라이브러리만 쓴다.
@@ -114,7 +114,7 @@ def checkCommitMessage(raw: str) -> list[Violation]:
     if re.search(r"[.。]$", subject):
         fail("subjectPunctuation", "제목은 마침표로 끝내지 않는다")
     if not HANGUL.search(subject):
-        fail("subjectNotKorean", "제목은 한국어다 (분류의 기술 명칭은 원어 유지)")
+        fail("subjectNotKorean", "제목은 한국어로 쓰고 기술 용어는 원어 그대로 둔다")
     form = SUBJECT_FORM.match(subject)
     if not form:
         fail("subjectForm", "제목은 `분류: 요약` 형식이다 (예: `규칙: 이중 피동을 잡는다`)")

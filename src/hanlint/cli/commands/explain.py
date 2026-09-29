@@ -36,7 +36,7 @@ def indent(text: str, label: str) -> str:
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("rule", nargs="?", help="규칙 이름. hanlint rules 로 목록을 본다")
-    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 형식. 기본 text")
     parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="본보기 문체. 기본 합니다체")
     parser.add_argument("--config", type=Path, help="설정 파일. 프로젝트 본보기를 함께 읽는다")
     parser.add_argument("--preset", choices=PRESET_NAMES, help="본보기의 글 종류. 기본은 설정이나 blog")
@@ -44,7 +44,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 
 def asJson(rule: str, register: str = HAPNIDA, preset: str = "blog", customExemplars=()) -> str:
-    """규칙 하나를 기계가 읽는 꼴로. 기술서와 본보기와 다시 쓸 틀을 한 덩어리로 준다."""
+    """규칙 하나를 기계가 읽는 형식으로. 기술서와 본보기와 다시 쓸 틀을 한 덩어리로 준다."""
     exemplar = exemplarFor(rule, preset, customExemplars)
     data: dict = {
         "version": 1,

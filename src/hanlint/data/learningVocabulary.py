@@ -59,7 +59,7 @@ def vocabularyEntries() -> tuple[VocabularyEntry, ...]:
     lines = readText("learningVocabulary.tsv").splitlines()
     expected = "rank\tword\tlexeme\tpartOfSpeech\tgrade"
     if not lines or lines[0] != expected:
-        raise ValueError(f"learningVocabulary.tsv 머리줄이 다르다: {lines[0] if lines else '비었다'}")
+        raise ValueError(f"learningVocabulary.tsv 헤더 행이 다르다: {lines[0] if lines else '비었다'}")
     entries: list[VocabularyEntry] = []
     for line in lines[1:]:
         rank, word, lexeme, partOfSpeech, grade = line.split("\t")

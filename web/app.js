@@ -223,7 +223,7 @@ function showHistory() {
       changed();
     }, "secondary small"));
     actions.append(button("기여할 사례 내보내기", async () => {
-      if (!await confirmAction("이 수정본의 원문과 수정 후 전문, 수정 이유를 사례 파일로 내려받습니다. 공유하기 전에 개인정보와 비공개 내용을 확인해 주세요. 자동으로 제출하지 않습니다.", "사례 파일 받기")) return;
+      if (!await confirmAction("이 수정본의 원문과 수정 후 전문, 수정 이유를 사례 파일로 다운로드합니다. 공유하기 전에 개인정보와 비공개 내용을 확인해 주세요. 자동으로 제출하지 않습니다.", "사례 파일 받기")) return;
       download("hanlintContribution.json", JSON.stringify(contribution(record, "submittedForReview"), null, 2));
       notify("사례 파일을 받았습니다. 검토한 뒤 GitHub Issues의 개선 제안에 첨부할 수 있어요.");
     }));

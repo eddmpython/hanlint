@@ -46,7 +46,7 @@ def testLintExitCodesAndText(tmp_path, capsys):
     clean = write(tmp_path, "clean.md", CLEAN)
     assert main([str(clean), "--quiet"]) == 0
     out = capsys.readouterr().out
-    assert "집은 자리 없음" in out and "설정:" not in out
+    assert "오류 없음" in out and "설정:" not in out
 
 
 def testLintJsonAndGithub(tmp_path, capsys):
@@ -691,7 +691,7 @@ def testSummaryForManyFiles(tmp_path, capsys):
     assert main([str(bad), str(clean), "--quiet"]) == 1
     out = capsys.readouterr().out
     assert out.rstrip().endswith("파일 2개, error 1, notice 0")
-    assert "집은 자리 없음" in out
+    assert "오류 없음" in out
 
 
 def testDisableAndOutputFile(tmp_path, capsys):

@@ -25,7 +25,7 @@ status: curated
 | `web/` | 같은 npm 코어를 쓰는 편집기, 개인 기록, GitHub 보관과 사용 안내. 정적 배포는 `operation.webEditor`가 소유한다 |
 | `tests/` | 양방향 테스트와 구조 게이트. `tests/_attempts/` 는 실험 기록 |
 | `hooks/` | 훅 판정기. `writeGate.py` 는 Claude 쓰기 훅이, `commitMessage.py` 는 git commit-msg 훅이 부른다. 얇은 셸은 `.githooks/`, 등록은 `.claude/settings.json` |
-| `scripts/` | 도구. 도메인 셋이다. `derive/` 는 정본에서 파생 자료를 만들고, `fetch/` 는 외부 자료를 받고, `measure/` 는 실측 탐침이다 |
+| `scripts/` | 도구. 도메인 셋이다. `derive/` 는 정본에서 파생 자료를 만들고, `fetch/` 는 외부 자료를 받고, `measure/` 는 실측 실험 스크립트다 |
 | `corpus/` | 기준 말뭉치의 카탈로그와 고정 판. 원문은 `catalogue.toml` 의 `root` (`~/.cache/hanlint/corpus/`) 에 받는다 |
 | `skills/` | 운영 정본과 AI 사용 스킬 |
 | `.cinch.json` | cinch 선언. 켠 스위치와 코드 뿌리의 역할. 설치된 Stop 게이트가 판정하고 `cinch status` 가 보여 준다 |

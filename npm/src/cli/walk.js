@@ -16,7 +16,7 @@ export function isSkipped(name) {
   return name.startsWith(".") || SKIPPED_FOLDERS.includes(name);
 }
 
-/** 폴더 아래 마크다운. 건너뛸 폴더에는 안 들어간다. 경로 문자열 순이라 두 판이 같은 차례를 낸다. @param {string} folder */
+/** 폴더 아래 마크다운. 건너뛸 폴더에는 안 들어간다. 경로 문자열 순이라 두 구현이 같은 차례를 낸다. @param {string} folder */
 export function markdownUnder(folder) {
   /** @type {string[]} */
   const found = [];

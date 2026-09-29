@@ -54,9 +54,9 @@ def prefilledFix(literal, findings: tuple[Finding, ...]) -> str:
 
 
 def sheetRows(sources: Iterable[tuple[str, str]], config: Config, everything: bool = False) -> list[SheetRow]:
-    """(이름표, 소스) 마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error` 만 남긴다.
+    """(라벨, 소스) 마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error` 만 남긴다.
 
-    이름표는 표의 `자리` 가 되는 경로다. 소스를 읽는 쪽 (CLI 는 디스크, 브라우저는 저장소) 이 다르므로
+    라벨은 표의 `자리` 열이 되는 경로다. 소스를 읽는 쪽 (CLI 는 디스크, 브라우저는 저장소) 이 다르므로
     읽기는 밖에 두고 여기서는 문자열만 받는다. 파이썬과 npm 이 같은 행을 내는지는 testSheetAgrees 가 본다.
     """
     rows: list[SheetRow] = []
@@ -181,7 +181,7 @@ def renderSheet(rows: list[SheetRow], preset: str, fileCount: int) -> str:
 
 
 def renderSheetJson(rows: list[SheetRow], preset: str, fileCount: int) -> str:
-    """기계가 읽는 꼴. 에이전트가 표 대신 받는다."""
+    """기계가 읽는 형식. 에이전트가 표 대신 받는다."""
     data = {
         "version": 1,
         "preset": preset,

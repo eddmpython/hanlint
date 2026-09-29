@@ -1,4 +1,4 @@
-"""한국어 위키백과 덤프를 문서 하나가 한 줄인 jsonl 로 떨군다. 말뭉치 재료다.
+"""한국어 위키백과 덤프를 문서 하나가 한 줄인 jsonl 로 내보낸다. 말뭉치 재료다.
 
 무엇을 받나: https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 (약 1.4 GB). 넘겨주기
 (#넘겨주기, #REDIRECT) 는 뺀다. 위키 문법은 기준 말뭉치가 쓰는 normalizeWikitext 로 마크다운 비슷한 산문으로 바꾼다

@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * `hanlint` 를 인자 없이 쳤을 때의 첫 화면. 파이썬 cli/welcome.py 와 같은 글자다.
- * 같은 폴더에서 두 판을 돌리면 결과가 같다. 파일을 찾는 것은 검사와 같은 함수 (walk.markdownUnder) 다.
+ * 같은 폴더에서 두 구현을 돌리면 결과가 같다. 파일을 찾는 것은 검사와 같은 함수 (walk.markdownUnder) 다.
  */
 import { relative, sep } from "node:path";
 

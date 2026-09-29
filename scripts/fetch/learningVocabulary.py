@@ -36,7 +36,7 @@ def parseSource(raw: bytes) -> list[dict]:
     text = raw.decode("cp949").replace("\r\n", "\n").replace("\r", "\n")
     reader = csv.DictReader(io.StringIO(text), delimiter="\t")
     if tuple(reader.fieldnames or ()) != HEADERS:
-        raise ValueError(f"원본 머리줄이 다르다: {reader.fieldnames}")
+        raise ValueError(f"원본 헤더 행이 다르다: {reader.fieldnames}")
     entries: list[dict] = []
     for row in reader:
         if not any((value or "").strip() for value in row.values()):
@@ -78,7 +78,7 @@ def render(entries: list[dict]) -> str:
 
 def parseArgs() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="한국어 학습용 어휘 목록을 UTF-8 제품 데이터로 만든다")
-    parser.add_argument("--input", type=Path, help="내려받아 둔 CP949 원본. 없으면 공식 주소에서 받는다")
+    parser.add_argument("--input", type=Path, help="다운로드해 둔 CP949 원본. 없으면 공식 주소에서 받는다")
     parser.add_argument("--check", action="store_true", help="제품 데이터와 같은지만 확인한다")
     return parser.parse_args()
 

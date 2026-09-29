@@ -9,12 +9,12 @@ from pathlib import Path
 from ...evidence import evidenceLedger
 from .shared import addOutputOption, emit
 
-HELP = "v2 writing brief의 사실별 출처 판·인용 조각 해시·라이선스를 검사한다"
+HELP = "v2 writing brief의 사실별 출처 버전·인용 조각 해시·라이선스를 검사한다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("file", type=Path, help="근거 원장이 든 writing brief v2 JSON")
-    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 형식. 기본 text")
     addOutputOption(parser)
 
 

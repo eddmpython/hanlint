@@ -103,7 +103,7 @@ def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
 
 
 def asJson(entries: list[PrimerEntry], preset: str, register: str) -> str:
-    """기계가 읽는 꼴. prose 는 작법서 본문 그대로이고, 항목마다 규칙, 부류, 고치는 법, 전, 후다."""
+    """기계가 읽는 형식. prose 는 작법서 본문 그대로이고, 항목마다 규칙, 부류, 고치는 법, 전, 후다."""
     rules = [entry.asDict() for entry in entries]
     data = {"version": 1, "preset": preset, "register": register, "prose": proseGuide(), "rules": rules}
     return json.dumps(data, ensure_ascii=False, indent=2)

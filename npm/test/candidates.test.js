@@ -61,8 +61,8 @@ test("text folds notices unless asked", () => {
     finding("longSentence", 7, "글", "길다", null, "notice"),
   ];
   const folded = renderText("글.md", [error, ...notices]);
-  assert.ok(folded.includes("글.md  집은 자리 1, 확인할 자리 3"));
-  assert.ok(folded.includes("확인할 자리 3 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄"));
+  assert.ok(folded.includes("글.md  오류 1건, 확인 권고 3건"));
+  assert.ok(folded.includes("확인 권고 3건 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄"));
   assert.ok(!folded.includes("[endingRepeat] 확인") && folded.includes("[cliche]"));
   const unfolded = renderText("글.md", [error, ...notices], null, null, [], true);
   assert.ok(unfolded.includes("글.md:5  [endingRepeat] 확인") && !unfolded.includes("(접음"));

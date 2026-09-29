@@ -236,7 +236,7 @@ class WritingBrief:
             if revision is not None:
                 revision = checkedString(revision, f"{where} revision")
                 if revision.casefold() in {"head", "latest", "main", "master"}:
-                    raise ValueError(f"{where} revision은 움직이는 별칭이 아니라 고정 판이어야 한다")
+                    raise ValueError(f"{where} revision은 움직이는 별칭이 아니라 고정 버전이어야 한다")
             if checkedAt is not None:
                 checkedAt = checkedString(checkedAt, f"{where} checkedAt")
                 if not CHECKED_AT.fullmatch(checkedAt):
@@ -246,7 +246,7 @@ class WritingBrief:
                 except ValueError as error:
                     raise ValueError(f"{where} checkedAt은 실제 UTC 날짜와 시각이어야 한다") from error
             if revision is None and checkedAt is None:
-                raise ValueError(f"{where}는 revision 또는 checkedAt으로 출처 판을 고정한다")
+                raise ValueError(f"{where}는 revision 또는 checkedAt으로 출처 버전을 고정한다")
             excerpt = checkedString(item["excerpt"], f"{where} excerpt")
             if len(excerpt) > 1000:
                 raise ValueError(f"{where} excerpt는 1,000자 이하다")

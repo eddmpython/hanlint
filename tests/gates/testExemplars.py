@@ -90,7 +90,7 @@ def testShortenCountsTerminalColumnsNotCharacters():
 
 
 def testEveryExemplarFitsOrSaysItIsCut():
-    """답인 `후` 가 소리 없이 잘리면 안 된다. 잘렸으면 shortened 가 참이라 머리줄이 알린다."""
+    """답인 `후` 가 소리 없이 잘리면 안 된다. 잘렸으면 shortened 가 참이라 본보기 제목 줄이 알린다."""
     from hanlint.data.exemplars import ONE_LINE_LIMIT, displayWidth
 
     for exemplar in allExemplars():

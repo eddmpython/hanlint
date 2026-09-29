@@ -43,6 +43,6 @@ def testExampleCountsMatch():
     errors = [finding for finding in findings if finding.severity == "error"]
     notices = [finding for finding in findings if finding.severity != "error"]
     block = exampleBlock()
-    assert f"글.md  집은 자리 {len(errors)}" in block, f"머리줄의 error 수가 실제 {len(errors)}건과 다르다"
+    assert f"글.md  오류 {len(errors)}건" in block, f"요약 줄의 error 수가 실제 {len(errors)}건과 다르다"
     if not notices:
-        assert "확인할 자리" not in block, "예시에 없는 확인할 자리 를 머리줄이 말한다"
+        assert "확인 권고" not in block, "예시에 없는 확인 권고를 요약 줄이 말한다"

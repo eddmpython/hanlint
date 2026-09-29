@@ -1,6 +1,6 @@
 """`hanlint sheet 폴더/ --preset screen` 과 `hanlint sheet apply 시트.md`.
 
-소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 사람이 읽는 한국어 글을 표 하나로 떨군다. 기본은 지적이
+소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 사람이 읽는 한국어 글을 표 하나로 내보낸다. 기본은 지적이
 있는 글만, `--all` 은 전부. 사람이 표의 `고침` 칸을 채우면 `apply` 가 그 자리를 파일에 되돌려 쓴다.
 
 왜 있는가. 화면의 글은 수십 파일에 흩어져 있어 지적을 파일마다 받으면 전체가 안 보인다. 운영자가 표 하나로
@@ -17,7 +17,7 @@ from ...document import SOURCE_SUFFIXES
 from ...report import SheetRow, applyRows, parseSheet, renderSheet, renderSheetJson, sheetRows
 from .shared import addCommonOptions, configFrom, emit, isSkipped
 
-HELP = "소스의 화면 글을 표 하나로 떨구거나 (sheet 폴더/), 고친 표를 파일로 되돌려 쓴다 (sheet apply 시트.md)"
+HELP = "소스의 화면 글을 표 하나로 내보내거나 (sheet 폴더/), 고친 표를 파일로 되돌려 쓴다 (sheet apply 시트.md)"
 APPLY = "apply"
 
 
@@ -29,7 +29,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 
 def sourceUnder(folder: Path) -> list[str]:
-    """폴더 아래 소스 파일. 점 폴더와 node_modules 는 건너뛴다. 경로 문자열 순이라 두 판이 같은 차례를 낸다."""
+    """폴더 아래 소스 파일. 점 폴더와 node_modules 는 건너뛴다. 경로 문자열 순이라 두 구현이 같은 차례를 낸다."""
     found: list[str] = []
     for child in sorted(folder.iterdir(), key=lambda p: p.name):
         if child.is_dir():
@@ -55,7 +55,7 @@ def collectSources(targets: list[str]) -> list[str]:
 
 
 def relativeLabel(path: str) -> str:
-    """작업 폴더 기준 상대 경로, 구분자는 `/`. 두 판이 같은 글자를 내야 한다."""
+    """작업 폴더 기준 상대 경로, 구분자는 `/`. 두 구현이 같은 글자를 내야 한다."""
     try:
         return PurePath(Path(path).resolve().relative_to(Path.cwd().resolve())).as_posix()
     except ValueError:

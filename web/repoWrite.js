@@ -2,7 +2,7 @@
 /**
  * 표의 고침을 GitHub 저장소에 바로 되돌려 쓴다 (저장소 모드 2단계). 파일마다 Contents API 로 읽고, 워커의 `sheetApply`
  * (CLI `sheet apply` 와 같은 applyRows) 로 바꾼 뒤, 같은 브랜치에 파일마다 commit 하나로 쓴다. 토큰은 메모리에만 둔다.
- * 실측: 시트를 내려받고 터미널에서 apply 하는 두 단계가 비개발자에게는 벽이었다 (2026-09-18).
+ * 실측: 시트를 다운로드하고 터미널에서 apply 하는 두 단계가 비개발자에게는 벽이었다 (2026-09-18).
  */
 import { GitHubStore, decodeContent, encodeContent } from "./github.js";
 

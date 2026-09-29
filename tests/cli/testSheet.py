@@ -66,10 +66,10 @@ def testApplyWritesFixesBackAndReportsFailures(tmp_path, capsys):
 def testSheetPrefillsTheFixWhenOneFindingCarriesIt(tmp_path, capsys):
     """고침이 정해진 지적 (개발 어휘, 화면 문장의 진행·실패·요구·완료) 은 고침 칸에 미리 적혀 apply 로 바로 되돌려 쓴다."""
     source = tmp_path / "sample.js"
-    source.write_text("const a = '열린 트랜잭션 3개'\nconst b = '요청을 완료하지 못했습니다'\n", encoding="utf-8")
+    source.write_text("const a = '디렉터리 전체 순회'\nconst b = '요청을 완료하지 못했습니다'\n", encoding="utf-8")
     assert main(["sheet", str(source), "--preset", "screen"]) == 0
     out = capsys.readouterr().out
-    assert "| 열린 트랜잭션 3개 | screenWord:" in out and "| 열린 작업 단위 3개 |" in out
+    assert "| 디렉터리 전체 순회 | screenWord:" in out and "| 폴더 전체 순회 |" in out
     assert "| 요청을 완료하지 못했습니다 | screenSentence:" in out and "| 요청 완료 실패 |" in out
 
 

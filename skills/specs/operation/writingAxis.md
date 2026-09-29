@@ -42,7 +42,7 @@ hanlint 의 작문 축 넷 (arena, guard, blueprint, packet) 과 그 주변 (evi
 `hanlint packet brief.json --purpose draft --output packet.json` 이 구조화 brief 를 draft 패킷으로 만들고
 `hanlint packet 글.md --purpose revise` 가 초안을 수정 패킷으로 만든다. `contract` 는 작문 모델이 지킬 작업과 보존
 조건, `input.brief` 는 유일한 사실 재료, `comparison` 은 진단 자료 (결과의 사실이나 문장 재료로 쓰지 않는다),
-`findings` 는 결정적으로 집은 자리, `guidance` 는 원문 조건이 모두 맞는 승인 패치와 계산된 표면 연산, `verify` 는
+`findings` 는 결정적으로 잡은 지적 (error 와 notice), `guidance` 는 원문 조건이 모두 맞는 승인 패치와 계산된 표면 연산, `verify` 는
 같은 설정으로 다시 확인할 명령이다. v2 실행 패킷은 공통 문형을 싣지 않는다. 문형이 필요하면 error 하나를 사람이
 먼저 정하고 `hanlint patterns --rule <규칙>` 으로 따로 본다.
 
@@ -103,5 +103,5 @@ cases.json` 과 `hanlint entailment evaluate predictions.json --format json` 이
 
 ## 되돌리기
 
-개작이 사실이나 목소리를 잃으면 결과 파일만 이전 판으로 되돌린 뒤 지적을 하나씩 다시 적용한다. 승인 패치가
+개작이 사실이나 목소리를 잃으면 결과 파일만 이전 버전으로 되돌린 뒤 지적을 하나씩 다시 적용한다. 승인 패치가
 원인이면 해당 `[[patches]]`, 표면 치환이 원인이면 해당 `[[operations]]` 항목만 빼면 즉시 재생을 멈춘다.

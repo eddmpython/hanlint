@@ -4,9 +4,9 @@
 같은 줄이 스무 번 나오므로 그 글에 나온 규칙마다 한 짝씩만 낸다.
 
 전과 후를 제 줄에 둔다. 한 줄에 이어 붙였더니 53개 본보기 가운데 23개에서 **답인 `후` 가 잘렸다.**
-잘린 짝이 있으면 전문이 어디 있는지 (`hanlint explain`) 머리줄이 한 번 알린다.
+잘린 짝이 있으면 전문이 어디 있는지 (`hanlint explain`) 본보기 제목 줄이 한 번 알린다.
 
-확인할 자리 (notice) 는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README 를 검사할 때마다 같은
+확인 권고 (notice) 는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README 를 검사할 때마다 같은
 확인 12개 (endingRepeat, outsideProfile) 가 오류와 같은 무게로 나와 눈이 무뎌졌다 (2026-09-18). `--notices` 가 편다.
 """
 
@@ -56,11 +56,11 @@ def candidateLines(findings: list[Finding]) -> list[str]:
 
 
 def noticeLines(notices: list[Finding]) -> list[str]:
-    """접은 확인할 자리. 규칙마다 개수와 줄 번호 한 줄, 규칙은 이름 순이다."""
+    """접은 확인 권고. 규칙마다 개수와 줄 번호 한 줄, 규칙은 이름 순이다."""
     byRule: dict[str, list[int]] = {}
     for finding in notices:
         byRule.setdefault(finding.rule, []).append(finding.line)
-    lines = [f"확인할 자리 {len(notices)} (접음. 다 보려면 --notices)"]
+    lines = [f"확인 권고 {len(notices)}건 (접음. 다 보려면 --notices)"]
     for rule in sorted(byRule):
         numbers = sorted(set(byRule[rule]))
         lines.append(f"  {rule} {len(byRule[rule])}  {', '.join(str(n) for n in numbers)}줄")
@@ -76,10 +76,10 @@ def renderText(
     unfoldNotices: bool = False,
 ) -> str:
     if not findings:
-        return f"{path}  집은 자리 없음"
+        return f"{path}  오류 없음"
     errors = sum(1 for f in findings if f.severity == "error")
     notices = len(findings) - errors
-    summary = f"{path}  집은 자리 {errors}" + (f", 확인할 자리 {notices}" if notices else "")
+    summary = f"{path}  오류 {errors}건" + (f", 확인 권고 {notices}건" if notices else "")
     lines = [summary, ""]
     folded = [f for f in findings if f.severity == "notice"] if not unfoldNotices else []
     shown = [f for f in findings if unfoldNotices or f.severity == "error"]

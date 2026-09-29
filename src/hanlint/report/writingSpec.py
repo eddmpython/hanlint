@@ -33,7 +33,7 @@ class WritingSpecRow:
 
 @dataclass(frozen=True)
 class WritingSpec:
-    """프로파일과 규칙판을 쓰기 전에 읽을 숫자로 편 결과."""
+    """프로파일과 규칙 세트를 쓰기 전에 읽을 숫자로 편 결과."""
 
     preset: str
     register: str
@@ -83,7 +83,7 @@ def writingSpec(
     register: str = HAPNIDA,
     targetChars: int | None = None,
 ) -> WritingSpec:
-    """현재 규칙판을 쓰기 전 숫자 사양으로 편다. 품질 점수나 새 임계는 만들지 않는다."""
+    """현재 규칙 세트를 쓰기 전 숫자 사양으로 편다. 품질 점수나 새 임계는 만들지 않는다."""
     config = config or Config()
     if register not in REGISTERS:
         raise ValueError(f"register 는 {', '.join(REGISTERS)} 가운데 하나다: {register}")
@@ -196,11 +196,11 @@ def writingSpec(
 
 
 def renderWritingSpec(spec: WritingSpec) -> str:
-    """사람이 읽는 꼴. basis는 JSON에서 확인한다."""
+    """사람이 읽는 형식. basis는 JSON에서 확인한다."""
     target = f", {spec.targetChars}자" if spec.targetChars is not None else ""
     lines = [
         f"hanlint spec  {spec.preset} 종류, {spec.register}체{target}. "
-        f"같은 규칙판의 임계와 {spec.profile} 프로파일을 쓰기 전 숫자로 편다"
+        f"같은 규칙 세트의 임계와 {spec.profile} 프로파일을 쓰기 전 숫자로 편다"
     ]
     width = max(len(row.label) for row in spec.rows)
     lines.extend(f"  {row.label:<{width}}  {row.guidance}" for row in spec.rows)

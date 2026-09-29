@@ -44,9 +44,9 @@ def isSkipped(name: str) -> bool:
 
 
 def markdownUnder(folder: Path) -> list[str]:
-    """폴더 아래 마크다운. 건너뛸 폴더에는 안 들어간다. 경로 문자열 순이라 두 판이 같은 차례를 낸다.
+    """폴더 아래 마크다운. 건너뛸 폴더에는 안 들어간다. 경로 문자열 순이라 두 구현이 같은 차례를 낸다.
 
-    경로 문자열로 정렬한다. Path 끼리의 비교는 윈도에서 대소문자를 무시해 npm 판과 갈린다.
+    경로 문자열로 정렬한다. Path 끼리의 비교는 윈도에서 대소문자를 무시해 npm 구현과 갈린다.
     """
     found: list[str] = []
     for child in sorted(folder.iterdir(), key=lambda p: p.name):
@@ -59,7 +59,7 @@ def markdownUnder(folder: Path) -> list[str]:
 
 
 def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] = ("text", "json"), output: bool = True) -> None:
-    """설정과 출력 꼴 옵션. `output` 은 그 명령이 실제로 파일로 쓸 수 있을 때만 켠다.
+    """설정과 출력 형식 옵션. `output` 은 그 명령이 실제로 파일로 쓸 수 있을 때만 켠다.
 
     받아 놓고 안 쓰는 옵션은 거짓말이다. 특히 `--output` 은 조용히 무시되면 사용자가 기다리던 파일이
     안 생긴다 (실측: rules, doctor, fix, watch 넷이 그랬다). 그래서 emit 을 부르는 명령만 받는다.
@@ -75,7 +75,7 @@ def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] =
     parser.add_argument(
         "--disable", action="append", default=[], metavar="RULE", help="이번 실행에서 끌 규칙. 여러 번 줄 수 있다"
     )
-    parser.add_argument("--format", choices=formats, default=formats[0], help=f"출력 꼴. 기본 {formats[0]}")
+    parser.add_argument("--format", choices=formats, default=formats[0], help=f"출력 형식. 기본 {formats[0]}")
     if output:
         addOutputOption(parser)
     parser.add_argument("--no-color", dest="noColor", action="store_true", help="색을 끈다")
@@ -90,7 +90,7 @@ def addOutputOption(parser: argparse.ArgumentParser) -> None:
 def addSeverityOptions(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--severity", choices=SEVERITIES, default="all", help="보여 줄 지적. 기본 all")
     parser.add_argument("--errors-only", dest="errorsOnly", action="store_true", help="--severity error 와 같다")
-    parser.add_argument("--notices", action="store_true", help="접힌 확인할 자리 (notice) 를 다 편다. text 꼴에서만")
+    parser.add_argument("--notices", action="store_true", help="접힌 확인 권고 (notice) 를 다 편다. text 형식에서만")
 
 
 def severityOf(args: argparse.Namespace) -> str:
@@ -147,7 +147,7 @@ def configLabel(config: Config) -> str:
     """출력 첫 줄에 적을 설정 출처. 현재 폴더 아래면 상대 경로, 아니면 그대로.
 
     **경로 구분자는 언제나 `/` 다.** 윈도에서 파이썬은 `str(Path)` 로 역슬래시를 내고 npm 은 받은
-    문자열을 그대로 들어, 설정이 작업 폴더 밖일 때 두 판의 첫 줄과 JSON 의 config 값이 갈렸다
+    문자열을 그대로 들어, 설정이 작업 폴더 밖일 때 두 구현의 첫 줄과 JSON 의 config 값이 갈렸다
     (2026-08-31). 게이트가 늘 tmp_path 의 역슬래시만 넘겨 이 자리를 못 봤다.
     """
     if config.source is None:
@@ -223,7 +223,7 @@ def nextStep(results: dict[str, list[Finding]], fixable: int = 0) -> str:
             return f"다음: error {len(errors)}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule {rule}"
         return f"다음: error {len(errors)}건을 고친다. 규칙이 왜 있는지는 hanlint explain {rule}"
     if notices:
-        return f"다음: error 0. 확인할 자리 {notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다"
+        return f"다음: error 0. 확인 권고 {notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다"
     return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다"
 
 

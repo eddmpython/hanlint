@@ -14,12 +14,12 @@ Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --repl
 
 ## 결과
 
-`hanlint 글.md` 가 `집은 자리 없음` 을 내고 종료 코드 0 인 상태. 그러고 나서야 사람과 LLM 평가로 넘어간다.
+`hanlint 글.md` 가 `오류 없음` 을 내고 종료 코드 0 인 상태. 그러고 나서야 사람과 LLM 평가로 넘어간다.
 
 ## 순서
 
 1. **종류를 맞춘다.** 블로그가 아니면 `--preset report|docs|guide|essay|fiction|encyclopedia` 를 붙인다. 화면의 글
-   (단추, 이름표, 상태, 빈 상태) 은 `--preset screen` 이다. 소스 폴더의 화면 글을 한 표로 보려면 `hanlint sheet src/ --preset screen`. 저장소에
+   (버튼, 라벨, 상태, 빈 상태) 은 `--preset screen` 이다. 소스 폴더의 화면 글을 한 표로 보려면 `hanlint sheet src/ --preset screen`. 저장소에
    `hanlint.toml` 이 있으면 그것을 따른다. 참고 문서에 `noQuestion` 이 도는 것 같은 지적은 규칙이 아니라 종류가
    안 맞는 것이다. 한 폴더에 종류가 섞여 있으면 종류마다 나눠 돌린다. `hanlint.toml` 을 만들지는 사용자가 정한다.
 2. **기계가 고칠 것을 먼저 적용한다.** `hanlint fix 글.md`. 번역투, 명령형 뒤 마침표, 이중 부정, 인용이 아닌 이중
@@ -57,5 +57,5 @@ Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --repl
 절 구조가 요구사항이면 Reader Contract (`hanlint contract init`, `hanlint check`), 조직 문체와 견주려면
 `hanlint profile build`, 한국어 학습자 독자면 `hanlint terms`, 승인한 고침을 다음 글에 남기려면 `hanlint learn`.
 전면 개작 전에 숫자 확인표가 필요하면 `hanlint spec --preset <종류> --chars <글자 수>`를 명시적으로 부른다.
-절차는 `skills/specs/start/readerContract.md` 와 `skills/specs/operation/writingAxis.md` 가 소유한다. 옵션은 파이썬 판의
-`hanlint <명령> --help` 와 README 의 명령 표에 있다 (npm 판은 루트 `hanlint --help` 만 낸다).
+절차는 `skills/specs/start/readerContract.md` 와 `skills/specs/operation/writingAxis.md` 가 소유한다. 옵션은 파이썬 구현의
+`hanlint <명령> --help` 와 README 의 명령 표에 있다 (npm 구현은 루트 `hanlint --help` 만 낸다).

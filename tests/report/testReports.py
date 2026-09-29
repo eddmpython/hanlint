@@ -32,14 +32,14 @@ SAMPLE = """## 첫 절
 def testTextReportHasFileLineAndFix():
     findings = lintText(SAMPLE, path="글.md")
     text = renderText("글.md", findings)
-    assert text.startswith("글.md  집은 자리")
+    assert text.startswith("글.md  오류")
     assert "글.md:3  [cliche]" in text
     assert "고친 뒤: 모든 분야에서 기준이 필요합니다." in text
     assert not text.endswith(chr(10))
 
 
 def testTextReportWhenClean():
-    assert renderText("글.md", []) == "글.md  집은 자리 없음"
+    assert renderText("글.md", []) == "글.md  오류 없음"
 
 
 def testNoticeFixIsOnlyAReviewAlternative():
@@ -168,7 +168,7 @@ def testJsonReportCarriesSafeOperationOutsideFindings():
 
 
 def testTextReportFoldsNoticesUnlessAsked():
-    """확인할 자리는 기본으로 규칙과 줄 번호 한 줄로 접히고 본보기에도 안 낀다. unfoldNotices 가 편다."""
+    """확인 권고는 기본으로 규칙과 줄 번호 한 줄로 접히고 본보기에도 안 낀다. unfoldNotices 가 편다."""
     from hanlint.rules import Finding
 
     error = Finding("cliche", 3, "핵심은 속도입니다.", "상투어다", "속도가 기준입니다.", "error", "sentence", 0)
@@ -178,8 +178,8 @@ def testTextReportFoldsNoticesUnlessAsked():
         Finding("longSentence", 7, "글", "길다", None, "notice", "sentence", 3),
     ]
     folded = renderText("글.md", [error, *notices])
-    assert "글.md  집은 자리 1, 확인할 자리 3" in folded
-    assert "확인할 자리 3 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄" in folded
+    assert "글.md  오류 1건, 확인 권고 3건" in folded
+    assert "확인 권고 3건 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄" in folded
     assert "[endingRepeat] 확인" not in folded and "[cliche]" in folded
     unfolded = renderText("글.md", [error, *notices], unfoldNotices=True)
     assert "글.md:5  [endingRepeat] 확인" in unfolded and "(접음" not in unfolded

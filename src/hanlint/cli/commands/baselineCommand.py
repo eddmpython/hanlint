@@ -41,7 +41,7 @@ def run(args: argparse.Namespace) -> int:
     target = args.output or Path(config.baseline or DEFAULT_NAME)
     results = findingsOf(files, config)
     baseline = prune(load(target), results) if args.prune else build(results, target)
-    # 팀이 커밋해 함께 쓰는 파일이라 줄끝을 LF 로 고정한다. 윈도의 기본 변환이면 두 판의 파일이 달라진다
+    # 팀이 커밋해 함께 쓰는 파일이라 줄끝을 LF 로 고정한다. 윈도의 기본 변환이면 두 구현의 파일이 달라진다
     target.write_text(render(baseline) + "\n", encoding="utf-8", newline="\n")
     what = "잠금을 줄였다" if args.prune else "지적을 잠갔다"
     emit(

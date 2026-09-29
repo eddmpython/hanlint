@@ -126,7 +126,7 @@ def testBothClisGiveTheSameOutput(tmp_path):
         ["--format", "json"],
         ["--format", "text", "--no-color"],
         ["--format", "compact", "--errors-only"],
-        # 프리셋은 어느 규칙이 도는지를 바꾼다. 두 판이 같은 묶음을 끄는지 여기서 본다.
+        # 프리셋은 어느 규칙이 도는지를 바꾼다. 두 구현이 같은 묶음을 끄는지 여기서 본다.
         ["--format", "compact", "--preset", "docs"],
         ["--format", "compact", "--preset", "report"],
     )
@@ -141,7 +141,7 @@ def testBothClisGiveTheSameOutput(tmp_path):
     # 0.813 으로 갈렸다 (실측: 말뭉치 essay/2f729a83442d66d6). 절반인 값이 지문에 하나는 있어야 이 게이트가 그것을 본다.
     share = tmp_path / "share.md"
     share.write_text("## 절\n\n" + "표를 만듭니다. " * 13 + "표를 만든다. " * 3 + "\n", encoding="utf-8")
-    # 전각 숫자 ２０１２ 는 파이썬의 숫자 정규식에는 숫자였고 JS 에는 아니었다. 두 판 다 ASCII 만 수로 본다 (검증 실측).
+    # 전각 숫자 ２０１２ 는 파이썬의 숫자 정규식에는 숫자였고 JS 에는 아니었다. 두 구현 다 ASCII 만 수로 본다 (검증 실측).
     digits = tmp_path / "digits.md"
     digits.write_text(
         "## 절\n\n２０１２ 대 서버 장비 점검 결과 보고를 합니다. ２０１２년 서버 점검 결과를 씁니다.\n", encoding="utf-8"
@@ -182,7 +182,7 @@ def testRuleListsAgree():
     assert python.returncode == node.returncode == 2
     assert "doubleNegative, doublePassive" in node.stderr
 
-    # 쓰기 전에 읽는 한 장. AI 가 두 판 어느 쪽으로 받아도 같은 글자를 읽어야 한다.
+    # 쓰기 전에 읽는 한 장. AI 가 두 구현 어느 쪽으로 받아도 같은 글자를 읽어야 한다.
     for preset in PRESET_NAMES:
         for register in REGISTERS:
             python, node = runBoth(["primer", "--preset", preset, "--register", register])
@@ -206,7 +206,7 @@ def testRuleListsAgree():
     assert python.returncode == node.returncode == 2
     assert python.stderr == node.stderr
 
-    # 기계가 읽는 꼴. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 판이 같아야 한다.
+    # 기계가 읽는 형식. 에이전트가 규칙과 본보기와 틀을 한 덩어리로 받는 자리라 두 구현이 같아야 한다.
     for args in (
         ["rules", "--format", "json"],
         ["explain", "nounPile", "--format", "json", "--register", "합니다"],
@@ -312,7 +312,7 @@ def testSurfaceOperationSelectionAgrees(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testProtectedSurfacesAgreeOnKoreanPathsAndLinks(tmp_path):
-    """한글이 든 경로와 링크 목적지를 두 판이 같이 보호한다.
+    """한글이 든 경로와 링크 목적지를 두 구현이 같이 보호한다.
 
     앞 시험은 경로도 링크도 없는 문장만 봐서 두 구멍을 놓쳤다. JS 의 `\\w` 는 /u 를 붙여도 ASCII 뿐이라
     npm 만 `docs/렌더/index.md` 안을 치환했고 (말뭉치 32,274문장에서 280건), 링크 목적지 자리를
@@ -328,7 +328,7 @@ def testProtectedSurfacesAgreeOnKoreanPathsAndLinks(tmp_path):
     assert python.returncode == node.returncode, node.stderr
     assert python.stdout == node.stdout
     files = json.loads(python.stdout)["files"]
-    # 한글 경로 안의 낱말은 두 판 다 사실 표면이라 기권한다
+    # 한글 경로 안의 낱말은 두 구현 다 사실 표면이라 기권한다
     assert "operations" not in files[0]
     # 링크 글자는 고치고 목적지는 그대로 둔다
     assert files[1]["operations"][0]["operation"]["result"] == "첫 [렌더링](렌더) 결과입니다."
@@ -336,7 +336,7 @@ def testProtectedSurfacesAgreeOnKoreanPathsAndLinks(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testInitPresetsAgree(tmp_path):
-    # 같은 경로에 두 판을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
+    # 같은 경로에 두 구현을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
     for preset in ("blog", "report", "docs"):
         pythonPath = tmp_path / f"{preset}Python.toml"
         nodePath = tmp_path / f"{preset}Node.toml"
@@ -362,7 +362,7 @@ def testInitPresetsAgree(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testBaselineAgrees(tmp_path):
-    """잠금 파일은 팀이 커밋해 두 판이 함께 읽는 파일이라 글자까지 같아야 한다."""
+    """잠금 파일은 팀이 커밋해 두 구현이 함께 읽는 파일이라 글자까지 같아야 한다."""
     folder = tmp_path / "글들"
     folder.mkdir()
     (folder / "하나.md").write_text("## 절\n\n핵심은 속도입니다. 파일을 엽니다.\n", encoding="utf-8")
@@ -390,7 +390,7 @@ def testBaselineAgrees(tmp_path):
         assert python.returncode == node.returncode == 0, node.stderr
         assert python.stdout == node.stdout, extra
 
-    # 잠긴 문장을 고치면 두 판 모두 새 지적으로 낸다. 잠금이 새 결함을 감추지 않는다는 계약이다.
+    # 잠긴 문장을 고치면 두 구현 모두 새 지적으로 낸다. 잠금이 새 결함을 감추지 않는다는 계약이다.
     (folder / "하나.md").write_text("## 절\n\n핵심은 그저 속도입니다. 파일을 엽니다.\n", encoding="utf-8")
     python, node = runBoth([str(folder), "--baseline", str(pythonLock), "--format", "compact"])
     assert python.returncode == node.returncode == 1, node.stderr
@@ -401,7 +401,7 @@ def testBaselineAgrees(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testWalkAndGuardsAgree(tmp_path):
-    """걷기 규칙과 막는 말. 두 판이 같은 파일을 고르고 같은 말로 막아야 한다."""
+    """걷기 규칙과 막는 말. 두 구현이 같은 파일을 고르고 같은 말로 막아야 한다."""
     (folder := tmp_path / "블로그").mkdir()
     (folder / "posts").mkdir()
     (folder / "posts" / "글.md").write_text("## 절\n\n핵심은 속도입니다. 파일을 엽니다.\n", encoding="utf-8")
@@ -549,7 +549,7 @@ def testReaderContractInitGivesTheSameDraft(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testConfigLabelAgreesWhenConfigIsOutsideTheWorkingFolder(tmp_path):
-    """설정이 작업 폴더 밖에 있고 경로를 슬래시로 줘도 두 판의 첫 줄과 JSON config 값이 같다.
+    """설정이 작업 폴더 밖에 있고 경로를 슬래시로 줘도 두 구현의 첫 줄과 JSON config 값이 같다.
 
     파이썬은 `str(Path)` 로 역슬래시를 내고 npm 은 받은 문자열을 그대로 들어 윈도에서 갈렸다. 게이트가
     늘 `tmp_path` 의 역슬래시만 넘겨 이 자리를 못 봤다 (2026-08-31).
@@ -585,7 +585,7 @@ def testConfigLabelAgreesWhenConfigIsOutsideTheWorkingFolder(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testSheetAgrees(tmp_path):
-    """소스의 글 시트와 되돌려 쓰기. 표와 JSON 과 apply 의 보고가 두 판에서 같은 글자다."""
+    """소스의 글 시트와 되돌려 쓰기. 표와 JSON 과 apply 의 보고가 두 구현에서 같은 글자다."""
     folder = "tests/fixtures/sheet"
     for extra in ([], ["--format", "json"], ["--all"], ["--all", "--format", "json"]):
         python, node = runBoth(["sheet", folder, "--preset", "screen", *extra])
@@ -606,7 +606,7 @@ def testSheetAgrees(tmp_path):
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testUsageIndexAgrees(tmp_path):
-    """용례 색인. 두 판이 같은 글에서 같은 바이트의 색인을 만들고, 같은 질의에 같은 글자를 낸다."""
+    """용례 색인. 두 구현이 같은 글에서 같은 바이트의 색인을 만들고, 같은 질의에 같은 글자를 낸다."""
     from hanlint.usage.sentences import FILES
 
     corpus = "tests/fixtures/usage/corpus"

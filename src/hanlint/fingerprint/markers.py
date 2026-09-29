@@ -11,7 +11,7 @@ from functools import cache
 from ..data import loadLines, loadPatterns
 
 TRAILING = re.compile(r"[\s.?!\"'”’)\]]+$")
-# 숫자는 ASCII 만이다. 파이썬 \d 는 전각 숫자 (２０１２) 도 받고 JS \d 는 안 받아 두 판이 갈렸다 (검증 실측). [0-9] 로 맞춘다.
+# 숫자는 ASCII 만이다. 파이썬 \d 는 전각 숫자 (２０１２) 도 받고 JS \d 는 안 받아 두 구현이 갈렸다 (검증 실측). [0-9] 로 맞춘다.
 ASCII_DIGITS = re.compile(r"^[0-9]+$")
 NUMBER = re.compile(r"[0-9]+(?:[.,][0-9]+)*")
 NUMERAL = re.compile(r"[0-9][0-9,]*(?:\.[0-9]+)?")

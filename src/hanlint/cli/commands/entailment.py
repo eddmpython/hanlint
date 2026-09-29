@@ -15,11 +15,11 @@ HELP = "사람 합의 한국어 근거 쌍으로 외부 평가기의 함의 판�
 def addParser(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="entailmentCommand", required=True)
     cases = commands.add_parser("cases", help="gold를 뺀 고정 평가 사례 36개를 낸다")
-    cases.add_argument("--format", choices=("json",), default="json", help="출력 꼴. json만 지원한다")
+    cases.add_argument("--format", choices=("json",), default="json", help="출력 형식. json만 지원한다")
     addOutputOption(cases)
     evaluate = commands.add_parser("evaluate", help="36개 예측과 사람 합의 gold의 집계 지표를 낸다")
     evaluate.add_argument("file", type=Path, help="entailment predictions JSON")
-    evaluate.add_argument("--format", choices=("text", "json"), default="text", help="출력 꼴. 기본 text")
+    evaluate.add_argument("--format", choices=("text", "json"), default="text", help="출력 형식. 기본 text")
     addOutputOption(evaluate)
 
 

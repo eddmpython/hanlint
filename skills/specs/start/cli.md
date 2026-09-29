@@ -56,7 +56,7 @@ hanlint - --path 초안.md
 ```text
 설정: 기본값, 프리셋 blog
 
-글.md  집은 자리 1, 확인할 자리 1
+글.md  오류 1건, 확인 권고 1건
 
 글.md:1  [doublePassive]
   결과가 저장되어집니다.
@@ -83,9 +83,9 @@ hanlint - --path 초안.md
 
 ## 화면의 글을 표 하나로 보기
 
-앱의 화면 글 (단추, 이름표, 상태, 안내) 은 수십 소스 파일에 흩어져 있어 파일마다 지적을 받으면 전체가 안 보인다.
+앱의 화면 글 (버튼, 라벨, 상태, 안내) 은 수십 소스 파일에 흩어져 있어 파일마다 지적을 받으면 전체가 안 보인다.
 `sheet` 는 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py, html, htm, vue, svelte) 을 전부 뒤져 한국어 문자열과
-태그 사이 글, 속성값을 표 하나로 떨군다. 같은 줄에서 인라인 태그 (`<strong>`, `<a>`) 만 사이에 둔 글은 한 마디로 잇고
+태그 사이 글, 속성값을 표 하나로 내보낸다. 같은 줄에서 인라인 태그 (`<strong>`, `<a>`) 만 사이에 둔 글은 한 마디로 잇고
 (원문은 태그째, 검사는 태그 없이), 마크업 파일의 여러 줄 문단은 줄마다 한 마디다. `<script>` 안은 코드라 따옴표 글만 본다.
 
 ```console
@@ -101,7 +101,7 @@ hanlint sheet apply 시트.md
 일은 코드를 열어 손으로 한다. 주석과 개발자용 줄 (`new Error(`, `console.`, `assert`) 은 표에 안 나온다.
 
 설치 없이 보려면 [브라우저 편집기](https://eddmpython.github.io/hanlint/) 의 원문 칸에 공개 GitHub 저장소 주소를 붙여
-넣는다. 같은 표가 뜨고 내려받은 시트를 `hanlint sheet apply` 가 그대로 읽는다.
+넣는다. 같은 표가 뜨고 다운로드한 시트를 `hanlint sheet apply` 가 그대로 읽는다.
 
 ## 실제 글에서 낱말의 쓰임 보기
 
@@ -130,18 +130,18 @@ report 용례 (문서 3193편, 문장 1056316개): 리스부채
 색인은 사용자 기계 (`~/.cache/hanlint/usage/<종류>/`) 에만 있고 패키지에 실리지 않는다. `build` 는 폴더 (하위 포함) 의
 txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하나, `{"source": …, "text": …}`) 을 읽어 마침표로 끝난
 한국어 문장만 색인하고, 같은 문장은 하나로 접어 몇 편의 문서에 나왔는지 센다. 문서 수만큼씩 조각으로 내려 병합하므로
-위키백과 규모 (문서 수십만, 문장 천만) 도 만든다. node 판이 파이썬보다 빠르다 (`npx hanlint usage build …`). 결과
+위키백과 규모 (문서 수십만, 문장 천만) 도 만든다. node 구현이 파이썬보다 빠르다 (`npx hanlint usage build …`). 결과
 줄마다 문서 수와 출처 (파일 이름이나 글 제목) 가 붙는다. 사업보고서는 `scripts/fetch/dartReports.py` 가 받고 출처는
 접수번호라 `https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<접수번호>` 로 원문을 연다. 위키백과는
-`scripts/fetch/koWikipedia.py` 가 덤프를 받아 jsonl 로 떨군다. 색인이 없으면 있는 종류를 알리고 2 로 끝난다. 규칙
+`scripts/fetch/koWikipedia.py` 가 덤프를 받아 jsonl 로 내보낸다. 색인이 없으면 있는 종류를 알리고 2 로 끝난다. 규칙
 쪽의 용례 (nounPile 과 사전 규칙이 접는 관용) 는 `operation.usage` 가 설명한다.
 
 ## 프리셋과 설정
 
 글의 목적이 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
 `encyclopedia`, `chat`, `screen`을 지원한다. `chat`은 대화 답변용이며 문서의 짜임을 재는 규칙을 줄인다. `screen`은
-화면의 글 (단추, 이름표, 상태, 빈 상태) 용이며 낱말 자리의 문장, 화면 해설, 접객 말투, 개발 어휘를 잡고 산문 규칙은
-끈다. 프로젝트가 한 이름으로 정한 낱말 (데이터 → 자료) 은 설정의 `dictionary.screenWord` 에 적는다. 산문 프리셋에서
+화면의 글 (버튼, 라벨, 상태, 빈 상태) 용이며 낱말 자리의 문장, 화면 해설, 접객 말투, 개발 어휘를 잡고 산문 규칙은
+끈다. 프로젝트가 한 이름으로 정한 낱말 (회사 → 수임처) 은 설정의 `dictionary.screenWord` 에 적는다. 산문 프리셋에서
 화면 해설과 접객 말투와 낱말만 잡으려면 `enforceStyle = ["screenNarration", "screenTone", "screenWord"]` 을 둔다.
 
 | 프리셋 | 글의 목적 | 끄는 규칙 | 견주는 프로파일 |
@@ -221,7 +221,7 @@ hanlint 글.md --format github --errors-only
 ```
 
 `compact`는 지적을 한 줄씩 보여 주고, `json`은 위치와 이유, 본보기와 제공할 수 있는 후보를 담는다.
-`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 notice 표시를 제외한다. 기본 text 출력은 확인할 자리
+`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 notice 표시를 제외한다. 기본 text 출력은 확인 권고
 (notice) 를 규칙과 줄 번호 한 줄로 접는다. `--notices` 가 다 편다.
 설정 안내 같은 주변 출력을 줄이려면 `--quiet`를 사용한다.
 
@@ -252,10 +252,10 @@ hanlint 글.md --format github --errors-only
 | `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |
 | `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 작법서 일곱 줄과, 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
-| `hanlint spec --preset blog --chars 800` | 같은 규칙판과 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
+| `hanlint spec --preset blog --chars 800` | 같은 규칙 세트와 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
 | `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
 | `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
-| `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py, html, vue, svelte) 의 한국어 글을 표 하나로 떨군다. `--all` 은 지적 없는 글도 | 예 |
+| `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py, html, vue, svelte) 의 한국어 글을 표 하나로 내보낸다. `--all` 은 지적 없는 글도 | 예 |
 | `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 자리에 되돌려 쓴다. `--dry-run` 은 보기만 | 예 |
 | `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 낱말이 함께 쓰는 말 (뒤 용언, 앞뒤 명사, 문서 수) 과 쓰인 문장을 BM25 순서로. `--limit`, `--format json` | 예 |
 | `hanlint usage build report 글들/` | 폴더의 txt, md, jsonl 로 사용자 기계에 문장 색인을 만든다. 위키백과 규모도 된다 | 예 |
@@ -269,7 +269,7 @@ hanlint 글.md --format github --errors-only
 | `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 | 아니오 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 | 아니오 |
 | `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다 | 아니오 |
-| `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 판·인용 조각 해시·라이선스를 검증한다 | 아니오 |
+| `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 버전·인용 조각 해시·라이선스를 검증한다 | 아니오 |
 | `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류·기권 지표를 집계한다 | 아니오 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다 | 아니오 |
 | `hanlint arena panel / assign / review-page / assignment-record` | 같은 사실의 기준과 후보를 평가자별 단일 HTML로 눈가림하고, 회수한 독립 평가를 원래 방향으로 잠근다 | 아니오 |

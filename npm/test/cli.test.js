@@ -38,7 +38,7 @@ test("lint exit codes and text", () => {
   assert.ok(result.out.includes(`${bad}:3  [cliche]`));
   const ok = run([clean, "--quiet"]);
   assert.equal(ok.code, 0);
-  assert.ok(ok.out.includes("집은 자리 없음") && !ok.out.includes("설정:"));
+  assert.ok(ok.out.includes("오류 없음") && !ok.out.includes("설정:"));
 });
 
 test("hook returns non-blocking context only for findings", () => {
