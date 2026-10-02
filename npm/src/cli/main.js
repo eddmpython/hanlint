@@ -787,7 +787,7 @@ function renderPrimer(entries, preset, register) {
     lines.push("", `${title} (${inside.length})`);
     for (const entry of inside) lines.push(`${entry.rule}  ${entry.fix}  전: ${flat(entry.before)}  후: ${flat(entry.after)}`);
   }
-  lines.push("", "후는 모두 error 0 으로 통과한다. 본보기의 치환을 다른 문맥에 쓰지 않는다. 규칙을 더 보려면 hanlint explain <규칙>");
+  lines.push("", "본보기는 해당 문맥의 예시다. 용어와 사실을 보존하고, 치환을 다른 문맥에 적용하지 않는다. 규칙을 더 보려면 hanlint explain <규칙>");
   return lines.join("\n");
 }
 

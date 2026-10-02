@@ -71,9 +71,10 @@ export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR, 
  * @param {string} dictionary
  * @param {string} ruleName
  * @param {string} [severity]
+ * @param {string | null} [builtinSeverity]
  * @returns {import("../finding.js").Finding[]}
  */
-export function overridingFindings(doc, dictionary, ruleName, severity = ERROR) {
+export function overridingFindings(doc, dictionary, ruleName, severity = ERROR, builtinSeverity = null) {
   const findings = [];
   for (const sentence of doc.sentences) {
     /** @type {Map<string, import("../../fingerprint/dictionaries.js").DictionaryMatch>} */
@@ -81,7 +82,7 @@ export function overridingFindings(doc, dictionary, ruleName, severity = ERROR) 
     for (const match of sentence.matches) {
       if (match.dictionary === dictionary) chosen.set(`${match.start}:${match.end}`, match);
     }
-    for (const match of [...chosen.values()].sort((a, b) => a.start - b.start)) findings.push(matchFinding(sentence, match, ruleName, severity));
+    for (const match of [...chosen.values()].sort((a, b) => a.start - b.start)) findings.push(matchFinding(sentence, match, ruleName, match.pattern && builtinSeverity ? builtinSeverity : severity));
   }
   return findings;
 }

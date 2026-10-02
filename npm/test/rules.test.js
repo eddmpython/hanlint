@@ -16,6 +16,18 @@ const RULE_DIRS = ["sentence", "paragraph", "structure", "document", "orthograph
 const EM_DASH = String.fromCharCode(0x2014);
 const EN_DASH = String.fromCharCode(0x2013);
 
+test("technical names require context while explicit project vocabulary stays enforceable", () => {
+  for (const text of ["쿼리 실행", "원자적 교체", "릴리스 관리", "스키마 확인", "뷰포트 설정"]) {
+    const findings = lintText(text, configFromMapping({ preset: "screen" })).filter(f => f.rule === "screenWord");
+    assert.ok(findings.length);
+    assert.ok(findings.every(f => f.severity === "notice" && f.fix === null && f.replacement === null));
+  }
+  const config = configFromMapping({ preset: "screen", dictionary: { screenWord: [{ pattern: "회사{조사}", fix: "수임처" }] } });
+  const findings = lintText("회사 선택", config).filter(f => f.rule === "screenWord");
+  assert.equal(findings[0].severity, "error");
+  assert.equal(findings[0].fix, "수임처 선택");
+});
+
 /** fixture 의 자리표시자. @param {string} text */
 function expandTokens(text) {
   return text.replaceAll("{em}", EM_DASH).replaceAll("{en}", EN_DASH).replaceAll("{dot}", ".");

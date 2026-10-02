@@ -56,7 +56,9 @@ def dictionaryFindings(
             yield matchFinding(sentence, match, ruleName, severity)
 
 
-def overridingFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:
+def overridingFindings(
+    doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR, builtinSeverity: str | None = None
+) -> Iterator[Finding]:
     """같은 자리에 항목이 둘이면 뒤의 것이 이긴다.
 
     기본 사전 뒤에 설정의 항목이 오므로 프로젝트가 기본 항목의 낱말을 다른 고침으로 덮는 자리다 (컴포넌트 → 차트).
@@ -68,7 +70,7 @@ def overridingFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
             if match.dictionary == dictionary:
                 chosen[(match.start, match.end)] = match
         for match in sorted(chosen.values(), key=lambda m: m.start):
-            yield matchFinding(sentence, match, ruleName, severity)
+            yield matchFinding(sentence, match, ruleName, builtinSeverity if match.pattern and builtinSeverity else severity)
 
 
 def firstMatchFindings(doc: DocumentPrint, dictionary: str, ruleName: str, severity: str = ERROR) -> Iterator[Finding]:

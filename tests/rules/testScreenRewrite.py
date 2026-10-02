@@ -55,3 +55,17 @@ def testMeaningChoicesStayWithThePerson(text: str):
     """입력 요청과 일반 종결어미는 뜻을 골라야 하므로 제안이 없다. 지적은 그대로다."""
     finding = screenSentence(text)
     assert finding.fix is None and finding.fragment is None and finding.replacement is None
+
+
+@pytest.mark.parametrize("text", ["쿼리 실행", "원자적 교체", "릴리스 관리", "스키마 확인", "뷰포트 설정"])
+def testTechnicalNamesNeedContextRatherThanReplacement(text: str):
+    findings = [f for f in runAll(buildFingerprint(parseMarkdown(text), CONFIG), CONFIG) if f.rule == "screenWord"]
+    assert findings
+    assert all(f.severity == "notice" and f.fix is None and f.replacement is None for f in findings)
+
+
+def testExplicitProjectVocabularyStillApplies():
+    config = Config(preset="screen", dictionary={"screenWord": [{"pattern": "회사{조사}", "fix": "수임처"}]})
+    findings = [f for f in runAll(buildFingerprint(parseMarkdown("회사 선택"), config), config) if f.rule == "screenWord"]
+    assert len(findings) == 1
+    assert findings[0].severity == "error" and findings[0].fix == "수임처 선택"

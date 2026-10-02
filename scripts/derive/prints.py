@@ -1,7 +1,7 @@
 """기준 말뭉치의 지문 표. 글마다 지문을 한 번 만들어 문장, 문단, 글을 한 행씩 Parquet 로 둔다.
 
-기준선 (buildBaselines) 과 실험 스크립트가 글을 다시 세지 않고 이 표를 묻는다. 표는 말뭉치 뿌리 (`corpus/catalogue.toml` 의 `root`) 아래
-`prints/` 에 두고 제품은 읽지 않는다. polars 는 dependency group `corpus` 다.
+기준선 (buildBaselines) 과 실험 스크립트가 글을 다시 세지 않고 이 표를 묻는다. 표는 말뭉치 뿌리
+(`corpus/catalogue.toml` 의 `root`) 아래 `prints/` 에 두고 제품은 읽지 않는다. polars 는 dependency group `corpus` 다.
 """
 
 from __future__ import annotations
