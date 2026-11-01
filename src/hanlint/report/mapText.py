@@ -1,7 +1,7 @@
 """지문 지도의 터미널 꼴.
 
 문장 하나가 셀 하나. 문단 경계는 공백, 절마다 줄을 바꾼다. 정상은 무채색 블록이고 구멍이 있는 셀은 구멍
-종류의 기호와 색이다. 문단 구멍은 셀 묶음 아래 밑줄, 절과 글 구멍은 배지. 색은 ANSI 256 이고 기호로 이중
+종류의 기호와 색이다. 문단 구멍은 셀 묶음 아래 밑줄, 절과 글 구멍은 배지. 색은 ANSI 256이고 기호로 이중
 코딩하므로 색이 없어도 읽힌다.
 """
 
@@ -57,7 +57,7 @@ def renderMap(doc: DocumentPrint, findings: list[Finding], color: bool = False) 
     name = doc.path or "글"
     badges = [worst(grouped.get(("document", at), [])) for at in {f.at for f in findings if f.scope == "document"}]
     badgeText = "  ".join(
-        f"{paint(kindOf(f.rule).symbol, kindOf(f.rule), color)} {f.rule} ({f.line}행)" for f in badges if f is not None
+        f"{paint(kindOf(f.rule).symbol, kindOf(f.rule), color)} {f.rule} ({f.line}줄)" for f in badges if f is not None
     )
     header = f"{name}  문장 {len(doc.sentences)}  문단 {len(doc.paragraphs)}  절 {len(doc.bodySections)}"
     lines.append(header + (f"        배지: {badgeText}" if badgeText else ""))
@@ -70,7 +70,7 @@ def renderMap(doc: DocumentPrint, findings: list[Finding], color: bool = False) 
             continue
         title = "도입" if section.isIntro else section.title
         sectionFinding = worst(grouped.get(("section", section.index), []))
-        # 기호는 제 칸을 갖는다. 전에는 제목의 첫 글자를 덮어써서 `단계별` 이 `S계별` 이 됐다
+        # 기호는 제 칸을 갖는다. 전에는 제목의 첫 글자를 덮어써서 `단계별`이 `S계별`이 됐다
         mark = " "
         if sectionFinding:
             kind = kindOf(sectionFinding.rule)
@@ -100,9 +100,9 @@ def renderMap(doc: DocumentPrint, findings: list[Finding], color: bool = False) 
                 continue
             kind = kindOf(finding.rule)
             marker = paint(UNDERLINE * (end - start), kind, color)
-            label = f" {paint(kind.symbol, kind, color)} {kind.name} {finding.rule} ({finding.line}행)"
+            label = f" {paint(kind.symbol, kind, color)} {kind.name} {finding.rule} ({finding.line}줄)"
             lines.append(" " * start + marker + label)
-    # 기호만 나온 자리 (문장 칸과 절 배지) 를 위한 범례. 이름 없는 글자를 지도에 두지 않는다
+    # 기호만 나온 자리 (문장 칸과 절 배지)를 위한 범례. 이름 없는 글자를 지도에 두지 않는다
     if shown:
         legend = "  ".join(f"{paint(kind.symbol, kind, color)} {kind.name}" for kind in sorted(shown, key=lambda k: k.symbol))
         lines.insert(legendAt, f"기호: {legend}")

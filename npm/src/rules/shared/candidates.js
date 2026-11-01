@@ -1,5 +1,5 @@
 // @ts-check
-/** 파이썬 rules/shared/candidates.py의 투영. 후보에는 점수와 순위가 없다. */
+/** 파이썬 rules/shared/candidates.py와 같은 일을 한다. 후보에는 점수와 순위가 없다. */
 import { HAEYO, HANDA, HAPNIDA, REGISTERS, conjugate, fitJosa } from "../../analysis/grammar/index.js";
 import * as hangul from "../../analysis/grammar/hangul.js";
 import { decomposePassive } from "../../analysis/grammar/voice.js";
@@ -123,7 +123,7 @@ export function doublePassiveCandidates(text, passives) {
     const candidateText = reducedPassiveText(text, surface, voice.reduced);
     if (candidateText === null || seen.has(candidateText)) continue;
     seen.add(candidateText);
-    candidates.push({ text: candidateText, why: `\`${surface}\`의 피동 겹을 하나로 줄인다` });
+    candidates.push({ text: candidateText, why: `\`${surface}\`에서 겹친 피동을 하나로 줄인다` });
   }
   return candidates;
 }

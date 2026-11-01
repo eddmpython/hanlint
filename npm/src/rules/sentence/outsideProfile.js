@@ -10,8 +10,13 @@ const FEATURES = [
   ["length", "문장 길이", "어절"],
   ["commas", "쉼표", "개"],
   ["newTopics", "처음 나온 화제어", "개"],
-  ["hedges", "헤지 표현", "개"],
+  ["hedges", "단정을 피하는 말", "개"],
 ];
+
+/** 세 자리마다 쉼표를 찍는다. 파이썬 `f"{n:,}"`와 같은 글을 낸다. @param {number} count */
+function grouped(count) {
+  return String(count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 /** @param {import("../../config/settings.js").Config} config */
 function profileFor(config) {
@@ -22,7 +27,7 @@ function profileFor(config) {
 
 /** @param {number} permille */
 function shareText(permille) {
-  return permille === 0 ? "0.1% 아래" : `${Math.floor(permille / 10)}.${permille % 10}%`;
+  return permille === 0 ? "0.1% 안" : `${Math.floor(permille / 10)}.${permille % 10}%`;
 }
 
 /** @param {Set<string>} topics @param {Set<string>} known */
@@ -55,7 +60,7 @@ export function run(doc, config) {
           name,
           sentence.line,
           sentence.text,
-          `${label} ${value}${unit}. ${profile.label} ${profile.sentences}문장 가운데 상위 ${shareText(shareAtOrAbove(hist, value))}다. ${p}%는 ${limit}${unit} 이하다`,
+          `${label} ${value}${unit}인 문장이다. ${profile.label} ${grouped(profile.sentences)}문장 가운데 상위 ${shareText(shareAtOrAbove(hist, value))}에 든다. ${p}%는 ${limit}${unit} 이하다`,
           null,
           NOTICE,
           SENTENCE,

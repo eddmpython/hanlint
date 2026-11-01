@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { SENTENCE, finding } from "../finding.js";
 import { doublePassiveCandidates } from "../shared/candidates.js";
 
@@ -38,7 +39,7 @@ export function run(doc) {
           name,
           sentence.line,
           sentence.text,
-          `\`${sentence.passives[0]}\` 는 피동에 어지다 를 또 붙인 이중 피동이다. 하나만 남긴다`,
+          `\`${sentence.passives[0]}\`${fitJosa(sentence.passives[0], "는")} 피동에 \`-어지다\`를 또 붙인 이중 피동이다. 하나만 남긴다`,
           approved ? candidates[0].text : null,
           "error",
           SENTENCE,

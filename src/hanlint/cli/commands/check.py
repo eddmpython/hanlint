@@ -10,7 +10,7 @@ from ...config import loadContract
 from ...guard import check, renderCheck
 from .shared import addCommonOptions, configFrom, emit, readFile, startFolder
 
-HELP = "Reader Contract 보호 원자와 hanlint 지적의 결정적 JSON 영수증을 낸다"
+HELP = "Reader Contract가 지키는 숫자·링크·코드와 hanlint 지적을 대조해 결과를 JSON으로 낸다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

@@ -24,14 +24,14 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 
 
 def baselineState(config) -> str:
-    """잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다."""
+    """잠근 지적이 몇 건인지. baseline이 빚을 감추는 자리가 되지 않게 늘 보인다."""
     if not config.baseline:
-        return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)"
+        return "없음 (만들려면 hanlint baseline 글들/)"
     try:
         found: Baseline = load(config.baseline)
     except (OSError, ValueError) as error:
-        return f"{config.baseline} 를 못 읽었다: {error}"
-    return f"{found.count}건이 {config.baseline} 에 잠겨 있다. 그 문장을 고치면 다시 나온다"
+        return f"읽지 못했다: {config.baseline} ({error})"
+    return f"{config.baseline}에 지적 {found.count}건이 들어 있다. 그 문장을 고치면 다시 나온다"
 
 
 def run(args: argparse.Namespace) -> int:
@@ -45,15 +45,15 @@ def run(args: argparse.Namespace) -> int:
         f"설정      {configLabel(config)}",
         f"프리셋    {config.preset} ({', '.join(PRESETS)} 가운데)",
         f"규칙      {len(names) - len(off)}개 켜짐, {len(off)}개 꺼짐",
-        f"잠금      {baselineState(config)}",
-        f"폴더      점으로 시작하는 폴더와 {', '.join(SKIPPED_FOLDERS)} 는 건너뛴다. 직접 주면 검사한다",
+        f"기준 파일 {baselineState(config)}",
+        f"폴더      건너뛰는 것: 점으로 시작하는 폴더, {', '.join(SKIPPED_FOLDERS)}. 직접 주면 검사한다",
     ]
     if off:
         lines.append(f"꺼진 규칙  {', '.join(off)}")
     lines.extend(
         [
             "",
-            "다음: hanlint 글.md 로 검사한다. 설정이 기본값이면 hanlint init 으로 파일을 만든다",
+            "다음: hanlint 글.md로 검사한다. 설정 파일이 없으면 hanlint init으로 만든다",
         ]
     )
     print("\n".join(lines))

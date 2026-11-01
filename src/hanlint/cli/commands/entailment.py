@@ -9,7 +9,7 @@ from pathlib import Path
 from ...entailment import entailmentCases, evaluateEntailment
 from .shared import addOutputOption, emit
 
-HELP = "사람 합의 한국어 근거 쌍으로 외부 평가기의 함의 판정과 기권을 집계한다"
+HELP = "사람이 합의한 한국어 근거 쌍으로 외부 평가기의 함의 판정과 답하지 않은 수를 센다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
@@ -38,7 +38,7 @@ def renderText(data: dict) -> str:
     metrics = data["metrics"]
     lines = [
         f"함의 벤치마크 집계: {metrics['totalCases']}개",
-        f"응답 {metrics['answered']}개, 기권 {metrics['abstained']}개, coverage {percent(metrics['coverage'])}",
+        f"응답 {metrics['answered']}개, 답하지 않음 {metrics['abstained']}개, 응답 비율 {percent(metrics['coverage'])}",
         f"선택 정확도 {percent(metrics['selectedAccuracy']['ratio'])}",
         f"selective risk {percent(metrics['selectiveRisk']['ratio'])}",
         f"macro F1 {metrics['macroF1']:.4f}",

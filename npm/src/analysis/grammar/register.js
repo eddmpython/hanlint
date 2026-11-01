@@ -1,5 +1,5 @@
 // @ts-check
-/** 파이썬 `analysis/grammar/register.py`의 투영. 글의 문체를 판별하고 문장 끝 서술어를 맞춘다. */
+/** 파이썬 `analysis/grammar/register.py`를 옮긴 것. 글의 문체를 판별하고 문장 끝 서술어를 맞춘다. */
 import * as hangul from "./hangul.js";
 import { HAEYO, HANDA, HAPNIDA, REGISTERS, parsePredicate, render } from "./ending.js";
 

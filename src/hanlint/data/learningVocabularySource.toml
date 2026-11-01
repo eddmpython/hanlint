@@ -21,7 +21,7 @@ rows = 5965
 path = "learningVocabulary.tsv"
 encoding = "utf-8"
 columns = ["rank", "word", "lexeme", "partOfSpeech", "grade"]
-normalization = "단어 끝의 동형어 번호만 lexeme 에서 뺀다. 원문 word 는 보존한다"
+normalization = "단어 끝의 동형어 번호만 lexeme에서 뺀다. 원문 word는 그대로 둔다"
 
 [fields.rank]
 type = "integer or null"
@@ -35,7 +35,7 @@ unit = "없음"
 
 [fields.lexeme]
 type = "string"
-meaning = "표층 대조에 쓰도록 동형어 번호를 뺀 표제어"
+meaning = "글자 그대로 비교하도록 동형어 번호를 뺀 표제어"
 unit = "없음"
 
 [fields.partOfSpeech]
@@ -56,7 +56,7 @@ uniqueLexemes = 5543
 
 [traps]
 audience = "한국어 학습자용 등급이다. 한국어 모어 화자의 난도나 좋은 글 여부로 해석하지 않는다"
-homonyms = "같은 lexeme 에 서로 다른 품사와 등급이 있을 수 있다. 문맥으로 뜻을 가르지 않는다"
+homonyms = "같은 lexeme에 서로 다른 품사와 등급이 있을 수 있다. 문맥으로 뜻을 가르지 않는다"
 coverage = "2003년 목록이라 최신 전문어와 고유명사는 목록 밖일 수 있다"
-matching = "형태소 분석이 아니라 지문이 뽑은 화제어의 표층형을 대조한다"
+matching = "형태소 분석이 아니라 글에서 뽑은 화제어를 글자 그대로 비교한다"
 rank = "고유명사와 일부 항목은 원 자료의 순위가 비어 있다"

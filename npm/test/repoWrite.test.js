@@ -38,14 +38,14 @@ test("writes each changed file once on the branch, keeps CRLF and reports failur
   assert.deepEqual(summary.files.map((item) => [item.file, item.commit, item.failed]), [
     ["src/a.js", "commit-src/a.js", []],
     ["src/b.js", "commit-src/b.js", ["src/b.js:9:1: 그 줄이 없다"]],
-    ["src/gone.js", null, ["src/gone.js: 파일이 없다"]],
+    ["src/gone.js", null, ["src/gone.js: 파일이 없어요"]],
   ]);
   assert.equal(files["src/a.js"], "const A = '요청 완료 실패'\r\nconst B = '없음'\r\n");
   assert.equal(files["src/b.js"], "const C = '저장 실패'\n");
   const put = calls.filter((call) => call.options.method === "PUT");
   assert.equal(put.length, 2);
   const body = JSON.parse(put[0].options.body);
-  assert.deepEqual([body.branch, body.sha, body.message], ["release/8.0", "sha-src/a.js", "hanlint: 화면 글 고침 1곳 (src/a.js)"]);
+  assert.deepEqual([body.branch, body.sha, body.message], ["release/8.0", "sha-src/a.js", "hanlint: 화면 문구 1곳 고침 (src/a.js)"]);
   assert.ok(calls.every((call) => call.options.headers.Authorization === "Bearer token" && call.url.startsWith("https://api.github.com/repos/o/r/contents/")));
   assert.ok(calls[0].url.endsWith("?ref=release%2F8.0"));
   assert.deepEqual(progress, [[1, 3, "src/a.js"], [2, 3, "src/b.js"], [3, 3, "src/gone.js"]]);

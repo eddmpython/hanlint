@@ -10,16 +10,16 @@ from ..registry import rule
 
 @rule("promiseRecall", mechanism="reader")
 def promiseRecall(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
-    """뒤에서 다루겠습니다 라고 미뤄 놓고 앞에서 미룬 것을 부르는 표지가 글 어디에도 없는 것.
+    """`뒤에서 다루겠습니다`라고 미뤄 놓고, 미룬 이야기를 다시 부르는 말이 글 어디에도 없는 것.
 
-    왜: 뒤에서 다루겠습니다 를 써 놓고 끝까지 안 나오면 정보 배분이 아니라 누락이다. 회수할 때는 미뤘다는
-        사실을 밝히고 앞에서 쓴 이름을 다시 부른다.
-    어디서: 글쓰기 스킬의 무엇을 빼는가 (미룬 것은 같은 글 안에서 회수한다). 이런 검사를 하는 선행 도구가
-        없다 (조사 결과). 표지 목록은 data/promiseMarkers.txt 와 recallMarkers.txt. 약속과 회수는 독자 상태
-        (fingerprint/readerState.py) 가 문장 순서로 쌓고, 글을 다 읽은 독자 (final) 에게 묻는다.
-    고치기: 뒤 절에서 앞에서 미룬 X 로 부르며 다룬다. 회수하지 못할 것은 애초에 미루지 말고 지운다.
-    안 잡는 것: 회수 표지가 하나라도 있는 글. 어느 약속을 어느 회수가 갚았는지는 대조하지 않는다.
-        표지 근사라 notice 로만 낸다.
+    왜: `뒤에서 다루겠습니다`를 써 놓고 끝까지 안 나오면 나눠 설명한 것이 아니라 빠뜨린 것이다. 미룬 이야기를
+        다시 다룰 때는 미뤘다는 사실을 밝히고 앞에서 쓴 이름을 다시 부른다.
+    어디서: 미룬 이야기는 같은 글 안에서 다시 다룬다는 블로그 쓰기 방식에서 왔다. 이런 검사를 하는 다른 도구는
+        찾지 못했다. 찾는 말 목록은 data/promiseMarkers.txt와 data/recallMarkers.txt에 있다. 미루는 말과 다시
+        부르는 말은 글을 문장 순서대로 읽으며 모으고, 글을 끝까지 읽은 뒤에 따진다.
+    고치기: 뒤 절에서 `앞에서 미룬 X`라고 부르며 다룬다. 다시 다루지 못할 것은 처음부터 미루지 말고 지운다.
+    안 잡는 것: 다시 부르는 말이 하나라도 있는 글은 잡지 않는다. 어느 약속을 어느 말이 다시 다뤘는지는 맞춰 보지
+        않는다. 찾는 말 목록으로 어림하는 규칙이라 확인 권고로만 낸다.
     """
     reader = doc.reader.final
     if not reader.promises or reader.recalls:
@@ -29,7 +29,7 @@ def promiseRecall(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "promiseRecall",
             line,
             text,
-            "뒤로 미룬 것을 앞에서 미룬 것으로 다시 부르는 자리가 글 어디에도 없다. 회수하거나 미루지 않는다",
+            "뒤로 미룬 이야기를 `앞에서 미룬 X`처럼 다시 부르는 문장이 글 어디에도 없다. 뒤에서 다루거나 처음부터 미루지 않는다",
             None,
             NOTICE,
             DOCUMENT,

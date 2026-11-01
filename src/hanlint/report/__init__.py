@@ -1,4 +1,4 @@
-"""출력 층. Finding 과 분석 결과와 지문을 사람과 기계가 읽는 형식으로 낸다."""
+"""출력 층. Finding과 분석 결과와 지문을 사람과 기계가 읽는 형식으로 낸다."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 // @ts-check
 /** 편집, 원문 비교, 개인 기록과 선택한 GitHub 저장의 조립. */
 import { channels } from "./channels.js";
-import { get, element, button, download, highlight } from "./dom.js";
+import { get, element, button, download, highlight, errorText } from "./dom.js";
 import { renderFindings, renderProtection, renderMemory } from "./views.js";
 import { GitHubStore } from "./github.js";
 import { EngineClient } from "./engineClient.js";
@@ -37,11 +37,22 @@ function persist() {
   if (!storageEnabled) return;
   try {
     localStorage.setItem(storageKey, serializeWorkspace(workspace));
-    get("storageStatus").textContent = "이 브라우저에 임시 보관됨";
+    get("storageStatus").textContent = "이 브라우저에 임시로 저장했어요";
   } catch (error) {
-    get("storageStatus").textContent = "저장하지 못함 · 기록을 내보내 주세요";
-    notify(error.message || "브라우저 저장 공간이 부족합니다. 기록을 내보내 주세요.", true);
+    get("storageStatus").textContent = "저장하지 못했어요. 기록을 내보내 주세요";
+    notify(errorText(error, "브라우저에 저장하지 못했어요. 저장 공간이 부족할 수 있으니 기록을 내보내 주세요."), true);
   }
+}
+
+/** 글 종류 값(blog)을 화면의 이름(블로그)으로. 이름은 편집기의 글 종류 선택 목록이 갖는다. */
+function presetName(value) {
+  return get("preset").querySelector(`option[value="${value}"]`)?.textContent ?? value;
+}
+
+/** 기록의 ISO 시각을 이 브라우저의 시간대로. 읽을 수 없는 값이면 그대로 보인다. */
+function localTime(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" });
 }
 
 function renderDraft(resetRevision = false) {
@@ -57,7 +68,7 @@ function renderDraft(resetRevision = false) {
   }
   get("sourceInput").value = draft.original;
   get("sourceInput").readOnly = revisionActive;
-  get("sourceStats").textContent = `${[...draft.original].length.toLocaleString()}자${revisionActive ? " · 수정 전 원문 보관 중" : ""}`;
+  get("sourceStats").textContent = `${[...draft.original].length.toLocaleString()}자${revisionActive ? " · 수정 전 원문을 그대로 두고 있어요" : ""}`;
   get("draft").value = draft.text;
   get("draft").disabled = !draft.original.trim() && !revisionActive;
   get("protectionPanel").hidden = !revisionActive;
@@ -97,8 +108,8 @@ async function analyze() {
     renderResult();
   } catch (error) {
     if (current !== editVersion) return;
-    get("reviewSummary").textContent = error.message;
-    notify(error.message, true);
+    get("reviewSummary").textContent = errorText(error, "검사하지 못했어요.");
+    notify(errorText(error, "검사하지 못했어요."), true);
   }
 }
 
@@ -113,7 +124,7 @@ function changed() {
     get("reviewSummary").textContent = "수정한 문장을 다시 읽고 있어요.";
     get("findings").replaceChildren();
   }
-  get("protection").replaceChildren(element("p", "emptyState", "수정한 원고의 보호 조건을 확인하고 있어요."));
+  get("protection").replaceChildren(element("p", "emptyState", "숫자, 링크, 코드와 소제목 순서가 그대로인지 확인하고 있어요."));
   get("memory").replaceChildren(element("p", "emptyState", "수정 전후를 다시 비교하고 있어요."));
   highlight(workspace.draft.text, []);
   if (revisionActive) get("textStats").textContent = `${[...workspace.draft.text].length.toLocaleString()}자`;
@@ -133,13 +144,13 @@ async function fix(index, action = "fix") {
   const current = editVersion;
   try {
     const result = await request(action, { index });
-    if (current !== editVersion) return notify("검사하는 동안 원고가 바뀌었습니다. 새 결과에서 다시 고쳐 주세요.");
-    if (result.text === workspace.draft.text) return notify("지금 바로 적용할 고침이 없습니다. 지적의 본보기를 확인해 주세요.");
+    if (current !== editVersion) return notify("검사하는 동안 원고가 바뀌었어요. 새 결과에서 다시 고쳐 주세요.");
+    if (result.text === workspace.draft.text) return notify("지금 바로 적용할 고침이 없어요. 지적의 예시를 확인해 주세요.");
     if (!workspace.draft.original) workspace.draft.original = workspace.draft.text;
     replaceText(result.text);
     get("revisionSection").scrollIntoView({ behavior: "instant", block: "nearest" });
-    notify(`${result.applied.length}곳을 고쳤습니다. 되돌리기로 원래 표현을 복원할 수 있어요.`);
-  } catch (error) { notify(error.message, true); }
+    notify(`${result.applied.length}곳을 고쳤어요. '되돌리기'를 누르면 원래대로 돌아가요.`);
+  } catch (error) { notify(errorText(error, "고치지 못했어요."), true); }
 }
 
 function locate(finding) {
@@ -180,7 +191,7 @@ async function rejectFinding(finding) {
   workspace.feedback.push({ rule: finding.rule, quote: finding.quote, why: finding.why, preset,
     judgment: "falsePositive", engineVersion: version ?? "unknown", at: new Date().toISOString() });
   persist();
-  notify("맞지 않는 지적으로 기록했습니다. 기록 내보내기에 함께 담깁니다.");
+  notify("맞지 않는 지적으로 표시했어요. 기록을 내보내면 함께 담겨요.");
 }
 
 async function approve(candidate) {
@@ -194,12 +205,12 @@ async function approve(candidate) {
     workspace.patches = next;
     persist();
     await analyze();
-    notify("내 고침으로 기억했습니다. 같은 원문과 문맥에서 다시 제안합니다.");
-  } catch (error) { notify(error.message, true); }
+    notify("내 고침으로 기억했어요. 같은 원문과 문맥에서 다시 제안해요.");
+  } catch (error) { notify(errorText(error, "고침을 기억하지 못했어요."), true); }
 }
 
 async function forget(index) {
-  if (!await confirmAction("이 고침의 재사용 승인을 지울까요? 원고와 수정 이력은 남습니다.", "승인 지우기")) return;
+  if (!await confirmAction("이 고침을 더 이상 제안하지 않을까요? 원고와 기록은 남아요.", "잊기")) return;
   workspace.patches.splice(index, 1);
   persist();
   await analyze();
@@ -208,14 +219,14 @@ async function forget(index) {
 function showHistory() {
   const root = get("historyList");
   root.replaceChildren();
-  if (!workspace.records.length) root.append(element("p", "emptyState", "아직 기록한 수정본이 없습니다. 편집기에서 수정본 기록을 눌러 주세요."));
+  if (!workspace.records.length) root.append(element("p", "emptyState", "아직 기록에 남긴 수정본이 없어요. 편집기에서 '기록에 남기기'를 눌러 주세요."));
   for (const record of [...workspace.records].reverse()) {
     const item = element("article", "historyItem");
-    item.append(element("h3", "", record.title || "이름 없는 원고"), element("span", "historyDate", `${record.updatedAt.replace("T", " ").slice(0, 16)} UTC · ${record.preset}`), element("p", "", record.reason || "수정 이유를 남기지 않았어요."));
+    item.append(element("h3", "", record.title || "이름 없는 원고"), element("span", "historyDate", `${localTime(record.updatedAt)} · ${presetName(record.preset)}`), element("p", "", record.reason || "수정 이유를 남기지 않았어요."));
     const actions = element("div");
     actions.append(button("이 수정본 열기", async () => {
-      if (!await confirmAction("현재 편집을 수정 이력에 보관하고 선택한 수정본을 열까요?", "기록 열기")) return;
-      try { addRecord(workspace, analysis?.version ?? "unknown"); } catch (error) { return notify(error.message, true); }
+      if (!await confirmAction("지금 고치던 글을 기록에 남기고 고른 수정본을 열까요?", "수정본 열기")) return;
+      try { addRecord(workspace, analysis?.version ?? "unknown"); } catch (error) { return notify(errorText(error), true); }
       workspace.draft = { id: record.id, title: record.title, text: record.text, original: record.original, preset: record.preset, updatedAt: record.updatedAt };
       undo = [];
       get("historyDialog").close();
@@ -223,12 +234,12 @@ function showHistory() {
       changed();
     }, "secondary small"));
     actions.append(button("기여할 사례 내보내기", async () => {
-      if (!await confirmAction("이 수정본의 원문과 수정 후 전문, 수정 이유를 사례 파일로 다운로드합니다. 공유하기 전에 개인정보와 비공개 내용을 확인해 주세요. 자동으로 제출하지 않습니다.", "사례 파일 받기")) return;
+      if (!await confirmAction("이 수정본의 원문과 수정 후 전문, 수정 이유를 사례 파일로 다운로드해요. 공유하기 전에 개인정보와 비공개 내용을 확인해 주세요. 자동으로 제출하지 않아요.", "사례 파일 다운로드")) return;
       download("hanlintContribution.json", JSON.stringify(contribution(record, "submittedForReview"), null, 2));
-      notify("사례 파일을 받았습니다. 검토한 뒤 GitHub Issues의 개선 제안에 첨부할 수 있어요.");
+      notify("사례 파일을 다운로드했어요. 검토한 뒤 GitHub Issues의 개선 제안에 첨부할 수 있어요.");
     }));
-    actions.append(button("삭제", async () => {
-      if (!await confirmAction("이 브라우저에서 선택한 수정본 하나를 삭제할까요?", "삭제")) return;
+    actions.append(button("지우기", async () => {
+      if (!await confirmAction("이 수정본 하나를 이 브라우저에서 지울까요?", "지우기")) return;
       workspace.records = workspace.records.filter((item) => item.recordId !== record.recordId);
       persist(); showHistory();
     }));
@@ -239,12 +250,12 @@ function showHistory() {
 
 async function importWorkspace(next, sha = null) {
   await request("analyze", {}, next.draft, next.patches);
-  if (!await confirmAction("현재 브라우저 기록을 가져온 기록으로 교체할까요? 보관할 현재 기록이 있으면 취소하고 기록 내보내기를 먼저 해 주세요.", "가져온 기록 열기")) return false;
+  if (!await confirmAction("이 브라우저의 기록을 가져온 기록으로 바꿀까요? 지금 기록을 남겨 두려면 취소하고 먼저 기록을 내보내 주세요.", "가져온 기록 열기")) return false;
   workspace = next; undo = []; storageEnabled = true;
   if (sha) github.accept(sha);
   renderDraft(true); changed();
   for (const id of ["historyDialog", "githubDialog"]) get(id).close();
-  notify("원고와 수정 기록을 가져왔습니다.");
+  notify("원고와 기록을 가져왔어요.");
   return true;
 }
 
@@ -257,21 +268,21 @@ async function gitAction(action) {
     if (action === "load") {
       const result = await github.load();
       const imported = await importWorkspace(result.workspace, result.sha);
-      status.textContent = imported ? "기록을 가져왔습니다." : "가져오기를 취소했습니다.";
+      status.textContent = imported ? "기록을 가져왔어요." : "가져오기를 취소했어요.";
     } else {
       const snapshot = parseWorkspace(serializeWorkspace(workspace));
-      if (!await confirmAction(`${github.repository} 저장소에 현재 원고와 수정 이력을 저장합니다. 공개 저장소이면 이 내용도 공개됩니다. 계속할까요?`, "이 저장소에 저장")) { status.textContent = "저장을 취소했습니다."; return; }
+      if (!await confirmAction(`${github.repository} 저장소에 지금 원고와 기록을 저장해요. 공개 저장소면 이 내용도 공개돼요. 계속할까요?`, "이 저장소에 저장")) { status.textContent = "저장을 취소했어요."; return; }
       await github.save(snapshot);
-      status.textContent = "GitHub에 보관했습니다. 이후 편집은 다시 저장할 때 반영됩니다.";
-      notify("내 GitHub 저장소에 원고와 수정 이력을 보관했습니다.");
+      status.textContent = "GitHub에 저장했어요. 이후에 고친 내용은 다시 저장해야 반영돼요.";
+      notify("내 GitHub 저장소에 원고와 기록을 저장했어요.");
     }
-  } catch (error) { status.textContent = error.message; }
+  } catch (error) { status.textContent = errorText(error, action === "load" ? "GitHub의 기록을 가져오지 못했어요." : "GitHub에 저장하지 못했어요."); }
   finally { get("githubSave").disabled = get("githubLoad").disabled = false; }
 }
 
 async function startDraft(text, title) {
   try { if (workspace.draft.text) addRecord(workspace, analysis?.version ?? "unknown"); }
-  catch (error) { return notify(error.message, true); }
+  catch (error) { return notify(errorText(error), true); }
   workspace.draft = newDraft(text, title, workspace.draft.preset);
   undo = []; renderDraft(true); changed();
   get("sourceInput").focus();
@@ -291,16 +302,16 @@ try {
   if (saved) workspace = parseWorkspace(saved);
 } catch (error) {
   storageEnabled = false;
-  get("storageStatus").textContent = "기존 기록을 읽지 못해 덮어쓰지 않습니다";
-  notify(`기존 기록을 읽지 못했습니다. 기존 저장은 보존하고 예문을 열었습니다. ${error.message}`, true);
+  get("storageStatus").textContent = "기존 기록을 읽지 못해 덮어쓰지 않아요";
+  notify(`기존 기록을 읽지 못해 예문을 열었어요. 기존 기록은 지우지 않았어요. ${errorText(error, "")}`.trim(), true);
 }
 
 get("sourceInput").addEventListener("paste", (event) => {
   const area = get("sourceInput");
   const text = event.clipboardData?.getData("text/plain");
   if (!text) return;
-  // 주소만 붙여 넣으면 (선택 상태와 무관하게) 저장소 모드다. 글 사이의 주소는 글로 둔다 (isRepoUrl 은 전체가 주소일 때만 참).
-  // 글 파일 (md, txt) 주소는 그 내용을 원고로 연다.
+  // 주소만 붙여 넣으면 (선택 상태와 무관하게) 저장소 모드다. 글 사이의 주소는 글로 둔다 (isRepoUrl은 전체가 주소일 때만 참).
+  // 글 파일(md, txt) 주소는 그 내용을 원고로 연다.
   if (isRepoUrl(text)) {
     event.preventDefault();
     const parsed = parseRepoUrl(text);
@@ -311,7 +322,7 @@ get("sourceInput").addEventListener("paste", (event) => {
   event.preventDefault();
   if (text.length > MAX_TEXT) return notify("원고는 60,000자 이하로 붙여 넣어 주세요.", true);
   try { if (workspace.draft.text) addRecord(workspace, analysis?.version ?? "unknown"); }
-  catch (error) { return notify(error.message, true); }
+  catch (error) { return notify(errorText(error), true); }
   workspace.draft = newDraft(text, "붙여 넣은 원고", workspace.draft.preset);
   undo = []; renderDraft(true); changed();
 });
@@ -357,12 +368,15 @@ const repoMode = new RepoMode({
   onLeave() { repoActive = false; analysis = null; editVersion++; clearTimeout(timer); renderDraft(); analyze(); get("sourceInput").focus(); },
 });
 async function openTextFile(parsed) {
-  get("reviewSummary").textContent = "GitHub 에서 글 파일을 받는 중";
+  get("reviewSummary").textContent = "GitHub에서 글 파일을 받고 있어요.";
   try {
     const { text, title } = await repoMode.fetchText(parsed);
     if (text.length > MAX_TEXT) return notify("원고는 60,000자 이하 파일을 사용해 주세요.", true);
     await startDraft(text, title.slice(0, 100));
-  } catch (error) { get("reviewSummary").textContent = error.message; notify(error.message, true); }
+  } catch (error) {
+    const message = errorText(error, "글 파일을 받지 못했어요.");
+    get("reviewSummary").textContent = message; notify(message, true);
+  }
 }
 get("sampleButton").onclick = () => startDraft(SAMPLE, "처음 만나는 한린트");
 get("newButton").onclick = () => startDraft("", "새 원고");
@@ -376,43 +390,43 @@ get("fileInput").onchange = async (event) => {
   await startDraft(text, file.name.replace(/\.[^.]+$/, "").slice(0, 100));
 };
 get("saveButton").onclick = async () => {
-  if (!analysis) return notify("검사가 끝난 뒤 수정본을 기록해 주세요.");
+  if (!analysis) return notify("검사가 끝난 뒤 기록에 남겨 주세요.");
   if (!workspace.draft.text.trim()) return notify("먼저 원고를 써 주세요.");
   try {
     if (!workspace.draft.original) workspace.draft.original = workspace.draft.text;
     const saved = addRecord(workspace, analysis?.version ?? "unknown", get("revisionReason").value, get("revisionOrigin").value);
     get("revisionReason").value = "";
     persist(); renderDraft(); await analyze();
-    notify(saved ? "수정본을 기록했습니다. 고침 기억에서 재사용할 문장을 확인해 보세요." : "같은 수정본이 이미 기록되어 있어요.");
-  } catch (error) { notify(error.message, true); }
+    notify(saved ? "기록에 남겼어요. 다시 쓸 고침이 있으면 아래에서 기억할 수 있어요." : "같은 수정본이 이미 기록에 있어요.");
+  } catch (error) { notify(errorText(error, "기록에 남기지 못했어요."), true); }
 };
 get("historyButton").onclick = showHistory;
-get("exportButton").onclick = () => { try { download("hanlintWorkspace.json", serializeWorkspace(workspace)); } catch (error) { notify(error.message, true); } };
+get("exportButton").onclick = () => { try { download("hanlintWorkspace.json", serializeWorkspace(workspace)); } catch (error) { notify(errorText(error, "기록을 내보내지 못했어요."), true); } };
 get("importInput").onchange = async (event) => {
   const file = event.target.files[0]; event.target.value = "";
   if (!file) return;
   try {
     if (file.size > MAX_ARCHIVE_BYTES) throw new Error("900 KB 이하 기록 파일을 사용해 주세요.");
     await importWorkspace(parseWorkspace(await file.text()));
-  } catch (error) { notify(error.message, true); }
+  } catch (error) { notify(errorText(error, "기록 파일을 읽지 못했어요. 한린트에서 내보낸 JSON 파일인지 확인해 주세요."), true); }
 };
 get("clearButton").onclick = async () => {
-  if (!await confirmAction("이 브라우저의 원고, 수정 이력과 승인 고침을 모두 삭제할까요? GitHub 기록은 남습니다. 필요한 기록은 먼저 내보내 주세요.", "브라우저 기록 삭제")) return;
-  try { localStorage.removeItem(storageKey); repoMode.forget(); } catch (error) { return notify(error.message, true); }
+  if (!await confirmAction("이 브라우저에 저장한 원고, 기록, 기억한 고침을 모두 지울까요? GitHub에 저장한 기록은 남아요. 필요한 기록은 먼저 내보내 주세요.", "모두 지우기")) return;
+  try { localStorage.removeItem(storageKey); repoMode.forget(); } catch (error) { return notify(errorText(error, "브라우저의 기록을 지우지 못했어요."), true); }
   workspace = emptyWorkspace(newDraft("", "새 원고")); storageEnabled = true; undo = [];
   get("historyDialog").close(); renderDraft(true); changed();
 };
 get("githubButton").onclick = () => get("githubDialog").showModal();
 get("githubSave").onclick = () => gitAction("save");
 get("githubLoad").onclick = () => gitAction("load");
-get("disconnectButton").onclick = () => { github.disconnect(); get("token").value = get("repository").value = ""; get("githubStatus").textContent = "연결 정보를 지웠습니다."; };
+get("disconnectButton").onclick = () => { github.disconnect(); get("token").value = get("repository").value = ""; get("githubStatus").textContent = "연결 정보를 지웠어요."; };
 for (const close of document.querySelectorAll("[data-close]")) close.onclick = () => get(close.dataset.close).close();
 window.addEventListener("pagehide", () => { persist(); github.disconnect(); get("token").value = ""; repoMode.writer.forget(); get("writeToken").value = ""; });
 window.addEventListener("storage", (event) => {
   if (event.key !== storageKey) return;
   storageEnabled = false;
-  get("storageStatus").textContent = "다른 탭의 기록 변경 · 자동 보관 중지";
-  notify("다른 탭에서 기록이 바뀌었습니다. 현재 원고와 기록을 내보낸 뒤 새로고침해 주세요. 다른 탭의 기록은 덮어쓰지 않습니다.", true);
+  get("storageStatus").textContent = "다른 탭에서 기록이 바뀌어 자동 저장을 멈췄어요";
+  notify("다른 탭에서 기록이 바뀌었어요. 지금 원고와 기록을 내보낸 뒤 새로고침해 주세요. 다른 탭의 기록은 덮어쓰지 않아요.", true);
 });
 renderDraft(true);
 analyze();

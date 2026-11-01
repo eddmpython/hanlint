@@ -10,12 +10,12 @@ STRATEGIES = (STRATEGY_ID,)
 
 
 def _allocate(total: int, weights: list[int], minimums: list[int] | None = None) -> list[int]:
-    """합계를 가중치에 나누되 자리별 최솟값과 전체 합계를 정확히 보존한다."""
+    """합계를 가중치대로 나누되 칸마다의 최솟값과 전체 합계를 정확히 지킨다."""
     minimums = minimums or [1] * len(weights)
     if not weights or len(weights) != len(minimums) or any(weight < 1 for weight in weights):
-        raise ValueError("가중치와 최솟값은 같은 수의 양의 자리여야 한다")
+        raise ValueError("가중치와 최솟값은 개수가 같은 양수 목록이어야 한다")
     if total < sum(minimums):
-        raise ValueError("나눌 합계는 자리별 최솟값의 합 이상이어야 한다")
+        raise ValueError("나눌 합계는 칸마다의 최솟값을 더한 값 이상이어야 한다")
     weightTotal = sum(weights)
     remainderTotal = total - sum(minimums)
     allocated = [minimum + remainderTotal * weight // weightTotal for minimum, weight in zip(minimums, weights, strict=True)]
@@ -34,7 +34,7 @@ def rhetoricalBlueprint(brief: WritingBrief | dict) -> dict:
         brief = WritingBrief.fromMapping(brief)
     kind = PROFILE_OF[brief.preset]
     if kind is None:
-        raise ValueError(f"{brief.preset} 은 종류 프로파일이 없어 청사진을 만들 수 없다. 말뭉치가 있는 종류를 고른다")
+        raise ValueError(f"{brief.preset} 프리셋은 종류 프로파일이 없어 청사진을 만들 수 없다. 말뭉치가 있는 종류를 고른다")
     corpus, reference = referenceOf(kind)
     metrics = reference.metrics
     targetCharacters = (brief.minCharacters + brief.maxCharacters) // 2
@@ -149,7 +149,7 @@ def rhetoricalBlueprint(brief: WritingBrief | dict) -> dict:
 def blueprintFor(brief: WritingBrief | dict, strategy: str = STRATEGY_ID) -> dict:
     """이름을 검증한 뒤 선택한 구조 전략을 컴파일한다."""
     if strategy not in STRATEGIES:
-        raise ValueError(f"모르는 작법 전략이다: {strategy}. 가능한 값: {', '.join(STRATEGIES)}")
+        raise ValueError(f"모르는 글쓰기 전략이다: {strategy}. 쓸 수 있는 값: {', '.join(STRATEGIES)}")
     return rhetoricalBlueprint(brief)
 
 

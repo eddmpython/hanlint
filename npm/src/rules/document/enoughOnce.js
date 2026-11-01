@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { matchedTexts } from "../../fingerprint/markers.js";
 import { SENTENCE, finding } from "../finding.js";
 
@@ -20,6 +21,6 @@ export function run(doc, config) {
   if (breaks.length < 2) return [];
   const first = breaks[0][0];
   return breaks.slice(1).map(([sentence, text]) =>
-    finding(name, sentence.line, sentence.text, `\`${text}\` 로 끊는 문장이 ${first.line}행에 이미 있다. 글 전체에 한 번만 쓴다. 계속 끝나는 척하다 이어지는 꼴이 된다`, null, "error", SENTENCE, sentence.index),
+    finding(name, sentence.line, sentence.text, `\`${text}\`${fitJosa(text, "로")} 끊는 문장이 ${first.line}번째 줄에 이미 있다. 글 전체에 한 번만 쓴다. 여러 번 쓰면 끝난다고 해 놓고 글이 계속 이어진다`, null, "error", SENTENCE, sentence.index),
   );
 }

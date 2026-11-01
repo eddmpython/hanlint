@@ -1,6 +1,7 @@
-"""문장에서 표지를 센다. 종결어미 부류, 서법, 접속부사, 인과, 지시어, 헤지, 약속과 회수, 독자 호출, 수 약속, 수의 정체.
+"""문장에서 정해 둔 말을 센다. 종결어미 묶음, 서법, 접속부사, 까닭을 잇는 말, 지시어, 단정을 피하는 말,
+약속하는 말과 다시 다루는 말, 독자 호출, 수 약속, 수의 정체.
 
-낱말 목록은 전부 data/ 가 정본이다. 여기는 그것을 읽어 세는 함수뿐이다.
+단어 목록은 모두 data/에 있다. 여기는 그것을 읽어 세는 함수뿐이다.
 """
 
 from __future__ import annotations
@@ -11,14 +12,14 @@ from functools import cache
 from ..data import loadLines, loadPatterns
 
 TRAILING = re.compile(r"[\s.?!\"'”’)\]]+$")
-# 숫자는 ASCII 만이다. 파이썬 \d 는 전각 숫자 (２０１２) 도 받고 JS \d 는 안 받아 두 구현이 갈렸다 (검증 실측). [0-9] 로 맞춘다.
+# 숫자는 ASCII만이다. 파이썬 \d는 전각 숫자(２０１２)도 받고 JS \d는 안 받아 두 구현이 갈렸다 (검증 실측). [0-9]로 맞춘다.
 ASCII_DIGITS = re.compile(r"^[0-9]+$")
 NUMBER = re.compile(r"[0-9]+(?:[.,][0-9]+)*")
 NUMERAL = re.compile(r"[0-9][0-9,]*(?:\.[0-9]+)?")
-"""값으로 견주는 수. NUMBER 는 수의 개수를 세고 (countNumbers) 이것은 수의 정체를 센다 (numeralsIn).
-천 단위 쉼표까지 한 수로 읽고 numeralsIn 이 쉼표를 뗀다. 453MB 와 453 이 같은 값이어야 한다."""
+"""값으로 비교하는 수. NUMBER는 수의 개수를 세고 (countNumbers) 이것은 수의 정체를 센다 (numeralsIn).
+천 단위 쉼표까지 한 수로 읽고 numeralsIn이 쉼표를 뗀다. 453MB와 453이 같은 값이어야 한다."""
 COMMA = re.compile(r",")
-# 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만 (Python's 의 ' 는 아니다).
+# 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만 (Python's의 '는 아니다).
 QUOTE_PAIRS = (
     re.compile(r'"([^"\n]{1,80})"'),
     re.compile(r"“([^“”\n]{1,80})”"),
@@ -31,7 +32,7 @@ QUOTE_PAIRS = (
 
 @cache
 def koreanNumbers() -> dict[str, int]:
-    """수사 → 값. 정본은 data/koreanNumbers.txt 이고 표층 분석기의 명사 나열도 같은 파일을 읽는다."""
+    """수사 → 값. 목록은 data/koreanNumbers.txt에 있고 글자 모양으로 세는 명사 나열도 같은 파일을 읽는다."""
     numbers: dict[str, int] = {}
     for line in loadLines("koreanNumbers.txt"):
         word, _, value = line.partition("\t")
@@ -120,7 +121,7 @@ def insideAny(start: int, end: int, spans: tuple[tuple[int, int], ...]) -> bool:
 
 
 def termSpans(text: str, terms: tuple[str, ...]) -> tuple[tuple[int, int], ...]:
-    """설정의 protectedTerms 가 글에 나온 (시작, 끝) 전부. 겹쳐 나온 자리도 따로 센다."""
+    """설정의 protectedTerms가 글에 나온 (시작, 끝) 전부. 겹쳐 나온 것도 따로 센다."""
     found: list[tuple[int, int]] = []
     for term in terms:
         start = text.find(term)
@@ -131,7 +132,7 @@ def termSpans(text: str, terms: tuple[str, ...]) -> tuple[tuple[int, int], ...]:
 
 
 def overlapsAny(start: int, end: int, spans: tuple[tuple[int, int], ...]) -> bool:
-    """두 구간이 한 글자라도 겹치는가. 보호한 용어는 걸린 자리의 일부여도 그 지적을 거둔다."""
+    """두 구간이 한 글자라도 겹치는가. 보호한 용어는 걸린 부분의 일부여도 그 지적을 거둔다."""
     return any(spanStart < end and start < spanEnd for spanStart, spanEnd in spans)
 
 
@@ -140,7 +141,7 @@ def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:
     for match in countPromisePattern().finditer(text):
         raw, unit = match.group(1), match.group(2)
         if ASCII_DIGITS.match(raw) and unit == "단계" and " " not in match.group(0):
-            # `3단계` 는 셋째 단계 (서수) 지 단계 셋의 약속이 아니다. 실측: 002 의 `여덟 단계` 와 `3단계` 가 충돌로 잡혔다.
+            # `3단계`는 셋째 단계(서수)이지 단계 셋을 약속한 것이 아니다. 실측: 한 글의 `여덟 단계`와 `3단계`가 충돌로 잡혔다.
             continue
         number = koreanNumbers().get(raw) or int(raw)
         found.append((number, unit, match.group(0)))
@@ -148,7 +149,7 @@ def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:
 
 
 def numeralsIn(text: str) -> frozenset[str]:
-    """글에 나온 수의 정체 (천 단위 쉼표를 뗀 꼴). 독자 상태가 쌓고 numberOrphan 이 견준다."""
+    """글에 나온 수의 정체 (천 단위 쉼표를 뗀 꼴). 독자 상태가 쌓고 numberOrphan이 비교한다."""
     return frozenset(match.group(0).replace(",", "") for match in NUMERAL.finditer(text))
 
 

@@ -1,4 +1,4 @@
-"""Reader Contract 검사와 Patch 검증의 결정적 영수증."""
+"""Reader Contract 검사와 Patch 검증의 결과 기록. 같은 입력이면 늘 같은 결과다."""
 
 from __future__ import annotations
 
@@ -14,22 +14,22 @@ CHECK_MEANING = (
     "facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다"
 )
 CHECK_MEANING_V2 = (
-    "violationCount는 선언한 보호 원자, 제목 구조, 잠금 문구 누락과 hanlint error의 수다. "
-    "facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다"
+    "violationCount는 계약에 적은 숫자·링크·코드의 어긋남, 제목 구조의 어긋남, 빠진 고정 문구, hanlint 오류를 더한 수다. "
+    "facts 사이의 관계와 사실 여부, 빠진 뜻, 독자에게 쓸모 있는지와 자연스러운지는 검사하지 않는다"
 )
 PATCH_MEANING = (
     "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 "
     "만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
 )
 PATCH_MEANING_V2 = (
-    "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 계약 위반과 새 error를 만들지 않고 "
-    "선택한 수정 예산을 지켰다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다"
+    "verified는 정확히 한 곳을 바꾸고, 적어 둔 기존 위반을 줄이고, 새 계약 위반과 새 오류를 만들지 않고, "
+    "고른 수정 예산을 지켰다는 뜻뿐이다. 고친 문장의 뜻이 맞는지, 사실인지, 자연스러운지는 보증하지 않는다"
 )
 
 
 @dataclass(frozen=True)
 class CheckResult:
-    """같은 Contract와 글에서 항상 같은 JSON을 내는 검사 영수증."""
+    """같은 Contract와 글에서 늘 같은 JSON을 내는 검사 결과 기록."""
 
     contractSha256: str
     draftSha256: str
@@ -42,7 +42,7 @@ class CheckResult:
 
     def __post_init__(self) -> None:
         if self.contractVersion not in (1, 2):
-            raise ValueError(f"check result contractVersion 은 1 또는 2다: {self.contractVersion}")
+            raise ValueError(f"check result의 contractVersion은 1이나 2여야 한다. 받은 값: {self.contractVersion}")
         hasStructure = self.outline is not None and self.document is not None
         if hasStructure != (self.contractVersion == 2):
             raise ValueError("version 2 check result만 outline과 document를 함께 가진다")
@@ -86,7 +86,7 @@ class CheckResult:
 
 @dataclass(frozen=True)
 class PatchResult:
-    """Patch가 한정된 기계 검증을 만족했는지 남기는 영수증."""
+    """Patch가 정해진 기계 검증을 통과했는지 남기는 결과 기록."""
 
     contractSha256: str
     sourceSha256: str
@@ -103,11 +103,11 @@ class PatchResult:
 
     def __post_init__(self) -> None:
         if self.contractVersion not in (1, 2):
-            raise ValueError(f"patch result contractVersion 은 1 또는 2다: {self.contractVersion}")
+            raise ValueError(f"patch result의 contractVersion은 1이나 2여야 한다. 받은 값: {self.contractVersion}")
 
     @property
     def newSurfaceIssues(self) -> tuple[tuple[str, str], ...]:
-        """version 1 공개 속성과 기존 호출자를 위한 보호 표면 위반."""
+        """version 1 공개 속성과 기존 호출자를 위한, 지켜야 할 숫자·링크·코드의 위반."""
         return tuple(issue for issue in self.newContractIssues if issue[0] != "outline")
 
     @property
@@ -152,7 +152,7 @@ class PatchResult:
 
 
 def renderCheck(result: CheckResult) -> str:
-    """사람이 결론, 근거, 다음 행동 순서로 읽는 검사 영수증."""
+    """사람이 결론, 근거, 다음 할 일의 순서로 읽는 검사 결과."""
     status = "계약 위반 없음" if result.violationCount == 0 else f"계약 위반 {result.violationCount}건"
     lines = [status]
     labels = (
@@ -181,21 +181,21 @@ def renderCheck(result: CheckResult) -> str:
         )
         for index, section in enumerate(result.document.sections, start=1):
             lines.append(
-                f"  {index}. {section.heading} ({section.line}행, 문단 {section.paragraphCount}, 코드 {section.codeBlockCount})"
+                f"  {index}. {section.heading} ({section.line}줄, 문단 {section.paragraphCount}, 코드 {section.codeBlockCount})"
             )
-    lines.append(f"- lint: error {result.errorCount}, notice {result.noticeCount}")
+    lines.append(f"- lint: 오류 {result.errorCount}건, 확인 권고 {result.noticeCount}건")
     if result.errorCount:
         rules = Counter(finding.rule for finding in result.findings if finding.severity == "error")
         lines.append("  " + ", ".join(f"{rule} {count}" for rule, count in sorted(rules.items())))
     debts = readerDebts(result.findings)
-    lines.append(f"- 독자 부채: {len(debts)}건" if debts else "- 독자 부채: 없음")
-    lines.extend(f"  {debt.line}행 [{debt.rule}] {debt.why}" for debt in debts)
+    lines.append(f"- 독자가 막힐 곳: {len(debts)}건" if debts else "- 독자가 막힐 곳: 없음")
+    lines.extend(f"  {debt.line}줄 [{debt.rule}] {debt.why}" for debt in debts)
     if result.violationCount:
-        lines.append("\n다음: 계약과 글 가운데 틀린 쪽을 바로잡고 같은 check를 다시 실행한다")
+        lines.append("\n다음: 계약과 글 가운데 틀린 쪽을 고치고 같은 check를 다시 돌린다")
     elif result.noticeCount:
-        lines.append("\n다음: notice를 읽고 고칠지 유지할지 판단한 뒤 사람과 LLM 평가로 넘어간다")
+        lines.append("\n다음: 확인 권고를 읽고 고칠지 그대로 둘지 정한다")
     else:
-        lines.append("\n다음: 세어서 잡히는 계약 위반이 없다. 사람과 LLM 평가로 넘어간다")
+        lines.append("\n다음: 규칙으로 셀 수 있는 계약 위반은 없다. 뜻과 자연스러움은 사람이 읽고 판단한다")
     lines.extend(["", CHECK_MEANING if result.contractVersion == 1 else CHECK_MEANING_V2])
     return "\n".join(lines)
 

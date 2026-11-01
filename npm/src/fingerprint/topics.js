@@ -1,5 +1,5 @@
 // @ts-check
-/** 화제어 집합. 조사를 뗀 명사 어절의 근사. 파이썬 fingerprint/topics.py 와 같다. */
+/** 화제어 집합. 조사를 뗀 명사 어절의 어림. 파이썬 fingerprint/topics.py와 같다. */
 import { stripJosa, tailOf, words } from "../analysis/tokenize.js";
 import { loadLines } from "../data/load.js";
 

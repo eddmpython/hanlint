@@ -1,18 +1,18 @@
 # Skill 작성 규약
 
-`skills/specs/**/*.md` 에 스킬을 추가하거나 고칠 때 따르는 규격이다.
+`skills/specs/**/*.md`에 스킬을 추가하거나 고칠 때 따르는 규격이다.
 
 ## 1. 위치와 id
 
-경로와 id 가 1대1로 대응한다.
+경로와 id가 1대1로 대응한다.
 
 ```
 skills/specs/{category}/{name}.md   ->   id: {category}.{name}
 skills/specs/{category}/README.md   ->   id: {category}.README
 ```
 
-카테고리는 `start` 와 `operation` 둘뿐이다. 새 카테고리는 그 표면이 실제로 생겼을 때 만든다.
-파일 이름은 camelCase 다.
+카테고리는 `start`와 `operation` 둘뿐이다. 새 카테고리는 그 종류의 문서가 실제로 생겼을 때 만든다.
+파일 이름은 camelCase다.
 
 ## 2. frontmatter
 
@@ -31,9 +31,9 @@ skills/specs/{category}/README.md   ->   id: {category}.README
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | `verify` | string[] | 이 문서의 주장을 확인하는 명령. 실행 가능한 것만 |
-| `status` | `curated` \| `observed` | `observed` 는 실측으로 확인했다는 뜻이다 |
+| `status` | `curated` \| `observed` | `observed`는 실측으로 확인했다는 뜻이다 |
 
-`whenToUse` 는 제목을 다시 쓰는 자리가 아니다. **찾는 사람이 실제로 떠올릴 말** 을 적는다.
+`whenToUse`에는 제목을 다시 쓰지 않는다. **찾는 사람이 실제로 떠올릴 말**을 적는다.
 
 ## 3. 본문 규칙
 
@@ -41,11 +41,12 @@ skills/specs/{category}/README.md   ->   id: {category}.README
 - **왜 그렇게 했는지 남긴다.** 다음 사람이 같은 시도를 다시 하지 않게 한다. 시도했다가 되돌린 것은
   이유와 함께 적는다.
 - **되돌리는 법을 적는다.** 절차마다 롤백 경로가 한 줄 있어야 한다.
-- 문서가 코드보다 낡은 것을 발견하면 그 자리에서 고친다.
-- 규칙 목록과 임계를 문서에 옮겨 적지 않는다. 규칙은 `hanlint rules`, 임계는 `config/` 가 기준이다.
-- 이 저장소의 문서는 hanlint 자신이 검사한다. em 대시와 명령형 뒤 마침표를 쓰지 않는다.
+- 문서가 코드보다 낡은 것을 발견하면 바로 고친다.
+- 규칙 목록과 기준값을 문서에 옮겨 적지 않는다. 규칙은 `hanlint rules`, 기준값은 `config/`가 기준이다.
+- 이 저장소의 문서는 hanlint 자신이 검사한다. 긴 줄표(U+2014)와 짧은 줄표(U+2013)를 쓰지 않는다.
 
 ## 4. 검사
 
-frontmatter 필수 필드, id 와 경로 일치, id 중복, 상대 링크 생존, 금지 문자를 구조 게이트가 본다.
-게이트는 코어와 함께 만든다. 게이트가 생기기 전까지는 이 문서가 사람이 확인하는 기준이다.
+구조 게이트가 볼 것은 frontmatter 필수 필드, id와 경로 일치, id 중복, 깨진 상대 링크, 금지 문자다.
+지금은 색인의 링크를 `tests/gates/testSpecIndex.py`가, 줄표를 `tests/gates/testDash.py`가 본다. 나머지를 보는
+게이트는 아직 없고, 그 전까지는 이 문서가 사람이 확인하는 기준이다.

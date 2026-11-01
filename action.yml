@@ -1,21 +1,21 @@
-# GitHub Action 표면. PR 과 push 에서 마크다운을 검사하고 지적을 줄 주석으로 단다.
-# 이 저장소의 ci.yml 이 이 액션을 자기 문서에 실제로 써서 돈다 (uses: ./).
+# hanlint의 GitHub Action. PR과 push에서 마크다운을 검사하고 지적이 난 줄에 주석을 단다.
+# 이 저장소의 ci.yml이 이 액션으로 자기 문서를 실제로 검사한다(uses: ./).
 name: hanlint
-description: 한국어 마크다운에서 반복되는 결함을 결정적으로 잡아 줄 주석으로 단다
+description: 한국어 마크다운에서 되풀이되는 결함을 찾아 그 줄에 주석을 단다
 branding:
   icon: check-circle
   color: red
 
 inputs:
   files:
-    description: 검사할 마크다운 파일들. 공백으로 나눈다
+    description: 검사할 마크다운 파일. 여러 개면 공백으로 나눈다
     required: true
   errors-only:
-    description: error 만 표시한다 ("true" 또는 "false")
+    description: 오류 지적만 표시한다 ("true" 또는 "false")
     required: false
     default: "false"
   command:
-    description: hanlint 실행 명령. 기본은 npx 로 npm 패키지를 받는다. 이 저장소 안에서는 node npm/bin/hanlint.js 를 준다
+    description: hanlint 실행 명령. 기본은 npx로 npm 패키지를 받는다. 이 저장소 안에서는 node npm/bin/hanlint.js를 준다
     required: false
     default: npx --yes hanlint
 

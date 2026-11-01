@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * 이미 있는 지적을 잠가 두고 새로 생긴 것만 막는다. 파이썬 `hanlint/baseline/store.py` 의 투영이다.
- * 왜 줄 번호가 아니라 글자인지, 왜 사람이 읽는 꼴인지는 그 파일의 docstring 이 정본이다.
+ * 이미 있는 지적을 기준 파일(baseline)에 적어 두고 새로 생긴 지적만 막는다. 파이썬 `hanlint/baseline/store.py`를 옮긴 것이다.
+ * 왜 줄 번호가 아니라 글자인지, 왜 사람이 읽는 형식인지는 그 파일의 docstring에 있다.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, posix, relative, resolve, sep } from "node:path";
@@ -20,7 +20,7 @@ export function keyOf(finding) {
   return `${finding.rule}\u0000${normalizeQuote(finding.quote)}`;
 }
 
-/** 잠금 파일이 있는 폴더 기준의 상대 경로. @param {string} path @param {string | null} target */
+/** 기준 파일이 있는 폴더에서 본 상대 경로. @param {string} path @param {string | null} target */
 export function pathKey(path, target) {
   if (!target || !path || path.startsWith("<")) return path;
   return relative(dirname(resolve(target)), resolve(path)).split(sep).join(posix.sep);
@@ -44,7 +44,7 @@ export class Baseline {
     return (this.locked.get(pathKey(path, this.source)) ?? new Set()).has(keyOf(finding));
   }
 
-  /** 잠기지 않은 지적만 남긴다. @param {string} path @param {import("../rules/finding.js").Finding[]} findings */
+  /** 기준 파일에 없는 지적만 남긴다. @param {string} path @param {import("../rules/finding.js").Finding[]} findings */
   keep(path, findings) {
     return findings.filter((finding) => !this.isLocked(path, finding));
   }
@@ -60,7 +60,7 @@ export function build(results, target = null) {
   return new Baseline(locked, target ? resolve(target) : null);
 }
 
-/** 사람이 읽고 리뷰하는 꼴. 정렬해 담아 같은 입력에 같은 파일이 나온다. @param {Baseline} baseline */
+/** 사람이 읽고 리뷰하는 형식. 정렬해 담아 같은 입력에 같은 파일이 나온다. @param {Baseline} baseline */
 export function render(baseline) {
   /** @type {Record<string, {rule: string, quote: string}[]>} */
   const files = {};
@@ -80,7 +80,7 @@ export function render(baseline) {
 /** @param {string} text @param {string | null} [source] */
 export function parse(text, source = null) {
   const data = JSON.parse(text);
-  if (data.version !== VERSION) throw new Error(`모르는 baseline 판 ${data.version}. hanlint baseline 으로 다시 만든다`);
+  if (data.version !== VERSION) throw new Error(`지원하지 않는 baseline 버전: ${data.version}. hanlint baseline으로 다시 만든다`);
   /** @type {Map<string, Set<string>>} */
   const locked = new Map();
   for (const [path, entries] of Object.entries(data.files ?? {})) {
@@ -92,7 +92,7 @@ export function parse(text, source = null) {
 /** @param {string} path */
 export function load(path) {
   if (!existsSync(path)) {
-    const error = /** @type {NodeJS.ErrnoException} */ (new Error(`${path} 를 찾지 못했다`));
+    const error = /** @type {NodeJS.ErrnoException} */ (new Error(`파일을 찾지 못했다: ${path}`));
     error.code = "ENOENT";
     error.path = path;
     throw error;
@@ -100,7 +100,7 @@ export function load(path) {
   return parse(readFileSync(path, "utf-8"), resolve(path));
 }
 
-/** 지금 글에 더 없는 잠금을 지운다. @param {Baseline} baseline @param {Map<string, import("../rules/finding.js").Finding[]>} results */
+/** 지금 글에 더는 없는 지적을 기준 파일에서 지운다. @param {Baseline} baseline @param {Map<string, import("../rules/finding.js").Finding[]>} results */
 export function prune(baseline, results) {
   const kept = new Map(baseline.locked);
   for (const [path, findings] of results) {

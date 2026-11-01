@@ -16,10 +16,10 @@ def bar(ratio: float, width: int = 20) -> str:
 def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult, color: bool = False) -> str:
     lines = [renderMap(doc, findings, color), ""]
     rhythm = audit.rhythm
-    lines.append(f"문장 길이   평균 {rhythm.mean:.1f} 어절, 표준편차 {rhythm.std:.1f}, 편차/평균 {rhythm.burstiness:.2f}")
+    lines.append(f"문장 길이   평균 {rhythm.mean:.1f}어절, 표준편차 {rhythm.std:.1f}, 편차/평균 {rhythm.burstiness:.2f}")
     total = max(1, audit.sentenceCount)
     for label, count in rhythm.histogram:
-        lines.append(f"  {label:>6} 어절  {bar(count / total)} {count}")
+        lines.append(f"  {label:>6}어절  {bar(count / total)} {count}")
     lines.append(f"문단 길이   두 문장 이하 문단 {audit.shortParagraphRatio:.0%}")
     total = max(1, audit.paragraphCount)
     for label, count in audit.paragraphHistogram:
@@ -29,7 +29,7 @@ def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult,
     lines.append(f"종결어미    {mix}")
     lexicon = audit.lexicon
     lines.append(
-        f"어휘        어절 {lexicon.tokens}, 낱말 종류 {lexicon.types}, 종류/어절 {lexicon.typeTokenRatio:.2f}, "
+        f"어휘        어절 {lexicon.tokens}, 단어 종류 {lexicon.types}, 종류/어절 {lexicon.typeTokenRatio:.2f}, "
         f"영문 어절 {lexicon.foreignRatio:.0%}"
     )
     if lexicon.topWords:
@@ -38,16 +38,16 @@ def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult,
         lines.append("문두 접속사 " + ", ".join(f"{word} {count}" for word, count in audit.connectorMix))
     d = audit.density
     lines.append(
-        f"천 어절당   접속사 {d.connectors:.1f}, 지시어 {d.deixis:.1f}, 강조 낱말 {d.emphasis:.1f}, "
-        f"헤지 {d.hedges:.1f}, 수치 {d.numbers:.1f}"
+        f"천 어절당   접속사 {d.connectors:.1f}, 지시어 {d.deixis:.1f}, 강조하는 말 {d.emphasis:.1f}, "
+        f"단정을 피하는 말 {d.hedges:.1f}, 수치 {d.numbers:.1f}"
     )
     lines.append(f"독자        질문 {audit.questionCount}, 독자 호출 {audit.readerCallCount}")
     debts = readerDebts(findings)
-    lines.append(f"독자 부채   {len(debts)}건" if debts else "독자 부채   없음")
-    lines.extend(f"  {debt.line}행 [{debt.rule}] {debt.why}" for debt in debts)
+    lines.append(f"막힐 곳     {len(debts)}건" if debts else "막힐 곳     없음")
+    lines.extend(f"  {debt.line}줄 [{debt.rule}] {debt.why}" for debt in debts)
     if audit.valleys:
-        spots = ", ".join(f"{v.line}행" for v in audit.valleys)
-        lines.append(f"흐름 골짜기 {spots} (앞 문단과 화제어 겹침 0)")
+        spots = ", ".join(f"{v.line}줄" for v in audit.valleys)
+        lines.append(f"끊긴 문단  {spots} (앞 문단과 겹치는 화제어가 없다)")
     lines.append("절")
     lines.extend(
         f"  {index}. {section.title or '(도입)'}: 문단 {section.paragraphs}, 코드 {section.codeBlocks}"

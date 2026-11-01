@@ -1,4 +1,4 @@
-"""`hanlint evidence brief.json`. 사실별 고정 근거 원장을 검사한다."""
+"""`hanlint evidence brief.json`. 사실별 고정 근거 목록을 검사한다."""
 
 from __future__ import annotations
 
@@ -13,16 +13,16 @@ HELP = "v2 writing brief의 사실별 출처 버전·인용 조각 해시·라�
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("file", type=Path, help="근거 원장이 든 writing brief v2 JSON")
+    parser.add_argument("file", type=Path, help="근거 목록이 든 writing brief v2 JSON")
     parser.add_argument("--format", choices=("text", "json"), default="text", help="출력 형식. 기본 text")
     addOutputOption(parser)
 
 
 def renderText(data: dict) -> str:
     if not data["ledgerValid"]:
-        return "근거 원장 위반\n" + "\n".join(f"- {item}" for item in data["violations"]) + "\n\n" + data["meaning"]
+        return "근거 목록 위반\n" + "\n".join(f"- {item}" for item in data["violations"]) + "\n\n" + data["meaning"]
     lines = [
-        f"근거 원장 충족: fact {len(data['factEvidence'])}개, evidence {data['evidenceRecords']}개",
+        f"근거 목록 충족: fact {len(data['factEvidence'])}개, evidence {data['evidenceRecords']}개",
         f"사람 검토 기록: {data['humanVerifiedRecords']}개",
     ]
     lines.extend(f"- {factId}: {', '.join(evidenceIds)}" for factId, evidenceIds in data["factEvidence"].items())

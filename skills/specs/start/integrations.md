@@ -2,7 +2,7 @@
 id: start.integrations
 title: 자동화 연결
 category: start
-purpose: 소비 저장소에서 GitHub Actions, pre-commit과 에이전트에 hanlint를 연결하는 예제를 모았다.
+purpose: hanlint를 쓰는 저장소에서 GitHub Actions, pre-commit과 에이전트에 hanlint를 연결하는 예제를 모았다.
 whenToUse:
   - PR에서 문서를 검사한다
   - 커밋 전 검사를 설정한다
@@ -19,7 +19,7 @@ status: curated
 
 ## GitHub Actions에서 검사하기
 
-소비 저장소의 `.github/workflows/hanlint.yml`에 다음 내용을 넣는다. `docs/`는 검사할 경로로 바꾼다.
+hanlint를 쓰는 저장소의 `.github/workflows/hanlint.yml`에 다음 내용을 넣는다. `docs/`는 검사할 경로로 바꾼다.
 
 ```yaml
 name: Korean prose
@@ -42,7 +42,7 @@ jobs:
 ```
 
 예제는 액션과 검사 패키지를 같은 릴리즈에 고정한다. 갱신할 때 둘을 함께 바꾼다. 입력 계약은
-루트 [action.yml](../../../action.yml)이 정한다. Action은 지적을 GitHub 줄 주석으로 출력하고 error가
+루트 [action.yml](../../../action.yml)이 정한다. Action은 지적이 난 줄에 GitHub 주석을 달고 오류 지적이
 있으면 실패한다. PR에 별도 댓글을 게시하거나 원고를 자동 수정하지 않는다.
 
 `files`는 공백으로 구분한 파일 또는 폴더 경로다. 이 입력으로 공백이 든 파일 이름을 정확히 구분할 수
@@ -65,7 +65,7 @@ pre-commit install
 pre-commit run hanlint --all-files
 ```
 
-훅은 변경된 마크다운을 검사하며 기본 인자는 error만 표시하는 `--errors-only --quiet`다.
+훅은 변경된 마크다운을 검사하며 기본 인자는 오류 지적만 표시하는 `--errors-only --quiet`다.
 검사기가 파일을 고치지는 않는다. 공개 훅의 정의는 [.pre-commit-hooks.yaml](../../../.pre-commit-hooks.yaml)에 있다.
 이 저장소를 개발할 때 쓰는 `.githooks/`와는 용도가 다르다.
 
@@ -81,9 +81,9 @@ hanlint 글.md --format json
 [`write-korean`](../../write-korean/SKILL.md)은 글을 쓰면서 같은 규칙을 확인하는 절차다.
 스킬을 쓰는 제품의 설치 방식에 맞춰 연결한다. 자동화에서도 사실과 뜻, 독자의 과업은 사람이 확인한다.
 
-## 쓰기 전 작법서 훅
+## 쓰기 전 글쓰기 지침 훅
 
-`hanlint hook --prime`은 SessionStart와 UserPromptSubmit 입력에 작법서 본문을 additionalContext로 낸다.
+`hanlint hook --prime`은 SessionStart와 UserPromptSubmit 입력에 글쓰기 지침 본문을 additionalContext로 낸다.
 본문은 `hanlint primer` 첫머리와 같은 `src/hanlint/data/koreanProse.txt`다. 다른 이벤트와 깨진 입력에는
 아무것도 내지 않고 항상 종료 코드 0으로 끝난다.
 
@@ -99,7 +99,7 @@ Claude Code에서는 SessionStart에 건다. 세션을 열거나 이어 가거�
 }
 ```
 
-Claude Code 2.1.278에서 이 훅을 건 세션은 작법서 4번 줄의 제목을 그대로 답했고, 훅이 없는 세션은 없다고
+Claude Code 2.1.278에서 이 훅을 건 세션은 지침 4번 항목의 제목을 그대로 답했고, 훅이 없는 세션은 없다고
 답했다.
 
 Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`의 SessionStart에 `"command": "uvx hanlint hook --prime"`으로
@@ -107,13 +107,13 @@ Codex도 같은 JSON을 받는다. `~/.codex/hooks.json`의 SessionStart에 `"co
 검토에서 신뢰하기 전에는 돌지 않는다.
 
 명령을 따옴표로 시작하지 않는다. 윈도우의 Codex 0.155.1에서 `"C:/.../python.exe" -X utf8 ...`처럼 따옴표 친
-경로로 시작한 훅은 `Failed`로 끝났고, 따옴표를 뺀 같은 명령은 세션 기록에 작법서를 실었다. Codex 0.154.0에서
+경로로 시작한 훅은 `Failed`로 끝났고, 따옴표를 뺀 같은 명령은 세션 기록에 지침을 실었다. Codex 0.154.0에서
 SessionStart의 additionalContext가 거부된다는 보고가 있으므로
 ([openai/codex#45999](https://github.com/openai/codex/issues/45999)), 그 버전에서는 UserPromptSubmit에 건다.
-UserPromptSubmit은 요청마다 작법서 본문을 다시 싣는다. 이전 버전의 작법서는 Codex 필자에서도 이겼다 (블라인드 심판
+UserPromptSubmit은 요청마다 지침 본문을 다시 싣는다. 이전 버전의 지침은 필자가 Codex일 때도 이겼다 (블라인드 심판
 96건에서 90 대 6, `tests/_attempts/codexCraft`).
 
-## 저장·답변 훅 (Claude Code, Codex)
+## 저장·답변 훅(Claude Code, Codex)
 
 `hanlint hook`은 PostToolUse 입력에서 `Write` 또는 `Edit`가 저장한 마크다운 한 파일을 검사한다.
 `hanlint hook --reply`는 Stop 입력의 마지막 답변을 `chat` 프리셋으로 검사한다.
@@ -155,7 +155,7 @@ Stop 항목은 `command`를 `npx --yes hanlint hook --reply`로 바꾼다. 정�
 검사를 생략하므로, 파일을 반드시 검사해야 하는 발행 단계에는 일반 CLI나 CI 검사를 함께 사용한다.
 
 Codex에서도 같은 명령을 쓴다. PostToolUse에서는 Codex가 파일을 고칠 때 보내는 `apply_patch` 입력을 읽는다.
-패치 본문 (`tool_input.command`)에서 `*** Add File:`, `*** Update File:`, `*** Move to:` 줄에 적힌 경로를 모으고,
+패치 본문(`tool_input.command`)에서 `*** Add File:`, `*** Update File:`, `*** Move to:` 줄에 적힌 경로를 모으고,
 입력이 준 `cwd`에서 찾은 마크다운을 모두 검사한다. 결과는 Claude Code와 같은 additionalContext로 낸다. Stop에는 `--agent codex`를
 붙인다. Codex의 Stop 훅은 additionalContext를 받지 않으므로 막지 않는 `systemMessage`로 사용자에게 보인다. 이
 경우 모델에는 전달되지 않는다. `~/.codex/hooks.json`에는 다음처럼 건다.
@@ -169,12 +169,12 @@ Codex에서도 같은 명령을 쓴다. PostToolUse에서는 Codex가 파일을 
 }
 ```
 
-Stop 입력의 필드 (`last_assistant_message`, `stop_hook_active`, `cwd`) 는 Codex 0.155.1의 실물 입력으로 확인했다.
+Stop 입력의 필드(`last_assistant_message`, `stop_hook_active`, `cwd`)는 Codex 0.155.1의 실물 입력으로 확인했다.
 `apply_patch` 입력은 Codex 훅 문서의 꼴을 따랐다. 이 기계에서는 Codex 샌드박스가 임시 폴더의 파일 쓰기를
 거부해 실물 입력으로 확인하지 못했다.
 
-## 편집기를 내 계정에 배포하기
+## 브라우저 편집기를 내 계정에 배포하기
 
-브라우저는 GitHub Pages에서 정적 파일로 동작한다. 사용자용 [Fork 안내](https://eddmpython.github.io/hanlint/guide.html#fork)에
+브라우저 편집기는 GitHub Pages에서 정적 파일로 동작한다. 사용자용 [Fork 안내](https://eddmpython.github.io/hanlint/guide.html#fork)에
 따라 사이트를 운영할 수 있다. 사이트 소스와 원고용 저장소의 역할, 저장과 공개 범위도 그 안내에서 확인한다.
 개발자의 로컬 실행과 배포 절차는 [브라우저 편집기 운영](../operation/webEditor.md)에 있다.

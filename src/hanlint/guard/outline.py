@@ -1,4 +1,4 @@
-"""Reader Contract가 잠근 제목 순서와 글 지문의 구조 요약."""
+"""Reader Contract가 고정한 제목 순서와, 글 분석 결과에서 뽑은 구조 요약."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from ..fingerprint import DocumentPrint
 
 @dataclass(frozen=True)
 class OutlineMismatch:
-    """한 제목 위치에서 기대와 실제가 갈린 자리."""
+    """한 제목 위치에서 기대한 제목과 실제 제목이 다른 곳."""
 
     position: int
     expected: str | None
@@ -71,7 +71,7 @@ class SectionSummary:
 
 @dataclass(frozen=True)
 class DocumentSummary:
-    """check 영수증에서 바로 읽는 글의 크기와 절 목록."""
+    """check 결과에서 바로 읽는 글의 크기와 절 목록."""
 
     sentenceCount: int
     paragraphCount: int
@@ -94,7 +94,7 @@ class DocumentSummary:
 
 
 def compareOutline(outline: Outline, doc: DocumentPrint) -> OutlineDiff:
-    """잠근 수준의 제목을 순서와 개수까지 정확히 대조한다."""
+    """고정한 수준의 제목을 순서와 개수까지 정확히 대조한다."""
     actual = tuple(title for level, title, _ in doc.headings if level == outline.level)
     mismatches = []
     for index in range(max(len(outline.headings), len(actual))):
@@ -106,7 +106,7 @@ def compareOutline(outline: Outline, doc: DocumentPrint) -> OutlineDiff:
 
 
 def summarizeDocument(doc: DocumentPrint) -> DocumentSummary:
-    """지문을 다시 읽지 않고 전체 제목과 절 모양을 압축한다."""
+    """분석 결과를 다시 읽지 않고 전체 제목과 절 모양을 줄여 담는다."""
     sections = tuple(
         SectionSummary(section.title, section.startLine, len(section.paragraphs), section.count("code"))
         for section in doc.bodySections

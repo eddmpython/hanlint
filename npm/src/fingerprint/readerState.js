@@ -1,28 +1,28 @@
 // @ts-check
 /**
- * 독자 상태. 글을 위에서 아래로 읽는 독자가 어느 자리에서 무엇을 손에 들고 무엇을 이미 보았는가.
- * 파이썬 fingerprint/readerState.py 와 같다. reader 기제의 규칙은 어느 자리가 요구하는 것을 그 자리의 상태에
- * 대 본다. 상태는 블록과 문장 순서로 쌓이고 한 번 쌓은 것은 바뀌지 않는다. 집합은 고치지 않는다.
+ * 독자 상태. 글을 위에서 아래로 읽는 독자가 어느 위치에서 무엇을 이미 알고 무엇을 이미 보았는가.
+ * 파이썬 fingerprint/readerState.py와 같다. 독자 상태를 보는 규칙(reader)은 한 위치가 필요로 하는 것을 그 위치의
+ * 상태와 대조한다. 상태는 블록과 문장 순서로 쌓이고 한 번 쌓은 것은 바뀌지 않는다. 집합은 고치지 않는다.
  */
 import { CODE, PROSE } from "../document/model.js";
 import { createdIn } from "./codeMarkers.js";
 import { numeralsIn } from "./markers.js";
 
 /**
- * 한 자리 (문장 하나 또는 블록 하나) 를 읽기 직전의 독자.
+ * 한 위치(문장 하나 또는 블록 하나)를 읽기 직전의 독자.
  * @typedef {object} ReaderState
  * @property {import("./build.js").SentencePrint | null} previous 바로 앞에 읽은 산문 문장
  * @property {Set<string>} recent 손에 든 화제어. 바로 앞 문장의 것이고 앞 문장이 없으면 빈 집합
- * @property {Set<string>} known 이 자리 앞까지 산문에 나온 화제어 전부
+ * @property {Set<string>} known 이 위치 앞까지 산문에 나온 화제어 전부
  * @property {Set<string>} numerals 지금까지 산문과 블록에 나온 수 (천 단위 쉼표를 뗀 꼴)
  * @property {Set<string>} files 앞선 코드 블록이 만든 파일 이름과 폴더
  * @property {number} sentencesRead 지금까지 읽은 산문 문장 수
- * @property {[number, string][]} promises 지금까지 뒤로 미룬 표지 (줄, 원문)
- * @property {[number, string][]} recalls 지금까지 앞을 회수한 표지 (줄, 원문)
+ * @property {[number, string][]} promises 지금까지 뒤로 미룬 말(줄, 원문)
+ * @property {[number, string][]} recalls 지금까지 앞의 이야기를 다시 다룬 말(줄, 원문)
  */
 
 /**
- * 자리마다의 독자 상태. 문장은 index 로, 블록은 index 로 찾는다.
+ * 위치마다의 독자 상태. 문장은 index로, 블록은 index로 찾는다.
  * @typedef {object} ReaderTrail
  * @property {ReaderState[]} beforeSentence
  * @property {ReaderState[]} beforeBlock
@@ -84,7 +84,7 @@ function afterBlock(state, block, code) {
 }
 
 /**
- * 블록 순서로 한 번 지나며 자리마다의 상태를 적는다. 산문 블록은 문장 하나씩, 나머지는 블록째 읽는다.
+ * 블록 순서로 한 번 지나며 위치마다의 상태를 적는다. 산문 블록은 문장 하나씩, 나머지는 블록째 읽는다.
  * @param {import("../document/model.js").Block[]} blocks
  * @param {import("./codeBlocks.js").CodeBlock[]} codeBlocks
  * @param {import("./build.js").SentencePrint[]} sentences

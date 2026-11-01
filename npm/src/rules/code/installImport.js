@@ -108,7 +108,7 @@ export function run(doc) {
           const acceptable = packageOf().get(top) ?? new Set([normalize(top)]);
           if (![...acceptable].some((pkg) => packages.has(pkg))) {
             const packageNames = [...acceptable].sort().join("`, `");
-            findings.push(finding(name, line, code.trim(), `\`${top}\` 를 import 하는데 설치 줄에 허용되는 이름 \`${packageNames}\` 가 없다. 독자는 ModuleNotFoundError 에서 멈춘다`, null, "error", DOCUMENT, block.index));
+            findings.push(finding(name, line, code.trim(), `\`${top}\` 모듈을 import하는데 설치 줄에 그 모듈이 든 패키지(\`${packageNames}\`)가 없다. 독자는 ModuleNotFoundError에서 멈춘다`, null, "error", DOCUMENT, block.index));
           }
         }
       }
@@ -120,7 +120,7 @@ export function run(doc) {
         const name2 = normalize(parsed[1]);
         const extra = parsed[2] ? normalize(parsed[2]) : null;
         if (packages.has(name2) && (extra === null || (packages.get(name2)?.has(extra) ?? false))) continue;
-        findings.push(finding(name, line, code.trim(), `이 줄은 \`${requirement}\` 가 있어야 돈다. ${why}. 설치 줄에 없다`, null, NOTICE, DOCUMENT, block.index));
+        findings.push(finding(name, line, code.trim(), `이 줄은 \`${requirement}\` 패키지가 있어야 실행되는데 설치 줄에 없다. ${why}`, null, NOTICE, DOCUMENT, block.index));
       }
     }
   }

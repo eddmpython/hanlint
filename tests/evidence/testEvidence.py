@@ -77,7 +77,7 @@ def testV2LoadsAClosedEvidenceLedgerAndKeepsFactTextSeparate():
     ("change", "message"),
     [
         (lambda data: data["evidence"].pop(), "근거 기록이 없는 fact"),
-        (lambda data: data["evidence"][0].update(factIds=["F9"]), "없는 fact"),
+        (lambda data: data["evidence"][0].update(factIds=["F9"]), "가리키는 fact가 없다"),
         (lambda data: data["evidence"][0].update(excerpt="바뀐 조각"), "excerpt와 다르다"),
         (lambda data: data["evidence"][0].update(revision=None, checkedAt=None), "출처 버전을 고정"),
         (lambda data: data["evidence"][0].update(revision="latest"), "고정 버전"),

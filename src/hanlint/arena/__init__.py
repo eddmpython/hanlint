@@ -1,4 +1,4 @@
-"""작법 전략을 안전 계약과 블라인드 사람 선호로 나눠 비교한다."""
+"""글쓰기 전략을 자동 안전 검사와 블라인드 사람 평가로 나눠 비교한다."""
 
 from __future__ import annotations
 
@@ -37,32 +37,32 @@ def candidateIsLeft(trial: WritingTrial, seed: int) -> bool:
 
 def checkedString(value: object, where: str) -> str:
     if not isinstance(value, str) or not value or value != value.strip():
-        raise ValueError(f"{where} 는 양끝 공백 없는 문자열이다")
+        raise ValueError(f"{where} 값은 양끝 공백 없는 문자열이어야 한다")
     return value
 
 
 def checkedText(value: object, where: str) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{where} 는 내용이 있는 문자열이다")
+        raise ValueError(f"{where} 값은 내용이 있는 문자열이어야 한다")
     return value
 
 
 def checkedSha(value: object, where: str) -> str:
     value = checkedString(value, where)
     if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
-        raise ValueError(f"{where} 는 소문자 SHA256이다")
+        raise ValueError(f"{where} 값은 소문자 SHA256이어야 한다")
     return value
 
 
 def exactKeys(data: object, expected: set[str], where: str) -> dict:
     if not isinstance(data, dict):
-        raise ValueError(f"{where} 는 JSON 객체다")
+        raise ValueError(f"{where} 값은 JSON 객체여야 한다")
     unknown = sorted(set(data) - expected)
     missing = sorted(expected - set(data))
     if unknown:
-        raise ValueError(f"{where} 의 모르는 키: {', '.join(unknown)}")
+        raise ValueError(f"모르는 키({where}): {', '.join(unknown)}")
     if missing:
-        raise ValueError(f"{where} 의 빠진 키: {', '.join(missing)}")
+        raise ValueError(f"빠진 키({where}): {', '.join(missing)}")
     return data
 
 
@@ -85,7 +85,7 @@ class GenerationRecord:
         text = checkedText(data["text"], f"{where}.text")
         outputSha = checkedSha(data["outputSha256"], f"{where}.outputSha256")
         if sha256(text.encode()).hexdigest() != outputSha:
-            raise ValueError(f"{where}.outputSha256 가 text와 다르다")
+            raise ValueError(f"{where}.outputSha256이 text와 다르다")
         return cls(
             strategyId=checkedString(data["strategyId"], f"{where}.strategyId"),
             modelId=checkedString(data["modelId"], f"{where}.modelId"),
@@ -117,13 +117,13 @@ class WritingTrial:
     def fromMapping(cls, data: object) -> WritingTrial:
         data = exactKeys(data, {"version", "id", "brief", "baseline", "candidate"}, "writing trial")
         if isinstance(data["version"], bool) or not isinstance(data["version"], int) or data["version"] != ARENA_VERSION:
-            raise ValueError(f"writing trial version 은 {ARENA_VERSION}이다")
+            raise ValueError(f"writing trial의 version이 다르다. 쓸 수 있는 값: {ARENA_VERSION}")
         baseline = GenerationRecord.fromMapping(data["baseline"], "baseline")
         candidate = GenerationRecord.fromMapping(data["candidate"], "candidate")
         if baseline.strategyId != "plainBrief":
-            raise ValueError("baseline.strategyId 는 plainBrief 다")
+            raise ValueError("baseline.strategyId는 plainBrief여야 한다")
         if candidate.strategyId == baseline.strategyId:
-            raise ValueError("candidate.strategyId 는 plainBrief 와 달라야 한다")
+            raise ValueError("candidate.strategyId는 plainBrief와 달라야 한다")
         return cls(
             id=checkedString(data["id"], "writing trial id"),
             brief=WritingBrief.fromMapping(data["brief"]),
@@ -172,11 +172,11 @@ class BlindEvaluation:
         for dimension in DIMENSIONS:
             choice = decisions[dimension]
             if choice not in CHOICES:
-                raise ValueError(f"decisions.{dimension} 은 {', '.join(CHOICES)} 가운데 하나다")
+                raise ValueError(f"decisions.{dimension} 값은 {', '.join(CHOICES)} 가운데 하나여야 한다")
             normalized[dimension] = choice
         evaluatorKind = checkedString(data["evaluatorKind"], "evaluatorKind")
         if evaluatorKind not in EVALUATOR_KINDS:
-            raise ValueError(f"evaluatorKind 는 {', '.join(EVALUATOR_KINDS)} 가운데 하나다")
+            raise ValueError(f"evaluatorKind는 {', '.join(EVALUATOR_KINDS)} 가운데 하나여야 한다")
         evaluatorId = checkedString(data["evaluatorId"], "evaluatorId")
         note = checkedString(data["note"], "note")
         if evaluatorId == "<required>" or note == "<required>":
@@ -216,7 +216,7 @@ def prepareBlind(trial: WritingTrial | dict, seed: int, config: Config | None = 
     if isinstance(trial, dict):
         trial = WritingTrial.fromMapping(trial)
     if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
-        raise ValueError("seed 는 0 이상의 정수다")
+        raise ValueError("seed는 0 이상의 정수여야 한다")
     selectedConfig = copy(config) if config is not None else Config()
     baselineGuard = guardText(trial.brief, trial.baseline.text, selectedConfig)
     candidateGuard = guardText(trial.brief, trial.candidate.text, selectedConfig)
@@ -272,7 +272,7 @@ def recordEvaluation(blind: dict, data: BlindEvaluation | dict) -> dict:
         raise ValueError("blind trial의 digest가 다르다")
     evaluation = data if isinstance(data, BlindEvaluation) else BlindEvaluation.fromMapping(data)
     if evaluation.blindSha256 != blind.get("blindSha256"):
-        raise ValueError("evaluation의 blindSha256가 blind trial과 다르다")
+        raise ValueError("evaluation의 blindSha256이 blind trial과 다르다")
     result = evaluation.asDict()
     result["evaluationSha256"] = stableDigest(result)
     result["meaning"] = "evaluatorKind가 llm이면 사람 선호나 진실로 해석하지 않는다"

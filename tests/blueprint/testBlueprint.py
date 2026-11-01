@@ -116,7 +116,7 @@ def testVeryShortBriefCollapsesToOneWholeBudget():
 
 
 def testUnknownStrategyIsNotSilentlyTreatedAsTheCurrentOne():
-    with pytest.raises(ValueError, match="모르는 작법 전략"):
+    with pytest.raises(ValueError, match="모르는 글쓰기 전략"):
         blueprintFor(brief("docs"), "futureStrategy")
 
 

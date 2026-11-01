@@ -1,13 +1,13 @@
 """문형. 빈칸이 있는 문장 틀.
 
-본보기가 고친 사례 하나라면 문형은 그 사례를 다시 쓸 수 있는 틀이다. 한국 글쓰기 책들이 공통으로 드는
-조언은 대부분 금지 규칙으로 담기지 않는다 (실측은 tests/_attempts/koreanStyleBooks). `것을 이름으로
-바꾸라` 는 다섯 편에서 75건이 걸리는데 표본이 전부 정당했다. 그 조언들은 판정이 아니라 교정자의 눈이다.
-틀로는 담긴다.
+예시가 고친 사례 하나라면 문형은 그 사례를 다시 쓸 수 있는 틀이다. 한국 글쓰기 책들이 공통으로 드는
+조언은 대부분 금지 규칙으로 담기지 않는다(tests/_attempts/koreanStyleBooks에서 재 보았다). `것을 이름으로
+바꾸라`를 규칙으로 만들면 다섯 편에서 75건이 걸리는데 표본을 보니 모두 바른 문장이었다. 그 조언들은
+맞고 틀림을 가르는 기준이 아니라 교정자가 보는 관점이다. 하지만 틀로는 담긴다.
 
-정본은 `patterns.toml` 이고 여기는 그것을 읽는 함수뿐이다. 게이트 (`tests/gates/testPatterns.py`) 가
-문형마다 `example` 이 error 0 으로 통과하고 `instead` 가 `avoids` 의 규칙에 잡히는지 매번 확인한다.
-**통과가 보장된 틀** 이라는 것이 이 층의 값이다.
+내용은 `patterns.toml`에 있고 여기는 그것을 읽는 함수뿐이다. 게이트(`tests/gates/testPatterns.py`)가
+문형마다 `example`이 오류 0건으로 통과하고 `instead`가 `avoids`의 규칙에 잡히는지 매번 확인한다.
+**통과가 보장된 틀**이라는 것이 이 부분을 두는 까닭이다.
 """
 
 from __future__ import annotations
@@ -24,11 +24,11 @@ class Pattern:
     form: str
     """빈칸이 있는 틀. 빈칸은 중괄호다."""
     when: str
-    """이 틀을 꺼내는 자리."""
+    """이 틀을 쓰는 경우."""
     example: str
-    """그 틀로 실제로 쓴 문장. hanlint 를 통과한다."""
+    """그 틀로 실제로 쓴 문장. hanlint를 통과한다."""
     instead: str
-    """같은 자리에 흔히 쓰는 문장. avoids 의 규칙에 잡힌다."""
+    """같은 경우에 흔히 쓰는 문장. avoids의 규칙에 잡힌다."""
     avoids: tuple[str, ...]
     source: str
 
@@ -68,5 +68,5 @@ def patterns() -> tuple[Pattern, ...]:
 
 
 def patternsAvoiding(rule: str) -> tuple[Pattern, ...]:
-    """그 규칙을 피하는 문형들. 지적을 받은 자리에서 무엇으로 다시 쓸지 고를 때 쓴다."""
+    """그 규칙을 피하는 문형들. 지적을 받은 문장을 무엇으로 다시 쓸지 고를 때 쓴다."""
     return tuple(pattern for pattern in patterns() if rule in pattern.avoids)

@@ -11,7 +11,7 @@ export function run(doc) {
   let previous = doc.frontmatter.title ? 1 : null;
   for (const [level, text, line] of doc.headings) {
     if (previous !== null && level > previous + 1) {
-      findings.push(finding(name, line, text, `H${previous} 다음에 H${level} 이 온다. 한 수준씩 내려간다`, null, "error", DOCUMENT, -1));
+      findings.push(finding(name, line, text, `H${previous} 다음에 바로 H${level} 제목이 온다. 한 수준씩 내려간다`, null, "error", DOCUMENT, -1));
     }
     previous = level;
   }

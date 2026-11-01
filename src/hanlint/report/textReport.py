@@ -1,13 +1,13 @@
-"""사람이 읽는 지적 목록. `파일:줄` 로 시작해 편집기가 바로 연다.
+"""사람이 읽는 지적 목록. `파일:줄`로 시작해 편집기가 바로 연다.
 
-끝에 본보기를 붙인다. 지적은 무엇이 틀렸는지 말하고 본보기는 무엇이 맞는지 보인다. 지적마다 붙이면
+끝에 예시를 붙인다. 지적은 무엇이 틀렸는지 말하고 예시는 무엇이 맞는지 보인다. 지적마다 붙이면
 같은 줄이 스무 번 나오므로 그 글에 나온 규칙마다 한 짝씩만 낸다.
 
-전과 후를 제 줄에 둔다. 한 줄에 이어 붙였더니 53개 본보기 가운데 23개에서 **답인 `후` 가 잘렸다.**
-잘린 짝이 있으면 전문이 어디 있는지 (`hanlint explain`) 본보기 제목 줄이 한 번 알린다.
+전과 후를 제 줄에 둔다. 한 줄에 이어 붙였더니 53개 예시 가운데 23개에서 **답인 `후`가 잘렸다.**
+잘린 짝이 있으면 전문이 어디 있는지 (`hanlint explain`) 예시 제목 줄이 한 번 알린다.
 
-확인 권고 (notice) 는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README 를 검사할 때마다 같은
-확인 12개 (endingRepeat, outsideProfile) 가 오류와 같은 무게로 나와 눈이 무뎌졌다 (2026-09-18). `--notices` 가 편다.
+확인 권고 (notice)는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README를 검사할 때마다 같은
+확인 12개 (endingRepeat, outsideProfile)가 오류와 같은 무게로 나와 눈이 무뎌졌다 (2026-09-18). `--notices`가 편다.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ def exemplarLines(
     preset: str | None = None,
     customExemplars: Iterable[Exemplar] = (),
 ) -> list[str]:
-    """그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다."""
+    """그 글에 나온 규칙의 예시. 이름 순이고 규칙 하나에 세 줄이다."""
     lines: list[str] = []
     cut = False
     for name in sorted({f.rule for f in findings}):
@@ -38,16 +38,16 @@ def exemplarLines(
         lines.extend([f"  [{name}]", f"    전  {before}", f"    후  {after}"])
     if not lines:
         return []
-    head = "본보기 (고치기 전, 고친 뒤)"
-    return [f"{head}. 잘린 것은 hanlint explain <규칙>" if cut else head, *lines]
+    head = "예시 (고치기 전, 고친 뒤)"
+    return [f"{head}. 잘린 것은 hanlint explain <규칙>으로 본다" if cut else head, *lines]
 
 
 def candidateLines(findings: list[Finding]) -> list[str]:
-    """본보기 아래에 붙이는 선택지. 지적 자리별이며 순위는 없다."""
+    """예시 아래에 붙이는 선택지. 지적 자리별이며 순위는 없다."""
     chosen = [finding for finding in findings if finding.candidates]
     if not chosen:
         return []
-    lines = ["후보 (기계가 고르지 않음)"]
+    lines = ["후보 (hanlint가 하나를 고르지 않았다)"]
     for finding in chosen:
         lines.append(f"  {finding.line}줄 [{finding.rule}]")
         for candidate in finding.candidates:
@@ -60,7 +60,7 @@ def noticeLines(notices: list[Finding]) -> list[str]:
     byRule: dict[str, list[int]] = {}
     for finding in notices:
         byRule.setdefault(finding.rule, []).append(finding.line)
-    lines = [f"확인 권고 {len(notices)}건 (접음. 다 보려면 --notices)"]
+    lines = [f"확인 권고 {len(notices)}건 (접어 두었다. 다 보려면 --notices)"]
     for rule in sorted(byRule):
         numbers = sorted(set(byRule[rule]))
         lines.append(f"  {rule} {len(byRule[rule])}  {', '.join(str(n) for n in numbers)}줄")
@@ -84,12 +84,12 @@ def renderText(
     folded = [f for f in findings if f.severity == "notice"] if not unfoldNotices else []
     shown = [f for f in findings if unfoldNotices or f.severity == "error"]
     for finding in shown:
-        tag = f"[{finding.rule}]" + (" 확인" if finding.severity == "notice" else "")
+        tag = f"[{finding.rule}]" + (" 확인 권고" if finding.severity == "notice" else "")
         lines.append(f"{path}:{finding.line}  {tag}")
         lines.append(f"  {finding.quote}")
         lines.append(f"  {finding.why}")
         if finding.fix:
-            label = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+            label = "제안" if finding.severity == "notice" else "고친 뒤"
             lines.append(f"  {label}: {finding.fix}")
         lines.append("")
     if folded:

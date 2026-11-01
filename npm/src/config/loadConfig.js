@@ -1,5 +1,5 @@
 // @ts-check
-/** 설정 파일을 찾아 읽는다. `hanlint.toml` 이거나 `pyproject.toml` 의 `[tool.hanlint]` 다. 파이썬과 같은 탐색이다. */
+/** 설정 파일을 찾아 읽는다. `hanlint.toml` 이거나 `pyproject.toml`의 `[tool.hanlint]`다. 파이썬과 같은 탐색이다. */
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 
@@ -21,7 +21,7 @@ export function readConfigFile(path) {
   return config;
 }
 
-/** start 에서 위로 올라가며 hanlint.toml 이나 [tool.hanlint] 를 가진 pyproject.toml 을 찾는다. @param {string} start */
+/** start에서 위로 올라가며 hanlint.toml이나 [tool.hanlint]를 가진 pyproject.toml을 찾는다. @param {string} start */
 export function findConfigFile(start) {
   let folder = resolve(start);
   while (true) {
@@ -40,7 +40,7 @@ export function findConfigFile(start) {
 }
 
 /**
- * `path` 를 주면 그 파일만 읽는다. 안 주면 `start` (기본 현재 폴더) 에서 찾고, 없으면 기본값이다.
+ * `path`를 주면 그 파일만 읽는다. 안 주면 `start` (기본 현재 폴더)에서 찾고, 없으면 기본값이다.
  * @param {string | null} [path]
  * @param {string | null} [start]
  */

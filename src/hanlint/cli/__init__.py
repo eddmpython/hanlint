@@ -1,4 +1,4 @@
-"""명령줄. 진입점은 main.py 의 main 이다."""
+"""명령줄. 진입점은 main.py의 main이다."""
 
 from __future__ import annotations
 

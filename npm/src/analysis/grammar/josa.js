@@ -1,5 +1,5 @@
 // @ts-check
-/** 파이썬 `analysis/grammar/josa.py`의 투영. 받침에 따라 조사 꼴을 맞춘다. */
+/** 파이썬 `analysis/grammar/josa.py`를 옮긴 것. 받침에 따라 조사 꼴을 맞춘다. */
 import * as hangul from "./hangul.js";
 
 const PAIRS = [

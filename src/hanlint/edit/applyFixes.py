@@ -1,8 +1,8 @@
-"""지적의 fragment 를 원문에서 찾아 replacement 로 바꾼다.
+"""지적의 fragment를 원문에서 찾아 replacement로 바꾼다.
 
-지적의 인용문은 마크다운 표식을 걷은 문장이라 원문과 글자가 다를 수 있다. 그래서 문장 전체가 아니라 바꿀 조각
-(fragment) 을 지적이 있는 문단 (지적 줄부터 다음 빈 줄까지) 에서 찾는다. 그 안에 조각이 정확히 한 번 있을 때만
-바꾸고, 없거나 여럿이면 이유를 남기고 건너뛴다. 바꾸는 순서는 뒤에서부터라 앞의 오프셋이 흔들리지 않는다.
+지적의 인용문은 마크다운 표식을 뺀 문장이라 원문과 글자가 다를 수 있다. 그래서 문장 전체가 아니라 바꿀 조각
+(fragment)을 지적이 있는 문단(지적 줄부터 다음 빈 줄까지)에서 찾는다. 그 안에 조각이 정확히 한 번 있을 때만
+바꾸고, 없거나 여럿이면 이유를 남기고 건너뛴다. 뒤에서부터 바꾸므로 앞의 오프셋이 달라지지 않는다.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ def lineOffsets(text: str) -> list[int]:
 
 
 def windowOf(text: str, offsets: list[int], line: int) -> tuple[int, int]:
-    """1 부터 세는 줄 번호의 지적이 조각을 찾을 [시작, 끝). 그 줄부터 다음 빈 줄 직전까지다."""
+    """1부터 세는 줄 번호의 지적이 조각을 찾을 [시작, 끝). 그 줄부터 다음 빈 줄 직전까지다."""
     startIndex = max(0, min(line - 1, len(offsets) - 1))
     start = offsets[startIndex]
     end = len(text)
@@ -70,12 +70,12 @@ def applyFixes(text: str, findings: list[Finding]) -> FixResult:
             )
             continue
         if len(found) > 1:
-            skipped.append((finding.line, finding.fragment, "같은 조각이 여러 번이라 자리를 정하지 못했다. 손으로 고친다"))
+            skipped.append((finding.line, finding.fragment, "같은 조각이 여러 번 나와 고칠 곳을 정하지 못했다. 손으로 고친다"))
             continue
         at = start + found[0]
         fragment, replacement = finding.fragment, finding.replacement
-        # 낱말을 바꾸면 뒤에 붙은 조사의 꼴이 따라 바뀐다. 실측: `잔고가` 를 `잔액가` 로,
-        # `기스를` 을 `흠집를` 로, `해변가로` 를 `해변로` 로 파일에 써 넣고 있었다.
+        # 단어를 바꾸면 뒤에 붙은 조사의 꼴도 따라 바뀐다. 이 처리가 없을 때 `잔고가`를 `잔액가`로,
+        # `기스를`을 `흠집를`로, `해변가로`를 `해변로`로 파일에 써 넣었다.
         swap = josaSwap(replacement, text[at + len(fragment) :])
         if swap is not None:
             fragment, replacement = fragment + swap[0], replacement + swap[1]
@@ -92,7 +92,7 @@ def applyFixes(text: str, findings: list[Finding]) -> FixResult:
     lastStart: int | None = None
     for start, end, replacement, fragment in edits:
         if lastStart is not None and end > lastStart:
-            skipped.append((lineAt[start], fragment, "다른 고침과 자리가 겹친다. 다시 돌리면 고쳐진다"))
+            skipped.append((lineAt[start], fragment, "다른 고침과 범위가 겹친다. 다시 돌리면 고쳐진다"))
             continue
         result = result[:start] + replacement + result[end:]
         applied.append((start, lineAt[start], fragment, replacement))

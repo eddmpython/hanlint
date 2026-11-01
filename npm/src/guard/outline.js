@@ -1,5 +1,5 @@
 // @ts-check
-/** Reader Contract가 잠근 제목 순서와 글 지문의 구조 요약. */
+/** Reader Contract가 고정한 제목 순서와, 글 분석 결과에서 뽑은 구조 요약. */
 
 /** @typedef {{position: number, expected: string | null, actual: string | null}} OutlineMismatch */
 /** @typedef {{matches: boolean, level: number, expected: string[], actual: string[], mismatches: OutlineMismatch[]}} OutlineDiff */

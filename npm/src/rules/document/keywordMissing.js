@@ -17,6 +17,6 @@ export function run(doc, config) {
   const head = `${title}\n${first ? first.text : ""}`;
   if (head.includes(keyword)) return [];
   return [
-    finding(name, first ? first.startLine : 1, title || (first ? first.text : ""), `대표 검색어 \`${keyword}\` 가 제목에도 첫 문단에도 없다. 검색해 들어온 독자가 자기가 친 이름을 못 본다`, null, "error", DOCUMENT, -1),
+    finding(name, first ? first.startLine : 1, title || (first ? first.text : ""), `대표 검색어가 제목에도 첫 문단에도 없다: \`${keyword}\`. 검색해 들어온 독자는 자기가 친 이름을 보지 못한다`, null, "error", DOCUMENT, -1),
   ];
 }

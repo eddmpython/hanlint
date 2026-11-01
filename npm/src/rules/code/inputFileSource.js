@@ -42,7 +42,7 @@ export function run(doc) {
         if (!isDataFile(path)) continue;
         const name2 = fileName(path);
         if (have.has(name2) || doc.reader.mentionedBefore(block.index, name2)) continue;
-        findings.push(finding(name, line, code.trim(), `\`${name2}\` 을 읽는데 글 어디에서도 만들지 않았다. 독자는 여기서 파일 없음 오류로 멈춘다`, null, "error", DOCUMENT, block.index));
+        findings.push(finding(name, line, code.trim(), `\`${name2}\` 파일을 읽는데 글 어디에서도 만들지 않았다. 독자는 여기서 파일 없음 오류로 멈춘다`, null, "error", DOCUMENT, block.index));
       }
       for (const path of [...writeTargets(code), ...reads]) {
         if (NOT_A_PATH.some((mark) => path.includes(mark))) continue;

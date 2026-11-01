@@ -1,14 +1,14 @@
-"""`hanlint primer`. 글을 쓰기 전에 읽는 한 장. 작법서 일곱 줄과, 켜진 규칙마다 고치는 법과 본보기 전후 한 쌍.
+"""`hanlint primer`. 글을 쓰기 전에 읽는 한 장. 글쓰기 지침 일곱 줄과, 켜진 규칙마다 고치는 법과 예시 전후 한 쌍.
 
-`explain` 은 규칙 하나를 깊게, `rules` 는 목록을, `primer` 는 쓰기 전의 AI 와 사람이 한 번에 읽는 한 장을 준다.
-첫머리는 작법서 (data/koreanProse.txt) 를 절마다 한 줄로 편 것이다. 용어 보존 문장을 더하기 전 판본이
-블라인드 선호에서 이긴 쓰기 전 자료라 맨 앞에 둔다. 그 아래는 손으로 쓴 문장이 없다. 규칙 docstring 의 고치기 절과
-exemplars 를 등록부 순서대로 결정적으로 늘어놓으므로 규칙이 바뀌면 이 장도 같이 바뀐다. 후는 게이트가 error 0 을 보장한다
+`explain`은 규칙 하나를 깊게, `rules`는 목록을, `primer`는 쓰기 전의 AI와 사람이 한 번에 읽는 한 장을 준다.
+첫머리는 글쓰기 지침 (data/koreanProse.txt)를 절마다 한 줄로 편 것이다. 용어 보존 문장을 더하기 전 판본이
+블라인드 선호에서 이긴 쓰기 전 자료라 맨 앞에 둔다. 그 아래는 손으로 쓴 문장이 없다. 규칙 docstring의 고치기 절과
+exemplars를 등록부 순서대로 결정적으로 늘어놓으므로 규칙이 바뀌면 이 장도 같이 바뀐다. 후는 게이트가 error 0을 보장한다
 (tests/gates/testPrimer.py).
 
 한 장은 세션 앞머리에 얹는 자리라 줄 수가 자리세다. 규칙 하나가 한 줄이고 어느 프리셋과 문체에서도 LINE_LIMIT
-안이다. 문장 규칙의 본보기는 원래 한 줄이고 절과 문단을 보이는 본보기는 줄바꿈을 ¶ 로 눕혀 한 줄로 보인다. 항목과
-JSON 은 본보기 원문을 그대로 들어 hanlint 가 보는 글과 같다.
+안이다. 문장 규칙의 예시는 원래 한 줄이고 절과 문단을 보이는 예시는 줄바꿈을 ¶ 로 눕혀 한 줄로 보인다. 항목과
+JSON은 예시 원문을 그대로 들어 hanlint가 보는 글과 같다.
 """
 
 from __future__ import annotations
@@ -24,23 +24,23 @@ from ...report import exemplarInRegister
 from ...rules import CATEGORY_TITLES, ruleCategories, ruleFix, ruleNames
 from .shared import addCommonOptions, configFrom, emit
 
-HELP = "쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 본보기 전후"
+HELP = "쓰기 전에 읽는 한 장. 켜진 규칙마다 고치는 법과 예시 전후"
 LINE_LIMIT = 100
-"""한 장의 줄 수 상한. 작법서와 규칙 50개가 전부 켜진 blog 도 이 안에 들어야 한다. 게이트가 모든 프리셋과 문체에서 잰다."""
+"""한 장의 줄 수 상한. 글쓰기 지침와 규칙 50개가 전부 켜진 blog도 이 안에 들어야 한다. 게이트가 모든 프리셋과 문체에서 잰다."""
 
 
 @dataclass(frozen=True)
 class PrimerEntry:
-    """한 장의 한 줄. 규칙 하나와 그 고치는 법과 본보기 전후."""
+    """한 장의 한 줄. 규칙 하나와 그 고치는 법과 예시 전후."""
 
     rule: str
     category: str
     fix: str
-    """docstring 의 고치기 절을 한 줄로."""
+    """docstring의 고치기 절을 한 줄로."""
     before: str
-    """그 규칙에 잡히는 글. 본보기 원문 그대로다."""
+    """그 규칙에 잡히는 글. 예시 원문 그대로다."""
     after: str
-    """그 본보기에서 규칙을 피한 글. 다른 문맥에 그대로 적용할 치환표는 아니다."""
+    """그 예시에서 규칙을 피한 글. 다른 문맥에 그대로 적용할 치환표는 아니다."""
 
     def asDict(self) -> dict:
         """JSON 항목."""
@@ -48,18 +48,18 @@ class PrimerEntry:
 
 
 def flat(text: str) -> str:
-    """여러 줄을 한 줄로. 줄 안의 공백은 하나로, 줄바꿈은 ¶ 로 보여 절과 문단을 보이는 본보기가 한 줄에서도 읽힌다."""
+    """여러 줄을 한 줄로. 줄 안의 공백은 하나로, 줄바꿈은 ¶ 로 보여 절과 문단을 보이는 예시가 한 줄에서도 읽힌다."""
     return " ¶ ".join(" ".join(line.split()) for line in text.split("\n") if line.strip())
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    """본보기 문체와 공용 옵션."""
-    parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="본보기 문체. 기본 합니다체")
+    """예시 문체와 공용 옵션."""
+    parser.add_argument("--register", choices=REGISTERS, default=HAPNIDA, help="예시 문체. 기본 합니다체")
     addCommonOptions(parser, ("text", "json"))
 
 
 def primerEntries(config: Config, register: str = HAPNIDA) -> list[PrimerEntry]:
-    """설정에서 켜진 규칙마다 항목 하나. 부류 순서, 그 안은 이름 순서다."""
+    """설정에서 켜진 규칙마다 항목 하나. 묶음 순서, 그 안은 이름 순서다."""
     off = set(config.offRules())
     categories = ruleCategories()
     entries: list[PrimerEntry] = []
@@ -69,24 +69,24 @@ def primerEntries(config: Config, register: str = HAPNIDA) -> list[PrimerEntry]:
                 continue
             exemplar = exemplarFor(name, config.preset, config.exemplars)
             if exemplar is None:
-                raise LookupError(f"본보기가 없는 규칙: {name}")
+                raise LookupError(f"예시가 없는 규칙: {name}")
             shown = exemplarInRegister(exemplar, register)
             entries.append(PrimerEntry(name, category, ruleFix(name), shown.before, shown.after))
     return entries
 
 
 def proseLines() -> list[str]:
-    """작법서를 절마다 한 줄로. 제목 두 칸 띄고 본문이다. 본문의 줄바꿈은 공백 하나가 된다."""
+    """글쓰기 지침를 절마다 한 줄로. 제목 두 칸 띄고 본문이다. 본문의 줄바꿈은 공백 하나가 된다."""
     return [f"{title}  {' '.join(body.split())}" for title, body in proseSections()]
 
 
 def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
-    """사람과 AI 가 읽는 한 장. 작법서 일곱 줄 다음에 읽는 법 한 줄, 부류마다 제목 하나, 규칙 하나가 한 줄이다."""
+    """사람과 AI가 읽는 한 장. 글쓰기 지침 일곱 줄 다음에 읽는 법 한 줄, 묶음마다 제목 하나, 규칙 하나가 한 줄이다."""
     lines = [
         *proseLines(),
         "",
         f"hanlint primer  {preset} 종류, {register}체, 규칙 {len(entries)}개. "
-        "줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (그 본보기에서 고친 글) 순서다. 본보기의 줄바꿈은 ¶ 다",
+        "줄마다 규칙 이름, 고치는 법, 전(그 규칙에 잡히는 글), 후(그 예시에서 고친 글) 순서다. 예시의 줄바꿈은 ¶로 보인다",
     ]
     for category, title in CATEGORY_TITLES.items():
         inside = [entry for entry in entries if entry.category == category]
@@ -97,21 +97,21 @@ def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
         lines.extend(f"{entry.rule}  {entry.fix}  전: {flat(entry.before)}  후: {flat(entry.after)}" for entry in inside)
     lines.append("")
     lines.append(
-        "본보기는 해당 문맥의 예시다. 용어와 사실을 보존하고, 치환을 다른 문맥에 적용하지 않는다. "
+        "예시는 그 문장에만 맞는다. 용어와 사실은 그대로 두고, 바꾼 말을 다른 글에 그대로 옮겨 쓰지 않는다. "
         "규칙을 더 보려면 hanlint explain <규칙>"
     )
     return "\n".join(lines)
 
 
 def asJson(entries: list[PrimerEntry], preset: str, register: str) -> str:
-    """기계가 읽는 형식. prose 는 작법서 본문 그대로이고, 항목마다 규칙, 부류, 고치는 법, 전, 후다."""
+    """기계가 읽는 형식. prose는 글쓰기 지침 본문 그대로이고, 항목마다 규칙, 묶음, 고치는 법, 전, 후다."""
     rules = [entry.asDict() for entry in entries]
     data = {"version": 1, "preset": preset, "register": register, "prose": proseGuide(), "rules": rules}
     return json.dumps(data, ensure_ascii=False, indent=2)
 
 
 def run(args: argparse.Namespace) -> int:
-    """설정의 프리셋과 disable 에서 켜진 규칙으로 한 장을 낸다."""
+    """설정의 프리셋과 disable에서 켜진 규칙으로 한 장을 낸다."""
     config = configFrom(args)
     entries = primerEntries(config, args.register)
     if args.format == "json":

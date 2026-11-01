@@ -61,7 +61,7 @@ def testGuardReportsEveryDeterministicFailureWithoutCallingItTruth():
     assert result.missingCode == ("mora check",) and result.unexpectedCode == ("other run",)
     assert result.forbiddenHits == ("효과가 입증됐다",)
     rendered = renderGuard(result)
-    assert "표면 계약 위반" in rendered and "보장하지 않는다" in rendered
+    assert "brief 조건 위반" in rendered and "보장하지 않는다" in rendered
 
 
 def testPlainFactMayBeWrappedAsCodeWithoutBecomingAnUnexpectedFact():

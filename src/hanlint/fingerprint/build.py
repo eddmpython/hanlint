@@ -1,4 +1,4 @@
-"""문서 모델을 한 번 훑어 글 지문을 만든다. 텍스트를 읽는 유일한 자리다."""
+"""문서 모델을 한 번 훑어 글 분석 결과를 만든다. 텍스트를 읽는 곳은 여기 하나다."""
 
 from __future__ import annotations
 
@@ -26,10 +26,10 @@ def quotedIn(sentence: Sentence, blockSpans: tuple[tuple[int, int], ...]) -> tup
     """문장 안의 인용 구간. 블록 좌표의 구간을 문장 좌표로 옮긴다.
 
     **따옴표 쌍도 블록에서 재서 넘겨받는다.** 문장 안에서 재던 때는 문장 분리가 따옴표 안에서 잘리면
-    (`TERMINAL` 은 물음표 뒤 공백에서 자른다) 조각에 여는 따옴표만 남아 쌍이 안 잡히고, docstring 이
-    "안 잡는다" 고 선언한 인용 예외가 통째로 풀렸다. 실측: `"네가 탄 곡조는 누구의 것인데? 대단히 듣기
-    좋던데..."` 가 두 문장으로 잘려 양쪽 다 인용 구간 0 이었다 (2026-08-31). ellipsis 표본 20건 가운데
-    10건이 이 결함이었고 deixis 와 이중 피동과 사전 규칙도 같은 예외를 쓴다.
+    (`TERMINAL`은 물음표 뒤 공백에서 자른다) 조각에 여는 따옴표만 남아 쌍이 안 잡히고, docstring이
+    "안 잡는다"고 선언한 인용 예외가 통째로 풀렸다. 실측: `"네가 탄 곡조는 누구의 것인데? 대단히 듣기
+    좋던데..."`가 두 문장으로 잘려 양쪽 다 인용 구간이 0이었다(2026-08-31). ellipsis 표본 20건 가운데
+    10건이 이 결함이었고 deixis와 이중 피동과 사전 규칙도 같은 예외를 쓴다.
     """
     spans: list[tuple[int, int]] = []
     for start, end in blockSpans:
@@ -41,15 +41,15 @@ def quotedIn(sentence: Sentence, blockSpans: tuple[tuple[int, int], ...]) -> tup
 
 @dataclass
 class Build:
-    """지문을 쌓는 동안 들고 다니는 것. 사전은 안 바뀌고 두 목록은 쌓인다.
+    """분석 결과를 쌓는 동안 들고 다니는 것. 사전은 안 바뀌고 두 목록은 쌓인다.
 
-    자리 (문장 index 와 문단 index) 는 넘겨받지 않고 쌓인 길이에서 얻는다. 넘겨받으면 부르는 쪽이 셈을
-    맞춰야 하고 그 셈이 틀려도 아무도 모른다. 여기서 세면 틀릴 자리가 없다.
+    위치(문장 index와 문단 index)는 넘겨받지 않고 쌓인 길이에서 얻는다. 넘겨받으면 부르는 쪽이 셈을
+    맞춰야 하고 그 셈이 틀려도 아무도 모른다. 여기서 세면 틀릴 일이 없다.
     """
 
     entries: tuple[Entry, ...]
     protectedTerms: tuple[str, ...] = ()
-    """설정의 protectedTerms. 이 용어와 겹치는 사전 매치, 지시어, 이중 피동은 문장 지문에 넣지 않는다."""
+    """설정의 protectedTerms. 이 용어와 겹치는 사전 매치, 지시어, 이중 피동은 문장 분석 결과에 넣지 않는다."""
     sentences: list[SentencePrint] = field(default_factory=list)
     paragraphs: list[ParagraphPrint] = field(default_factory=list)
 
@@ -66,8 +66,8 @@ def makeSentencePrint(
     protected = markers.termSpans(text, build.protectedTerms)
 
     def kept(start: int, end: int) -> bool:
-        # 인용 안의 것과 보호한 용어에 걸친 것은 뺀다. 실측: protectedTerms 에 물때 를 넣어도 spacing 이
-        # `물때는` 을 `물 때는` 으로 고치라고 했다 (돈값, 2026-11-01). 보호한 용어는 지적의 대상이 아니다.
+        # 인용 안의 것과 보호한 용어에 걸친 것은 뺀다. 실측: protectedTerms에 `물때`를 넣어도 spacing이
+        # `물때는`을 `물 때는`으로 고치라고 했다(2026-11-01). 보호한 용어는 지적의 대상이 아니다.
         return not markers.insideAny(start, end, quoted) and not markers.overlapsAny(start, end, protected)
 
     deixis = tuple(found for start, end, found in markers.matchedSpans(text, "deixis.txt") if kept(start, end))
@@ -144,7 +144,7 @@ def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPr
             line = block.startLine + text.count("\n", 0, sentence.start)
             quoted = quotedIn(sentence, blockSpans)
             made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted)
-            # 만든 자리에서 바로 쌓는다. 다음 문장의 index 가 이 길이에서 나오므로 미루면 셈이 어긋난다.
+            # 만든 곳에서 바로 쌓는다. 다음 문장의 index가 이 길이에서 나오므로 미루면 셈이 어긋난다.
             build.sentences.append(made)
             blockSentences.append(made)
         previous = sectionParagraphs[-1] if sectionParagraphs else None
@@ -173,7 +173,7 @@ def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPr
 
 def buildFingerprint(doc: Document, config: Config | None = None) -> DocumentPrint:
     config = config or Config()
-    # 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
+    # 코드도 산문도 아닌 펜스는 분석에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 곳이면 된다.
     doc = dropFences(doc, config.ignoreFences)
     build = Build(entriesFor(config), tuple(config.protectedTerms))
     sections = [buildSection(build, section, index) for index, section in enumerate(doc.sections)]

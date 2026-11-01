@@ -1,9 +1,10 @@
-"""어절 단위 근사. 형태소 분석기 없이 조사와 어미 꼬리 사전으로 명사 어절을 가려낸다.
+"""어절 단위 어림. 형태소 분석기 없이 조사와 어미 꼬리 사전으로 명사 어절을 가려낸다.
 
 한계는 정직하게 적는다. 꼬리 사전에 없는 어미로 끝나는 어절은 명사로 오인할 수 있다. 그래서 명사 나열
-임계를 다섯으로 두고, 쉼표와 괄호는 나열의 표지라 연속을 끊는다 (실측: 004 에서 표층 오탐 2건이 전부 쉼표 나열).
+기준값을 다섯으로 두고, 쉼표와 괄호는 나열을 나타내는 기호라 연속을 끊는다(블로그 글 한 편에서 글자 모양만 본
+오탐 2건이 모두 쉼표 나열이었다).
 
-띄어 쓴 조사 (`hanlint 는`, `report 와 rules 와`) 와 계사 (`이고`, `인`) 는 앞 어절에 붙은 것으로 본다. 영문
+띄어 쓴 조사(`hanlint 는`, `report 와 rules 와`)와 계사(`이고`, `인`)는 앞 어절에 붙은 것으로 본다. 영문
 어절이 이어지면 (`This sheet is too large`) 한 덩어리로 세어 영어 구절을 한국어 명사 나열로 오인하지 않는다.
 """
 
@@ -19,14 +20,14 @@ HANGUL = re.compile(r"[가-힣]")
 HANGUL_WORD = re.compile(r"^[가-힣]+$")
 WORD_CHARS = re.compile(r"^[가-힣A-Za-z0-9]+$")
 GENITIVE = re.compile(r"([가-힣A-Za-z0-9]+|\))의(?=[\s,.)\]]|$)")
-"""관형격 조사 의. 영문과 숫자 뒤 (API의, 600MiB의, 2054명의) 와 닫는 괄호 뒤 (L7(HTTP)의) 도 센다. 실측: 말뭉치
-390편에서 형태소 분석기가 표층보다 euiChain 을 297건 더 잡았고 거의 전부가 그 두 자리였다 (2026-08-29)."""
+"""관형격 조사 `의`. 영문과 숫자 뒤(`API의`, `600MiB의`, `2054명의`)와 닫는 괄호 뒤(`L7(HTTP)의`)도 센다. 실측: 말뭉치
+390편에서 형태소 분석기가 글자 모양만 보는 방식보다 euiChain을 297건 더 잡았고 거의 전부가 그 두 경우였다 (2026-08-29)."""
 SPACED_GENITIVE = re.compile(r"(?<=\s)의(?=\s)")
 COPULA = re.compile(r"^(?:이(?:고|며|다|라|란|면|라서|므로|지만|어서|었다|었고)|인|인데|입니다|였다)$")
 DIGITS = re.compile(r"^[0-9]+$")
 QUANTITY = re.compile(r"^제?[0-9][0-9,.]*[가-힣]{1,3}$")
 """수에 단위가 붙은 어절 (2012년, 30분쯤, 제16호, 100명). 수량이라 명사 나열에서 세지도 끊지도 않는다. 실측: 말뭉치의
-날짜와 시각 (`2012년 11월 29일 4시`) 이 명사 다섯으로 세어졌다 (2026-08-29)."""
+날짜와 시각(`2012년 11월 29일 4시`)이 명사 다섯으로 세어졌다 (2026-08-29)."""
 OPENERS = "([{\"“‘'"
 CLOSERS = ",.?!;:)]}\"”’'"
 EDGE_PUNCTUATION = ".,?!:;\"'“”‘’()[]{}<>"
@@ -75,10 +76,10 @@ def inNouns() -> frozenset[str]:
 
 
 def isCopulaAdnominal(core: str) -> bool:
-    """`도구인`, `규모인` 처럼 명사에 계사 관형형 인 이 붙은 어절. 서술어라 명사 나열을 끊는다.
+    """`도구인`, `규모인`처럼 명사에 계사 관형형 `인`이 붙은 어절. 서술어라 명사 나열을 끊는다.
 
     어간이 두 음절 이상일 때만이다. 개인, 원인, 확인 은 어간이 한 음절이라 명사로 두고, 외국인 같은 세 음절 명사는
-    data/inNouns.txt 가 뺀다. 실측: 말뭉치 390편에서 표층만 명사 다섯으로 본 15문장 가운데 넷이 이 꼴이었다 (2026-08-29).
+    data/inNouns.txt가 뺀다. 실측: 말뭉치 390편에서 글자 모양만 보고 명사 다섯으로 센 15문장 가운데 넷이 이 꼴이었다 (2026-08-29).
     """
     return len(core) >= 3 and core.endswith("인") and bool(HANGUL_WORD.match(core)) and core not in inNouns()
 
@@ -123,11 +124,11 @@ def isBareNoun(core: str) -> bool:
 
 
 def nounRuns(text: str) -> list[tuple[list[str], int]]:
-    """명사 어절 연속마다 (어절들, 센 길이). 수사와 바로 뒤의 단위 (여덟 개) 는 수량이라 세지도 끊지도 않고 어절에도 안 넣는다.
+    """명사 어절 연속마다 (어절들, 센 길이). 수사와 바로 뒤의 단위(여덟 개)는 수량이라 세지도 끊지도 않고 어절에도 안 넣는다.
 
-    의존명사와 관형사와 부사 (`수`, `몇`, `직접`) 는 조사도 어미도 안 붙어 표층으로는 명사로 보이지만
-    명사 쌓기의 재료가 아니다. `data/nonNouns.txt` 가 그 목록이고 연속을 끊는다. 잇달은 영문 어절은 하나로 센다
-    (어절은 둘 다 둔다). 용례 빈도표 (usage) 가 같은 어절들을 키로 세므로 다른 곳에서 연쇄를 다시 정의하지 않는다.
+    의존명사와 관형사와 부사(`수`, `몇`, `직접`)는 조사도 어미도 안 붙어 글자 모양으로는 명사로 보이지만
+    명사 쌓기의 재료가 아니다. `data/nonNouns.txt`가 그 목록이고 연속을 끊는다. 잇달은 영문 어절은 하나로 센다
+    (어절은 둘 다 둔다). 용례 빈도표(usage)가 같은 어절들을 키로 세므로 다른 곳에서 연쇄를 다시 정의하지 않는다.
     """
     runs: list[tuple[list[str], int]] = []
     chain: list[str] = []
@@ -161,43 +162,43 @@ def nounRuns(text: str) -> list[tuple[list[str], int]]:
 
 
 def longestNounRun(text: str) -> int:
-    """명사 어절 연속의 최대 길이. nounRuns 의 센 길이 가운데 가장 큰 것."""
+    """명사 어절 연속의 최대 길이. nounRuns의 센 길이 가운데 가장 큰 것."""
     return max((length for _, length in nounRuns(text)), default=0)
 
 
 def genitiveSpans(text: str) -> list[tuple[int, int]]:
-    """관형격 조사 의 가 붙은 자리 (시작, 끝). 정의, 회의 처럼 의 로 끝나는 낱말은 빼고 띄어 쓴 의 는 넣는다."""
+    """관형격 조사 `의`가 붙은 곳 (시작, 끝). `정의`, `회의`처럼 `의`로 끝나는 단어는 빼고 띄어 쓴 `의`는 넣는다."""
     spans = [m.span() for m in GENITIVE.finditer(text) if m.group(1) + "의" not in euiNouns()]
     spans.extend(m.span() for m in SPACED_GENITIVE.finditer(text))
     return sorted(spans)
 
 
 def euiCount(text: str) -> int:
-    """관형격 조사 의 의 수."""
+    """관형격 조사 `의`의 수."""
     return len(genitiveSpans(text))
 
 
 def euiAdjacent(text: str) -> bool:
-    """의 로 끝나는 어절 둘이 붙어 있는가 (회사의 팀의). 사이가 공백뿐이어야 한다. 정의 리소스의 처럼 앞이 의 로 끝나는
-    낱말이면 아니다. 실측: 사용자 정의 리소스의 컨트롤러 가 인접으로 잡혔다 (2026-08-29)."""
+    """`의`로 끝나는 어절 둘이 붙어 있는가(`회사의 팀의`). 사이가 공백뿐이어야 한다. `정의 리소스의`처럼 앞이 `의`로
+    끝나는 단어면 아니다. 실측: `사용자 정의 리소스의 컨트롤러`가 붙어 있는 것으로 잡혔다(2026-08-29)."""
     spans = genitiveSpans(text)
     return any(text[a:b].isspace() for (_, a), (b, _) in zip(spans, spans[1:], strict=False))
 
 
 def syllableRange(initial: int, vowel: int) -> str:
-    """초성과 중성이 정해진 한글 음절 28개 (종성 없음부터 ㅎ 까지) 의 정규식 범위."""
+    """초성과 중성이 정해진 한글 음절 28개(종성 없음부터 ㅎ까지)의 정규식 범위."""
     first = 0xAC00 + (initial * 21 + vowel) * 28
     return chr(first) + "-" + chr(first + 27)
 
 
-# 지 는 뒤 어미와 한 음절로 줄어든다. 되어진다, 되어졌다, 되어집니다 의 진, 졌, 집 이 전부 지 다.
-# ㅈ 초성 (12) 에 ㅣ 중성 (20) 이거나 ㅕ 중성 (6) 인 음절 부류로 잡는다.
+# `지`는 뒤 어미와 한 음절로 줄어든다. `되어진다`, `되어졌다`, `되어집니다`의 `진`, `졌`, `집`이 모두 `지`다.
+# ㅈ 초성(12)에 ㅣ 중성(20)이거나 ㅕ 중성(6)인 음절 묶음으로 잡는다.
 PASSIVE_TAIL = "[" + syllableRange(12, 20) + syllableRange(12, 6) + "]"
 
 
 @cache
 def doublePassivePattern() -> re.Pattern[str]:
-    """피동 어간에 -어 를 붙인 표층형 뒤에 지 부류 음절. 어간 끝 이→여, 히→혀, 리→려, 기→겨, 그 밖에 +어."""
+    """피동 어간에 `-어`를 붙인 꼴 뒤에 오는 `지` 묶음 음절. 어간 끝 이→여, 히→혀, 리→려, 기→겨, 그 밖에 +어."""
     stems = ["되어"]
     contraction = {"이": "여", "히": "혀", "리": "려", "기": "겨"}
     for stem in loadLines("passiveStems.txt"):
@@ -208,10 +209,10 @@ def doublePassivePattern() -> re.Pattern[str]:
 
 
 def doublePassiveSpans(text: str) -> list[tuple[int, int, str]]:
-    """이중 피동의 (시작, 끝, `되어지` 꼴 표층형). 인용 여부를 지문 한 자리에서 거를 때 쓴다."""
+    """이중 피동의 (시작, 끝, `되어지` 꼴로 쓴 글자). 인용 여부를 글 분석의 한 곳에서 거를 때 쓴다."""
     return [(match.start(), match.end(), match.group(1) + "지") for match in doublePassivePattern().finditer(text)]
 
 
 def doublePassives(text: str) -> list[str]:
-    """이중 피동의 표층형을 `되어지` 꼴로 정규화해 준다."""
+    """이중 피동의 글자를 `되어지` 꼴로 정규화해 준다."""
     return [surface for _, _, surface in doublePassiveSpans(text)]

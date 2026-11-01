@@ -26,7 +26,7 @@ export function run(doc) {
     const lines = block.text.split("\n");
     for (let offset = 0; offset < lines.length; offset++) {
       if (BULLET_WITH_EMOJI.test(lines[offset])) {
-        findings.push(finding(name, block.startLine + offset, lines[offset].trim(), "목록 항목이 이모지로 시작한다. 이모지를 지우고 첫 낱말이 내용을 말하게 한다", null, "error", DOCUMENT, block.index));
+        findings.push(finding(name, block.startLine + offset, lines[offset].trim(), "목록 항목이 이모지로 시작한다. 이모지를 지우고 첫 단어가 내용을 말하게 한다", null, "error", DOCUMENT, block.index));
         break;
       }
     }

@@ -13,7 +13,7 @@ export function run(doc) {
     block.text.split("\n").forEach((lineText, offset) => {
       if (DASHES.test(lineText)) {
         findings.push(
-          finding(name, block.startLine + offset, lineText.trim(), "긴 줄표다. 부연은 마침표로 끊거나 괄호로, 범위는 물결표 ~ 로 쓴다", null, "error", DOCUMENT, block.index),
+          finding(name, block.startLine + offset, lineText.trim(), "긴 줄표다. 덧붙이는 말은 마침표로 끊거나 괄호에 넣고, 범위는 물결표(~)로 쓴다", null, "error", DOCUMENT, block.index),
         );
       }
     });

@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { SENTENCE, finding } from "../finding.js";
 import { runsOf } from "../shared/repeat.js";
 
@@ -15,7 +16,7 @@ export function run(doc) {
     for (const [start, length, connector] of runsOf(keys, 2)) {
       for (const sentence of sentences.slice(start + 1, start + length)) {
         findings.push(
-          finding(name, sentence.line, sentence.text, `\`${connector}\` 로 시작하는 문장이 연달아 온다. 앞에서 만든 것의 이름을 불러 잇는다`, null, "error", SENTENCE, sentence.index),
+          finding(name, sentence.line, sentence.text, `\`${connector}\`${fitJosa(connector, "로")} 시작하는 문장이 연달아 온다. 앞에서 만든 것의 이름을 불러 잇는다`, null, "error", SENTENCE, sentence.index),
         );
       }
     }

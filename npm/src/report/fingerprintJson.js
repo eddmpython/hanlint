@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * 지문 계층의 JSON 꼴. 파이썬 report/fingerprintJson.py 와 같은 키 순서다. 층마다 한 번씩만 적고 위층은
- * 아래층을 index 로 가리킨다. 실수는 소수 여섯째 자리로 맞춰 두 구현이 같은 글자를 낸다.
+ * 지문 계층의 JSON 꼴. 파이썬 report/fingerprintJson.py와 같은 키 순서다. 층마다 한 번씩만 적고 위층은
+ * 아래층을 index로 가리킨다. 실수는 소수 여섯째 자리로 맞춰 두 구현이 같은 글자를 낸다.
  */
 
 import { roundHalfEven } from "../text.js";

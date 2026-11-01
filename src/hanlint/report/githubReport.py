@@ -1,4 +1,4 @@
-"""GitHub Actions 의 워크플로 명령 꼴. PR 에 줄 단위 주석이 붙는다."""
+"""GitHub Actions의 워크플로 명령 꼴. PR에 줄 단위 주석이 붙는다."""
 
 from __future__ import annotations
 

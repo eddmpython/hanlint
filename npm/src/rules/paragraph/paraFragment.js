@@ -31,7 +31,7 @@ export function run(doc, config) {
     for (const [start] of runsOf(keys, config.fragmentRun)) {
       const first = paragraphs[start];
       findings.push(
-        finding(name, first.startLine, first.sentences.length ? first.sentences[0].text : "", `${config.fragmentRun}개 문단이 연달아 한두 문장씩이다. 화제가 같으면 한 문단으로 묶는다. 줄바꿈은 화제가 바뀌는 자리에만`, null, "error", PARAGRAPH, first.index),
+        finding(name, first.startLine, first.sentences.length ? first.sentences[0].text : "", `${config.fragmentRun}개 문단이 연달아 한두 문장씩이다. 화제가 같으면 한 문단으로 묶는다. 줄바꿈은 화제가 바뀌는 곳에만 둔다`, null, "error", PARAGRAPH, first.index),
       );
     }
   }

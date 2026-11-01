@@ -36,19 +36,19 @@ def numberValues(text: str) -> tuple[str, ...]:
 
 def checkedString(value: object, where: str) -> str:
     if not isinstance(value, str) or not value or value != value.strip():
-        raise ValueError(f"{where} 는 양끝 공백 없는 문자열이다")
+        raise ValueError(f"{where}: 양끝 공백 없는 문자열이어야 한다")
     if not is_normalized("NFC", value):
-        raise ValueError(f"{where} 는 NFC 문자열이어야 한다")
+        raise ValueError(f"{where}: NFC 문자열이어야 한다")
     return value
 
 
 def checkedStrings(value: object, where: str, allowEmpty: bool = False) -> tuple[str, ...]:
     if not isinstance(value, list) or (not allowEmpty and not value):
-        suffix = "배열이다" if allowEmpty else "비지 않은 문자열 배열이다"
-        raise ValueError(f"{where} 는 {suffix}")
+        suffix = "배열이어야 한다" if allowEmpty else "비지 않은 문자열 배열이어야 한다"
+        raise ValueError(f"{where}: {suffix}")
     found = tuple(checkedString(item, f"{where} {index}번째") for index, item in enumerate(value, start=1))
     if len(set(found)) != len(found):
-        raise ValueError(f"{where} 에 같은 값이 두 번 있다")
+        raise ValueError(f"{where}에 같은 값이 두 번 있다")
     return found
 
 
@@ -106,7 +106,7 @@ class WritingBrief:
     @classmethod
     def fromMapping(cls, data: object) -> WritingBrief:
         if not isinstance(data, dict):
-            raise ValueError("writing brief 는 JSON 객체다")
+            raise ValueError("writing brief는 JSON 객체여야 한다")
         baseKeys = {
             "version",
             "preset",
@@ -120,17 +120,19 @@ class WritingBrief:
         }
         version = data.get("version")
         if isinstance(version, bool) or not isinstance(version, int) or version not in BRIEF_VERSIONS:
-            raise ValueError(f"writing brief version 은 {', '.join(map(str, BRIEF_VERSIONS))} 가운데 하나다: {version}")
+            raise ValueError(
+                f"writing brief version이 맞지 않다: {version} (맞는 값: {', '.join(map(str, BRIEF_VERSIONS))} 가운데 하나)"
+            )
         expected = baseKeys | ({"evidence"} if version == EVIDENCE_BRIEF_VERSION else set())
         unknown = sorted(set(data) - expected)
         missing = sorted(expected - set(data))
         if unknown:
-            raise ValueError(f"writing brief 의 모르는 키: {', '.join(unknown)}")
+            raise ValueError(f"writing brief의 모르는 키: {', '.join(unknown)}")
         if missing:
-            raise ValueError(f"writing brief 의 빠진 키: {', '.join(missing)}")
+            raise ValueError(f"writing brief의 빠진 키: {', '.join(missing)}")
         preset = checkedString(data["preset"], "preset")
         if preset not in PRESET_NAMES:
-            raise ValueError(f"preset 은 {', '.join(PRESET_NAMES)} 가운데 하나다: {preset}")
+            raise ValueError(f"preset은 {', '.join(PRESET_NAMES)} 가운데 하나여야 한다. 받은 값: {preset}")
         reader = checkedString(data["reader"], "reader")
         task = checkedString(data["task"], "task")
         facts = cls.factsFrom(data["facts"])
@@ -139,24 +141,24 @@ class WritingBrief:
         forbidden = checkedStrings(data["forbidden"], "forbidden", allowEmpty=True)
         allowedNumbers = checkedStrings(data["allowedNumbers"], "allowedNumbers", allowEmpty=True)
         if any(not NUMBER_VALUE.fullmatch(value) for value in allowedNumbers):
-            raise ValueError("allowedNumbers 는 숫자와 소수점만 든 문자열 배열이다")
+            raise ValueError("allowedNumbers는 숫자와 소수점만 든 문자열 배열이어야 한다")
         normalizedNumbers = tuple(sorted(allowedNumbers))
         if len(set(normalizedNumbers)) != len(normalizedNumbers):
-            raise ValueError("allowedNumbers 에 정규화 뒤 같은 숫자가 두 번 있다")
+            raise ValueError("allowedNumbers에 정규화 뒤 같은 숫자가 두 번 있다")
         factText = "\n".join(fact.statement for fact in facts)
         contractText = "\n".join((reader, task, factText))
         contractNumbers = numberValues(contractText)
         if normalizedNumbers != contractNumbers:
             raise ValueError(
-                "allowedNumbers 는 reader, task, facts 의 숫자 표면과 같아야 한다: "
+                "allowedNumbers는 reader, task, facts에 나온 숫자와 같아야 한다: "
                 f"contract {list(contractNumbers)}, allowed {list(normalizedNumbers)}"
             )
         missingLiterals = [literal for literal in mustInclude if literal not in contractText]
         if missingLiterals:
-            raise ValueError(f"mustInclude 는 reader, task, facts 안에 있어야 한다: {', '.join(missingLiterals)}")
+            raise ValueError(f"mustInclude는 reader, task, facts 안에 있어야 한다: {', '.join(missingLiterals)}")
         length = data["length"]
         if not isinstance(length, dict) or set(length) != {"min", "max"}:
-            raise ValueError("length 는 min 과 max 정수만 든 객체다")
+            raise ValueError("length는 min과 max 정수만 든 객체여야 한다")
         minimum, maximum = length["min"], length["max"]
         if (
             isinstance(minimum, bool)
@@ -166,7 +168,7 @@ class WritingBrief:
             or minimum < 1
             or maximum < minimum
         ):
-            raise ValueError("length 는 1 <= min <= max 인 정수다")
+            raise ValueError("length는 1 <= min <= max인 정수여야 한다")
         return cls(
             version=version,
             preset=preset,
@@ -184,24 +186,24 @@ class WritingBrief:
     @staticmethod
     def factsFrom(value: object) -> tuple[AtomicFact, ...]:
         if not isinstance(value, list) or not value:
-            raise ValueError("facts 는 비지 않은 원자 사실 배열이다")
+            raise ValueError("facts는 사실을 하나씩 든 비지 않은 배열이어야 한다")
         facts = []
         for index, item in enumerate(value, start=1):
             if not isinstance(item, dict) or set(item) != {"id", "statement"}:
-                raise ValueError(f"facts {index}번째는 id 와 statement 만 든 객체다")
+                raise ValueError(f"facts의 {index}번째 항목은 id와 statement만 든 객체여야 한다")
             identifier = checkedString(item["id"], f"facts {index}번째 id")
             if not FACT_ID.fullmatch(identifier):
-                raise ValueError(f"facts {index}번째 id 는 F1 같은 꼴이다: {identifier}")
+                raise ValueError(f"facts의 {index}번째 id는 F1 같은 형식이어야 한다. 받은 값: {identifier}")
             facts.append(AtomicFact(identifier, checkedString(item["statement"], f"facts {index}번째 statement")))
         identifiers = [fact.id for fact in facts]
         if len(set(identifiers)) != len(identifiers):
-            raise ValueError("facts 의 id 가 겹친다")
+            raise ValueError("facts의 id가 겹친다")
         return tuple(facts)
 
     @staticmethod
     def evidenceFrom(value: object, facts: tuple[AtomicFact, ...]) -> tuple[EvidenceRecord, ...]:
         if not isinstance(value, list) or not value:
-            raise ValueError("evidence 는 비지 않은 근거 기록 배열이다")
+            raise ValueError("evidence는 비지 않은 근거 기록 배열이어야 한다")
         factIds = {fact.id for fact in facts}
         records = []
         for index, item in enumerate(value, start=1):
@@ -219,44 +221,44 @@ class WritingBrief:
                 "reviewStatus",
             }
             if not isinstance(item, dict) or set(item) != expected:
-                raise ValueError(f"{where}는 {', '.join(sorted(expected))}만 든 객체다")
+                raise ValueError(f"{where}: {', '.join(sorted(expected))}만 든 객체여야 한다")
             identifier = checkedString(item["id"], f"{where} id")
             if not EVIDENCE_ID.fullmatch(identifier):
-                raise ValueError(f"{where} id는 E1 같은 꼴이다: {identifier}")
+                raise ValueError(f"{where}의 id는 E1 같은 형식이어야 한다. 받은 값: {identifier}")
             linked = tuple(sorted(checkedStrings(item["factIds"], f"{where} factIds")))
             unknown = sorted(set(linked) - factIds)
             if unknown:
-                raise ValueError(f"{where}가 없는 fact를 가리킨다: {', '.join(unknown)}")
+                raise ValueError(f"{where}가 가리키는 fact가 없다: {', '.join(unknown)}")
             sourceUrl = checkedString(item["sourceUrl"], f"{where} sourceUrl")
             parsed = urlsplit(sourceUrl)
             if parsed.scheme not in ("http", "https") or not parsed.netloc or parsed.username or parsed.password:
-                raise ValueError(f"{where} sourceUrl은 사용자 정보 없는 http 또는 https URL이다")
+                raise ValueError(f"{where}의 sourceUrl은 사용자 정보가 없는 http나 https URL이어야 한다")
             revision = item["revision"]
             checkedAt = item["checkedAt"]
             if revision is not None:
                 revision = checkedString(revision, f"{where} revision")
                 if revision.casefold() in {"head", "latest", "main", "master"}:
-                    raise ValueError(f"{where} revision은 움직이는 별칭이 아니라 고정 버전이어야 한다")
+                    raise ValueError(f"{where}의 revision은 바뀌는 별칭이 아니라 고정 버전이어야 한다")
             if checkedAt is not None:
                 checkedAt = checkedString(checkedAt, f"{where} checkedAt")
                 if not CHECKED_AT.fullmatch(checkedAt):
-                    raise ValueError(f"{where} checkedAt은 YYYY-MM-DDTHH:MM:SSZ 꼴이다")
+                    raise ValueError(f"{where}의 checkedAt은 YYYY-MM-DDTHH:MM:SSZ 형식이어야 한다")
                 try:
                     datetime.strptime(checkedAt, "%Y-%m-%dT%H:%M:%SZ")
                 except ValueError as error:
-                    raise ValueError(f"{where} checkedAt은 실제 UTC 날짜와 시각이어야 한다") from error
+                    raise ValueError(f"{where}의 checkedAt은 실제 UTC 날짜와 시각이어야 한다") from error
             if revision is None and checkedAt is None:
-                raise ValueError(f"{where}는 revision 또는 checkedAt으로 출처 버전을 고정한다")
+                raise ValueError(f"{where}: revision이나 checkedAt으로 출처 버전을 고정해야 한다")
             excerpt = checkedString(item["excerpt"], f"{where} excerpt")
             if len(excerpt) > 1000:
-                raise ValueError(f"{where} excerpt는 1,000자 이하다")
+                raise ValueError(f"{where}의 excerpt는 1,000자 이하여야 한다")
             excerptSha = checkedString(item["excerptSha256"], f"{where} excerptSha256")
             if not SHA256_VALUE.fullmatch(excerptSha) or sha256(excerpt.encode()).hexdigest() != excerptSha:
-                raise ValueError(f"{where} excerptSha256가 excerpt와 다르다")
+                raise ValueError(f"{where}의 excerptSha256이 excerpt와 다르다")
             licenseName = checkedString(item["license"], f"{where} license")
             reviewStatus = checkedString(item["reviewStatus"], f"{where} reviewStatus")
             if reviewStatus not in REVIEW_STATUSES:
-                raise ValueError(f"{where} reviewStatus는 {', '.join(REVIEW_STATUSES)} 가운데 하나다")
+                raise ValueError(f"{where}의 reviewStatus는 {', '.join(REVIEW_STATUSES)} 가운데 하나여야 한다")
             records.append(
                 EvidenceRecord(
                     identifier,
@@ -278,7 +280,7 @@ class WritingBrief:
         covered = {factId for record in records for factId in record.factIds}
         missing = sorted(factIds - covered)
         if missing:
-            raise ValueError(f"근거 기록이 없는 fact다: {', '.join(missing)}")
+            raise ValueError(f"근거 기록이 없는 fact: {', '.join(missing)}")
         return tuple(records)
 
     @property

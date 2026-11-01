@@ -1,4 +1,4 @@
-"""절 지문. H2 하나가 여는 절의 모양."""
+"""절 분석 결과. H2 하나가 여는 절의 모양."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ class SectionPrint:
     title: str
     """도입 절은 빈 문자열."""
     level: int
-    """H2 면 2, 도입이면 0."""
+    """H2면 2, 도입이면 0."""
     startLine: int
     paragraphs: tuple[ParagraphPrint, ...]
     blockKinds: tuple[str, ...]

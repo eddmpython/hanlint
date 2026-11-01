@@ -1,5 +1,5 @@
 // @ts-check
-/** 개인 원고와 승인을 분리한 휴대 가능한 기록. */
+/** 개인 원고와 기억한 고침을 나눠 담는, 다른 브라우저로 옮길 수 있는 기록. */
 export const STORAGE_KEY = "hanlint.workspace.v1";
 export function storageKeyFor(path) {
   const folder = path.endsWith("/") ? path : path.slice(0, path.lastIndexOf("/") + 1);
@@ -9,6 +9,8 @@ export const MAX_TEXT = 60000;
 export const MAX_ARCHIVE_BYTES = 900000;
 export const PRESETS = ["blog", "docs", "report", "guide", "essay", "fiction", "encyclopedia", "chat", "screen"];
 const MAX_RECORDS = 100;
+/** 기록 파일의 목록 키(저장 형식)와 오류에 보일 이름. */
+const LIST_NAMES = { records: "수정본 목록", patches: "기억한 고침 목록", feedback: "지적 판단 목록" };
 
 function textField(value, name, maximum = MAX_TEXT) {
   if (typeof value !== "string" || value.length > maximum) throw new Error(`${name} 형식을 확인해 주세요.`);
@@ -24,27 +26,27 @@ export function emptyWorkspace(draft) {
 }
 
 function checkedDraft(value) {
-  if (!value || !PRESETS.includes(value.preset)) throw new Error("지원하는 글 종류의 원고가 아닙니다.");
+  if (!value || !PRESETS.includes(value.preset)) throw new Error("지원하는 글 종류의 원고가 아니에요.");
   return { id: textField(value.id, "원고 ID", 100), title: textField(value.title, "원고 이름", 100),
     text: textField(value.text, "원고"), original: textField(value.original, "원문"), preset: value.preset,
     updatedAt: textField(value.updatedAt, "수정 시각", 40) };
 }
 
 export function parseWorkspace(text) {
-  if (new TextEncoder().encode(text).length > MAX_ARCHIVE_BYTES) throw new Error("기록 파일이 너무 큽니다. 900 KB 이하 파일을 사용해 주세요.");
+  if (new TextEncoder().encode(text).length > MAX_ARCHIVE_BYTES) throw new Error("기록 파일이 너무 커요. 900 KB 이하 파일을 사용해 주세요.");
   const value = JSON.parse(text);
-  if (value?.kind !== "hanlint.workspace" || value.version !== 1) throw new Error("한린트 기록 파일(version 1)이 아닙니다.");
-  for (const key of ["records", "patches", "feedback"]) {
-    if (!Array.isArray(value[key]) || value[key].length > 1000) throw new Error(`기록의 ${key} 형식을 확인해 주세요.`);
+  if (value?.kind !== "hanlint.workspace" || value.version !== 1) throw new Error("한린트 기록 파일(버전 1)이 아니에요.");
+  for (const key of Object.keys(LIST_NAMES)) {
+    if (!Array.isArray(value[key]) || value[key].length > 1000) throw new Error(`기록 파일의 ${LIST_NAMES[key]} 형식을 확인해 주세요.`);
   }
-  if (value.records.length > MAX_RECORDS) throw new Error("수정본은 기록 파일 하나에 100개까지 보관합니다.");
+  if (value.records.length > MAX_RECORDS) throw new Error("수정본은 기록 파일 하나에 100개까지 담을 수 있어요.");
   const records = value.records.map((record) => ({ ...checkedDraft(record),
     recordId: textField(record.recordId, "기록 ID", 100), engineVersion: textField(record.engineVersion, "검사 버전", 50),
     reason: textField(record.reason, "수정 이유", 1000), origin: ["human", "assisted", "unspecified"].includes(record.origin) ? record.origin : "unspecified" }));
   const patches = value.patches.map((patch) => {
     const item = {};
-    for (const key of ["rule", "before", "after", "moved", "sourceText", "sentence", "cue", "reader"]) item[key] = textField(patch[key], `고침 ${key}`);
-    if (!Array.isArray(patch.presets) || !patch.presets.length || !patch.presets.every((preset) => PRESETS.includes(preset))) throw new Error("고침의 글 종류를 확인해 주세요.");
+    for (const key of ["rule", "before", "after", "moved", "sourceText", "sentence", "cue", "reader"]) item[key] = textField(patch[key], "기억한 고침");
+    if (!Array.isArray(patch.presets) || !patch.presets.length || !patch.presets.every((preset) => PRESETS.includes(preset))) throw new Error("기억한 고침의 글 종류를 확인해 주세요.");
     item.presets = [...patch.presets];
     return item;
   });
@@ -63,7 +65,7 @@ export function serializeWorkspace(workspace) {
 export function addRecord(workspace, engineVersion, reason = "", origin = "unspecified") {
   const previous = workspace.records.at(-1), draft = workspace.draft;
   if (previous && previous.id === draft.id && previous.text === draft.text && previous.original === draft.original && previous.preset === draft.preset && previous.title === draft.title) return false;
-  if (workspace.records.length >= MAX_RECORDS) throw new Error("수정본 100개가 모였습니다. 기록을 내보내고 이전 기록을 정리해 주세요.");
+  if (workspace.records.length >= MAX_RECORDS) throw new Error("수정본이 100개 모였어요. 기록을 내보낸 뒤 이전 수정본을 지워 주세요.");
   workspace.records.push({ ...draft, recordId: crypto.randomUUID(), engineVersion, reason, origin });
   return true;
 }

@@ -1,12 +1,12 @@
 // @ts-check
 /**
- * 사람이 읽는 지적 목록. `파일:줄` 로 시작해 편집기가 바로 연다. 파이썬 report/textReport.py 와 같은 글자다.
- * 끝에 본보기를 붙인다. 전과 후를 제 줄에 둔다. 왜 한 줄이 아닌지는 파이썬 report/textReport.py 가 소유한다.
+ * 사람이 읽는 지적 목록. `파일:줄`로 시작해 편집기가 바로 연다. 파이썬 report/textReport.py와 같은 글자다.
+ * 끝에 예시를 붙인다. 전과 후를 제 줄에 둔다. 왜 한 줄이 아닌지는 파이썬 report/textReport.py가 소유한다.
  */
 import { exemplarFor, shortened, twoLines } from "../data/exemplars.js";
 import { exemplarInRegister } from "./registerMatch.js";
 
-/** 그 글에 나온 규칙의 본보기. 이름 순이고 규칙 하나에 세 줄이다. @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} register @param {string | null | undefined} preset @param {import("../data/exemplars.js").Exemplar[]} customExemplars */
+/** 그 글에 나온 규칙의 예시. 이름 순이고 규칙 하나에 세 줄이다. @param {import("../rules/finding.js").Finding[]} findings @param {string | null | undefined} register @param {string | null | undefined} preset @param {import("../data/exemplars.js").Exemplar[]} customExemplars */
 function exemplarLines(findings, register, preset, customExemplars) {
   const lines = [];
   let cut = false;
@@ -19,15 +19,15 @@ function exemplarLines(findings, register, preset, customExemplars) {
     lines.push(`  [${name}]`, `    전  ${before}`, `    후  ${after}`);
   }
   if (!lines.length) return [];
-  const head = "본보기 (고치기 전, 고친 뒤)";
-  return [cut ? `${head}. 잘린 것은 hanlint explain <규칙>` : head, ...lines];
+  const head = "예시 (고치기 전, 고친 뒤)";
+  return [cut ? `${head}. 잘린 것은 hanlint explain <규칙>으로 본다` : head, ...lines];
 }
 
-/** 본보기 아래에 붙이는 선택지. 지적 자리별이며 순위는 없다. @param {import("../rules/finding.js").Finding[]} findings */
+/** 예시 아래에 붙이는 선택지. 지적 자리별이며 순위는 없다. @param {import("../rules/finding.js").Finding[]} findings */
 function candidateLines(findings) {
   const chosen = findings.filter((finding) => finding.candidates.length);
   if (!chosen.length) return [];
-  const lines = ["후보 (기계가 고르지 않음)"];
+  const lines = ["후보 (hanlint가 하나를 고르지 않았다)"];
   for (const finding of chosen) {
     lines.push(`  ${finding.line}줄 [${finding.rule}]`);
     for (const candidate of finding.candidates) lines.push(`    - ${candidate.text} (${candidate.why})`);
@@ -35,7 +35,7 @@ function candidateLines(findings) {
   return lines;
 }
 
-/** 접은 확인 권고. 규칙마다 개수와 줄 번호 한 줄. 뜻은 파이썬 textReport.py 의 noticeLines 가 소유한다. @param {import("../rules/finding.js").Finding[]} notices */
+/** 접은 확인 권고. 규칙마다 개수와 줄 번호 한 줄. 뜻은 파이썬 textReport.py의 noticeLines가 소유한다. @param {import("../rules/finding.js").Finding[]} notices */
 function noticeLines(notices) {
   /** @type {Map<string, number[]>} */
   const byRule = new Map();
@@ -43,7 +43,7 @@ function noticeLines(notices) {
     if (!byRule.has(finding.rule)) byRule.set(finding.rule, []);
     /** @type {number[]} */ (byRule.get(finding.rule)).push(finding.line);
   }
-  const lines = [`확인 권고 ${notices.length}건 (접음. 다 보려면 --notices)`];
+  const lines = [`확인 권고 ${notices.length}건 (접어 두었다. 다 보려면 --notices)`];
   for (const rule of [...byRule.keys()].sort()) {
     const numbers = [...new Set(/** @type {number[]} */ (byRule.get(rule)))].sort((a, b) => a - b);
     lines.push(`  ${rule} ${/** @type {number[]} */ (byRule.get(rule)).length}  ${numbers.join(", ")}줄`);
@@ -61,9 +61,9 @@ export function renderText(path, findings, register = null, preset = null, custo
   const folded = unfoldNotices ? [] : findings.filter((f) => f.severity === "notice");
   const shown = findings.filter((f) => unfoldNotices || f.severity === "error");
   for (const f of shown) {
-    const tag = `[${f.rule}]` + (f.severity === "notice" ? " 확인" : "");
+    const tag = `[${f.rule}]` + (f.severity === "notice" ? " 확인 권고" : "");
     lines.push(`${path}:${f.line}  ${tag}`, `  ${f.quote}`, `  ${f.why}`);
-    if (f.fix) lines.push(`  ${f.severity === "notice" ? "검토할 대안" : "고친 뒤"}: ${f.fix}`);
+    if (f.fix) lines.push(`  ${f.severity === "notice" ? "제안" : "고친 뒤"}: ${f.fix}`);
     lines.push("");
   }
   if (folded.length) lines.push(...noticeLines(folded), "");

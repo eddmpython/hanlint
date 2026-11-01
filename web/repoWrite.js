@@ -1,9 +1,10 @@
 // @ts-check
 /**
- * 표의 고침을 GitHub 저장소에 바로 되돌려 쓴다 (저장소 모드 2단계). 파일마다 Contents API 로 읽고, 워커의 `sheetApply`
- * (CLI `sheet apply` 와 같은 applyRows) 로 바꾼 뒤, 같은 브랜치에 파일마다 commit 하나로 쓴다. 토큰은 메모리에만 둔다.
- * 실측: 시트를 다운로드하고 터미널에서 apply 하는 두 단계가 비개발자에게는 벽이었다 (2026-09-18).
+ * 표의 고침을 GitHub 저장소의 원래 파일에 바로 쓴다 (저장소 모드 2단계). 파일마다 Contents API로 읽고, 워커의 `sheetApply`
+ * (CLI `sheet apply`와 같은 applyRows)로 바꾼 뒤, 같은 브랜치에 파일마다 커밋 하나로 쓴다. 토큰은 메모리에만 둔다.
+ * 실측: 시트를 다운로드하고 터미널에서 apply 하는 두 단계를 개발자가 아닌 사람은 넘지 못했다 (2026-09-18).
  */
+import { errorText } from "./dom.js";
 import { GitHubStore, decodeContent, encodeContent } from "./github.js";
 
 function encodedPath(path) {
@@ -13,7 +14,7 @@ function encodedPath(path) {
 export class RepoWriter {
   /**
    * @param {{ request(payload: object, timeout?: number): Promise<any> }} engine 워커 연결. `sheetApply` 액션을 쓴다
-   * @param {GitHubStore} [store] 테스트가 가짜 fetch 를 넣은 store 를 준다
+   * @param {GitHubStore} [store] 테스트가 가짜 fetch를 넣은 store를 준다
    */
   constructor(engine, store = new GitHubStore()) {
     this.engine = engine;
@@ -50,19 +51,19 @@ export class RepoWriter {
       const result = { file, applied: /** @type {string[]} */ ([]), failed: /** @type {string[]} */ ([]), commit: /** @type {string | null} */ (null), source: /** @type {string | null} */ (null) };
       try {
         const data = await this.store.call(`/contents/${encodedPath(file)}?ref=${encodeURIComponent(target.ref)}`);
-        if (!data || data.type !== "file" || data.encoding !== "base64") throw new Error("파일이 없다");
+        if (!data || data.type !== "file" || data.encoding !== "base64") throw new Error("파일이 없어요");
         const source = decodeContent(data.content);
         const [rewritten, applied, failed] = await this.engine.request({ action: "sheetApply", preset: "screen", patches: [], source, rows: fileRows });
         result.applied = applied;
         result.failed = failed;
         if (applied.length) {
-          const body = { message: `hanlint: 화면 글 고침 ${applied.length}곳 (${file})`, content: encodeContent(rewritten), sha: data.sha, branch: target.ref };
+          const body = { message: `hanlint: 화면 문구 ${applied.length}곳 고침 (${file})`, content: encodeContent(rewritten), sha: data.sha, branch: target.ref };
           const written = await this.store.call(`/contents/${encodedPath(file)}`, { method: "PUT", body: JSON.stringify(body) });
           result.commit = written?.commit?.sha ?? null;
           result.source = rewritten;
         }
       } catch (error) {
-        result.failed = [...result.failed, `${file}: ${error.message}`];
+        result.failed = [...result.failed, `${file}: ${errorText(error, "이 파일에 쓰지 못했어요.")}`];
       }
       results.push(result);
       done += 1;

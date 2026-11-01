@@ -31,15 +31,16 @@ def directoryOf(path: str) -> str | None:
 
 @rule("inputFileSource", mechanism="reader")
 def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
-    """코드가 읽는 파일과 쓰는 폴더가 글 어디에서도 만들어지지 않은 자리.
+    """코드가 읽는 파일과 쓰는 폴더를 글 어디에서도 만들지 않은 곳.
 
-    왜: 위에서 아래로 따라 하는 독자는 그 줄에서 파일 없음 오류로 멈춘다. 글쓴이 컴퓨터에는 있어서 글쓴이는 모른다.
-    어디서: 실측. 블로그 004 에서 read_excel("sales_small.xlsx") 의 파일을 만드는 코드가 없었고 data 폴더가 어디에서도
-        만들어지지 않았다. 사람 평가자가 두 라운드에 걸쳐 집었다. 읽기와 쓰기 함수 목록은 fingerprint/codeMarkers.py 의
-        정규식이고, 앞선 코드가 만든 파일은 독자 상태 (fingerprint/readerState.py) 의 files 다.
-    고치기: 파일을 만드는 코드 블록을 앞에 두거나, 산문에서 그 파일을 어떻게 준비하는지 이름을 불러 말한다.
-    안 잡는 것: 앞선 코드가 쓴 파일. 앞선 산문이 이름을 부른 파일 (독자가 준비하는 것으로 본다). 별표와 URL 과
-        서식 자리표시자가 든 경로. 폴더는 error 가 아니라 notice 다.
+    왜: 위에서 아래로 따라 하는 독자는 그 줄에서 파일 없음 오류로 멈춘다. 글쓴이 컴퓨터에는 파일이 있어서 글쓴이는
+        모른다.
+    어디서: 실제 블로그 글 하나에서 `read_excel("sales_small.xlsx")`가 읽는 파일을 만드는 코드가 없었고, data 폴더도
+        어디에서도 만들지 않았다. 사람 평가자가 두 차례 검토에서 모두 짚었다. 앞선 코드가 만든 파일은 글을 위에서부터
+        읽으며 쌓은 목록에서 찾는다.
+    고치기: 파일을 만드는 코드 블록을 앞에 두거나, 산문에서 그 파일을 어떻게 준비하는지 이름을 들어 말한다.
+    안 잡는 것: 앞선 코드가 쓴 파일과 앞선 산문이 이름을 든 파일(독자가 준비하는 것으로 본다)은 잡지 않는다. 별표,
+        URL, 서식 자리표시자가 든 경로도 잡지 않는다. 폴더는 오류가 아니라 확인 권고로 낸다.
     """
     reported: set[str] = set()  # 이미 짚은 폴더. 같은 폴더를 두 번 짚지 않는다
     for block in doc.codeBlocks:
@@ -59,7 +60,7 @@ def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                     "inputFileSource",
                     line,
                     code.strip(),
-                    f"`{name}` 을 읽는데 글 어디에서도 만들지 않았다. 독자는 여기서 파일 없음 오류로 멈춘다",
+                    f"`{name}` 파일을 읽는데 글 어디에서도 만들지 않았다. 독자는 여기서 파일 없음 오류로 멈춘다",
                     None,
                     "error",
                     DOCUMENT,

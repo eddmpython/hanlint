@@ -1,4 +1,4 @@
-"""지적 하나의 모양. 사람 평가자에게 요구하는 것과 같다. 인용, 이유, 가능하면 고친 문장."""
+"""지적 하나의 형식. 사람 평가자에게 요구하는 것과 같다. 인용, 이유, 할 수 있으면 고친 문장을 담는다."""
 
 from __future__ import annotations
 
@@ -20,9 +20,9 @@ MIN_LOCAL_CUE = 2
 @dataclass(frozen=True)
 class Candidate:
     text: str
-    """사람이나 LLM이 고를 수 있는 꼴. 기계가 순위를 매기지 않는다."""
+    """사람이나 LLM이 고를 수 있는 후보 글. 기계가 순위를 매기지 않는다."""
     why: str
-    """이 꼴을 낸 표층 근거."""
+    """이 후보를 낸 까닭. 글자 모양에서 찾은 것이다."""
 
     def asDict(self) -> dict:
         return {"text": self.text, "why": self.why}
@@ -37,20 +37,20 @@ class Finding:
     fix: str | None = None
     """기계가 낼 수 있을 때만. 억지로 채우지 않는다."""
     severity: str = ERROR
-    """error 는 규칙 위반, notice 는 정당한 용법이 많거나 근사 분석이라 확인이 필요한 것."""
+    """error는 규칙 위반, notice는 바르게 쓴 경우가 많거나 어림으로 찾아서 확인이 필요한 것."""
     scope: str = SENTENCE
     """sentence, paragraph, section, document. 지도가 어디에 색을 칠할지 정한다."""
     at: int = -1
-    """scope 가 가리키는 지문의 index."""
+    """scope가 가리키는 분석 결과의 index."""
     fragment: str | None = None
-    """원문에서 바꿀 조각. `hanlint fix` 가 이 조각을 찾아 replacement 로 바꾼다."""
+    """원문에서 바꿀 조각. `hanlint fix`가 이 조각을 찾아 replacement로 바꾼다."""
     replacement: str | None = None
     candidates: tuple[Candidate, ...] = ()
     """뜻을 정하지 않고 형태로 좁힐 수 있을 때만. 순위와 점수는 없다."""
 
     @property
     def localCue(self) -> str:
-        """규칙이 짚은 국소 표지. 너무 짧으면 오선택을 피하려고 인용 전체를 쓴다."""
+        """규칙이 짚은 그 자리의 글자. 너무 짧으면 잘못 고르지 않으려고 인용 전체를 쓴다."""
         quote = " ".join(self.quote.split())
         if self.fragment:
             fragment = " ".join(self.fragment.split())

@@ -27,6 +27,6 @@ export function run(doc, config) {
     .filter((word) => word.length >= MIN_WORD && promised.includes(word) && !joined.includes(word));
   if (!missing.length) return [];
   return [
-    finding(name, headings[0][2], joined, `글이 내건 \`${missing[0]}\` 가 절 제목 어디에도 없다. 목차를 훑는 독자가 이 글이 그것을 다루는지 못 본다`, null, NOTICE, DOCUMENT, -1),
+    finding(name, headings[0][2], joined, `글이 내건 말이 절 제목 어디에도 없다: \`${missing[0]}\`. 목차를 훑는 독자는 이 글이 그것을 다루는지 알 수 없다`, null, NOTICE, DOCUMENT, -1),
   ];
 }

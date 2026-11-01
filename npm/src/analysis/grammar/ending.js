@@ -1,5 +1,5 @@
 // @ts-check
-/** 파이썬 `analysis/grammar/ending.py`와 `predicate.py`의 투영. 종결 서술어를 풀고 세 문체로 짠다. */
+/** 파이썬 `analysis/grammar/ending.py`와 `predicate.py`를 옮긴 것. 종결 서술어를 풀고 세 문체로 짠다. */
 import { loadLines } from "../../data/load.js";
 import * as hangul from "./hangul.js";
 

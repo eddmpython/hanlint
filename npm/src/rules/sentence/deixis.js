@@ -16,7 +16,7 @@ export function run(doc) {
     const reader = doc.reader.beforeSentence[sentence.index];
     if (overlap(reader.recent, sentence.topics) === 0) continue;
     findings.push(
-      finding(name, sentence.line, sentence.text, `\`${sentence.deixis[0]}\` ${fitJosa(sentence.deixis[0], "은")} 독자가 스크롤을 되돌려야 하는 지시어다. 가리키는 파일, 값, 코드의 이름을 쓴다`, null, "error", SENTENCE, sentence.index),
+      finding(name, sentence.line, sentence.text, `\`${sentence.deixis[0]}\`${fitJosa(sentence.deixis[0], "은")} 독자가 스크롤을 되돌려야 하는 지시어다. 가리키는 파일, 값, 코드의 이름을 쓴다`, null, "error", SENTENCE, sentence.index),
     );
   }
   return findings;

@@ -48,7 +48,7 @@ test("json carries candidates and text puts them below exemplars", () => {
     why: "바로 앞 문장에 나온 명사 `표`",
   });
   const text = renderText("글.md", [finding]);
-  assert.ok(text.indexOf("본보기") < text.indexOf("후보 (기계가 고르지 않음)"));
+  assert.ok(text.indexOf("예시") < text.indexOf("후보 (hanlint가 하나를 고르지 않았다)"));
   const noCandidate = JSON.parse(renderJson(new Map([["글.md", [one("cliche", "핵심은 속도입니다.")]]])));
   assert.ok(!("candidates" in noCandidate.files[0].findings[0]));
 });
@@ -62,9 +62,9 @@ test("text folds notices unless asked", () => {
   ];
   const folded = renderText("글.md", [error, ...notices]);
   assert.ok(folded.includes("글.md  오류 1건, 확인 권고 3건"));
-  assert.ok(folded.includes("확인 권고 3건 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄"));
-  assert.ok(!folded.includes("[endingRepeat] 확인") && folded.includes("[cliche]"));
+  assert.ok(folded.includes("확인 권고 3건 (접어 두었다. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄"));
+  assert.ok(!folded.includes("[endingRepeat] 확인 권고") && folded.includes("[cliche]"));
   const unfolded = renderText("글.md", [error, ...notices], null, null, [], true);
-  assert.ok(unfolded.includes("글.md:5  [endingRepeat] 확인") && !unfolded.includes("(접음"));
+  assert.ok(unfolded.includes("글.md:5  [endingRepeat] 확인 권고") && !unfolded.includes("(접어 두었다"));
   assert.equal(renderText("글.md", [error]), renderText("글.md", [error], null, null, [], true));
 });

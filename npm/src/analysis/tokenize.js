@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * 어절 단위 근사. 조사와 어미 꼬리 사전으로 명사 어절을 가려낸다. 파이썬 analysis/tokenize.py 와 같은 판정이다.
+ * 어절 단위 어림. 조사와 어미 꼬리 사전으로 명사 어절을 가려낸다. 파이썬 analysis/tokenize.py와 같은 판정이다.
  * 띄어 쓴 조사와 계사는 앞 어절에 붙은 것으로, 영문 어절 연속은 한 덩어리로, 수사와 바로 뒤 단위는 수량으로 본다.
  */
 import { loadLines } from "../data/load.js";
@@ -9,7 +9,7 @@ import { splitWords, stripChars } from "../text.js";
 const HANGUL = /[가-힣]/;
 const HANGUL_WORD = /^[가-힣]+$/;
 const WORD_CHARS = /^[가-힣A-Za-z0-9]+$/;
-/** 관형격 조사 의. 영문과 숫자 뒤 (API의, 600MiB의) 와 닫는 괄호 뒤 (L7(HTTP)의) 도 센다. 파이썬 tokenize.py 와 같다. */
+/** 관형격 조사 `의`. 영문과 숫자 뒤(`API의`, `600MiB의`)와 닫는 괄호 뒤(`L7(HTTP)의`)도 센다. 파이썬 tokenize.py와 같다. */
 const GENITIVE = /([가-힣A-Za-z0-9]+|\))의(?=[\s,.)\]]|$)/g;
 const SPACED_GENITIVE = /(?<=\s)의(?=\s)/g;
 export const COPULA = /^(?:이(?:고|며|다|라|란|면|라서|므로|지만|어서|었다|었고)|인|인데|입니다|였다)$/;
@@ -77,8 +77,8 @@ export function inNouns() {
 }
 
 /**
- * `도구인`, `규모인` 처럼 명사에 계사 관형형 인 이 붙은 어절. 서술어라 명사 나열을 끊는다. 어간이 두 음절 이상일 때만이고
- * 외국인 같은 세 음절 명사는 data/inNouns.txt 가 뺀다. 파이썬 tokenize.py 와 같다.
+ * `도구인`, `규모인`처럼 명사에 계사 관형형 `인`이 붙은 어절. 서술어라 명사 나열을 끊는다. 어간이 두 음절 이상일 때만이고
+ * 외국인 같은 세 음절 명사는 data/inNouns.txt가 뺀다. 파이썬 tokenize.py와 같다.
  * @param {string} core
  */
 export function isCopulaAdnominal(core) {
@@ -126,12 +126,12 @@ export function isBareNoun(core) {
 }
 
 /**
- * 명사 어절 연속의 최대 길이. 의존명사와 관형사와 부사 (`수`, `몇`, `직접`) 는 조사도 어미도 안 붙어
- * 표층으로는 명사로 보이지만 명사 쌓기의 재료가 아니다. data/nonNouns.txt 가 그 목록이고 연속을 끊는다.
+ * 명사 어절 연속의 최대 길이. 의존명사와 관형사와 부사(`수`, `몇`, `직접`)는 조사도 어미도 안 붙어
+ * 글자 모양으로는 명사로 보이지만 명사 쌓기의 재료가 아니다. data/nonNouns.txt가 그 목록이고 연속을 끊는다.
  * @param {string} text
  */
 /**
- * 명사 어절 연속마다 [어절들, 센 길이]. 뜻은 파이썬 analysis/tokenize.py 의 nounRuns 가 소유한다.
+ * 명사 어절 연속마다 [어절들, 센 길이]. 뜻은 파이썬 analysis/tokenize.py의 nounRuns가 정한다.
  * 수사와 단위는 세지도 끊지도 않고 어절에도 안 넣는다. 잇달은 영문 어절은 하나로 센다.
  * @param {string} text @returns {[string[], number][]}
  */
@@ -167,14 +167,14 @@ export function nounRuns(text) {
   return runs;
 }
 
-/** 명사 어절 연속의 최대 길이. nounRuns 의 센 길이 가운데 가장 큰 것. @param {string} text */
+/** 명사 어절 연속의 최대 길이. nounRuns의 센 길이 가운데 가장 큰 것. @param {string} text */
 export function longestNounRun(text) {
   let longest = 0;
   for (const [, length] of nounRuns(text)) longest = Math.max(longest, length);
   return longest;
 }
 
-/** 관형격 조사 의 가 붙은 자리 [시작, 끝]. 정의, 회의 처럼 의 로 끝나는 낱말은 빼고 띄어 쓴 의 는 넣는다. @param {string} text @returns {[number, number][]} */
+/** 관형격 조사 `의`가 붙은 곳 [시작, 끝]. `정의`, `회의`처럼 `의`로 끝나는 단어는 빼고 띄어 쓴 `의`는 넣는다. @param {string} text @returns {[number, number][]} */
 export function genitiveSpans(text) {
   /** @type {[number, number][]} */
   const spans = [];
@@ -185,13 +185,13 @@ export function genitiveSpans(text) {
   return spans.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 }
 
-/** 의 로 끝나는 어절 둘이 붙어 있는가 (회사의 팀의). 사이가 공백뿐이어야 한다. @param {string} text */
+/** `의`로 끝나는 어절 둘이 붙어 있는가(`회사의 팀의`). 사이가 공백뿐이어야 한다. @param {string} text */
 export function euiAdjacent(text) {
   const spans = genitiveSpans(text);
   return spans.some((span, index) => index > 0 && /^\s+$/.test(text.slice(spans[index - 1][1], span[0])));
 }
 
-/** 관형격 조사 의 의 수. @param {string} text */
+/** 관형격 조사 `의`의 수. @param {string} text */
 export function euiCount(text) {
   return genitiveSpans(text).length;
 }
@@ -220,7 +220,7 @@ export function doublePassivePattern() {
   return passivePattern;
 }
 
-/** 이중 피동의 [시작, 끝, `되어지` 꼴 표층형]. @param {string} text @returns {[number, number, string][]} */
+/** 이중 피동의 [시작, 끝, `되어지` 꼴로 쓴 글자]. @param {string} text @returns {[number, number, string][]} */
 export function doublePassiveSpans(text) {
   return [...text.matchAll(doublePassivePattern())].map((match) => {
     const start = /** @type {number} */ (match.index);
@@ -228,7 +228,7 @@ export function doublePassiveSpans(text) {
   });
 }
 
-/** 이중 피동의 표층형을 `되어지` 꼴로. @param {string} text */
+/** 이중 피동의 글자를 `되어지` 꼴로. @param {string} text */
 export function doublePassives(text) {
   return doublePassiveSpans(text).map(([, , surface]) => surface);
 }

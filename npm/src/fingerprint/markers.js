@@ -1,14 +1,14 @@
 // @ts-check
 /**
- * 문장에서 표지를 센다. 종결어미 부류, 서법, 접속부사, 인과, 지시어, 헤지, 약속과 회수, 독자 호출, 수 약속.
- * 낱말 목록은 전부 data/ 가 정본이다. 파이썬 fingerprint/markers.py 와 같다.
+ * 문장에서 정해 둔 말을 센다. 종결어미 묶음, 서법, 접속부사, 까닭을 잇는 말, 지시어, 단정을 피하는 말, 약속하는 말과 다시 다루는 말, 독자 호출, 수 약속.
+ * 단어 목록은 모두 data/에 있다. 파이썬 fingerprint/markers.py와 같다.
  */
 import { loadLines, loadPatterns } from "../data/load.js";
 import { compile, escape } from "../regex.js";
 
 const TRAILING = /[\s.?!"'”’)\]]+$/;
 const NUMBER = /\d+(?:[.,]\d+)*/g;
-/** 값으로 견주는 수. NUMBER 는 수의 개수를 세고 이것은 수의 정체를 센다. 천 단위 쉼표까지 한 수로 읽는다. */
+/** 값으로 비교하는 수. NUMBER는 수의 개수를 세고 이것은 수의 정체를 센다. 천 단위 쉼표까지 한 수로 읽는다. */
 const NUMERAL = /\d[\d,]*(?:\.\d+)?/g;
 const COMMA = /,/g;
 // 따옴표 쌍. 안은 사용이 아니라 인용이다. 작은따옴표는 앞이 문장 첫머리나 공백이나 여는 괄호일 때만.
@@ -27,7 +27,7 @@ const OPTIONAL_SPACE = /\s?/.source;
 
 /** @type {Record<string, number> | null} */
 let numberCache = null;
-/** 수사 → 값. 정본은 data/koreanNumbers.txt. */
+/** 수사 → 값. 목록은 data/koreanNumbers.txt에 있다. */
 export function koreanNumbers() {
   if (!numberCache) {
     numberCache = {};
@@ -148,7 +148,7 @@ export function quoteSpans(text) {
 }
 
 /**
- * 설정의 protectedTerms 가 글에 나온 [시작, 끝] 전부. 겹쳐 나온 자리도 따로 센다. 파이썬 termSpans 와 같다.
+ * 설정의 protectedTerms가 글에 나온 [시작, 끝] 전부. 겹쳐 나온 것도 따로 센다. 파이썬 termSpans와 같다.
  * @param {string} text @param {string[]} terms @returns {[number, number][]}
  */
 export function termSpans(text, terms) {
@@ -164,7 +164,7 @@ export function termSpans(text, terms) {
   return found.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 }
 
-/** 두 구간이 한 글자라도 겹치는가. 파이썬 overlapsAny 와 같다. @param {number} start @param {number} end @param {[number, number][]} spans */
+/** 두 구간이 한 글자라도 겹치는가. 파이썬 overlapsAny와 같다. @param {number} start @param {number} end @param {[number, number][]} spans */
 export function overlapsAny(start, end, spans) {
   return spans.some(([spanStart, spanEnd]) => spanStart < end && start < spanEnd);
 }
@@ -189,7 +189,7 @@ export function countPromisesIn(text) {
 }
 
 /** @param {string} text */
-/** 글에 나온 수의 정체 (천 단위 쉼표를 뗀 꼴). 독자 상태가 쌓고 numberOrphan 이 견준다. @param {string} text @returns {Set<string>} */
+/** 글에 나온 수의 정체 (천 단위 쉼표를 뗀 꼴). 독자 상태가 쌓고 numberOrphan이 비교한다. @param {string} text @returns {Set<string>} */
 export function numeralsIn(text) {
   const found = new Set();
   for (const match of text.matchAll(NUMERAL)) found.add(match[0].replaceAll(",", ""));

@@ -79,16 +79,16 @@ def localModules(doc: DocumentPrint) -> set[str]:
 
 @rule("installImport", mechanism="contrast")
 def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
-    """설치 줄에 없는 패키지를 import 하는 코드. 그리고 코드 한 줄이 조용히 요구하는 숨은 의존성.
+    """설치 줄에 없는 패키지를 import하는 코드와, 코드 한 줄이 요구하는데 설치 줄에 없는 의존성.
 
-    왜: 독자는 글이 시킨 설치 줄만 실행한다. 목록에 없는 패키지는 ModuleNotFoundError 로 끝나고 extra 가 빠진
+    왜: 독자는 글이 시킨 설치 줄만 실행한다. 목록에 없는 패키지는 ModuleNotFoundError로 끝나고, extra가 빠진
         백엔드는 실행 중에 멈춘다.
-    어디서: 실측. 블로그 004 가 ibis-framework[duckdb] 만 설치하고 sqlite 엔진에 붙었고 사람 평가자가 집었다.
-        모듈과 패키지 이름의 대응은 data/pythonPackages.txt, 표준 라이브러리는 data/pythonStdlib.txt, 숨은
-        의존성은 data/hiddenDeps.txt.
-    고치기: 설치 줄에 그 패키지 (필요하면 extra 까지) 를 더한다.
-    안 잡는 것: 설치 줄이 하나도 없는 글 (판단할 수 없다). 표준 라이브러리. 글이 만드는 .py 파일. 상대 import.
-        숨은 의존성은 notice 로 낸다.
+    어디서: 실제 블로그 글 하나가 ibis-framework[duckdb]만 설치하고 sqlite 엔진에 붙었고 사람 평가자가 짚었다.
+        모듈과 패키지 이름의 대응은 data/pythonPackages.txt, 표준 라이브러리 목록은 data/pythonStdlib.txt, 숨은
+        의존성 목록은 data/hiddenDeps.txt에 있다.
+    고치기: 설치 줄에 그 패키지를 더한다. 필요하면 extra까지 적는다.
+    안 잡는 것: 설치 줄이 하나도 없는 글(판단할 수 없다), 표준 라이브러리, 글이 만드는 .py 파일, 상대 import는
+        잡지 않는다. 숨은 의존성은 확인 권고로 낸다.
     """
     packages = installed(doc)
     if packages is None:
@@ -112,8 +112,8 @@ def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                             "installImport",
                             line,
                             code.strip(),
-                            f"`{top}` 를 import 하는데 설치 줄에 허용되는 이름 `{package}` 가 없다. "
-                            "독자는 ModuleNotFoundError 에서 멈춘다",
+                            f"`{top}` 모듈을 import하는데 설치 줄에 그 모듈이 든 패키지(`{package}`)가 없다. "
+                            "독자는 ModuleNotFoundError에서 멈춘다",
                             None,
                             "error",
                             DOCUMENT,
@@ -133,7 +133,7 @@ def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                     "installImport",
                     line,
                     code.strip(),
-                    f"이 줄은 `{requirement}` 가 있어야 돈다. {why}. 설치 줄에 없다",
+                    f"이 줄은 `{requirement}` 패키지가 있어야 실행되는데 설치 줄에 없다. {why}",
                     None,
                     NOTICE,
                     DOCUMENT,

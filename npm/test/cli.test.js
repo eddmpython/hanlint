@@ -115,7 +115,7 @@ test("primer leads with the guide", () => {
   assert.equal(result.code, 0);
   const lines = result.out.split("\n");
   assert.ok(lines[0].startsWith("한국어 산문 일곱 줄  한국어 글을 쓰기 전에 읽는다."));
-  assert.ok(lines[7].startsWith("7. 앞의 여섯을 피하느라 글을 망치지 마라  "));
+  assert.ok(lines[7].startsWith("7. 앞의 여섯을 피하느라 글을 망치지 않는다  "));
   assert.equal(lines[8], "");
   assert.ok(lines[9].startsWith("hanlint primer  docs 종류"));
 });
@@ -128,19 +128,19 @@ test("severity, compact, stdin, summary", () => {
   assert.equal(compact.code, 1);
   const compactLines = compact.out.trimEnd().split("\n");
   assert.ok(compactLines[0].startsWith(`${mixed}:3 [cliche] \`핵심은\`은 `), compactLines[0]);
-  assert.match(compactLines[compactLines.length - 1], /^파일 1개, error 1, notice [1-9]/);
+  assert.match(compactLines[compactLines.length - 1], /^파일 1개, 오류 1건, 확인 권고 [1-9]/);
   const notices = run([mixed, "--severity", "notice", "--format", "json"]);
   const findings = JSON.parse(notices.out).files[0].findings;
   assert.ok(findings.length && findings.every((f) => f.severity === "notice"));
   const noticeDraft = join(dir, "notice.md");
   writeFileSync(noticeDraft, "금일 회의를 엽니다.\n", "utf-8");
   const noticeOutput = run([noticeDraft, "--severity", "notice", "--format", "compact", "--quiet"]);
-  assert.ok(noticeOutput.out.includes("검토할 대안: 오늘 회의를 엽니다."));
+  assert.ok(noticeOutput.out.includes("제안: 오늘 회의를 엽니다."));
   const piped = spawnSync(process.execPath, [BIN, "-", "--path", "초안.md", "--format", "compact", "--quiet"], { encoding: "utf-8", input: BAD });
   assert.equal(piped.status, 1);
   assert.ok(piped.stdout.startsWith("초안.md:3 [cliche]"));
   const many = run([bad, clean, "--quiet"]);
-  assert.ok(many.out.trimEnd().endsWith("파일 2개, error 1, notice 0"));
+  assert.ok(many.out.trimEnd().endsWith("파일 2개, 오류 1건, 확인 권고 0건"));
 });
 
 test("fix applies fragments and dry run keeps the file", () => {
@@ -184,16 +184,16 @@ test("disable and output file", () => {
 test("missing file, python-only commands, unknown option are 2", () => {
   const missing = run([join(dir, "없는파일.md")]);
   assert.equal(missing.code, 2);
-  assert.ok(missing.err.includes("찾지 못했다"));
+  assert.ok(missing.err.includes("찾지 못한 파일"));
   const audit = run(["audit", bad]);
   assert.equal(audit.code, 2);
-  assert.ok(audit.err.includes("파이썬 패키지"));
+  assert.ok(audit.err.includes("파이썬 hanlint에만 있다"));
   const packet = run(["packet", bad]);
   assert.equal(packet.code, 2);
-  assert.ok(packet.err.includes("파이썬 패키지"));
+  assert.ok(packet.err.includes("파이썬 hanlint에만 있다"));
   const entailment = run(["entailment", "cases"]);
   assert.equal(entailment.code, 2);
-  assert.ok(entailment.err.includes("파이썬 패키지"));
+  assert.ok(entailment.err.includes("파이썬 hanlint에만 있다"));
   assert.equal(run([bad, "--severity", "bogus"]).code, 2);
   assert.equal(run([bad, "--bogus"]).code, 2);
 });
@@ -206,7 +206,7 @@ test("rules, explain, version", () => {
   assert.ok(doc.out.includes("왜:") && doc.out.includes("고치기:"));
   const unknown = run(["explain", "noSuchRule"]);
   assert.equal(unknown.code, 2);
-  assert.ok(unknown.err.includes("모르는 규칙"));
+  assert.ok(unknown.err.includes("없는 규칙"));
   assert.ok(execFileSync(process.execPath, [BIN, "--version"], { encoding: "utf-8" }).startsWith("hanlint "));
 });
 
@@ -236,7 +236,7 @@ test("init writes config and refuses to overwrite", () => {
   assert.ok(text.includes("disable = []") && text.includes("#   doublePassive:") && text.includes("# [[exemplars]]"));
   const again = run(["init", "--output", target]);
   assert.equal(again.code, 2);
-  assert.ok(again.err.includes("이미 있다"));
+  assert.ok(again.err.includes("이미 있는 파일"));
   assert.equal(run(["init", "--output", target, "--force"]).code, 0);
 });
 
@@ -268,7 +268,7 @@ test("contract init writes a draft and refuses to overwrite", () => {
   });
   const again = run(args);
   assert.equal(again.code, 2);
-  assert.ok(again.err.includes("이미 있다"));
+  assert.ok(again.err.includes("이미 있는 파일"));
   assert.equal(run([...args, "--force"]).code, 0);
 });
 
@@ -283,7 +283,7 @@ test("contract init refuses a draft without protected surface", () => {
 test("root help groups commands by user goal", () => {
   const result = run(["--help"]);
   assert.equal(result.code, 0);
-  assert.ok(result.out.includes("일상 검사") && result.out.includes("요구사항 잠금") && result.out.includes("설정과 이해"));
+  assert.ok(result.out.includes("일상 검사") && result.out.includes("요구사항 고정") && result.out.includes("설정과 이해"));
   assert.ok(result.out.includes("--outline h2"));
 });
 
@@ -320,8 +320,8 @@ test("folder argument finds markdown below", () => {
 });
 
 test("next step line tells what to do", () => {
-  assert.ok(run([clean]).out.includes("다음: 세어서 잡히는 결함이 없다"));
-  assert.ok(run([bad, "--errors-only"]).out.includes("다음: error"));
+  assert.ok(run([clean]).out.includes("다음: 규칙으로 찾은 잘못이 없다"));
+  assert.ok(run([bad, "--errors-only"]).out.includes("다음: 오류"));
   assert.ok(!run([bad, "--errors-only", "--quiet"]).out.includes("다음:"));
 });
 
@@ -330,7 +330,7 @@ test("doctor and presets", () => {
   const config = join(room, "hanlint.toml");
   const made = run(["init", "--output", config, "--preset", "docs"]);
   assert.equal(made.code, 0);
-  assert.ok(made.out.includes("preset docs 이"));
+  assert.ok(made.out.includes("docs 프리셋은 규칙"));
   assert.ok(readFileSync(config, "utf-8").includes('preset = "docs"'));
 
   const doctor = run(["doctor", "--config", config]);
@@ -347,13 +347,13 @@ test("doctor and presets", () => {
 test("explain suggests near names and lists siblings", () => {
   const typo = run(["explain", "doublePasive"]);
   assert.equal(typo.code, 2);
-  assert.ok(typo.err.includes("이것을 찾았나: doubleNegative, doublePassive"));
+  assert.ok(typo.err.includes("비슷한 이름: doubleNegative, doublePassive"));
   const bare = run(["explain"]);
   assert.equal(bare.code, 2);
-  assert.ok(bare.out.includes("부류로 묶어 보려면 hanlint rules"));
+  assert.ok(bare.out.includes("묶음별로 보려면 hanlint rules"));
   const found = run(["explain", "moreLater"]);
   assert.equal(found.code, 0);
-  assert.ok(found.out.includes("글의 짜임에서 세는 것") && found.out.includes("같은 부류:"));
+  assert.ok(found.out.includes("(글의 짜임)") && found.out.includes("같은 묶음:"));
 });
 
 test("rules groups by category and marks off", () => {
@@ -362,8 +362,8 @@ test("rules groups by category and marks off", () => {
   writeFileSync(config, 'preset = "report"\n', "utf-8");
   const grouped = run(["rules", "--config", config]);
   assert.equal(grouped.code, 0);
-  assert.ok(grouped.out.includes("문장 안에서 세는 것 (") && grouped.out.includes("표기와 띄어쓰기 ("));
-  assert.ok(grouped.out.includes("(꺼짐)") && grouped.out.includes("preset report 이"));
+  assert.ok(grouped.out.includes("문장 (") && grouped.out.includes("표기와 띄어쓰기 ("));
+  assert.ok(grouped.out.includes("(꺼짐)") && grouped.out.includes("report 프리셋"));
   const names = run(["rules", "--names"]).out.trim().split("\n");
   assert.deepEqual(names, [...names].sort());
   assert.ok(names.includes("moreLater"));

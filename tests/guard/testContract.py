@@ -119,7 +119,7 @@ def testTextReceiptShowsReaderDebtAlreadyCarriedByFindings():
     )
     receipt = renderCheck(check(source, contract()))
 
-    assert "- 독자 부채: 1건" in receipt
+    assert "- 독자가 막힐 곳: 1건" in receipt
     assert "[promiseRecall]" in receipt
 
 

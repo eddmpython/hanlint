@@ -1,7 +1,7 @@
 """두 초안에서 지적이 사라진 문장 짝을 보수적으로 찾는다.
 
 뜻을 추측하지 않는다. 문장 변경 구간이 일대일이거나 한 문장이 여러 문장으로 갈라졌을 때만 짝을
-만든다. 여러 문장을 한꺼번에 다시 쓴 구간은 어느 문장이 어느 문장으로 갔는지 결정할 수 없으므로
+만든다. 여러 문장을 한꺼번에 다시 쓴 구간은 어느 문장이 어느 문장으로 갔는지 정할 수 없으므로
 버린다.
 """
 
@@ -25,7 +25,7 @@ class LearnedExemplar:
     beforeLine: int
     afterLines: tuple[int, ...]
     sentence: str
-    """마크다운 표식을 걷은 선택용 원문."""
+    """마크다운 표식을 뺀 선택용 원문."""
     cue: str
     reader: str
     presets: tuple[str, ...] = ()
@@ -111,7 +111,7 @@ def learnExemplars(
                 rule=finding.rule,
                 before=rawBefore.get(beforeSentence.index, beforeSentence.text).strip(),
                 after=afterText,
-                moved="실제 수정본의 문장으로 바꿈",
+                moved="실제로 고친 문장으로 바꿨다",
                 why=finding.why,
                 beforeLine=beforeSentence.line,
                 afterLines=tuple(dict.fromkeys(sentence.line for sentence in afterSentences)),

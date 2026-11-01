@@ -19,7 +19,7 @@ def imperativePeriod(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         없이 끝내는 블로그 표기 방침이다. 한 글 안에서 기준이 갈리면 독자가 부호를 읽느라 멈춘다. blog와 guide
         프리셋에서만 켜고, 다른 종류의 글은 enforceStyle에 넣어 켠다.
     어디서: 블로그 글쓰기 방침. eddmpython의 발행 검사가 같은 규칙을 정규식으로 막는다.
-    고치기: 마침표를 지운다. 기계가 fix로 낸다.
+    고치기: 마침표를 지운다. `hanlint fix`가 고친다.
     안 잡는 것: 평서형 뒤의 마침표. 따옴표 안의 명령문은 문장 부호 규칙이 달라 보지 않는다.
     """
     for sentence in doc.sentences:

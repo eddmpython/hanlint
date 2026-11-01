@@ -1,4 +1,4 @@
-"""`hanlint coverage review.json 글.md`. 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율.
+"""`hanlint coverage review.json 글.md`. 사람 평가자의 지적 가운데 hanlint가 같은 자리를 집은 비율.
 
 규칙을 더하는 근거가 이 숫자다. 못 집은 지적은 유형별로 모아 다음 규칙 후보로 보인다.
 """

@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { DOCUMENT, finding } from "../finding.js";
 
 export const name = "countMismatch";
@@ -50,7 +51,7 @@ export function run(doc, config) {
       const conflict = promises.slice(i + 1).find((p) => p[1] !== numberA && comparable(doc, lineA, p[0], config.countMismatchSpan));
       if (!conflict) continue;
       const [lineB, , textB] = conflict;
-      findings.push(finding(name, lineB, textB, `${lineA}번째 줄은 \`${textA}\` 인데 여기는 \`${textB}\` 다. 같은 단위로 다른 수를 약속하면 독자가 어느 쪽을 믿을지 모른다`, null, "error", DOCUMENT, -1));
+      findings.push(finding(name, lineB, textB, `${lineA}번째 줄은 \`${textA}\`${fitJosa(textA, "이라고")} 했는데 여기서는 \`${textB}\`${fitJosa(textB, "이라고")} 한다. 같은 단위로 다른 수를 약속하면 독자가 어느 쪽을 믿을지 모른다`, null, "error", DOCUMENT, -1));
       break;
     }
   }

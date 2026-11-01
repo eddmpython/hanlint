@@ -1,5 +1,5 @@
 // @ts-check
-/** 글쓴이가 승인한 원문 완전 일치 고침. 파이썬 data/patches.py와 같은 선택 계약이다. */
+/** 글쓴이가 승인한, 원문이 완전히 같을 때만 쓰는 고침. 파이썬 data/patches.py와 같은 조건으로 고른다. */
 import { exemplars, expand } from "./exemplars.js";
 
 export const READER_KINDS = ["recent", "known", "new", "none"];
@@ -13,7 +13,7 @@ export const READER_KINDS = ["recent", "known", "new", "none"];
  * @property {string} cue
  * @property {string} reader
  * @property {string[]} presets
- * @property {string} sentence 마크다운 표식을 걷은 선택용 원문
+ * @property {string} sentence 마크다운 표식을 뺀 선택용 원문
  * @property {string} sourceText 마크다운 표식을 보존한 선택용 원문
  */
 
@@ -22,21 +22,21 @@ export function flatCue(text) {
   return text.split(/\s+/).filter(Boolean).join(" ");
 }
 
-/** 승인 원문은 유니코드 조합과 줄, 연속 공백만 눕혀 비교한다. @param {string} text */
+/** 승인 원문은 유니코드 조합과 줄바꿈, 연속 공백만 정규화해 비교한다. @param {string} text */
 export function flatSentence(text) {
   return text.normalize("NFC").split(/\s+/).filter(Boolean).join(" ");
 }
 
 /** 설정의 `[[patches]]`를 검증한다. @param {unknown} entries @param {string[]} presetNames @returns {Patch[]} */
 export function projectPatches(entries, presetNames) {
-  if (!Array.isArray(entries)) throw new Error("patches 는 [[patches]] 배열이다");
+  if (!Array.isArray(entries)) throw new Error("patches는 [[patches]] 배열이어야 한다");
   const allowedKeys = new Set(["rule", "before", "after", "moved", "sourceText", "sentence", "cue", "reader", "presets"]);
   const knownRules = new Set(exemplars().keys());
   const knownPresets = new Set(presetNames);
   const selectors = new Set();
   return entries.map((raw, offset) => {
     const index = offset + 1;
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`patches ${index}번째 항목은 표다`);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`patches ${index}번째 항목은 표여야 한다`);
     const entry = /** @type {Record<string, unknown>} */ (raw);
     const unknown = Object.keys(entry).filter((key) => !allowedKeys.has(key)).sort();
     if (unknown.length) throw new Error(`patches ${index}번째 항목의 모르는 키: ${unknown.join(", ")}`);
@@ -45,7 +45,7 @@ export function projectPatches(entries, presetNames) {
     for (const key of ["rule", "before", "after", "moved", "cue", "reader"]) {
       const value = entry[key];
       if (typeof value !== "string" || !value.trim()) {
-        throw new Error(`patches ${index}번째 항목의 ${key} 는 비지 않은 문자열이다`);
+        throw new Error(`patches ${index}번째 항목의 ${key} 값은 비지 않은 문자열이어야 한다`);
       }
       values[key] = value;
     }
@@ -53,11 +53,11 @@ export function projectPatches(entries, presetNames) {
     if (!knownRules.has(rule)) throw new Error(`patches ${index}번째 항목의 모르는 규칙: ${rule}`);
     const reader = values.reader;
     if (!READER_KINDS.includes(reader)) {
-      throw new Error(`patches ${index}번째 항목의 reader 는 ${READER_KINDS.join(", ")} 가운데 하나다: ${reader}`);
+      throw new Error(`patches ${index}번째 항목의 reader는 ${READER_KINDS.join(", ")} 가운데 하나여야 한다. 받은 값: ${reader}`);
     }
     const rawPresets = entry.presets;
     if (!Array.isArray(rawPresets) || !rawPresets.length || !rawPresets.every((item) => typeof item === "string")) {
-      throw new Error(`patches ${index}번째 항목의 presets 는 비지 않은 문자열 배열이다`);
+      throw new Error(`patches ${index}번째 항목의 presets는 비지 않은 문자열 배열이어야 한다`);
     }
     const presets = /** @type {string[]} */ (rawPresets);
     const unknownPresets = [...new Set(presets.filter((preset) => !knownPresets.has(preset)))].sort();
@@ -70,12 +70,12 @@ export function projectPatches(entries, presetNames) {
     const after = expand(values.after);
     const rawSentence = entry.sentence ?? before;
     if (typeof rawSentence !== "string" || !rawSentence.trim()) {
-      throw new Error(`patches ${index}번째 항목의 sentence 는 비지 않은 문자열이다`);
+      throw new Error(`patches ${index}번째 항목의 sentence는 비지 않은 문자열이어야 한다`);
     }
     const sentence = flatSentence(rawSentence);
     const rawSourceText = entry.sourceText ?? before;
     if (typeof rawSourceText !== "string" || !rawSourceText.trim()) {
-      throw new Error(`patches ${index}번째 항목의 sourceText 는 비지 않은 문자열이다`);
+      throw new Error(`patches ${index}번째 항목의 sourceText는 비지 않은 문자열이어야 한다`);
     }
     const sourceText = flatSentence(rawSourceText);
     for (const preset of presets) {

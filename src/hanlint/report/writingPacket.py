@@ -65,7 +65,7 @@ def compactProfile(config: Config) -> dict | None:
 
 def contractFor(purpose: str) -> dict:
     if purpose not in PURPOSES:
-        raise ValueError(f"purpose 는 {', '.join(PURPOSES)} 가운데 하나다: {purpose}")
+        raise ValueError(f"purpose는 {', '.join(PURPOSES)} 가운데 하나다: {purpose}")
     if purpose == "draft":
         operation = "input.text를 요구사항으로 읽고 새 한국어 마크다운 초안을 쓴다"
         preservation = "요구사항에 없는 사실과 수치와 출처를 만들지 않는다"
@@ -81,7 +81,7 @@ def contractFor(purpose: str) -> dict:
             findingUse,
             "guidance.patch는 글쓴이가 승인했고 match의 원문, 프리셋, 국소 표지와 독자 상태가 현재 자리에 모두 맞는 고침이다",
             "guidance.patch가 있으면 현재 문장 전체를 patch.after로 바꾸고 비슷한 다른 문장에는 일반화하지 않는다",
-            "guidance.patch가 없는 지적에는 다른 본보기를 끌어오지 말고 확실하지 않으면 원문을 둔다",
+            "guidance.patch가 없는 지적에는 다른 예시를 끌어오지 말고 확실하지 않으면 원문을 둔다",
             "guidance.patch.after의 이름과 수치와 사실을 다른 문장으로 확산하거나 없는 정보를 만들어 채우지 않는다",
             "guidance.operation은 승인 전후의 32자 이하 표면 치환이다. "
             "sourceText 한 자리와 단어 경계와 보호 원자가 맞을 때만 result를 쓴다",

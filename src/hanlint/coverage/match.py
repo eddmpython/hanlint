@@ -1,8 +1,8 @@
-"""평가자 지적과 hanlint 지적의 자리 겹침.
+"""평가자 지적과 hanlint 지적이 같은 곳을 짚는지 본다.
 
-평가자 지적은 (quote, why, fix) 꼴이다 (eddmpython 의 review.json). 인용문의 앞 글자로 본문 줄을 찾고 그 줄 ±1 에
-hanlint 지적이 있으면 겹친 것이다. 본문이 바뀌어 인용이 사라진 지적은 잴 수 없어 따로 센다. 못 집은 지적은
-data/coverageTypes.txt 의 표지로 유형을 갈라 다음 규칙 후보로 보인다.
+평가자 지적은 (quote, why, fix) 형식이다(review.json). 인용문의 앞 글자로 본문 줄을 찾고 그 줄 ±1에
+hanlint 지적이 있으면 겹친 것이다. 본문이 바뀌어 인용이 사라진 지적은 잴 수 없어 따로 센다. 짚지 못한 지적은
+data/coverageTypes.txt의 단어 목록으로 유형을 나눠 다음 규칙 후보로 보인다.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ class Coverage:
     located: int
     covered: int
     coveredByError: int
-    """error 급 지적이 같은 자리에 있던 것. notice 만 겹친 것은 covered 에만 든다."""
+    """오류 지적이 같은 곳에 있던 것. 확인 권고만 겹친 것은 covered에만 든다."""
     byRule: tuple[tuple[str, int], ...]
     uncaught: tuple[Uncaught, ...]
 
@@ -71,7 +71,7 @@ def kindOf(why: str) -> str:
 
 
 def loadReview(path: str | Path) -> list[ReviewFinding]:
-    """review.json 을 읽는다. rounds 안의 reviewers 안의 findings, 또는 findings 목록, 또는 목록 자체."""
+    """review.json을 읽는다. rounds 안의 reviewers 안의 findings, 또는 findings 목록, 또는 목록 자체."""
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     findings: list[ReviewFinding] = []
     if isinstance(data, dict) and "rounds" in data:
@@ -91,7 +91,7 @@ def normalize(text: str) -> str:
 
 
 def locate(lines: list[str], quote: str) -> int | None:
-    """인용문의 앞 글자가 있는 줄 (1 부터). 줄이 바뀐 인용은 이웃 줄을 붙여 다시 찾는다."""
+    """인용문의 앞 글자가 있는 줄(1부터). 줄이 바뀐 인용은 이웃 줄을 붙여 다시 찾는다."""
     key = normalize(quote)[:KEY_LENGTH]
     if len(key) < MIN_KEY:
         return None
@@ -136,21 +136,21 @@ def coverageOf(text: str, findings: list[Finding], reviews: list[ReviewFinding])
 def renderCoverage(coverage: Coverage) -> str:
     lines = [
         f"평가자 지적 {coverage.total}건. 본문에서 찾은 인용 {coverage.located}건"
-        + (f" (본문이 바뀐 {coverage.total - coverage.located}건은 잴 수 없다)" if coverage.total > coverage.located else ""),
-        f"hanlint 가 같은 자리를 집은 것 {coverage.covered}건 ({coverage.ratio:.0%}). "
-        f"error 로 {coverage.coveredByError}건, notice 로만 {coverage.covered - coverage.coveredByError}건"
+        + (f"(본문이 바뀐 {coverage.total - coverage.located}건은 잴 수 없다)" if coverage.total > coverage.located else ""),
+        f"hanlint가 같은 곳을 짚은 지적 {coverage.covered}건({coverage.ratio:.0%}). "
+        f"오류로 {coverage.coveredByError}건, 확인 권고로만 {coverage.covered - coverage.coveredByError}건"
         + (". 규칙: " + ", ".join(f"{rule} {count}" for rule, count in coverage.byRule) if coverage.byRule else ""),
     ]
     if coverage.uncaught:
-        lines.append(f"못 집은 {len(coverage.uncaught)}건. 다음 규칙 후보다")
+        lines.append(f"hanlint가 짚지 못한 지적 {len(coverage.uncaught)}건. 다음 규칙 후보다")
         currentKind = None
         for item in coverage.uncaught:
             if item.kind != currentKind:
                 currentKind = item.kind
                 count = sum(1 for u in coverage.uncaught if u.kind == currentKind)
                 lines.append(f"  [{currentKind} {count}]")
-            role = f"{item.round}라운드 {item.role}".strip()
-            lines.append(f"    {item.line}행 ({role}) {item.why[:90]}")
+            role = f"{item.round}회차 {item.role}".strip()
+            lines.append(f"    {item.line}줄 ({role}) {item.why[:90]}")
     return "\n".join(lines)
 
 

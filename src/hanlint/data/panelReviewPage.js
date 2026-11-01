@@ -1,12 +1,12 @@
-// 눈가림 평가 작업대의 판정 논리. DOM 을 만지지 않는 순수 함수만 둔다.
+// 블라인드 평가 화면의 판정 논리. DOM을 만지지 않는 순수 함수만 둔다.
 //
-// 왜 파일로 뺐나. 이 논리는 휠에 실려 나가는데 인라인 스크립트 안에 있어 아무도 못 쟀다. 게이트 다섯은
-// 정체성 누출과 변조만 보고 content 우선 잠금, 목소리 기권, 진행 저장과 재개, 내보내기 계약은 브라우저를
-// 열어야만 확인할 수 있었다. 순수 함수 시험과 실제 브라우저 실험 스크립트가 두 층을 나눠 확인한다.
+// 왜 파일로 뺐나. 이 논리는 휠에 실려 나가는데 인라인 스크립트 안에 있어 아무도 시험하지 못했다. 게이트 다섯은
+// 정체성 누출과 변조만 보고, 내용 확인 먼저 받기, 목소리 판단 불가 고정, 진행 저장과 재개, 내보내기 계약은
+// 브라우저를 열어야만 확인할 수 있었다. 순수 함수 시험과 실제 브라우저 실험 스크립트가 두 부분을 나눠 확인한다.
 //
-// 이 파일은 브라우저에서 인라인 스크립트로 그대로 붙고 (renderPanelReviewHtml 이 넣는다) node --test 가
-// 같은 파일을 import 한다. 그래서 import 도 export 도 쓰지 않고 globalThis 에 붙인다. DOM 배선은
-// panelReviewPage.html 이 그대로 맡는다. 스크립트 태그 글자는 여기 적지 않는다. 인라인될 때 세어진다.
+// 이 파일은 브라우저에서 인라인 스크립트로 그대로 붙고 (renderPanelReviewHtml이 넣는다) node --test가
+// 같은 파일을 import한다. 그래서 import도 export도 쓰지 않고 globalThis에 붙인다. DOM 배선은
+// panelReviewPage.html이 그대로 맡는다. 스크립트 태그 글자는 여기 적지 않는다. 인라인될 때 세어진다.
 "use strict";
 
 const hanlintReview = {
@@ -21,7 +21,7 @@ const hanlintReview = {
     };
   },
 
-  /** 브라우저에 저장된 검토가 이 사례의 것이고 꼴이 정확한가. 키가 하나라도 남거나 모자라면 거짓이다. */
+  /** 브라우저에 저장된 검토가 이 사례의 것이고 형식이 정확한가. 키가 하나라도 남거나 모자라면 거짓이다. */
   storedReviewValid(review, panelCase, dimensions) {
     const exactKeys = (value, keys) =>
       value !== null &&
@@ -41,7 +41,7 @@ const hanlintReview = {
     );
   },
 
-  /** 저장분을 되살린다. 이 배정의 것이 아니거나 꼴이 틀리면 빈 상태를 낸다. */
+  /** 저장분을 되살린다. 이 배정의 것이 아니거나 형식이 틀리면 빈 상태를 낸다. */
   restoreState(parsed, assignment, dimensions) {
     const empty = { currentIndex: 0, reviews: {} };
     if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return empty;
@@ -61,7 +61,7 @@ const hanlintReview = {
     return { ...parsed, currentIndex: Math.max(0, Math.min(last, parsed.currentIndex)) };
   },
 
-  /** 두 글 다 content 를 통과했는가. */
+  /** 두 글 다 내용 확인(content)을 통과했는가. */
   bothContentPass(review) {
     return ["left", "right"].every((side) => review.contentChecks[side] === "pass");
   },
@@ -69,8 +69,8 @@ const hanlintReview = {
   /**
    * 차원마다 선호를 고를 수 있는가와 강제되는 값. 화면은 이 결과를 그리기만 한다.
    *
-   * content 를 끝내기 전에는 못 고른다. 하나라도 fail 이면 판단 불가로 잠근다. 목소리 표본이 없으면
-   * voice 는 언제나 판단 불가로 잠근다.
+   * 내용 확인(content)을 끝내기 전에는 못 고른다. 하나라도 pass가 아니면 판단 불가로 고정한다. 목소리 표본이 없으면
+   * voice는 언제나 판단 불가로 고정한다.
    */
   preferenceLock(panelCase, review, dimensions) {
     const contentComplete = ["left", "right"].every((side) => review.contentChecks[side]);
@@ -107,7 +107,7 @@ const hanlintReview = {
     return preferencesComplete && ["content", ...dimensions].every((name) => hanlintReview.reasonReady(review.reasons[name]));
   },
 
-  /** 내보낼 JSON. panelAssignmentReview import 계약과 같은 꼴이다. 사람 label 을 만들지 않는다. */
+  /** 내보낼 JSON. panelAssignmentReview import 계약과 같은 형식이다. 사람 label을 만들지 않는다. */
   exportPayload(assignment, reviewOf) {
     return {
       version: assignment.version,

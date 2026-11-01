@@ -38,7 +38,7 @@ def cellStyle(finding: Finding | None) -> tuple[str, str, str]:
     if not finding:
         return "cell", "", ""
     kind = kindOf(finding.rule)
-    label = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+    label = "제안" if finding.severity == "notice" else "고친 뒤"
     title = f"[{finding.rule}] {finding.why}" + (f"  {label}: {finding.fix}" if finding.fix else "")
     return "cell hole", f"background:{kind.hex}", escape(title, quote=True)
 
@@ -46,7 +46,7 @@ def cellStyle(finding: Finding | None) -> tuple[str, str, str]:
 def renderMapHtml(doc: DocumentPrint, findings: list[Finding]) -> str:
     grouped = groupFindings(findings)
     name = escape(doc.path or "글")
-    parts = [f'<!doctype html><meta charset="utf-8"><title>{name} 지문 지도</title><style>{STYLE}</style>']
+    parts = [f'<!doctype html><meta charset="utf-8"><title>{name} 검사 지도</title><style>{STYLE}</style>']
     parts.append(f"<h1>{name}</h1>")
     parts.append(
         f'<div class="meta">문장 {len(doc.sentences)} · 문단 {len(doc.paragraphs)} · 절 {len(doc.bodySections)}'
@@ -57,7 +57,7 @@ def renderMapHtml(doc: DocumentPrint, findings: list[Finding]) -> str:
     documentFindings = [worst(grouped.get(("document", at), [])) for at in {f.at for f in findings if f.scope == "document"}]
     badges = "".join(
         f'<span class="badge" style="background:{kindOf(f.rule).hex}" title="{escape(f.why, quote=True)}">'
-        f"{kindOf(f.rule).symbol} {f.rule} ({f.line}행)</span>"
+        f"{kindOf(f.rule).symbol} {f.rule} ({f.line}줄)</span>"
         for f in documentFindings
         if f is not None
     )

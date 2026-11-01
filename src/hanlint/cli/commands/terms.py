@@ -1,4 +1,4 @@
-"""`hanlint terms 글.md`. 한국어 학습자에게 처음 풀어 쓸 낱말 후보.
+"""`hanlint terms 글.md`. 한국어 학습자에게 처음 풀어 쓸 단어 후보.
 
 국립국어원 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 낸다. 한국어 모어 화자의 난도나 글의
 등급을 판정하지 않는다. `--outside`는 목록 밖 한글 화제어도 후보로 보이지만 전문어와 고유명사를 가르지
@@ -15,7 +15,7 @@ from ...document import parseMarkdown
 from ...fingerprint import buildFingerprint
 from .shared import addCommonOptions, collectFiles, configFrom, emit, readInput, startFolder
 
-HELP = "한국어 학습자에게 처음 풀어 쓸 낱말 후보를 찾는다"
+HELP = "한국어 학습자에게 처음 풀어 쓸 단어 후보를 찾는다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

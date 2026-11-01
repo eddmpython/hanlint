@@ -1,4 +1,4 @@
-"""계약 본문과 결과 글 사이의 보호 원자 차이."""
+"""계약 본문과 결과 글 사이에서 지켜야 할 숫자·링크·코드의 차이."""
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ class SurfaceDiff:
 
 
 def surfaceDiff(contractText: str, text: str, numbers: Iterable[str] | None = None) -> SurfaceDiff:
-    """계약에 선언된 보호 원자를 결과 글의 원자와 대조한다."""
+    """계약에 적은 숫자·링크·코드를 결과 글의 것과 대조한다."""
     surfaceText = normalize("NFC", text)
     expectedNumbers = set(numberValues(contractText) if numbers is None else numbers)
     actualNumbers = set(numberValues(surfaceText))
@@ -94,7 +94,7 @@ def surfaceDiff(contractText: str, text: str, numbers: Iterable[str] | None = No
 
 
 def protectedSurface(text: str) -> ProtectedSurface:
-    """원문의 보호 원자를 뜻 없는 정렬 집합으로 분리한다."""
+    """원문의 지켜야 할 숫자·링크·코드를 뜻과 상관없이 정렬한 집합으로 나눈다."""
     surfaceText = normalize("NFC", text)
     return ProtectedSurface(
         numbers=numberValues(surfaceText),
@@ -105,7 +105,7 @@ def protectedSurface(text: str) -> ProtectedSurface:
 
 
 def factLines(text: str) -> tuple[str, ...]:
-    """원문의 보호 표면을 모두 덮는 Contract 사실 후보 줄."""
+    """원문의 지켜야 할 숫자·링크·코드를 모두 담는 Contract 사실 후보 줄."""
     surfaceText = normalize("NFC", text)
     seen = set()
     candidates = []
@@ -120,7 +120,7 @@ def factLines(text: str) -> tuple[str, ...]:
 
     allAtoms = {(kind, value) for kind in UNEXPECTED_FIELDS for value in getattr(surfaceDiff("", surfaceText), kind)}
     if not allAtoms:
-        raise ValueError("원문에 자동으로 보호할 숫자, URL, 인라인 코드, 링크 목적지가 없다. facts를 직접 작성한다")
+        raise ValueError("원문에 자동으로 지킬 숫자, URL, 인라인 코드, 링크 목적지가 없다. facts를 직접 작성한다")
 
     uncovered = set(allAtoms)
     selected = set()

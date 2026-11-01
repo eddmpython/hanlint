@@ -36,12 +36,13 @@ export function run(doc, config) {
     if (hit.length < MIN_HITS || hit.length / prose.length <= share) continue;
     const lines = [...new Set(hit.map((one) => one.line))].sort((a, b) => a - b).join(", ");
     const share100 = `${Math.round(share * 100)}%`;
+    const cited = source ? ` (${source})` : "";
     findings.push(
       finding(
         name,
         hit[0].line,
         hit[0].text,
-        `\`${label}\` 꼴이 산문 ${prose.length}문장 가운데 ${hit.length}번이다 (${lines}줄. 상한 ${share100}). ${why} (${source})`,
+        `\`${label}\` 문형이 산문 ${prose.length}문장 가운데 ${hit.length}번(${lines}줄) 나와 상한 ${share100}를 넘는다. ${why}${cited}`,
         null,
         NOTICE,
         DOCUMENT,

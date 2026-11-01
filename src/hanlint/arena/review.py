@@ -25,10 +25,10 @@ PAGE_TEMPLATE = "data/panelReviewPage.html"
 PAGE_LOGIC = "data/panelReviewPage.js"
 PAGE_PLACEHOLDER = "__HANLINT_ASSIGNMENT__"
 LOGIC_PLACEHOLDER = "__HANLINT_PAGE_LOGIC__"
-"""판정 논리는 별도 파일이고 렌더할 때 인라인한다. 단일 HTML 과 외부 요청 0 은 그대로다.
+"""판정 논리는 별도 파일이고 렌더할 때 인라인한다. 단일 HTML과 외부 요청 0은 그대로다.
 
-인라인 스크립트 안에 두면 `node --test` 가 못 읽어 content 우선 잠금, 목소리 기권, 진행 재개,
-내보내기 계약을 브라우저 없이는 잴 수 없다. 파일로 빼면 같은 글자를 두 곳이 쓴다 (2026-08-31)."""
+인라인 스크립트 안에 두면 `node --test`가 못 읽어 내용 확인 먼저 받기, 목소리 판단 불가 고정, 진행 재개,
+내보내기 계약을 브라우저 없이는 시험할 수 없다. 파일로 빼면 같은 글자를 두 곳이 쓴다 (2026-08-31)."""
 
 
 def assignmentDigest(data: dict) -> str:
@@ -53,12 +53,12 @@ def checkedEvaluator(evaluatorId: object, group: object) -> dict:
 
 
 def reversedFor(suiteSha256: str, evaluatorId: str) -> bool:
-    """이 평가자가 suite 의 좌우를 통째로 뒤집어 보는가. 사례마다 다르지 않다.
+    """이 평가자가 suite의 좌우를 통째로 뒤집어 보는가. 사례마다 다르지 않다.
 
-    사례마다 번갈아 뒤집던 때는 suite 의 좌우 교대 (`desiredCandidateLeft`) 와 같은 홀짝 함수를 같은
-    색인에 써서 XOR 이 색인에 대해 상수가 됐다. 그래서 한 평가자가 모든 사례에서 후보를 같은 쪽으로만
+    사례마다 번갈아 뒤집던 때는 suite의 좌우 교대(`desiredCandidateLeft`)와 같은 홀짝 함수를 같은
+    색인에 써서 XOR 값이 색인에 대해 상수가 됐다. 그래서 한 평가자가 모든 사례에서 후보를 같은 쪽으로만
     봤고 (실측: pilot 일곱 사례가 LLLLLLL 또는 RRRRRRR), 위치 편향이 후보 요인과 완전히 교락됐다.
-    통째로 뒤집으면 suite 의 교대가 그대로 남아 평가자 안에서 좌우가 갈리고, 평가자는 두 순서로
+    통째로 뒤집으면 suite의 교대가 그대로 남아 평가자 안에서 좌우가 갈리고, 평가자는 두 순서로
     나뉜다 (2026-08-31).
     """
     return int(sha256(f"panel-assignment:{suiteSha256}:{evaluatorId}".encode()).hexdigest(), 16) % 2 == 1
@@ -84,7 +84,7 @@ def assignmentReviewTemplate(evaluator: dict, cases: list[dict]) -> dict:
 
 
 def preparePanelAssignment(suite: dict, evaluatorId: str, group: str) -> dict:
-    """평가자 한 명에게 내부 순서를 밝히지 않은 결정적 case 배정을 만든다."""
+    """평가자 한 명에게 내부 순서를 밝히지 않은 case 배정을 만든다. 같은 입력이면 늘 같은 배정이다."""
     suite = checkedPanelSuite(suite)
     if not suite["cases"]:
         raise ValueError("panel assignment에는 평가할 case가 하나 이상 필요하다")
@@ -177,7 +177,7 @@ def normalizePreferences(values: object, reversedOrder: bool, where: str) -> dic
 
 
 def recordPanelAssignmentReview(suite: dict, assignment: dict, data: object) -> dict:
-    """평가자가 본 좌우 선택을 원래 suite 방향으로 되돌리고 기존 사람 batch로 잠근다."""
+    """평가자가 본 좌우 선택을 원래 suite 방향으로 되돌리고 기존 사람 평가 batch로 기록한다."""
     suite = checkedPanelSuite(suite)
     assignment = checkedPanelAssignment(suite, assignment)
     data = exactKeys(
@@ -188,7 +188,7 @@ def recordPanelAssignmentReview(suite: dict, assignment: dict, data: object) -> 
     if data["version"] != PANEL_VERSION or data["kind"] != ASSIGNMENT_REVIEW_KIND:
         raise ValueError("panel assignment review의 version 또는 kind가 다르다")
     if data["assignmentSha256"] != assignment["assignmentSha256"]:
-        raise ValueError("panel assignment review의 assignmentSha256가 다르다")
+        raise ValueError("panel assignment review의 assignmentSha256이 다르다")
     if data["evaluator"] != assignment["evaluator"]:
         raise ValueError("panel assignment review의 evaluator가 assignment와 다르다")
     if not isinstance(data["reviews"], list):
@@ -211,7 +211,7 @@ def recordPanelAssignmentReview(suite: dict, assignment: dict, data: object) -> 
             raise ValueError(f"panel assignment review의 caseId가 겹친다: {caseId}")
         seen.add(caseId)
         if review["assignmentCaseSha256"] != assignedCases[caseId]["assignmentCaseSha256"]:
-            raise ValueError(f"{where}.assignmentCaseSha256가 다르다")
+            raise ValueError(f"{where}.assignmentCaseSha256이 다르다")
         reversedOrder = reversedFor(suite["suiteSha256"], assignment["evaluator"]["id"])
         normalized.append(
             {

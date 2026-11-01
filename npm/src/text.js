@@ -64,8 +64,8 @@ export function countIn(text, needle, end = text.length) {
 
 /**
  * 파이썬 round(value, digits). 정확한 이진 값을 십진으로 풀어 반올림하고 정확히 절반이면 짝수로 간다.
- * Math.round 는 절반을 위로 올려 13/16 을 0.813 으로 만들고 파이썬은 0.812 다. 두 구현의 글자가 같으려면 파이썬 쪽이다.
- * toFixed(100) 은 1e21 아래의 수를 정확한 십진 전개로 준다. 지문의 비율과 평균이 사는 범위다.
+ * Math.round는 절반을 위로 올려 13/16을 0.813으로 만들고 파이썬은 0.812다. 두 구현의 글자가 같으려면 파이썬 쪽이다.
+ * toFixed(100)은 1e21 아래의 수를 정확한 십진 전개로 준다. 분석 결과의 비율과 평균이 있는 범위다.
  * @param {number} value
  * @param {number} digits
  */

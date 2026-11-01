@@ -1,7 +1,7 @@
-"""글 여러 편의 지문에서 프로파일을 만든다. 자료형과 읽기는 data/profiles.py 가, 견줌은 규칙 outsideProfile 이 한다.
+"""글 여러 편의 분석 결과에서 프로파일을 만든다. 자료형과 읽기는 data/profiles.py가, 비교는 규칙 outsideProfile이 한다.
 
-종류별 프로파일 (scripts/derive/profiles.py) 과 사용자 프로파일 (hanlint profile build) 이 같은 함수로 만들어지므로 같은
-글에 같은 표가 나온다. 처음 나온 화제어의 셈은 독자 상태 (fingerprint/readerState.py) 의 known 과 같은 정의다.
+종류별 프로파일(scripts/derive/profiles.py)과 사용자 프로파일(hanlint profile build)이 같은 함수로 만들어지므로 같은
+글에 같은 표가 나온다. 처음 나온 화제어를 세는 방법은 독자 상태(fingerprint/readerState.py)의 known과 같다.
 """
 
 from __future__ import annotations
@@ -78,7 +78,7 @@ def documentPercentiles(values: list[float]) -> dict[str, float]:
 
 
 def buildProfile(docs: list[DocumentPrint], kind: str = "custom") -> Profile:
-    """글 여러 편의 지문에서 참조 분포를 만든다. 글이 없으면 만들 것이 없다."""
+    """글 여러 편의 분석 결과에서 참조 분포를 만든다. 글이 없으면 만들 것이 없다."""
     if not docs:
         raise ValueError("프로파일을 만들 글이 없다. 마크다운 파일이 있는 폴더를 준다")
     sentence: dict[str, list[int]] = {name: [] for name in SENTENCE_FEATURES}

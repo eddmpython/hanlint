@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { SENTENCE, finding } from "../finding.js";
 
 export const name = "doubleNegative";
@@ -24,7 +25,7 @@ export function run(doc) {
     const start = /** @type {number} */ (match.index);
     const fix = replacement ? sentence.text.slice(0, start) + replacement + sentence.text.slice(start + match[0].length) : null;
     findings.push(
-      finding(name, sentence.line, sentence.text, `\`${match[1]}\` 는 이중 부정이다. 긍정으로 쓴다`, fix, "error", SENTENCE, sentence.index, replacement ? match[1] : null, replacement ?? null),
+      finding(name, sentence.line, sentence.text, `\`${match[1]}\`${fitJosa(match[1], "는")} 이중 부정이다. 긍정으로 쓴다`, fix, "error", SENTENCE, sentence.index, replacement ? match[1] : null, replacement ?? null),
     );
   }
   return findings;

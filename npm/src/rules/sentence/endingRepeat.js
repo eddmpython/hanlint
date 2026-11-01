@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { NOTICE, SENTENCE, finding } from "../finding.js";
 import { runsOf } from "../shared/repeat.js";
 
@@ -21,7 +22,7 @@ export function run(doc, config) {
       if (sentences.slice(start, start + length).some((s) => s.causal || s.readerCall)) continue;
       const first = sentences[start];
       findings.push(
-        finding(name, first.line, first.text, `\`${ending}\` 로 끝나는 문장 ${length}개에 인과도 질문도 독자를 부르는 말도 없다. 질문, 인과, 행동 동사로 리듬을 바꾼다`, null, NOTICE, SENTENCE, first.index),
+        finding(name, first.line, first.text, `\`${ending}\`${fitJosa(ending, "로")} 끝나는 문장 ${length}개에 까닭을 잇는 말도 질문도 독자를 부르는 말도 없다. 질문, 까닭을 잇는 말, 행동 동사로 리듬을 바꾼다`, null, NOTICE, SENTENCE, first.index),
       );
     }
   }

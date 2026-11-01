@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * hanlint 설정에 쓰이는 TOML 부분집합을 읽는다. 의존성 0 을 지키려고 직접 쓴다.
+ * hanlint 설정에 쓰이는 TOML 부분집합을 읽는다. 의존성 0을 지키려고 직접 쓴다.
  *
- * 되는 것: 주석, `key = 값`, 점 키, `[table]`, `[[array]]`, 문자열 ("..." 와 '...'), 정수, 실수, 불리언,
+ * 되는 것: 주석, `key = 값`, 점 키, `[table]`, `[[array]]`, 문자열 ("..."와 '...'), 정수, 실수, 불리언,
  * 여러 줄 배열, 인라인 테이블. 안 되는 것: 여러 줄 문자열, 날짜. 만나면 어디서 막혔는지 말하고 던진다.
  */
 
@@ -28,7 +28,7 @@ class Parser {
   /** @param {string} message */
   error(message) {
     const line = this.text.slice(0, this.pos).split("\n").length;
-    return new Error(`TOML ${line}번째 줄: ${message}. hanlint 가 읽는 TOML 부분집합이 아니다`);
+    return new Error(`TOML ${line}번째 줄: ${message}. hanlint가 읽는 TOML 부분집합이 아니다`);
   }
 
   document() {
@@ -102,7 +102,7 @@ class Parser {
       const next = node[part];
       if (Array.isArray(next)) node = /** @type {Record<string, unknown>} */ (next[next.length - 1]);
       else if (typeof next === "object" && next !== null) node = /** @type {Record<string, unknown>} */ (next);
-      else throw this.error(`${part} 는 테이블이 아니다`);
+      else throw this.error(`테이블이 아니다: ${part}`);
     }
     return node;
   }
@@ -110,7 +110,7 @@ class Parser {
   table() {
     this.pos++;
     const parts = this.keyPath();
-    if (this.text[this.pos] !== "]") throw this.error("] 가 없다");
+    if (this.text[this.pos] !== "]") throw this.error("]가 없다");
     this.pos++;
     this.current = this.descend(this.root, parts);
   }
@@ -118,13 +118,13 @@ class Parser {
   arrayTable() {
     this.pos += 2;
     const parts = this.keyPath();
-    if (!this.text.startsWith("]]", this.pos)) throw this.error("]] 가 없다");
+    if (!this.text.startsWith("]]", this.pos)) throw this.error("]]가 없다");
     this.pos += 2;
     const parent = this.descend(this.root, parts.slice(0, -1));
     const name = parts[parts.length - 1];
     if (!(name in parent)) parent[name] = [];
     const list = parent[name];
-    if (!Array.isArray(list)) throw this.error(`${name} 은 배열이 아니다`);
+    if (!Array.isArray(list)) throw this.error(`배열이 아니다: ${name}`);
     /** @type {Record<string, unknown>} */
     const entry = {};
     list.push(entry);
@@ -209,7 +209,7 @@ class Parser {
       items.push(this.value());
       this.skipBlank();
       if (this.text[this.pos] === ",") this.pos++;
-      else if (this.text[this.pos] !== "]") throw this.error("배열에 , 나 ] 가 없다");
+      else if (this.text[this.pos] !== "]") throw this.error("배열에 쉼표나 ]가 없다");
     }
   }
 
@@ -233,7 +233,7 @@ class Parser {
         this.pos++;
         return table;
       }
-      throw this.error("인라인 테이블에 , 나 } 가 없다");
+      throw this.error("인라인 테이블에 쉼표나 }가 없다");
     }
   }
 }

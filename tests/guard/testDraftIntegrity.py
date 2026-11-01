@@ -36,7 +36,7 @@ def testLockedFactsDetectSwappedValuesAndNegationWithoutInventingMeaning():
     assert receipt.surface.violationCount == 0
     assert receipt.missingFacts == tuple(FACTS[:2])
     assert check(TEXT.replace("확정되지 않았다", "확정됐다"), approved, config()).missingFacts == (FACTS[2],)
-    with pytest.raises(ValueError, match="approved facts"):
+    with pytest.raises(ValueError, match="승인한 facts"):
         ContractV2("독자", "목표", [], approved.surface, approved.outline, lockedFacts=FACTS)
 
 

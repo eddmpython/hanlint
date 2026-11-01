@@ -48,7 +48,7 @@ def blueprintBoundaryViolations(data: object) -> tuple[str, ...]:
             continue
         sourceIds.update(sourceId for sourceId in item["sourceIds"] if isinstance(sourceId, str))
     violations.extend(
-        f"허가된 꼴이 아닌 sourceId다: {sourceId}" for sourceId in sorted(sourceIds) if not SOURCE_ID_VALUE.fullmatch(sourceId)
+        f"허가된 형식이 아닌 sourceId다: {sourceId}" for sourceId in sorted(sourceIds) if not SOURCE_ID_VALUE.fullmatch(sourceId)
     )
     sourceIds = {sourceId for sourceId in sourceIds if SOURCE_ID_VALUE.fullmatch(sourceId)}
 
@@ -81,7 +81,7 @@ def _loadBlueprints() -> tuple[dict, dict[str, BlueprintReference]]:
 
 
 def shippedBlueprints() -> tuple[dict, dict[str, BlueprintReference]]:
-    """호출자가 배포 정본 캐시를 바꾸지 못하도록 독립 복사본을 돌려준다."""
+    """호출자가 배포 자료 캐시를 바꾸지 못하도록 독립 복사본을 돌려준다."""
     return deepcopy(_loadBlueprints())
 
 

@@ -1,5 +1,5 @@
 // @ts-check
-/** 계약 본문과 결과 글 사이의 보호 원자 차이. */
+/** 계약 본문과 결과 글 사이에서 지켜야 할 숫자·링크·코드의 차이. */
 
 /**
  * @typedef {object} SurfaceDiff
@@ -107,7 +107,7 @@ export function surfaceViolationCount(diff) {
   return Object.values(diff).reduce((total, values) => total + values.length, 0);
 }
 
-/** 원문의 보호 원자를 뜻 없는 정렬 집합으로 분리한다. @param {string} text */
+/** 원문의 지켜야 할 숫자·링크·코드를 뜻과 상관없이 정렬한 집합으로 나눈다. @param {string} text */
 export function protectedSurface(text) {
   const surfaceText = text.normalize("NFC");
   return {
@@ -118,7 +118,7 @@ export function protectedSurface(text) {
   };
 }
 
-/** 원문의 보호 표면을 모두 덮는 Contract 사실 후보 줄. @param {string} text */
+/** 원문의 지켜야 할 숫자·링크·코드를 모두 담는 Contract 사실 후보 줄. @param {string} text */
 export function factLines(text) {
   const surfaceText = text.normalize("NFC");
   const seen = new Set();
@@ -144,7 +144,7 @@ export function factLines(text) {
     ),
   );
   if (!uncovered.size) {
-    throw new Error("원문에 자동으로 보호할 숫자, URL, 인라인 코드, 링크 목적지가 없다. facts를 직접 작성한다");
+    throw new Error("원문에 자동으로 지킬 숫자, URL, 인라인 코드, 링크 목적지가 없다. facts를 직접 작성한다");
   }
 
   const selected = new Set();

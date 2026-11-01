@@ -80,7 +80,7 @@ def preparePanelTrialSet(studyId: str, trials: list[WritingTrial | dict], proven
     checkedString(provenance["license"], "panel trial set provenance.license")
     for name in ("containsExternalReferenceText", "qualityLabels"):
         if not isinstance(provenance[name], bool):
-            raise ValueError(f"panel trial set provenance.{name} 는 boolean이다")
+            raise ValueError(f"panel trial set provenance.{name} 값은 boolean이어야 한다")
     if provenance["qualityLabels"]:
         raise ValueError("panel trial set은 사람 품질 label을 담지 않는다. review batch로 따로 가져온다")
     if provenance["license"].casefold() in {"none", "unknown", "unspecified"}:
@@ -141,18 +141,18 @@ def loadPanelTrialSet(path: str | Path) -> dict:
 
 def checkedInteger(value: object, where: str, minimum: int = 0) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
-        raise ValueError(f"{where} 는 {minimum} 이상의 정수다")
+        raise ValueError(f"{where} 값은 {minimum} 이상의 정수여야 한다")
     return value
 
 
 def checkedConfidence(value: object, where: str, abstained: bool) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ValueError(f"{where} 는 0 이상 1 이하 숫자다")
+        raise ValueError(f"{where} 값은 0 이상 1 이하의 숫자여야 한다")
     normalized = float(value)
     if not 0 <= normalized <= 1:
-        raise ValueError(f"{where} 는 0 이상 1 이하 숫자다")
+        raise ValueError(f"{where} 값은 0 이상 1 이하의 숫자여야 한다")
     if abstained and normalized != 0:
-        raise ValueError(f"{where} 는 기권이면 0이다")
+        raise ValueError(f"{where} 값은 답하지 않았으면(abstain) 0이어야 한다")
     return normalized
 
 
@@ -176,12 +176,12 @@ def checkedVoiceReference(data: object, where: str = "voiceReference") -> dict |
     data = exactKeys(data, {"text", "textSha256", "permission"}, where)
     text = checkedText(data["text"], f"{where}.text")
     if len(text) > 2000:
-        raise ValueError(f"{where}.text 는 2,000자 이하다")
+        raise ValueError(f"{where}.text는 2,000자 이하여야 한다")
     textSha = checkedSha(data["textSha256"], f"{where}.textSha256")
     if sha256(text.encode()).hexdigest() != textSha:
-        raise ValueError(f"{where}.textSha256 가 text와 다르다")
+        raise ValueError(f"{where}.textSha256이 text와 다르다")
     if data["permission"] != "evaluationOnly":
-        raise ValueError(f"{where}.permission 은 evaluationOnly다")
+        raise ValueError(f"{where}.permission은 evaluationOnly여야 한다")
     return {"text": text, "textSha256": textSha, "permission": "evaluationOnly"}
 
 
@@ -349,21 +349,21 @@ def checkedContext(data: object, where: str) -> dict:
     checkedString(data["reader"], f"{where}.reader")
     checkedString(data["task"], f"{where}.task")
     if not isinstance(data["facts"], list) or not data["facts"]:
-        raise ValueError(f"{where}.facts 는 비지 않은 배열이다")
+        raise ValueError(f"{where}.facts는 비지 않은 배열이어야 한다")
     for index, fact in enumerate(data["facts"], start=1):
         exactKeys(fact, {"id", "statement"}, f"{where}.facts {index}번째")
         checkedString(fact["id"], f"{where}.facts {index}번째 id")
         checkedString(fact["statement"], f"{where}.facts {index}번째 statement")
     for name in ("mustInclude", "allowedNumbers", "forbidden"):
         if not isinstance(data[name], list):
-            raise ValueError(f"{where}.{name} 는 배열이다")
+            raise ValueError(f"{where}.{name} 값은 배열이어야 한다")
         for index, value in enumerate(data[name], start=1):
             checkedString(value, f"{where}.{name} {index}번째")
     length = exactKeys(data["length"], {"min", "max"}, f"{where}.length")
     minimum = checkedInteger(length["min"], f"{where}.length.min", 1)
     maximum = checkedInteger(length["max"], f"{where}.length.max", 1)
     if maximum < minimum:
-        raise ValueError(f"{where}.length 는 min 이하가 max다")
+        raise ValueError(f"{where}.length의 max는 min 이상이어야 한다")
     checkedVoiceReference(data["voiceReference"], f"{where}.voiceReference")
     return data
 
@@ -435,7 +435,7 @@ def checkedPanelSuite(data: object) -> dict:
             raise ValueError(f"{where}의 좌우 글이 같다")
         caseSha = checkedSha(item["caseSha256"], f"{where}.caseSha256")
         if caseSha != digestWithout(item, "caseSha256"):
-            raise ValueError(f"{where}.caseSha256가 내용과 다르다")
+            raise ValueError(f"{where}.caseSha256이 내용과 다르다")
     for index, item in enumerate(data["excluded"], start=1):
         where = f"panel suite excluded {index}번째"
         exactKeys(item, {"caseId", "trialSha256", "seed", "safetyOutcome", "sourceBlindSha256"}, where)
@@ -455,7 +455,7 @@ def checkedPanelSuite(data: object) -> dict:
     checkedString(data["claimBoundary"], "panel suite claimBoundary")
     suiteSha = checkedSha(data["suiteSha256"], "panel suite suiteSha256")
     if suiteSha != suiteDigest(data):
-        raise ValueError("panel suite의 suiteSha256가 내용과 다르다")
+        raise ValueError("panel suite의 suiteSha256이 내용과 다르다")
     return data
 
 
@@ -467,7 +467,7 @@ def checkedReason(value: object, where: str) -> str:
 
 
 def recordPanelReviewBatch(suite: dict, data: object) -> dict:
-    """평가자 한 명의 독립 검토 묶음을 검증하고 해시로 잠근다."""
+    """평가자 한 명의 독립 검토 묶음을 검증하고 해시로 고정한다."""
     suite = checkedPanelSuite(suite)
     data = exactKeys(
         data,
@@ -477,7 +477,7 @@ def recordPanelReviewBatch(suite: dict, data: object) -> dict:
     if data["version"] != PANEL_VERSION or data["kind"] != "hanlint.panelReviewBatch":
         raise ValueError("panel review batch의 version 또는 kind가 다르다")
     if data["suiteSha256"] != suite["suiteSha256"] or data["rubricSha256"] != PANEL_RUBRIC_SHA256:
-        raise ValueError("panel review batch의 suite 또는 rubric SHA256가 다르다")
+        raise ValueError("panel review batch의 suite 또는 rubric SHA256이 다르다")
     evaluator = exactKeys(data["evaluator"], {"id", "group", "protocolRevision"}, "panel review evaluator")
     evaluatorId = checkedString(evaluator["id"], "panel review evaluator.id")
     if evaluatorId == "<required>":
@@ -505,7 +505,7 @@ def recordPanelReviewBatch(suite: dict, data: object) -> dict:
             raise ValueError(f"같은 evaluator가 case를 두 번 검토했다: {caseId}")
         seen.add(caseId)
         if review["caseSha256"] != cases[caseId]["caseSha256"]:
-            raise ValueError(f"{where}.caseSha256가 suite와 다르다")
+            raise ValueError(f"{where}.caseSha256이 suite와 다르다")
         content = exactKeys(review["contentChecks"], {"left", "right"}, f"{where}.contentChecks")
         if any(choice not in CONTENT_CHOICES for choice in content.values()):
             raise ValueError(f"{where}.contentChecks의 선택이 잘못됐다")
@@ -1086,7 +1086,7 @@ def checkedJudgePredictions(judgeCases: dict, data: object) -> dict:
     if data["version"] != PANEL_VERSION or data["kind"] != "hanlint.panelJudgePredictions":
         raise ValueError("panel judge predictions의 version 또는 kind가 다르다")
     if data["judgeCasesSha256"] != judgeCases["judgeCasesSha256"]:
-        raise ValueError("panel judge predictions의 judgeCasesSha256가 다르다")
+        raise ValueError("panel judge predictions의 judgeCasesSha256이 다르다")
     checkedString(data["evaluatorId"], "panel judge predictions evaluatorId")
     revision = checkedSha(data["evaluatorRevision"], "panel judge predictions evaluatorRevision")
     if revision in {"0" * 64, "f" * 64}:
@@ -1111,7 +1111,7 @@ def checkedJudgePredictions(judgeCases: dict, data: object) -> dict:
             raise ValueError(f"panel judge prediction의 presentationId가 겹친다: {presentationId}")
         seen.add(presentationId)
         if prediction["presentationSha256"] != expected[presentationId]["presentationSha256"]:
-            raise ValueError(f"{where}.presentationSha256가 다르다")
+            raise ValueError(f"{where}.presentationSha256이 다르다")
         content = exactKeys(prediction["contentChecks"], {"left", "right"}, f"{where}.contentChecks")
         normalizedContent = {
             side: checkedJudgeDecision(
@@ -1305,10 +1305,10 @@ def classificationMetrics(
             "f1": round(f1, 6),
             "support": sum(gold == label for gold in golds),
         }
-    # 잰 것이 없으면 0.0 이 아니라 null 이다. 0건과 전부 틀린 것을 같은 줄로 내면 심사기를 쓸지
-    # 정하는 근거가 반대로 읽힌다. 같은 저장소의 consistencyMetric 과 entailment.ratio 도 이 규약이다
-    # (2026-08-31). coverage 는 비교할 사례 자체가 없을 때, 정확도와 macroF1 은 기권하지 않은 답이
-    # 없을 때 null 이다.
+    # 잰 것이 없으면 0.0이 아니라 null이다. 0건과 모두 틀린 것을 같은 줄로 내면 심사기를 쓸지
+    # 정하는 근거가 반대로 읽힌다. 같은 저장소의 consistencyMetric과 entailment.ratio도 이 규칙을 따른다
+    # (2026-08-31). coverage는 비교할 사례 자체가 없을 때, 정확도와 macroF1은 답하지 않은(abstain) 것을 뺀
+    # 답이 없을 때 null이다.
     return {
         "total": total,
         "answered": len(answeredPositions),

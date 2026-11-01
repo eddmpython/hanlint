@@ -1,6 +1,6 @@
-"""코드 블록을 언어와 본문으로 나눈다. 지문이 한 번 만들고 (`DocumentPrint.codeBlocks`) code 부류 규칙과 독자 상태가 읽는다.
+"""코드 블록을 언어와 본문으로 나눈다. 글 분석이 한 번 만들고(`DocumentPrint.codeBlocks`) code 묶음 규칙과 독자 상태가 읽는다.
 
-펜스 첫 줄의 언어 표기 (```python) 를 읽고 본문 줄에 원문 줄 번호를 붙인다. text 펜스는 출력이다.
+펜스 첫 줄의 언어 표기(```python)를 읽고 본문 줄에 원문 줄 번호를 붙인다. text 펜스는 출력이다.
 """
 
 from __future__ import annotations

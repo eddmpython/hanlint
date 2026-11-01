@@ -1,4 +1,4 @@
-"""`hanlint diff 전.md 후.md`. 두 초안의 지문 차이. 고침이 구조를 바꿨는지 낱말만 바꿨는지 본다."""
+"""`hanlint diff 전.md 후.md`. 두 초안의 지문 차이. 고침이 구조를 바꿨는지 단어만 바꿨는지 본다."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from ...report import renderDiff
 from ...rules import runAll
 from .shared import addCommonOptions, configFrom, emit, readFile, startFolder
 
-HELP = "두 초안의 분석표 차이를 숫자로 보인다"
+HELP = "두 초안에서 잰 값의 차이를 숫자로 보인다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

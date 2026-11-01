@@ -1,20 +1,20 @@
-"""서술어의 형태. 문장 끝 어절을 (어간, 종류, 시제, 서법) 으로 풀고 원하는 문체로 다시 짠다.
+"""서술어의 형태. 문장 끝 어절을 (어간, 종류, 시제, 서법)으로 풀고 원하는 문체로 다시 짠다.
 
-**무엇을 하나.** `확인합니다` 를 풀면 어간 `확인하`, 동사, 현재, 평서다. 그것을 한다체로 짜면 `확인한다`,
-해요체로 짜면 `확인해요` 다. 본보기와 문형을 그 글의 문체로 보이는 일 (문체 맞춤) 과 후보를 그 글의
+**무엇을 하나.** `확인합니다`를 풀면 어간 `확인하`, 동사, 현재, 평서다. 그것을 한다체로 짜면 `확인한다`,
+해요체로 짜면 `확인해요`다. 예시와 문형을 그 글의 문체로 보이는 일(문체 맞춤)과 후보를 그 글의
 문체로 내는 일이 전부 이 함수 둘 위에 선다.
 
-**무엇을 안 하나.** 뜻은 보지 않는다. 동사와 형용사는 표층으로 갈리지 않으므로 `data/adjectiveStems.txt`
-목록이 정한다. ㄹ 받침 어간은 합니다체와 한다체에서 ㄹ 이 사라져 `여` 와 `열` 이 같아 보이므로
-`data/rieulStems.txt` 가 정한다. 목록에 없으면 동사이고 ㄹ 이 없는 것으로 본다. 그 판단이 틀리는 자리는
-말뭉치의 왕복 시험 (한다체 → 합니다체 → 한다체 가 원문으로 돌아오는가) 이 잰다.
+**무엇을 안 하나.** 뜻은 보지 않는다. 동사와 형용사는 글자 모양으로 구별되지 않으므로 `data/adjectiveStems.txt`
+목록이 정한다. ㄹ 받침 어간은 합니다체와 한다체에서 ㄹ이 사라져 `여`와 `열`이 같아 보이므로
+`data/rieulStems.txt`가 정한다. 목록에 없으면 동사이고 ㄹ이 없는 것으로 본다. 그 판단이 틀리는 경우는
+말뭉치의 왕복 시험(한다체 → 합니다체 → 한다체로 바꾼 글이 원문으로 돌아오는가)이 잰다.
 
-**해요체는 풀지 않는다.** `봐요` 의 어간은 `보` 이고 `써요` 의 어간은 `쓰` 인데 표층에서는 되돌릴 수 없는
-자리가 많다 (`들어요` 는 들다인지 듣다인지 모른다). 짜는 것은 세 문체 전부, 푸는 것은 합니다체와 한다체다.
+**해요체는 풀지 않는다.** `봐요`의 어간은 `보`이고 `써요`의 어간은 `쓰`인데 글자 모양만으로는 되돌릴 수 없는
+경우가 많다 (`들어요`는 들다인지 듣다인지 모른다). 짜는 것은 세 문체 전부, 푸는 것은 합니다체와 한다체다.
 
 범위는 실측이 정했다. 기준 말뭉치 17,420문장의 평서 종결형 가운데 합니다체 1,992건과 한다체
 12,255건을 풀었다. 같은 문체로 원문을 다시 만든 것은 각각 1,992건과 12,209건이다. 남은 46건은
-옛 표기, 중의적인 `적다`, 한 번 나온 붙여 쓴 합성형처럼 표층만으로 확정하지 않은 자리다 (2026-08-28).
+옛 표기, 중의적인 `적다`, 한 번 나온 붙여 쓴 합성형처럼 글자 모양만으로 확정하지 않은 경우다(2026-08-28).
 """
 
 from __future__ import annotations
@@ -32,12 +32,12 @@ COPULA = "계사"
 PRESENT = "현재"
 PAST = "과거"
 FUTURE = "미래"
-"""`겠` 이 붙은 것. 추측과 의지를 가르지 않는다. 짤 때 모양이 같다."""
+"""`겠`이 붙은 것. 추측과 의지를 가르지 않는다. 짤 때 모양이 같다."""
 
 DECLARATIVE = "평서"
 QUESTION = "의문"
 KKA_QUESTION = "까의문"
-"""`생겼을까요` 처럼 `까` 로 끝나는 물음. 한다체는 `요` 만 떼고 나머지 둘은 `요` 를 붙인다."""
+"""`생겼을까요`처럼 `까`로 끝나는 물음. 한다체는 `요`만 떼고 나머지 둘은 `요`를 붙인다."""
 IMPERATIVE = "명령"
 PROPOSITIVE = "청유"
 
@@ -53,7 +53,7 @@ HAE_IRREGULAR = {"그렇": "그래", "이렇": "이래", "저렇": "저래", "�
 @dataclass(frozen=True)
 class Predicate:
     base: str
-    """어간. 과거와 미래의 표지 (었, 겠) 까지 붙어 있다. 계사면 앞의 명사다."""
+    """어간. 과거와 미래를 나타내는 꼴(었, 겠)까지 붙어 있다. 계사면 앞의 명사다."""
     kind: str
     """동사, 형용사, 계사."""
     tense: str = PRESENT
@@ -79,7 +79,7 @@ def iVerbStems() -> frozenset[str]:
 
 @cache
 def irregularStems() -> tuple[tuple[str, str], ...]:
-    """(어간, 부류). 긴 어간부터 대조한다."""
+    """(어간, 종류). 긴 어간부터 대조한다."""
     rows = []
     for line in loadLines("irregularStems.txt"):
         stem, _, kind = line.partition("\t")
@@ -90,7 +90,7 @@ def irregularStems() -> tuple[tuple[str, str], ...]:
 def isAdjective(stem: str) -> bool:
     """형용사 어간인가. 어간 전체가 목록에 있어야 한다.
 
-    꼬리 일치는 안 된다. 실측: `발급하` 가 `급하` 로 형용사가 되어 `발급한다` 를 `발급하다` 로 되돌렸다.
+    꼬리 일치는 안 된다. 실측: `발급하`가 `급하`로 형용사가 되어 `발급한다`를 `발급하다`로 되돌렸다.
     `불필요하` 같은 합성은 목록에 통째로 적는다.
     """
     return stem in adjectiveSet()
@@ -118,14 +118,14 @@ def restoreRieul(base: str) -> str:
 
 
 def stripEu(base: str) -> str:
-    """`넣으세요` 의 매개 모음 `으` 를 뗀다. 받침 있는 음절 뒤의 `으` 만이다."""
+    """`넣으세요`의 매개 모음 `으`를 뗀다. 받침 있는 음절 뒤의 `으`만이다."""
     if len(base) >= 2 and base[-1] == "으" and hangul.isSyllable(base[-2]) and hangul.finalOf(base[-2]) != hangul.NONE:
         return base[:-1]
     return base
 
 
 def tenseOf(base: str) -> str:
-    """`했`, `됐`, `었` 처럼 ㅆ 받침이면 과거, `겠` 이면 미래. `있` 은 ㅆ 받침이지만 어간이다."""
+    """`했`, `됐`, `었`처럼 ㅆ 받침이면 과거, `겠`이면 미래. `있`은 ㅆ 받침이지만 어간이다."""
     last = hangul.lastSyllable(base)
     if base.endswith("겠"):
         return FUTURE
@@ -135,11 +135,11 @@ def tenseOf(base: str) -> str:
 
 
 AUX_LINKS = ("지는", "지도", "지만", "지")
-"""`않` 앞의 연결 어미. 뒤에 붙은 보조사 (`같지는 않다`) 까지 뗀다."""
+"""`않` 앞의 연결 어미. 뒤에 붙은 보조사(`같지는 않다`)까지 뗀다."""
 
 
 def kindOf(base: str, previous: str | None) -> str:
-    """현재형 어간의 종류. `않` 은 앞 어절 (`크지`, `같지는`) 의 종류를 이어받는다."""
+    """현재형 어간의 종류. `않`은 앞 어절(`크지`, `같지는`)의 종류를 이어받는다."""
     if base == "않" and previous:
         for link in AUX_LINKS:
             if previous.endswith(link) and len(previous) > len(link):
@@ -164,15 +164,15 @@ def endsWithFinal(word: str, offset: int, final: int) -> bool:
 
 
 def stemBefore(word: str, offset: int) -> str:
-    """뒤에서 `offset` 번째 글자까지의 어간에서 그 글자의 받침을 뗀 것. `봅니다` 에서 `보`, `본다` 에서 `보`."""
+    """뒤에서 `offset` 번째 글자까지의 어간에서 그 글자의 받침을 뗀 것. `봅니다`에서 `보`, `본다`에서 `보`."""
     ch = word[-offset]
     return word[:-offset] + hangul.withFinal(ch, hangul.NONE)
 
 
 def copulaOrIVerb(noun: str, mood: str) -> Predicate:
-    """`보입니다` 가 계사인지 `이` 로 끝나는 동사인지. 동사 어간 목록이 정한다."""
+    """`보입니다`가 계사인지 `이`로 끝나는 동사인지. 동사 어간 목록이 정한다."""
     stem = noun + "이"
-    # 어간 전체가 맞아야 한다. 꼬리 일치는 `후보입니다` 를 보이다로, `것들입니다` 를 들이다로 만들었다
+    # 어간 전체가 맞아야 한다. 꼬리 일치는 `후보입니다`를 보이다로, `것들입니다`를 들이다로 만들었다
     if stem in iVerbStems():
         return Predicate(stem, VERB, mood=mood)
     return Predicate(noun, COPULA, mood=mood)
@@ -181,12 +181,12 @@ def copulaOrIVerb(noun: str, mood: str) -> Predicate:
 def parsePredicate(word: str, previous: str | None = None) -> Predicate | None:
     """문장 끝 어절 하나를 푼다. 부호는 이미 뗀 것이어야 한다. 못 풀면 None.
 
-    `previous` 는 앞 어절이다. `크지 않습니다` 의 `않` 이 형용사인지 동사인지를 거기서 읽는다.
+    `previous`는 앞 어절이다. `크지 않습니다`의 `않`이 형용사인지 동사인지를 거기서 읽는다.
     """
     if not word or not hangul.isSyllable(word[-1]):
         return None
     if word in ("다", "입니다") and previous:
-        # `정본은 hanlint 다.` 처럼 띄어 쓴 영문이나 숫자 뒤의 계사. 앞 어절은 그대로 두고 어미만 짠다
+        # `정본은 hanlint 다.`처럼 띄어 쓴 영문이나 숫자 뒤의 계사. 앞 어절은 그대로 두고 어미만 짠다
         return Predicate("", COPULA)
     if word == "아닙니다" or word == "아니다":
         return Predicate("아니", ADJECTIVE)
@@ -220,7 +220,7 @@ def parsePredicate(word: str, previous: str | None = None) -> Predicate | None:
         return classify(word[:-2], previous, QUESTION)
     if word.endswith("자") and len(word) > 1:
         stem = restoreRieul(word[:-1])
-        # `글자` 처럼 자 로 끝나는 명사와 갈라야 한다. 하자, 보자, 그리고 ㄹ 어간 목록의 것만 청유로 본다
+        # `글자`처럼 `자`로 끝나는 명사와 갈라야 한다. 하자, 보자, 그리고 ㄹ 어간 목록의 것만 청유로 본다
         if stem.endswith(("하", "보")) or stem in rieulStems():
             return Predicate(stem, VERB, mood=PROPOSITIVE)
     if word.endswith("다") and len(word) > 1:
@@ -242,7 +242,7 @@ def parsePredicate(word: str, previous: str | None = None) -> Predicate | None:
 
 
 def conjugate(stem: str) -> str:
-    """어간에 `아/어` 를 붙인 꼴. 축약과 불규칙을 반영한다. 해요체와 청유형과 과거형이 여기서 나온다."""
+    """어간에 `아/어`를 붙인 꼴. 축약과 불규칙을 반영한다. 해요체와 청유형과 과거형이 여기서 나온다."""
     if stem == "아니":
         return "아니에"
     if stem.endswith("하"):
@@ -313,7 +313,7 @@ def plainVerb(stem: str) -> str:
 
 
 def withEu(stem: str, ending: str) -> str:
-    """`으` 매개 모음이 필요한 어미 (세요, 라, ㄴ가) 를 붙인다. 불규칙 어간은 아/어 앞과 같이 바뀐다."""
+    """`으` 매개 모음이 필요한 어미(세요, 라, ㄴ가)를 붙인다. 불규칙 어간은 아/어 앞과 같이 바뀐다."""
     final = hasFinal(stem)
     if final == hangul.NONE:
         return stem + ending

@@ -1,10 +1,10 @@
-"""문서 모델. 세 층이다.
+"""문서 모델. 세 단계다.
 
 - `Block` 빈 줄로 나뉜 덩어리 하나. 종류가 있다 (prose, heading, code, quote, image, list, table, embed, html)
 - `Section` H2 하나가 여는 절. 첫 H2 앞은 제목 없는 도입 절이다
-- `Document` 전체. frontmatter 와 절 목록을 든다
+- `Document` 전체. frontmatter와 절 목록을 든다
 
-줄 번호는 1 부터 세고 원문 기준이다. 지적이 인용하는 줄이 편집기에서 바로 열려야 한다.
+줄 번호는 1부터 세고 원문 기준이다. 지적이 인용하는 줄이 편집기에서 바로 열려야 한다.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ class Block:
     endLine: int
     text: str
     level: int = 0
-    """heading 일 때 `#` 의 개수."""
+    """heading 일 때 `#`의 개수."""
     index: int = 0
     """문서 안 순서."""
 
@@ -67,13 +67,13 @@ class Document:
     blocks: list[Block]
     sections: list[Section]
     disabled: list[tuple[str, int, int]] = field(default_factory=list)
-    """인라인 제어가 끈 (규칙 이름 또는 *, 시작 줄, 끝 줄). `<!-- hanlint-disable cliche -->` 가 만든다."""
+    """인라인 제어가 끈 (규칙 이름 또는 *, 시작 줄, 끝 줄). `<!-- hanlint-disable cliche -->`가 만든다."""
     ignored: list[Block] = field(default_factory=list)
-    """설정 (ignoreFences) 이 지문에서 뺀 펜스. dash 처럼 파일 전체를 보는 규칙만 읽는다."""
+    """설정(ignoreFences)이 글 분석에서 뺀 펜스. dash처럼 파일 전체를 보는 규칙만 읽는다."""
 
     @property
     def intro(self) -> Section:
-        """첫 H2 앞의 절. H2 가 하나도 없으면 글 전체가 도입이다."""
+        """첫 H2 앞의 절. H2가 하나도 없으면 글 전체가 도입이다."""
         return self.sections[0]
 
     @property

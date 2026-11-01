@@ -1,4 +1,4 @@
-"""뜻을 고르지 않고 표층에서 셀 수 있는 후보를 만든다.
+"""뜻을 고르지 않고 글자 모양에서 셀 수 있는 후보를 만든다.
 
 후보의 공통 형식은 text와 why 둘뿐이다. 규칙마다 다른 점수나 순위를 두지 않는다. 후보가 없으면 빈
 튜플을 주며, 억지로 한 칸을 채우지 않는다.
@@ -124,5 +124,5 @@ def doublePassiveCandidates(text: str, passives: tuple[str, ...]) -> tuple[Candi
         if candidateText is None or candidateText in seen:
             continue
         seen.add(candidateText)
-        candidates.append(Candidate(candidateText, f"`{surface}`의 피동 겹을 하나로 줄인다"))
+        candidates.append(Candidate(candidateText, f"`{surface}`에서 겹친 피동을 하나로 줄인다"))
     return tuple(candidates)

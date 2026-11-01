@@ -1,24 +1,24 @@
 """소스 파일의 글 마디. 사람이 읽는 한국어 문자열 리터럴과 JSX 글을 줄 번호와 함께 뽑는다.
 
-마크다운은 문장이 곧 글이지만 화면의 글은 코드 안에 흩어져 있다. 여기가 그 글을 코드에서 떼어 내는
-자리다. 표층만 본다. 언어의 문법을 알지 않고, 따옴표 안의 한국어와 태그 사이의 한국어만 글로 본다.
+마크다운은 문장이 곧 글이지만 화면의 글은 코드 안에 흩어져 있다. 여기서 그 글을 코드에서 떼어
+낸다. 글자 모양만 본다. 언어의 문법을 알지 않고, 따옴표 안의 한국어와 태그 사이의 한국어만 글로 본다.
 
 무엇을 글로 보나
   - 작은따옴표, 큰따옴표, 백틱 안의 한 줄짜리 문자열. 한국어가 하나라도 있는 것만.
-  - JSX 의 태그 사이 글 (`>글<`). 식 (`{...}`) 이 끼어도 글로 본다. 식 안의 따옴표 글은 따로 본다.
-  - 같은 줄에서 인라인 태그 (`<strong>`, `<a>`) 만 사이에 둔 조각은 한 마디다. 형제 링크 (`</a><a>`) 는 따로다.
-  - 마크업 파일 (html, vue, svelte) 은 여는 태그 뒤 줄 끝까지, 줄 처음부터 닫는 태그 앞까지, 태그 없는 글 줄도 마디다.
-    여러 줄 문단이 줄마다 한 마디로 나온다. `<script>` 와 `<style>` 안은 코드라 따옴표 글만 본다.
-  - 글 (`text`) 은 파일에 있는 그대로 두어 되돌려 쓸 수 있게 하고, 검사는 식 (`${...}`, `{...}`) 을 비운 `plain` 으로 한다.
-  - 러스트의 줄 이음 (역슬래시 + 줄바꿈) 은 한 줄로 이어 한 마디로 본다.
+  - JSX의 태그 사이 글 (`>글<`). 식(`{...}`)이 끼어도 글로 본다. 식 안의 따옴표 글은 따로 본다.
+  - 같은 줄에서 인라인 태그(`<strong>`, `<a>`)만 사이에 둔 조각은 한 마디다. 형제 링크(`</a><a>`)는 따로다.
+  - 마크업 파일(html, vue, svelte)은 여는 태그 뒤 줄 끝까지, 줄 처음부터 닫는 태그 앞까지, 태그 없는 글 줄도 마디다.
+    여러 줄 문단이 줄마다 한 마디로 나온다. `<script>`와 `<style>` 안은 코드라 따옴표 글만 본다.
+  - 글(`text`)은 파일에 있는 그대로 두어 되돌려 쓸 수 있게 하고, 검사는 식(`${...}`, `{...}`)을 비운 `plain`으로 한다.
+  - 러스트의 줄 이음(역슬래시 + 줄바꿈)은 한 줄로 이어 한 마디로 본다.
 
 무엇을 빼나
-  - 주석 (`//`, `#`, `/* */`, `*` 로 시작하는 줄). 사용자가 읽지 않는다.
-  - 개발자용 줄 (`new Error(`, `console.`, `panic!(`, `expect(`, `assert`). 파이썬의 docstring 은 표층으로 못 가르므로
-    첫 줄이 글로 잡힌다.
-  - 러스트의 시험 모듈 (`#[cfg(test)]` 부터 끝까지).
+  - 주석 (`//`, `#`, `/* */`, `*`로 시작하는 줄). 사용자가 읽지 않는다.
+  - 개발자용 줄 (`new Error(`, `console.`, `panic!(`, `expect(`, `assert`). 파이썬의 docstring은 글자 모양으로는
+    가려낼 수 없으므로 첫 줄이 글로 잡힌다.
+  - 러스트의 시험 모듈 (`#[cfg(test)]`부터 끝까지).
 
-실측: Taxly 의 화면 소스 92 파일에서 이 규칙으로 글 마디 1,100여 개를 뽑았고, 식이 낀 JSX 글과 러스트 줄 이음을
+실측: 한 데스크톱 앱의 화면 소스 92개 파일에서 이 규칙으로 글 마디 1,100여 개를 뽑았고, 식이 낀 JSX 글과 러스트 줄 이음을
 못 읽어 문장 셋이 샜던 것을 검증에서 잡아 더했다 (2026-09-17).
 """
 
@@ -29,8 +29,8 @@ from dataclasses import dataclass
 
 SOURCE_SUFFIXES = (".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".rs", ".py", ".html", ".htm", ".vue", ".svelte")
 MARKUP_SUFFIXES = (".html", ".htm", ".vue", ".svelte")
-"""태그 사이 글과 속성값을 JSX 와 같은 길로 읽는 파일. HTML 주석 `<!-- -->` 을 걷어낸다."""
-"""`hanlint sheet` 가 폴더에서 찾는 확장자. 마크다운은 `hanlint 글.md` 의 몫이다."""
+"""태그 사이 글과 속성값을 JSX와 같은 길로 읽는 파일. HTML 주석 `<!-- -->`을 걷어낸다."""
+"""`hanlint sheet`가 폴더에서 찾는 확장자. 마크다운은 `hanlint 글.md`의 몫이다."""
 
 KOREAN = re.compile(r"[가-힣]")
 QUOTES = ("'", '"', "`")
@@ -62,13 +62,13 @@ class SourceLiteral:
     text: str
     """따옴표와 태그를 뺀 글. 파일에 있는 그대로라 되돌려 쓸 때 찾을 수 있다."""
     plain: str
-    """검사에 쓰는 글. 식 (`${...}`, `{...}`) 을 비우고 공백을 하나로 모았다."""
+    """검사에 쓰는 글. 식(`${...}`, `{...}`)을 비우고 공백을 하나로 모았다."""
     column: int = 0
-    """1부터 세는 칸. 그 줄에서 `text` 가 시작하는 자리라 같은 글이 두 번 있어도 되돌려 쓸 자리가 하나로 정해진다."""
+    """1부터 세는 칸. 그 줄에서 `text`가 시작하는 위치라 같은 글이 두 번 있어도 되돌려 쓸 위치가 하나로 정해진다."""
 
 
 def balancedEnd(line: str, start: int) -> int:
-    """`start` 의 `{` 를 닫는 `}` 의 자리. 안의 따옴표 문자열 (중첩 백틱까지) 과 중첩 괄호를 건너뛴다. 없으면 -1."""
+    """`start`의 `{`를 닫는 `}`의 위치. 안의 따옴표 문자열(중첩 백틱까지)과 중첩 괄호를 건너뛴다. 없으면 -1."""
     depth = 0
     index = start
     while index < len(line):
@@ -90,9 +90,9 @@ def balancedEnd(line: str, start: int) -> int:
 
 
 def expressionSpans(text: str) -> list[tuple[int, int]]:
-    """글에 낀 식 `{...}` 와 `${...}` 의 (시작, 끝 다음) 자리. 식 안의 따옴표와 중첩 괄호는 식의 일부다.
+    """글에 낀 식 `{...}`와 `${...}`의 (시작, 끝 다음) 위치. 식 안의 따옴표와 중첩 괄호는 식의 일부다.
 
-    닫히지 않은 식 (여러 줄에 걸친 식의 첫 줄) 은 식으로 보지 않고 그 뒤를 그대로 둔다.
+    닫히지 않은 식(여러 줄에 걸친 식의 첫 줄)은 식으로 보지 않고 그 뒤를 그대로 둔다.
     """
     spans: list[tuple[int, int]] = []
     index = 0
@@ -142,7 +142,7 @@ def userFacingSource(source: str, path: str) -> str:
 
 
 def withoutLineComment(line: str) -> str:
-    """따옴표 밖의 `//` 부터 자른다. `https://` 처럼 `:` 뒤의 `//` 는 주소라 두고, 문자열 안의 `//` 도 둔다.
+    """따옴표 밖의 `//`부터 자른다. `https://`처럼 `:` 뒤의 `//`는 주소라 두고, 문자열 안의 `//`도 둔다.
 
     실측: 한 줄에 주소와 글이 같이 있으면 (`href="https://…">개발자 문서`) 글이 통째로 사라졌다 (2026-09-18).
     """
@@ -165,9 +165,9 @@ def withoutLineComment(line: str) -> str:
 
 
 def plainText(text: str) -> str:
-    """검사에 쓰는 글. 식 (`${...}`, `{...}`) 과 인라인 태그 (`<strong>`) 를 비우고 공백을 하나로 모은다.
+    """검사에 쓰는 글. 식(`${...}`, `{...}`)과 인라인 태그(`<strong>`)를 비우고 공백을 하나로 모은다.
 
-    태그는 이름이 영문자로 시작하는 것만이다. `<대상> 필요` 처럼 글 안의 꺾쇠는 남는다.
+    태그는 이름이 영문자로 시작하는 것만이다. `<대상> 필요`처럼 글 안의 꺾쇠는 남는다.
     """
     pieces: list[str] = []
     cursor = 0
@@ -181,9 +181,9 @@ def plainText(text: str) -> str:
 
 
 def closingQuote(line: str, start: int) -> int:
-    """`start` 의 따옴표를 닫는 자리. 역슬래시 뒤 글자는 건너뛰고, 백틱 안의 `${...}` 은 안의 백틱까지 통째로 건너뛴다.
+    """`start`의 따옴표를 닫는 위치. 역슬래시 뒤 글자는 건너뛰고, 백틱 안의 `${...}`은 안의 백틱까지 통째로 건너뛴다.
 
-    없으면 -1. 실측: `${a ? `해마다 ${b}` : c}은 결산` 의 안쪽 백틱을 바깥의 끝으로 읽어 코드가 글로 샜다 (2026-09-18).
+    없으면 -1. 실측: `${a ? `해마다 ${b}` : c}은 결산`의 안쪽 백틱을 바깥의 끝으로 읽어 코드가 글로 샜다 (2026-09-18).
     """
     quote = line[start]
     index = start + 1
@@ -205,10 +205,10 @@ def closingQuote(line: str, start: int) -> int:
 
 
 def tagCloses(line: str, index: int) -> bool:
-    """`index` 의 `>` 가 JSX 여는 태그의 끝인가. 태그 이름, 속성 값의 따옴표, 식의 `}` 뒤에 오고 `=` 가 뒤따르지 않는다.
+    """`index`의 `>`가 JSX 여는 태그의 끝인가. 태그 이름, 속성 값의 따옴표, 식의 `}` 뒤에 오고 `=`가 뒤따르지 않는다.
 
-    비교 (`page >= count`, `a > b`), 화살표 (`=>`), 러스트 반환 (`->`) 의 `>` 는 앞이 빈칸이거나 `=`, `-` 이고
-    뒤에 `=` 가 올 수 있다. 실측: `disabled={page >= pageCount}` 의 `>` 를 태그 끝으로 읽어 그 뒤 코드가 글로
+    비교(`page >= count`, `a > b`), 화살표(`=>`), 러스트 반환(`->`)의 `>`는 앞이 빈칸이거나 `=`, `-`이고
+    뒤에 `=`가 올 수 있다. 실측: `disabled={page >= pageCount}`의 `>`를 태그 끝으로 읽어 그 뒤 코드가 글로
     잡혔다 (2026-09-17).
     """
     if index == 0 or index + 1 < len(line) and line[index + 1] == "=":
@@ -218,7 +218,7 @@ def tagCloses(line: str, index: int) -> bool:
 
 
 def jsxTextEnd(line: str, start: int) -> int:
-    """`start` 부터의 JSX 글이 끝나는 `<` 의 자리. 식 (`{...}`) 안의 `<` 는 글의 끝이 아니다. 없으면 -1."""
+    """`start`부터의 JSX 글이 끝나는 `<`의 위치. 식(`{...}`) 안의 `<`는 글의 끝이 아니다. 없으면 -1."""
     index = start
     while index < len(line):
         char = line[index]
@@ -244,15 +244,15 @@ def innerLiterals(text: str, offset: int) -> list[tuple[int, str]]:
 
 
 def lineLiterals(line: str, offset: int = 0, openEnded: bool = False) -> list[tuple[int, str]]:
-    """한 줄의 글 마디를 (시작 자리, 글) 로 나온 차례로. 따옴표 문자열과 JSX 의 태그 사이 글 (`>글<`) 이다.
+    """한 줄의 글 마디를 (시작 위치, 글)로 나온 차례로. 따옴표 문자열과 JSX의 태그 사이 글(`>글<`)이다.
 
-    openEnded (마크업 파일) 이면 여는 태그 뒤 줄 끝까지의 글과 줄 처음부터 닫는 태그 (`</`) 앞까지의 글도 마디다.
-    여러 줄에 걸친 문단이 줄마다 한 마디로 나온다. 코드가 섞인 jsx 에서는 오독이 커서 켜지 않는다.
+    openEnded(마크업 파일)이면 여는 태그 뒤 줄 끝까지의 글과 줄 처음부터 닫는 태그(`</`) 앞까지의 글도 마디다.
+    여러 줄에 걸친 문단이 줄마다 한 마디로 나온다. 코드가 섞인 jsx에서는 오독이 커서 켜지 않는다.
 
-    JSX 글의 `>` 는 화살표 (`=>`) 나 러스트 반환 (`->`) 의 `>` 가 아니다. 글에 식 (`{...}`, `${...}`) 이 끼면 그 글을 낸 뒤
+    JSX 글의 `>`는 화살표(`=>`)나 러스트 반환(`->`)의 `>`가 아니다. 글에 식(`{...}`, `${...}`)이 끼면 그 글을 낸 뒤
     식 안을 따로 훑어 안의 따옴표 글과 태그 사이 글도 낸다 (중첩 식과 중첩 백틱 포함). 식이 없는 글 안은 다시 훑지 않는다
-    (글 속 인용 부호를 문자열로 오독하지 않게). 실측: `{cond ? <span>없음</span> : x}` 의 안쪽 `<` 를 글의 끝으로 읽고
-    `{[['기준월 실적', a]]}` 의 식을 못 비워 코드가 글로 샜다 (2026-09-18).
+    (글 속 인용 부호를 문자열로 오독하지 않게). 실측: `{cond ? <span>없음</span> : x}`의 안쪽 `<`를 글의 끝으로 읽고
+    `{[['기준월 실적', a]]}`의 식을 못 비워 코드가 글로 샜다 (2026-09-18).
     """
     found: list[tuple[int, str]] = []
     index = 0
@@ -292,9 +292,9 @@ def lineLiterals(line: str, offset: int = 0, openEnded: bool = False) -> list[tu
 def joinInline(line: str, found: list[tuple[int, str]], offset: int) -> list[tuple[int, str]]:
     """사이가 인라인 태그뿐인 태그 사이 글 조각을 한 마디로 잇는다 (`붙여 넣으면 <strong>고칠 곳</strong>이 보입니다.`).
 
-    이은 마디의 원문은 태그를 품은 연속 구간이라 되돌려 쓰기가 그대로 된다. 검사는 plainText 가 태그를 뺀 글로 한다.
-    태그 안의 속성 문자열 (`title="…"`) 은 잇기에 끼지 않고 제 마디로 남는다. 빈 조각은 잇지 않는다.
-    실측: guide.html 의 문단이 인라인 태그마다 끊겨 "로 원고를 엽니다. 오른쪽에…" 같은 반토막 행이 나왔다 (2026-09-18).
+    이은 마디의 원문은 태그를 품은 연속 구간이라 되돌려 쓰기가 그대로 된다. 검사는 plainText가 태그를 뺀 글로 한다.
+    태그 안의 속성 문자열(`title="…"`)은 잇기에 끼지 않고 제 마디로 남는다. 빈 조각은 잇지 않는다.
+    실측: guide.html의 문단이 인라인 태그마다 끊겨 "로 원고를 엽니다. 오른쪽에…" 같은 반토막 행이 나왔다 (2026-09-18).
     """
     pieces = [(start, raw) for start, raw in found if raw.strip()]
     attributes = [(start, raw) for start, raw in pieces if insideTag(line, start - offset)]
@@ -313,13 +313,13 @@ def joinInline(line: str, found: list[tuple[int, str]], offset: int) -> list[tup
 
 
 def insideTag(line: str, position: int) -> bool:
-    """position 이 태그 안 (`<` 뒤, `>` 앞) 인가. 속성 문자열은 태그 안에 있다."""
+    """position이 태그 안(`<` 뒤, `>` 앞)인가. 속성 문자열은 태그 안에 있다."""
     opened = line.rfind("<", 0, position)
     return opened >= 0 and line.rfind(">", 0, position) < opened
 
 
 def inlineOnly(gap: str) -> bool:
-    """사이가 인라인 태그뿐이고, 닫는 태그 바로 뒤에 여는 태그가 오는 형제 (`</a><a>`, 목차 링크) 가 아니다."""
+    """사이가 인라인 태그뿐이고, 닫는 태그 바로 뒤에 여는 태그가 오는 형제(`</a><a>`, 목차 링크)가 아니다."""
     if not INLINE_GAP.match(gap) or SIBLING_GAP.search(gap):
         return False
     return all(m.group(1).lower() in INLINE_TAGS for m in INLINE_TAG.finditer(gap))
@@ -330,7 +330,7 @@ def sourceLiterals(source: str, path: str = "") -> list[SourceLiteral]:
     found: list[SourceLiteral] = []
     markup = path.endswith(MARKUP_SUFFIXES)
     # 마크업은 주석 지우기가 줄 수를 지키므로 원문 줄과 나란히 간다. script 블록 판정은 원문 줄로 한다
-    # (`// 주석</script>` 처럼 닫는 태그가 주석과 함께 지워져도 블록이 닫힌 것을 안다).
+    # (`// 주석</script>`처럼 닫는 태그가 주석과 함께 지워져도 블록이 닫힌 것을 안다).
     rawLines = source.split("\n") if markup else []
     inCode = False
     for number, line in enumerate(userFacingSource(source, path).split("\n"), 1):
@@ -356,9 +356,9 @@ def sourceLiterals(source: str, path: str = "") -> list[SourceLiteral]:
 
 
 def replaceLiteral(lineText: str, old: str, new: str) -> tuple[str, int]:
-    """한 줄 안에서 글 `old` 를 `new` 로 바꾼다. 몇 번 나왔는지 같이 준다 (한 번일 때만 바꾼 것이 확정이다).
+    """한 줄 안에서 글 `old`를 `new`로 바꾼다. 몇 번 나왔는지 같이 준다 (한 번일 때만 바꾼 것이 확정이다).
 
-    표에서 고친 글을 파일로 되돌리는 자리다. 글이 그 줄에 정확히 한 번 있어야 바꾼다. 없거나 둘이면 사람이 본다.
+    표에서 고친 글을 파일로 되돌릴 때 쓴다. 글이 그 줄에 정확히 한 번 있어야 바꾼다. 없거나 둘이면 사람이 본다.
     """
     count = lineText.count(old)
     if count != 1:

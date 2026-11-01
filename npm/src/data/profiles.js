@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * 참조 분포 (프로파일) 의 자료형과 읽기. 파이썬 data/profiles.py 와 같다. 종류별 프로파일은 profiles.json (투영) 에서,
- * 사용자 프로파일은 `hanlint profile build` 가 만든 파일에서 읽는다. 히스토그램은 정확한 계수라 두 구현의 셈이 같다.
+ * 참조 분포(프로파일)의 자료형과 읽기. 파이썬 data/profiles.py와 같다. 종류별 프로파일은 profiles.json(파이썬 자료의 사본)에서,
+ * 사용자 프로파일은 `hanlint profile build`가 만든 파일에서 읽는다. 히스토그램은 정확한 계수라 두 구현의 셈이 같다.
  */
 import { readExternal } from "./read.js";
 
@@ -11,7 +11,7 @@ export const PROFILE_VERSION = 1;
 /** 히스토그램의 상한. 이 값보다 큰 것은 상한에 합친다. */
 export const CAP = 200;
 const PERCENTILES = [50, 90, 95, 99];
-/** 기준 말뭉치 종류의 이름. 지적문에 적는다. 파이썬 TYPE_LABELS 와 같다. @type {Record<string, string>} */
+/** 기준 말뭉치 종류의 이름. 지적문에 적는다. 파이썬 TYPE_LABELS와 같다. @type {Record<string, string>} */
 export const TYPE_LABELS = {
   blog: "블로그",
   technicalDocs: "기술 문서",
@@ -87,7 +87,7 @@ function profileFromDict(kind, data) {
 
 /** @type {Map<string, Profile> | null} */
 let shipped = null;
-/** hanlint 가 싣는 종류별 프로파일. @param {string} kind @returns {Profile | null} */
+/** hanlint가 싣는 종류별 프로파일. @param {string} kind @returns {Profile | null} */
 export function profileOf(kind) {
   if (!shipped) {
     shipped = new Map();
@@ -105,7 +105,7 @@ export function userProfile(path) {
   if (!profile) {
     const data = JSON.parse(readExternal(path));
     if (data.version !== PROFILE_VERSION || !("profile" in data)) {
-      throw new Error(`프로파일 파일이 아니다: ${path}. hanlint profile build 로 다시 만든다`);
+      throw new Error(`프로파일 파일이 아니다: ${path}. hanlint profile build로 다시 만든다`);
     }
     profile = profileFromDict("custom", data.profile);
     users.set(path, profile);

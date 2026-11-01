@@ -10,7 +10,7 @@ from ...config import loadWritingBrief
 from ...guard import guardText, renderGuard
 from .shared import addCommonOptions, configFrom, emit, readFile, startFolder
 
-HELP = "구조화 brief와 결과 글의 사실 표면·숫자·코드·error를 대조한다"
+HELP = "구조화한 brief와 결과 글의 사실·숫자·코드·오류를 대조한다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
@@ -22,7 +22,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 def run(args: argparse.Namespace) -> int:
     brief = loadWritingBrief(args.brief)
     if args.preset and args.preset != brief.preset:
-        raise ValueError(f"--preset {args.preset} 과 brief preset {brief.preset} 이 다르다")
+        raise ValueError(f"--preset 값과 brief의 preset이 다르다: {args.preset}, {brief.preset}")
     config = configFrom(args, start=startFolder([args.file]))
     config.preset = brief.preset
     text = readFile(args.file)

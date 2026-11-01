@@ -1,5 +1,5 @@
 // @ts-check
-/** 문서 모델을 한 번 훑어 글 지문을 만든다. 텍스트를 읽는 유일한 자리다. 파이썬 fingerprint/build.py 와 같다. */
+/** 문서 모델을 한 번 훑어 글 분석 결과를 만든다. 텍스트를 읽는 곳은 여기 하나다. 파이썬 fingerprint/build.py와 같다. */
 import { defaultConfig } from "../config/settings.js";
 import { NONE as NO_REGISTER, documentRegister, lastWord, registerOfWord } from "../analysis/grammar/register.js";
 import { doublePassiveSpans, euiCount, longestNounRun, splitSentences } from "../analysis/index.js";
@@ -88,9 +88,9 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {number} readerCallCount
  * @property {[number, string, number, string][]} countPromises (수, 단위, 줄, 원문)
  * @property {import("./codeBlocks.js").CodeBlock[]} codeBlocks 코드 펜스를 언어와 본문 줄로 푼 것
- * @property {import("./readerState.js").ReaderTrail} reader 자리마다의 독자 상태. 약속과 회수 표지는 final 에 있다
+ * @property {import("./readerState.js").ReaderTrail} reader 위치마다의 독자 상태. 약속하는 말과 다시 다루는 말은 final에 있다
  * @property {[string, number, number][]} disabled
- * @property {import("../document/model.js").Block[]} ignored 설정이 지문에서 뺀 펜스
+ * @property {import("../document/model.js").Block[]} ignored 설정이 글 분석에서 뺀 펜스
  * @property {string} register
  * @property {number} registerShare
  * @property {SectionPrint} intro
@@ -131,7 +131,7 @@ function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
   const { entries } = build;
   const ending = markers.endingOf(text);
   const protectedSpans = markers.termSpans(text, build.protectedTerms);
-  // 인용 안의 것과 보호한 용어에 걸친 것은 뺀다. 뜻은 파이썬 fingerprint/build.py 의 kept 가 정한다.
+  // 인용 안의 것과 보호한 용어에 걸친 것은 뺀다. 뜻은 파이썬 fingerprint/build.py의 kept가 정한다.
   /** @param {number} start @param {number} end */
   const kept = (start, end) => !markers.insideAny(start, end, quoted) && !markers.overlapsAny(start, end, protectedSpans);
   const deixis = markers
@@ -233,7 +233,7 @@ function buildSection(build, section, sectionIndex) {
       const line = block.startLine + countIn(text, "\n", sentence.start);
       const quoted = quotedIn(sentence, blockSpans);
       const made = makeSentencePrint(build, sentence.text, line, block, sectionIndex, quoted);
-      // 만든 자리에서 바로 쌓는다. 다음 문장의 index 가 이 길이에서 나오므로 미루면 셈이 어긋난다.
+      // 만든 곳에서 바로 쌓는다. 다음 문장의 index가 이 길이에서 나오므로 미루면 셈이 어긋난다.
       sentences.push(made);
       blockSentences.push(made);
     }
@@ -269,7 +269,7 @@ function buildSection(build, section, sectionIndex) {
  * @returns {DocumentPrint}
  */
 export function buildFingerprint(doc, config = defaultConfig()) {
-  // 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
+  // 코드도 산문도 아닌 펜스는 분석에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 곳이면 된다.
   doc = dropFences(doc, config.ignoreFences);
   const build = {
     entries: entriesFor(config),

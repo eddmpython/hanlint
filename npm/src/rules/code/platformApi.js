@@ -27,7 +27,7 @@ export function run(doc) {
       for (const [pattern, source, platform, alternative] of platformApis()) {
         pattern.lastIndex = 0;
         if (pattern.test(code)) {
-          findings.push(finding(name, line, code.trim(), `\`${source}\` 은 ${platform} 전용이다. 다른 운영체제 독자는 여기서 멈춘다. ${alternative}`, null, NOTICE, DOCUMENT, block.index));
+          findings.push(finding(name, line, code.trim(), `\`${source}\` 부분은 ${platform} 전용이다. 다른 운영체제의 독자는 여기서 멈춘다. ${alternative}`, null, NOTICE, DOCUMENT, block.index));
           break;
         }
       }

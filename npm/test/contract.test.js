@@ -114,7 +114,7 @@ test("text receipt names reader debt already carried by findings", () => {
   const source =
     "예산은 380,000원이다. 명세는 https://example.invalid/check 에 있다. `mora check`로 확인하며 설치는 뒤에서 다루겠습니다.";
   const receipt = renderCheck(check(source, contract()));
-  assert.match(receipt, /- 독자 부채: 1건/u);
+  assert.match(receipt, /- 독자가 막힐 곳: 1건/u);
   assert.match(receipt, /\[promiseRecall\]/u);
 });
 

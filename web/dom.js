@@ -13,6 +13,12 @@ export function button(text, action, className = "textButton") {
   node.addEventListener("click", action);
   return node;
 }
+/** 화면에 보일 오류 글. 우리가 던진 한국어 오류는 그대로, 브라우저가 던진 영어 오류는 한국어 안내 뒤에 괄호로 붙인다. */
+export function errorText(error, lead = "처리하지 못했어요.") {
+  const message = String(error?.message ?? error ?? "");
+  if (/[가-힣]/.test(message)) return message;
+  return message ? `${lead} (브라우저 오류: ${message})`.trim() : lead;
+}
 export function download(name, text, type = "application/json") {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const link = element("a");

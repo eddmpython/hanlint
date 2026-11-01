@@ -77,10 +77,10 @@ test("tree and defaultBranch use the API once each and map failures to plain wor
   assert.equal(await source.defaultBranch("o", "r"), "main");
   assert.deepEqual(await source.tree("o", "r", "main"), [{ path: "a.js", type: "blob", size: 1 }]);
   assert.equal(calls[0].options.headers["X-GitHub-Api-Version"], "2022-11-28");
-  await assert.rejects(source.tree("o", "r", "huge"), /잘렸습니다/);
-  await assert.rejects(source.tree("o", "r", "gone"), /찾지 못했습니다/);
+  await assert.rejects(source.tree("o", "r", "huge"), /잘렸어요/);
+  await assert.rejects(source.tree("o", "r", "gone"), /찾지 못했어요/);
   await assert.rejects(source.tree("o", "r", "limited"), /요청 한도/);
-  await assert.rejects(new RepoSource(async () => { throw new Error("offline"); }).tree("o", "r", "main"), /연결하지 못했습니다/);
+  await assert.rejects(new RepoSource(async () => { throw new Error("offline"); }).tree("o", "r", "main"), /연결하지 못했어요/);
 });
 
 test("fetchSources keeps file order, caps concurrency, reports progress and stops on the first failure", async () => {
@@ -101,7 +101,7 @@ test("fetchSources keeps file order, caps concurrency, reports progress and stop
   assert.equal(got[3].source, "내용 f03.js");
   assert.ok(peak <= CONCURRENCY && peak > 1, String(peak));
   assert.deepEqual(progress[progress.length - 1], [20, 20]);
-  await assert.rejects(source.fetchSources({ owner: "o", repo: "r", ref: "dev", path: "" }, files.slice(0, 3)), /응답하지 않았습니다 \(500\)/);
+  await assert.rejects(source.fetchSources({ owner: "o", repo: "r", ref: "dev", path: "" }, files.slice(0, 3)), /처리하지 못했어요\(응답 500\)/);
 });
 
 test("the default request never calls fetch with a foreign this (browsers throw Illegal invocation)", async () => {
@@ -134,7 +134,7 @@ test("resolveTree moves path segments into a slashed branch name after a 404, bo
   assert.deepEqual(target, { owner: "o", repo: "r", ref: "release/8.0", path: "src" });
   assert.equal(tree.length, 1);
   const never = new RepoSource(async () => reply(404, {}));
-  await assert.rejects(never.resolveTree({ owner: "o", repo: "r", ref: "a", path: "b/c/d/e" }), /찾지 못했습니다/);
+  await assert.rejects(never.resolveTree({ owner: "o", repo: "r", ref: "a", path: "b/c/d/e" }), /찾지 못했어요/);
   assert.ok(REF_RETRIES >= 1);
 });
 
@@ -149,7 +149,7 @@ test("an aborted signal stops the lanes and the call reports the stop, not a net
     return reply(200, "글");
   });
   const files = Array.from({ length: 12 }, (_, i) => ({ path: `f${i}.js` }));
-  await assert.rejects(source.fetchSources({ owner: "o", repo: "r", ref: "main", path: "" }, files, undefined, controller.signal), /멈췄습니다/);
+  await assert.rejects(source.fetchSources({ owner: "o", repo: "r", ref: "main", path: "" }, files, undefined, controller.signal), /멈췄어요/);
   assert.ok(calls < files.length, String(calls));
 });
 

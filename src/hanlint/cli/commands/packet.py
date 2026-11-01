@@ -31,7 +31,7 @@ def run(args: argparse.Namespace) -> int:
             raise ValueError("writing brief JSON은 --purpose draft 에서만 쓴다")
         brief = loadWritingBrief(args.file)
         if args.preset and args.preset != brief.preset:
-            raise ValueError(f"--preset {args.preset} 과 brief preset {brief.preset} 이 다르다")
+            raise ValueError(f"--preset 값과 brief의 preset이 다르다: {args.preset}, {brief.preset}")
         config = configFrom(args, start=args.file.resolve().parent)
         packet = buildBriefWritingPacket(brief, str(args.file), args.includeSource, args.strategy)
         if config.source:

@@ -1,4 +1,4 @@
-"""구조화 brief와 결과 글 사이의 결정적 표면 계약."""
+"""구조화 brief와 결과 글 사이의 글자 대조. 같은 입력이면 늘 같은 결과다."""
 
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ from .receipt import (
 from .surface import surfaceDiff
 
 GUARD_MEANING = (
-    "contractSatisfied는 명시한 표면과 자동 error가 맞는다는 뜻뿐이다. "
-    "원자 사실의 관계와 진실, 빠진 의미, 금지 주장의 바꿔 말하기, 독자 효용과 자연스러움은 보장하지 않는다"
+    "contractSatisfied는 brief에 적은 문구·숫자·링크·코드·글자 수가 맞고 hanlint 오류가 없다는 뜻뿐이다. "
+    "사실 사이의 관계와 사실 여부, 빠진 뜻, 금지 주장을 바꿔 말한 글, 독자에게 쓸모 있는지와 자연스러운지는 보장하지 않는다"
 )
 
 
@@ -128,11 +128,11 @@ def guardText(
     config: Config | None = None,
     path: str | None = None,
 ) -> GuardResult:
-    """글을 바꾸지 않고 구조화 brief의 결정적 표면과 hanlint error를 대조한다."""
+    """글을 바꾸지 않고 구조화 brief에 적은 문구·숫자·링크·코드와 hanlint 오류를 대조한다."""
     if isinstance(brief, dict):
         brief = WritingBrief.fromMapping(brief)
     if not isinstance(brief, WritingBrief):
-        raise ValueError("brief 는 WritingBrief 또는 brief JSON 객체다")
+        raise ValueError("brief는 WritingBrief나 brief JSON 객체여야 한다")
     selectedConfig = copy(config) if config is not None else Config()
     selectedConfig.preset = brief.preset
     findings = tuple(runAll(buildFingerprint(parseMarkdown(text, path=path), selectedConfig), selectedConfig))
@@ -151,8 +151,8 @@ def guardText(
         missingLinks=atomDiff.missingLinks,
         unexpectedLinks=atomDiff.unexpectedLinks,
         forbiddenHits=tuple(literal for literal in brief.forbidden if literal in surfaceText),
-        # NFC 로 세지 않으면 한글 한 글자가 자모 두세 개로 세어져 길이 계약이 뒤집힌다. 나머지 표면 검사는
-        # 전부 surfaceText 를 쓰는데 여기만 원문을 쓰고 있었다 (2026-08-31).
+        # NFC로 세지 않으면 한글 한 글자가 자모 두세 개로 세어져 길이 계약이 뒤집힌다. 나머지 글자 검사는
+        # 모두 surfaceText를 쓰는데 여기만 원문을 쓰고 있었다(2026-08-31).
         characterCount=len(surfaceText),
         minCharacters=brief.minCharacters,
         maxCharacters=brief.maxCharacters,
@@ -170,10 +170,10 @@ def guardFile(
 
 
 def renderGuard(result: GuardResult) -> str:
-    status = "표면 계약 충족" if result.contractSatisfied else f"표면 계약 위반 {result.violationCount}건"
+    status = "brief 조건 충족" if result.contractSatisfied else f"brief 조건 위반 {result.violationCount}건"
     lines = [status]
     labels = (
-        ("빠진 필수 표면", result.missingRequired),
+        ("빠진 필수 문구", result.missingRequired),
         ("빠진 숫자", result.missingNumbers),
         ("요구 밖 숫자", result.unexpectedNumbers),
         ("빠진 URL", result.missingUrls),
@@ -186,12 +186,12 @@ def renderGuard(result: GuardResult) -> str:
     )
     lines.extend(f"- {label}: {', '.join(items)}" for label, items in labels if items)
     if not result.lengthSatisfied:
-        lines.append(f"- 글자 수: {result.characterCount}자. 허용 범위 {result.minCharacters}~{result.maxCharacters}자")
+        lines.append(f"- 글자 수: {result.characterCount:,}자. 허용 범위 {result.minCharacters:,}~{result.maxCharacters:,}자")
     if result.errorCount:
         rules = Counter(finding.rule for finding in result.findings if finding.severity == "error")
-        lines.append("- hanlint error: " + ", ".join(f"{rule} {count}" for rule, count in sorted(rules.items())))
+        lines.append("- hanlint 오류: " + ", ".join(f"{rule} {count}" for rule, count in sorted(rules.items())))
     if result.noticeCount:
-        lines.append(f"- 확인할 notice: {result.noticeCount}건")
+        lines.append(f"- 확인 권고: {result.noticeCount}건")
     lines.extend(["", GUARD_MEANING])
     return "\n".join(lines)
 

@@ -36,7 +36,10 @@ def testRenderAndParseRoundTrip():
 def testParseReportsBadRows():
     parsed = parseSheet("| 1 | 자리없음 | 글 | 지적 | 고침 |\n| 2 | a:1 | 글 |\n")
     assert parsed.rows == []
-    assert parsed.problems == ["1행: 자리 `자리없음` 가 경로:줄 이나 경로:줄:칸 꼴이 아니다", "2행: 칸이 3개다. 5개여야 한다"]
+    assert parsed.problems == [
+        "1번째 줄: 경로:줄이나 경로:줄:칸 형식이 아닌 자리: `자리없음`",
+        "2번째 줄: 칸이 3개다. 5개여야 한다",
+    ]
 
 
 def testJsonCarriesFindingsAndFix():

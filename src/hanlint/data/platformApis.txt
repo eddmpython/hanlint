@@ -1,14 +1,14 @@
-# 한 운영체제에서만 도는 API 와 경로. `정규식<TAB>플랫폼<TAB>대안`. platformApi 가 코드 블록에서 notice 로 짚는다.
-# 실측: 004 의 peak_wset 은 윈도우에서만 나와 맥과 리눅스 독자가 AttributeError 로 멈췄다 (사람 평가자 지적).
-peak_wset	윈도우	맥과 리눅스는 memory_info().rss 나 resource.getrusage(...).ru_maxrss 다
-os\.startfile\(	윈도우	subprocess.run(["open", 경로]) 나 xdg-open
+# 한 운영체제에서만 도는 API와 경로. `정규식<TAB>플랫폼<TAB>대안`. platformApi가 코드 블록에서 확인 권고로 짚는다.
+# 실측: 블로그 004의 peak_wset은 윈도우에서만 나와 맥과 리눅스 독자가 AttributeError로 멈췄다(사람 평가자 지적).
+peak_wset	윈도우	맥과 리눅스는 memory_info().rss나 resource.getrusage(...).ru_maxrss를 쓴다
+os\.startfile\(	윈도우	subprocess.run(["open", 경로])나 xdg-open을 쓴다
 \bwinreg\b	윈도우	레지스트리는 윈도우에만 있다
-\bmsvcrt\b	윈도우	termios 나 다른 입력 방법
-\bwin32(?:api|con|gui|com)\b	윈도우	pywin32 는 윈도우 전용이다
-\bosascript\b	맥	다른 운영체제에는 AppleScript 가 없다
-# /proc/ 는 뺐다. 코드에 박히는 API 호출이 아니라 셸 명령의 경로이고, 컨테이너 안에서는
+\bmsvcrt\b	윈도우	termios나 다른 입력 방법을 쓴다
+\bwin32(?:api|con|gui|com)\b	윈도우	pywin32는 윈도우 전용이다
+\bosascript\b	맥	다른 운영체제에는 AppleScript가 없다
+# /proc/는 뺐다. 코드에 박히는 API 호출이 아니라 셸 명령의 경로이고, 컨테이너 안에서는
 # 리눅스가 기본 실행 환경이다. 실측: 기준 말뭉치의 지적 여덟 건이 전부 이 한 줄이었고 전부
-# 쿠버네티스 안내서의 kubectl exec 와 컨테이너 안 셸 기록이라 독자가 멈추지 않는다 (2026-08-31).
-\bfcntl\b	리눅스와 맥	윈도우에는 fcntl 이 없다
+# 쿠버네티스 안내서의 kubectl exec와 컨테이너 안 셸 기록이라 독자가 멈추지 않는다 (2026-08-31).
+\bfcntl\b	리눅스와 맥	윈도우에는 fcntl이 없다
 resource\.getrusage\(	리눅스와 맥	윈도우에는 resource 모듈이 없다
-[A-Za-z]:\\\\	윈도우	절대 경로 대신 상대 경로나 pathlib
+[A-Za-z]:\\\\	윈도우	절대 경로 대신 상대 경로나 pathlib을 쓴다

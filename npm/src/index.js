@@ -1,13 +1,13 @@
 // @ts-check
 /**
- * hanlint: 한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터. 공개 표면은 이 파일 한 곳이다.
+ * hanlint: 한국어 글에서 규칙으로 잡을 수 있는 잘못을 찾는 검사기. 공개 API는 이 파일 한 곳에 있다.
  *
  * ```js
  * import { lintText, lintFile } from "hanlint";
  * for (const f of lintFile("글.md")) console.log(f.line, f.rule, f.why);
  * ```
  *
- * 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이다.
+ * 합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 규칙으로 잡을 수 있는 잘못이 없다는 뜻이다.
  * 같은 공개 API를 Node와 브라우저가 공유한다. 파일 경로를 읽는 API만 Node 전용이다.
  */
 import { readExternal } from "./data/read.js";
@@ -84,7 +84,7 @@ export {
 export const version = loadVersion();
 
 /**
- * 글을 한 번 읽어 지문을 만든다.
+ * 글을 한 번 읽어 분석 결과를 만든다.
  * @param {string} text
  * @param {import("./config/settings.js").Config} [config]
  * @param {string | null} [path]
@@ -104,7 +104,7 @@ export function lintText(text, config = defaultConfig(), path = null) {
 }
 
 /**
- * 파일을 UTF-8 로 읽어 검사한다.
+ * 파일을 UTF-8로 읽어 검사한다.
  * @param {string} path
  * @param {import("./config/settings.js").Config} [config]
  */
@@ -112,7 +112,7 @@ export function lintFile(path, config = defaultConfig()) {
   return lintText(readExternal(path), config, path);
 }
 
-/** 지적, 문체 본보기, 승인 고침과 지문을 같은 분석에서 제공한다. @param {string} text @param {import("./config/settings.js").Config} config */
+/** 지적, 문체 예시, 승인 고침과 분석 결과를 같은 분석에서 준다. @param {string} text @param {import("./config/settings.js").Config} config */
 export function inspectText(text, config = defaultConfig()) {
   const document = fingerprint(text, config);
   const findings = runAll(document, config);
@@ -132,7 +132,7 @@ export function learnText(before, after, config = defaultConfig()) {
   };
 }
 
-/** 자유 원고의 표면과 H2 순서를 비교한다. 빈 글과 반복 제목도 관찰하며 승인 계약을 만들지 않는다. @param {string} before @param {string} after @param {import("./config/settings.js").Config} config */
+/** 자유 원고의 숫자·링크·코드와 H2 순서를 비교한다. 빈 글과 반복 제목도 관찰하며 승인 계약을 만들지 않는다. @param {string} before @param {string} after @param {import("./config/settings.js").Config} config */
 export function compareRevision(before, after, config = defaultConfig()) {
   const original = before.normalize("NFC");
   const outline = { level: 2, headings: headingsOf(parseMarkdown(original), 2).map((heading) => heading.text) };

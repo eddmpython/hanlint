@@ -12,9 +12,9 @@ FEATURES = (
     ("length", "문장 길이", "어절"),
     ("commas", "쉼표", "개"),
     ("newTopics", "처음 나온 화제어", "개"),
-    ("hedges", "헤지 표현", "개"),
+    ("hedges", "단정을 피하는 말", "개"),
 )
-"""대조하는 문장 지표와 지적문의 이름과 단위. 의 와 명사 연속은 euiChain 과 nounPile 이 임계로 따로 본다."""
+"""대조하는 문장 지표와 지적문의 이름과 단위. `의`와 명사 연속은 euiChain과 nounPile이 기준값으로 따로 본다."""
 
 
 def profileFor(config: Config) -> Profile | None:
@@ -26,25 +26,25 @@ def profileFor(config: Config) -> Profile | None:
 
 
 def shareText(permille: int) -> str:
-    return "0.1% 아래" if permille == 0 else f"{permille // 10}.{permille % 10}%"
+    return "0.1% 안" if permille == 0 else f"{permille // 10}.{permille % 10}%"
 
 
 @rule("outsideProfile", mechanism="threshold")
 def outsideProfile(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
-    """같은 종류의 글에서 백 문장에 하나도 안 되는 값 (문장 길이, 쉼표, 처음 나온 화제어, 헤지) 을 가진 문장.
+    """같은 종류의 글에서 백 문장에 하나도 안 되는 값(문장 길이, 쉼표, 처음 나온 화제어, 단정을 피하는 말)을 가진 문장.
 
-    왜: 독자는 그 종류의 글에서 늘 보던 만큼을 기대한다. 편집된 글 수천 문장 가운데 1% 도 안 되는 길이나 새 화제어
-        수는 그 독자가 그 종류에서 겪지 않던 부담이다. 좋다 나쁘다가 아니라 자리가 어디인지를 말한다.
-    어디서: 실측. 기준 말뭉치 390편에서 30어절을 넘는 문장이 안내서 0.16%, 기술 문서 0.87%, 뉴스 6.7%, 1930년대 수필
-        8.3% 였다. 임계 하나가 종류마다 열 배씩 다르게 잡는다 (2026-08-29). 종류별 norms 를 백분위로 보이는 것은
-        Coh-Metrix 가 영어에서 한 방식이고 한국어에는 없었다. 프로파일은 data/profiles.json (scripts/derive/profiles.py
-        가 corpus/catalogue.toml 의 말뭉치에서 만든다). 백분위 임계는 config.profilePercentile. 처음 나온 화제어는 독자
-        상태 (fingerprint/readerState.py) 의 known 으로 센다.
+    왜: 독자는 그 종류의 글에서 늘 보던 만큼을 기대한다. 편집된 글 수천 문장 가운데 1%도 안 되는 길이나 새 화제어
+        수는 그 독자가 그 종류에서 겪지 않던 부담이다. 좋다 나쁘다가 아니라 어디가 다른지를 말한다.
+    어디서: 실측. 기준 말뭉치 390편에서 30어절을 넘는 문장이 안내서 0.16%, 기술 문서 0.87%, 뉴스 6.7%, 1930년대
+        수필 8.3%였다. 기준값 하나로는 종류마다 열 배씩 다르게 잡힌다. 종류별 분포를 백분위로 보이는 것은
+        Coh-Metrix가 영어에서 한 방식이고 한국어에는 없었다. 프로파일은 data/profiles.json에 있고 말뭉치에서
+        만든다. 몇 백분위부터 잡을지는 설정 profilePercentile(기본 99)이 정한다. 처음 나온 화제어는 독자가 앞
+        문장들에서 읽지 않은 화제어로 센다.
     고치기: 문장을 나누거나 쉼표 절을 문장으로 세운다. 처음 나온 화제어가 많으면 앞 문장에서 하나씩 먼저 세운다.
-        헤지는 수치나 조건으로 바꾼다.
-    안 잡는 것: 프리셋에 프로파일이 없는 종류. 99% 값이 0 인 지표 (거의 안 나오는 것은 하나만 있어도 꼬리라 짚을 것이
-        없다). 상위 1% 는 정의상 백 문장에 하나라 notice 로만 낸다. `--profile` 이
-        가리키는 사용자 프로파일이 있으면 종류 대신 그것과 견준다.
+        단정을 피하는 말은 수치나 조건으로 바꾼다.
+    안 잡는 것: 프리셋에 프로파일이 없는 종류. 99% 값이 0인 지표(거의 나오지 않는 지표라 하나만 있어도 상위 1%에
+        들어 가려낼 것이 없다). 상위 1%는 정의상 백 문장에 하나라 확인 권고로만 낸다. `--profile`이 가리키는 사용자
+        프로파일이 있으면 종류 대신 그것과 비교한다.
     """
     profile = profileFor(config)
     if profile is None:
@@ -71,8 +71,8 @@ def outsideProfile(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                 "outsideProfile",
                 sentence.line,
                 sentence.text,
-                f"{label} {value}{unit}. {profile.label} {profile.sentences}문장 가운데 상위 "
-                f"{shareText(hist.shareAtOrAbove(value))}다. {p}%는 {limit}{unit} 이하다",
+                f"{label} {value}{unit}인 문장이다. {profile.label} {profile.sentences:,}문장 가운데 상위 "
+                f"{shareText(hist.shareAtOrAbove(value))}에 든다. {p}%는 {limit}{unit} 이하다",
                 None,
                 NOTICE,
                 SENTENCE,

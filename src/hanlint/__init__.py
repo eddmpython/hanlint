@@ -1,6 +1,6 @@
-"""hanlint: 한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는 린터.
+"""hanlint: 한국어 글에서 규칙으로 잡을 수 있는 잘못을 찾는 검사기.
 
-공개 표면은 이 파일 한 곳이다.
+공개 API는 이 파일 한 곳에 있다.
 
 ```python
 from hanlint import (
@@ -11,22 +11,22 @@ from hanlint import (
 )
 
 findings = lintFile("글.md")       # list[Finding]
-shape = auditText(text)            # AuditResult. 점수 없이 분포와 자리
-prints = fingerprint(text)         # DocumentPrint. 지문 그대로
+shape = auditText(text)            # AuditResult. 점수 없이 분포와 위치
+prints = fingerprint(text)         # DocumentPrint. 글 분석 결과 그대로
 packet = writingPacket(text)       # 초안과 대조 자료와 고침 근거
-guard = guardText(brief, text)     # 구조화 요구와 결과의 결정적 표면 계약
+guard = guardText(brief, text)     # 구조화 요구와 결과 글의 글자 대조
 blueprint = rhetoricalBlueprint(brief)  # 원문 없는 종류별 구조 예산
 evidence = evidenceLedger(brief)    # 사실별 고정 근거 연결과 해시 검증
 cases = entailmentCases()           # gold를 뺀 사람 합의 한국어 근거 쌍
-metrics = evaluateEntailment(predictions)  # 외부 평가기 예측과 기권 집계
+metrics = evaluateEntailment(predictions)  # 외부 평가기 예측과 답하지 않은 수 집계
 trialSet = loadPanelTrialSet("trial-set.json")
 suite = preparePanelSuite(trialSet["trials"], trialSet["studyId"], 42)
 assignment = preparePanelAssignment(suite, "reviewer-a", "targetReader")
 page = preparePanelReviewHtml(suite, "reviewer-a", "targetReader")
 ```
 
-합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 세어서 잡히는 결함이 없다는 뜻이지 좋은
-글이라는 뜻이 아니다.
+합격과 불합격을 판정하지 않는다. 지적 목록이 비어 있다는 것은 규칙으로 잡을 수 있는 잘못이 없다는 뜻이지
+좋은 글이라는 뜻이 아니다.
 """
 
 from __future__ import annotations
@@ -212,11 +212,11 @@ __all__ = [
     "verifyPatch",
     "writingPacket",
 ]
-__version__ = "0.0.18"
+__version__ = "0.0.19"
 
 
 def fingerprint(text: str, config: Config | None = None, path: str | None = None) -> DocumentPrint:
-    """글을 한 번 읽어 지문을 만든다."""
+    """글을 한 번 읽어 분석 결과를 만든다."""
     config = config or Config()
     return buildFingerprint(parseMarkdown(text, path=path), config)
 
@@ -228,13 +228,13 @@ def lintText(text: str, config: Config | None = None, path: str | None = None) -
 
 
 def lintFile(path: str | Path, config: Config | None = None) -> list[Finding]:
-    """파일을 UTF-8 로 읽어 검사한다."""
+    """파일을 UTF-8로 읽어 검사한다."""
     path = Path(path)
     return lintText(path.read_text(encoding="utf-8"), config, path=str(path))
 
 
 def learnText(before: str, after: str, config: Config | None = None) -> tuple[LearnedExemplar, ...]:
-    """앞뒤 문자열에서 사람이 승인할 정확 재생 패치 후보를 찾는다."""
+    """앞뒤 문자열에서 사람이 승인할, 원문이 같을 때 그대로 쓰는 패치 후보를 찾는다."""
     config = config or Config()
     beforeDoc = fingerprint(before, config)
     afterDoc = fingerprint(after, config)
@@ -242,7 +242,7 @@ def learnText(before: str, after: str, config: Config | None = None) -> tuple[Le
 
 
 def learnOperationText(before: str, after: str, config: Config | None = None) -> tuple[LearnedOperation, ...]:
-    """앞뒤 문자열의 일대일 고침에서 사람이 승인할 표면 치환 후보를 찾는다."""
+    """앞뒤 문자열의 일대일 고침에서 사람이 승인할 글자 바꾸기 후보를 찾는다."""
     config = config or Config()
     return learnOperations(fingerprint(before, config), fingerprint(after, config), config.preset, config.protectedTerms)
 
@@ -255,17 +255,17 @@ def writingPacket(
     includeSource: bool = True,
     strategy: str | None = None,
 ) -> dict:
-    """초안과 지문과 대조 자료와 고침 근거를 AI용 결정적 계약으로 묶는다."""
+    """초안, 분석 결과, 대조 자료, 고침 근거를 AI가 읽는 자료 하나로 묶는다. 같은 입력이면 늘 같은 결과다."""
     if isinstance(text, dict):
         text = WritingBrief.fromMapping(text)
     if isinstance(text, WritingBrief):
         if purpose != "draft":
-            raise ValueError("구조화 writing brief 는 purpose draft 에서만 쓴다")
+            raise ValueError("구조화 writing brief는 purpose가 draft일 때만 쓴다")
         return buildBriefWritingPacket(text, path, includeSource, strategy)
     if not isinstance(text, str):
-        raise ValueError("writingPacket 입력은 문자열, WritingBrief 또는 brief JSON 객체다")
+        raise ValueError("writingPacket 입력은 문자열, WritingBrief, brief JSON 객체 가운데 하나여야 한다")
     if strategy is not None:
-        raise ValueError("작법 전략은 구조화 writing brief draft 에서만 쓴다")
+        raise ValueError("글쓰기 전략은 구조화 writing brief로 draft를 만들 때만 쓴다")
     config = config or Config()
     doc = fingerprint(text, config, path)
     findings = runAll(doc, config)
@@ -274,7 +274,7 @@ def writingPacket(
 
 
 def auditText(text: str, config: Config | None = None, path: str | None = None) -> AuditResult:
-    """지문 열의 분포와 자리. 점수도 등급도 없다."""
+    """글 분석 결과에서 센 값의 분포와 위치. 점수도 등급도 없다."""
     config = config or Config()
     return auditDocument(fingerprint(text, config, path), config)
 

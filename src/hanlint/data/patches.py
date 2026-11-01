@@ -1,8 +1,8 @@
-"""글쓴이가 승인한 국소 고침과 결정적 선택 조건.
+"""글쓴이가 승인한, 한 곳만 바꾸는 고침과 그것을 고르는 조건.
 
-내장 본보기는 규칙을 설명하지만 실제 수정 성능을 높인다는 보장이 없었다. 패치는 프로젝트에서 사람이
-승인한 전후 짝만 들고, 정규화한 원문, 규칙, 프리셋, 국소 표지, 독자 상태가 모두 맞을 때 하나만
-돌려준다. 점수와 유사도는 쓰지 않는다. 맞는 것이 없거나 둘 이상이면 기권한다.
+내장 예시는 규칙을 설명하지만 실제로 글을 더 잘 고치게 한다는 보장이 없었다. 패치는 프로젝트에서 사람이
+승인한 전후 짝만 들고, 정규화한 원문, 규칙, 프리셋, 그 문장의 cue, 독자 상태가 모두 맞을 때 하나만
+돌려준다. 점수와 유사도는 쓰지 않는다. 맞는 것이 없거나 둘 이상이면 아무것도 돌려주지 않는다.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ def flatCue(text: str) -> str:
 
 
 def flatSentence(text: str) -> str:
-    """승인 원문은 유니코드 조합과 줄, 연속 공백만 눕혀 비교한다."""
+    """승인 원문은 유니코드 조합과 줄바꿈, 연속 공백만 정규화해 비교한다."""
     return " ".join(normalize("NFC", text).split())
 
 
@@ -37,7 +37,7 @@ class Patch:
     reader: str
     presets: tuple[str, ...]
     sentence: str = ""
-    """마크다운 표식을 걷은 선택용 원문. 비면 before를 쓴다."""
+    """마크다운 표식을 뺀 선택용 원문. 비면 before를 쓴다."""
     sourceText: str = ""
     """마크다운 표식을 보존한 선택용 원문. 비면 before를 쓴다."""
 
@@ -67,7 +67,7 @@ class Patch:
 def projectPatches(entries: object, presetNames: Iterable[str]) -> tuple[Patch, ...]:
     """설정의 `[[patches]]`를 검증한다. 선택 조건이 겹치는 승인 고침은 거부한다."""
     if not isinstance(entries, (list, tuple)):
-        raise ValueError("patches 는 [[patches]] 배열이다")
+        raise ValueError("patches는 [[patches]] 배열이어야 한다")
     allowedKeys = {"rule", "before", "after", "moved", "sourceText", "sentence", "cue", "reader", "presets"}
     knownRules = set(exemplars())
     knownPresets = set(presetNames)
@@ -75,7 +75,7 @@ def projectPatches(entries: object, presetNames: Iterable[str]) -> tuple[Patch, 
     found: list[Patch] = []
     for index, entry in enumerate(entries, start=1):
         if not isinstance(entry, dict):
-            raise ValueError(f"patches {index}번째 항목은 표다")
+            raise ValueError(f"patches {index}번째 항목은 표여야 한다")
         unknown = sorted(set(entry) - allowedKeys)
         if unknown:
             raise ValueError(f"patches {index}번째 항목의 모르는 키: {', '.join(unknown)}")
@@ -83,17 +83,19 @@ def projectPatches(entries: object, presetNames: Iterable[str]) -> tuple[Patch, 
         for key in ("rule", "before", "after", "moved", "cue", "reader"):
             value = entry.get(key)
             if not isinstance(value, str) or not value.strip():
-                raise ValueError(f"patches {index}번째 항목의 {key} 는 비지 않은 문자열이다")
+                raise ValueError(f"patches {index}번째 항목의 {key} 값은 비지 않은 문자열이어야 한다")
             values[key] = value
         rule = values["rule"]
         if rule not in knownRules:
             raise ValueError(f"patches {index}번째 항목의 모르는 규칙: {rule}")
         reader = values["reader"]
         if reader not in READER_KINDS:
-            raise ValueError(f"patches {index}번째 항목의 reader 는 {', '.join(READER_KINDS)} 가운데 하나다: {reader}")
+            raise ValueError(
+                f"patches {index}번째 항목의 reader는 {', '.join(READER_KINDS)} 가운데 하나여야 한다. 받은 값: {reader}"
+            )
         rawPresets = entry.get("presets")
         if not isinstance(rawPresets, list) or not rawPresets or not all(isinstance(item, str) for item in rawPresets):
-            raise ValueError(f"patches {index}번째 항목의 presets 는 비지 않은 문자열 배열이다")
+            raise ValueError(f"patches {index}번째 항목의 presets는 비지 않은 문자열 배열이어야 한다")
         presets = tuple(rawPresets)
         unknownPresets = sorted(set(presets) - knownPresets)
         if unknownPresets:
@@ -105,11 +107,11 @@ def projectPatches(entries: object, presetNames: Iterable[str]) -> tuple[Patch, 
         after = expand(values["after"])
         rawSentence = entry.get("sentence", before)
         if not isinstance(rawSentence, str) or not rawSentence.strip():
-            raise ValueError(f"patches {index}번째 항목의 sentence 는 비지 않은 문자열이다")
+            raise ValueError(f"patches {index}번째 항목의 sentence는 비지 않은 문자열이어야 한다")
         sentence = flatSentence(rawSentence)
         rawSourceText = entry.get("sourceText", before)
         if not isinstance(rawSourceText, str) or not rawSourceText.strip():
-            raise ValueError(f"patches {index}번째 항목의 sourceText 는 비지 않은 문자열이다")
+            raise ValueError(f"patches {index}번째 항목의 sourceText는 비지 않은 문자열이어야 한다")
         sourceText = flatSentence(rawSourceText)
         for preset in presets:
             selector = (rule, preset, sourceText, sentence, cue, reader)

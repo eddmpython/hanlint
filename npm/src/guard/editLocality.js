@@ -1,5 +1,5 @@
 // @ts-check
-/** 선택한 규칙의 Finding 줄과 원문 변경 창을 대조한다. */
+/** 고른 규칙의 지적이 있는 줄과 원문에서 바뀐 범위를 대조한다. */
 export function editIssues(text, patch, findings, policy) {
   if (!Object.keys(policy).length) return [];
   const limits = policy[patch.reason];

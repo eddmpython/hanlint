@@ -1,20 +1,20 @@
 // @ts-check
-/** 승인 고침에서 뜻을 추측하지 않고 재사용할 수 있는 표면 치환. 파이썬 data/operations.py와 같다. */
+/** 승인한 고침에서 뜻을 추측하지 않고 다시 쓸 수 있는 글자 바꾸기. 파이썬 data/operations.py와 같다. */
 
 const URL_PATTERN = /https?:\/\/[^\s)>\]]*[\p{L}\p{N}_/#=%&+~-]/gu;
 const NUMBER_PATTERN = /(?<![A-Za-z가-힣])[-+]?\d+(?:[.,:]\d+)*(?:%|[가-힣]+)?/gu;
 const LATIN_PATTERN = /(?<![A-Za-z0-9_])(?:[A-Za-z_][A-Za-z0-9_.:/<>-]*)(?![A-Za-z0-9_])/gu;
-// 파이썬 `re` 의 `\w` 는 유니코드라 한글을 담지만 JS 의 `\w` 는 /u 를 붙여도 ASCII 뿐이다. 그대로 두면
-// docs/렌더/index.md 를 파이썬만 경로 원자로 보고 npm 은 그 안을 치환해 버린다 (말뭉치 실문장
-// 32,274개에서 280건이 갈렸다). URL_PATTERN 이 이미 쓰는 표기로 맞춘다.
+// 파이썬 `re`의 `\w`는 유니코드라 한글을 담지만 JS의 `\w`는 /u를 붙여도 ASCII뿐이다. 그대로 두면
+// docs/렌더/index.md를 파이썬만 경로로 보고 npm은 그 안을 바꿔 버린다(말뭉치 실제 문장
+// 32,274개에서 280건이 서로 달랐다). URL_PATTERN이 이미 쓰는 표기로 맞춘다.
 const WORD = "[\\p{L}\\p{N}_]";
 const PATH_PATTERN = new RegExp(
   `(?<!${WORD})(?:[\\p{L}\\p{N}_.-]+/)+[\\p{L}\\p{N}_.-]+|(?<!${WORD})[\\p{L}\\p{N}_-]+\\.[A-Za-z0-9]{1,8}(?!${WORD})`,
   "gu",
 );
 const INLINE_CODE_PATTERN = /`([^`\n]+)`/gu;
-// d 플래그로 진짜 그룹 시작을 읽는다. indexOf 로 찾으면 [렌더](렌더) 처럼 링크 글자와 목적지가 같을 때
-// 링크 글자 쪽을 목적지로 착각한다. 파이썬은 match.start(1) 을 쓴다.
+// d 플래그로 진짜 그룹 시작을 읽는다. indexOf로 찾으면 [렌더](렌더)처럼 링크 글자와 목적지가 같을 때
+// 링크 글자 쪽을 목적지로 착각한다. 파이썬은 match.start(1)을 쓴다.
 const LINK_DESTINATION_PATTERN = /\[[^\u005D]*\]\(([^)]+)\)/gdu;
 const HTML_TAG_PATTERN = /<[^>\n]+>/gu;
 const DEICTIC_FRAGMENT = /이것|그것|저것|이러한|그러한|해당|이는|그는|그녀|그들/u;
@@ -58,7 +58,7 @@ export function protectedSpans(text) {
     const [start, end] = /** @type {RegExpIndicesArray} */ (match.indices)[1];
     spans.push([start, end]);
   }
-  // 파이썬은 sorted(set(spans)) 라 겹친 구간을 한 번만 둔다 (코드 안의 URL 처럼).
+  // 파이썬은 sorted(set(spans))라 겹친 구간을 한 번만 둔다(코드 안의 URL처럼).
   const unique = [...new Map(spans.map((span) => [`${span[0]}:${span[1]}`, span])).values()];
   return unique.sort((left, right) => left[0] - right[0] || left[1] - right[1]);
 }
@@ -129,7 +129,7 @@ export function surfaceSkeleton(text) {
 }
 
 /**
- * 승인 전후 전체에서 기계가 보증할 수 있는 표면 치환 하나를 추출한다.
+ * 승인 전후 전체에서 기계가 보증할 수 있는 글자 바꾸기 하나를 뽑는다.
  * @param {string} before @param {string} after @param {string[]} [presets] @param {string[]} [protectedTerms]
  * @returns {SurfaceOperation | undefined}
  */
@@ -168,26 +168,26 @@ export function operationFromApproval(before, after, presets = [], protectedTerm
 
 /** @param {unknown} entries @param {string[]} presetNames @returns {SurfaceOperation[]} */
 export function projectOperations(entries, presetNames) {
-  if (!Array.isArray(entries)) throw new Error("operations 는 [[operations]] 배열이다");
+  if (!Array.isArray(entries)) throw new Error("operations는 [[operations]] 배열이어야 한다");
   const knownPresets = new Set(presetNames);
   const selectors = new Set();
   return entries.map((raw, offset) => {
     const index = offset + 1;
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`operations ${index}번째 항목은 표다`);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`operations ${index}번째 항목은 표여야 한다`);
     const entry = /** @type {Record<string, unknown>} */ (raw);
     const unknown = Object.keys(entry).filter((key) => !["before", "after", "presets"].includes(key)).sort();
     if (unknown.length) throw new Error(`operations ${index}번째 항목의 모르는 키: ${unknown.join(", ")}`);
     const before = entry.before;
     const after = entry.after;
     if (typeof before !== "string" || !before.trim() || before !== before.trim()) {
-      throw new Error(`operations ${index}번째 항목의 before 는 양끝 공백 없는 문자열이다`);
+      throw new Error(`operations ${index}번째 항목의 before는 양끝 공백 없는 문자열이어야 한다`);
     }
     if (typeof after !== "string" || !after.trim() || after !== after.trim()) {
-      throw new Error(`operations ${index}번째 항목의 after 는 양끝 공백 없는 문자열이다`);
+      throw new Error(`operations ${index}번째 항목의 after는 양끝 공백 없는 문자열이어야 한다`);
     }
     const rawPresets = entry.presets;
     if (!Array.isArray(rawPresets) || !rawPresets.length || !rawPresets.every((item) => typeof item === "string")) {
-      throw new Error(`operations ${index}번째 항목의 presets 는 비지 않은 문자열 배열이다`);
+      throw new Error(`operations ${index}번째 항목의 presets는 비지 않은 문자열 배열이어야 한다`);
     }
     const presets = /** @type {string[]} */ (rawPresets);
     const unknownPresets = [...new Set(presets.filter((preset) => !knownPresets.has(preset)))].sort();
@@ -195,7 +195,7 @@ export function projectOperations(entries, presetNames) {
     if (new Set(presets).size !== presets.length) throw new Error(`operation의 프리셋이 겹친다: ${before}`);
     const operation = operationFromApproval(before, after, presets);
     if (!operation || operation.before !== before || operation.after !== after) {
-      throw new Error(`operations ${index}번째 항목은 안전한 표면 치환이 아니다: ${before} -> ${after}`);
+      throw new Error(`operations ${index}번째 항목은 안전한 글자 바꾸기가 아니다: ${before} -> ${after}`);
     }
     for (const preset of presets) {
       const selector = JSON.stringify([preset, before]);

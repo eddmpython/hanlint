@@ -27,7 +27,7 @@ def testWritingPacketCarriesEvidenceWithoutInjectingGeneralExamples():
     assert packet["guidance"] == []
     assert all("exemplar" not in finding for finding in packet["findings"]["items"])
     constraints = packet["contract"]["constraints"]
-    assert any("다른 본보기를 끌어오지 말고" in item for item in constraints)
+    assert any("다른 예시를 끌어오지 말고" in item for item in constraints)
     assert any("없는 정보를 만들어" in item for item in constraints)
     assert any("결과 글의 사실이나 문장 재료로 옮기지 않는다" in item for item in constraints)
     assert "patterns" not in packet
@@ -132,7 +132,7 @@ def testStructuredBriefRejectsRevisionPurpose():
     }
     import pytest
 
-    with pytest.raises(ValueError, match="purpose draft"):
+    with pytest.raises(ValueError, match="purpose가 draft"):
         writingPacket(brief)
 
     with pytest.raises(ValueError, match="구조화 writing brief"):

@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * 설정과 임계 기본값. 정본은 파이썬 config/settings.py 이고 여기는 같은 값을 든다. 필드 이름이 곧 설정 파일의 키다.
- * 기본값을 바꾸면 양쪽을 같은 작업에서 바꾼다. tests/parity 가 두 구현의 결과를 견준다.
+ * 설정과 임계 기본값. 정본은 파이썬 config/settings.py이고 여기는 같은 값을 든다. 필드 이름이 곧 설정 파일의 키다.
+ * 기본값을 바꾸면 양쪽을 같은 작업에서 바꾼다. tests/parity가 두 구현의 결과를 견준다.
  */
 
 import { projectExemplars } from "../data/exemplars.js";
@@ -9,10 +9,10 @@ import { projectOperations } from "../data/operations.js";
 import { projectPatches } from "../data/patches.js";
 
 /**
- * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py 의 PRESETS 다.
+ * 글의 종류마다 처음부터 끄고 시작할 규칙. 정본은 파이썬 config/settings.py의 PRESETS다.
  * @type {Record<string, string[]>}
  */
-// 화면의 글에서만 켜는 것. 산문의 모든 종류가 처음부터 끈다. 파이썬 settings.py 의 SCREEN 과 같다.
+// 화면의 글에서만 켜는 것. 산문의 모든 종류가 처음부터 끈다. 파이썬 settings.py의 SCREEN과 같다.
 const SCREEN = ["screenNarration", "screenSentence", "screenTone", "screenWord"];
 export const PRESETS = {
   blog: [...SCREEN],
@@ -31,18 +31,18 @@ export const PRESETS = {
     ...SCREEN,
   ],
 };
-// 서사 글에서만 끄는 것. 설명글의 전제 (독자가 문장 사이 이유를 따라간다, 말끝을 맺는다) 가 장면과
-// 대사에는 성립하지 않는다. 파이썬 settings.py 의 NARRATIVE 와 같다.
-// 참고 문서와 자습서는 명령 전후 상태와 완결된 예제를 보이려 같은 블록을 다시 둔다. 파이썬의 REFERENCE 와 같다.
+// 서사 글에서만 끄는 것. 설명글의 전제 (독자가 문장 사이 이유를 따라간다, 말끝을 맺는다)가 장면과
+// 대사에는 성립하지 않는다. 파이썬 settings.py의 NARRATIVE와 같다.
+// 참고 문서와 자습서는 명령 전후 상태와 완결된 예제를 보이려 같은 블록을 다시 둔다. 파이썬의 REFERENCE와 같다.
 const REFERENCE = ["duplicateBlock", "headingUniform"];
-// 백과 표제어는 첫 절 앞의 머리말이 길게 정의와 요약을 담는 것이 관례다. 파이썬의 ENCYCLOPEDIC 과 같다.
+// 백과 표제어는 첫 절 앞의 머리말이 길게 정의와 요약을 담는 것이 관례다. 파이썬의 ENCYCLOPEDIC과 같다.
 const ENCYCLOPEDIC = ["introLong"];
 const NARRATIVE = ["factListParagraph"];
 PRESETS.guide = [...PRESETS.blog, ...REFERENCE];
 PRESETS.essay = [...PRESETS.report, ...NARRATIVE];
 PRESETS.fiction = [...PRESETS.report, ...NARRATIVE];
 PRESETS.encyclopedia = [...PRESETS.docs, ...ENCYCLOPEDIC];
-// 대화 답변에서 끄는 것. 글의 짜임을 재는 규칙은 글 한 편을 전제한다. 파이썬 settings.py 의 CONVERSATION 과 같다.
+// 대화 답변에서 끄는 것. 글의 짜임을 재는 규칙은 글 한 편을 전제한다. 파이썬 settings.py의 CONVERSATION과 같다.
 const CONVERSATION = [
   "countMismatch",
   "duplicateBlock",
@@ -64,7 +64,7 @@ const CONVERSATION = [
   "sectionNoProse",
 ];
 PRESETS.chat = [...CONVERSATION, ...SCREEN];
-// 화면의 글에서 끄는 것. 문장과 문단과 글의 짜임을 재는 규칙은 화면의 글 한 마디에 전제가 없다. 파이썬 settings.py 의 SCREEN_OFF 와 같다.
+// 화면의 글에서 끄는 것. 문장과 문단과 글의 짜임을 재는 규칙은 화면의 글 한 마디에 전제가 없다. 파이썬 settings.py의 SCREEN_OFF와 같다.
 const SCREEN_OFF = [
   "cliche",
   "connectorRepeat",
@@ -110,10 +110,10 @@ const SCREEN_OFF = [
   "platformApi",
 ];
 PRESETS.screen = SCREEN_OFF;
-/** enforceStyle 에 넣을 수 있는 규칙. 파이썬 settings.py 의 ENFORCEABLE 과 같다. */
+/** enforceStyle에 넣을 수 있는 규칙. 파이썬 settings.py의 ENFORCEABLE과 같다. */
 export const ENFORCEABLE = ["imperativePeriod", "noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord"];
 
-/** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
+/** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py의 PROFILE_OF다. @type {Record<string, string>} */
 export const PROFILE_OF = {
   blog: "blog",
   report: "report",
@@ -126,7 +126,7 @@ export const PROFILE_OF = {
   screen: null,
 };
 
-/** 프리셋 → 용례 빈도표의 종류. 정본은 파이썬 config/settings.py 의 USAGE_OF 다. @type {Record<string, string>} */
+/** 프리셋 → 용례 빈도표의 종류. 정본은 파이썬 config/settings.py의 USAGE_OF다. @type {Record<string, string>} */
 export const USAGE_OF = { report: "report" };
 /** 실린 빈도표의 종류. */
 export const USAGE_KINDS = [...new Set(Object.values(USAGE_OF))].sort();
@@ -137,30 +137,30 @@ export const DEFAULT_PRESET = PRESET_NAMES[0];
 
 /**
  * @typedef {object} Config
- * @property {string} preset 글의 종류. PRESETS 가 정한 규칙을 처음부터 끈다
+ * @property {string} preset 글의 종류. PRESETS가 정한 규칙을 처음부터 끈다
  * @property {string[]} enforceStyle
  * @property {Set<string>} disable 끌 규칙 이름
  * @property {string | null} keywordField
  * @property {string[]} introFields
  * @property {string[]} endingFields
  * @property {string | null} profile 사용자 프로파일 파일 경로
- * @property {number} profilePercentile outsideProfile 이 짚는 백분위
+ * @property {number} profilePercentile outsideProfile이 짚는 백분위
  * @property {number} countMismatchSpan 절이 없는 글이 이 줄 수 안일 때만 글 전체를 견준다
  * @property {string | null} baseline
  * @property {Record<string, unknown[]>} dictionary
- * @property {import("../data/exemplars.js").Exemplar[]} exemplars 사람이 승인한 프로젝트 본보기
+ * @property {import("../data/exemplars.js").Exemplar[]} exemplars 사람이 승인한 프로젝트 예시
  * @property {import("../data/patches.js").Patch[]} patches 사람이 승인한 국소 고침
  * @property {import("../data/operations.js").SurfaceOperation[]} operations 사람이 승인한 표면 치환
  * @property {string[]} protectedTerms 표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어
  * @property {string[]} ignoreFences 지문에서 뺄 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록이 아니다
- * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig 가 채운다
+ * @property {string | null} source 설정을 읽은 파일. 기본값이면 null. loadConfig가 채운다
  * @property {number} fragmentRun
  * @property {number} introMaxParagraphs
  * @property {number} headingUniformRatio
  * @property {number} headingSentenceMaxLevel
  * @property {number} bridgeRepeatMin
  * @property {number} nounPileMin
- * @property {string | null} usageKind 용례 빈도표의 종류. null 이면 프리셋이 정하고 "" 면 보지 않는다
+ * @property {string | null} usageKind 용례 빈도표의 종류. null이면 프리셋이 정하고 ""면 보지 않는다
  * @property {number} usageMin 명사 연쇄가 몇 편의 문서에 나와야 용례로 보는가
  * @property {number} usageShare 사전 항목이 그 종류의 문서 몇 할에 나오면 관용으로 보는가
  * @property {number} endingRun
@@ -225,7 +225,7 @@ export function enabled(config, ruleName) {
   return !config.disable.has(ruleName) && (!PRESETS[config.preset].includes(ruleName) || config.enforceStyle.includes(ruleName));
 }
 
-/** 지금 꺼져 있는 규칙 이름. 프리셋이 끈 것과 disable 이 끈 것을 합친다. @param {Config} config */
+/** 지금 꺼져 있는 규칙 이름. 프리셋이 끈 것과 disable이 끈 것을 합친다. @param {Config} config */
 export function offRules(config) {
   return [...new Set([...PRESETS[config.preset].filter((name) => !config.enforceStyle.includes(name)), ...config.disable])].sort();
 }
@@ -237,21 +237,21 @@ export function configFromMapping(data) {
     if (key === "disable") {
       config.disable = new Set(/** @type {string[]} */ (value));
     } else if (key === "analyzer") {
-      // 0.0.7 까지의 키. hanlint init 이 surface 를 써 넣었으므로 그 값은 조용히 넘기고 다른 값은 빠졌다고 알린다.
-      if (value !== "surface") throw new Error(`analyzer 설정은 빠졌다. 분석기는 표층 하나라 키를 지운다: ${JSON.stringify(value)}`);
+      // 0.0.7 까지의 키. hanlint init이 surface를 써 넣었으므로 그 값은 조용히 넘기고 다른 값은 빠졌다고 알린다.
+      if (value !== "surface") throw new Error(`analyzer 설정은 이제 쓰지 않는다. 설정 파일에서 이 키를 지운다. 받은 값: ${JSON.stringify(value)}`);
     } else if (key === "preset") {
       if (!(/** @type {string} */ (value) in PRESETS)) {
-        throw new Error(`preset 은 ${PRESET_NAMES.join(", ")} 가운데 하나다: ${JSON.stringify(value)}`);
+        throw new Error(`preset은 ${PRESET_NAMES.join(", ")} 가운데 하나여야 한다. 받은 값: ${JSON.stringify(value)}`);
       }
       config.preset = /** @type {string} */ (value);
     } else if (key === "enforceStyle") {
       if (!Array.isArray(value) || value.some((name) => !ENFORCEABLE.includes(name))) {
-        throw new Error(`enforceStyle 은 ${ENFORCEABLE.join(", ")}의 배열이다`);
+        throw new Error(`enforceStyle은 다음 규칙 이름의 배열이어야 한다: ${ENFORCEABLE.join(", ")}`);
       }
       config.enforceStyle = [...value];
     } else if (key === "usageKind") {
       if (value !== null && value !== "" && !USAGE_KINDS.includes(/** @type {string} */ (value))) {
-        throw new Error(`usageKind 는 ${USAGE_KINDS.join(", ")} 가운데 하나이거나 빈 문자열이다: ${JSON.stringify(value)}`);
+        throw new Error(`usageKind는 ${USAGE_KINDS.join(", ")} 가운데 하나이거나 빈 문자열이어야 한다. 받은 값: ${JSON.stringify(value)}`);
       }
       config.usageKind = /** @type {string | null} */ (value);
     } else if (key === "dictionary") {
@@ -264,14 +264,14 @@ export function configFromMapping(data) {
       config.operations = projectOperations(value, PRESET_NAMES);
     } else if (key === "ignoreFences" || key === "introFields" || key === "endingFields" || key === "protectedTerms") {
       if (!Array.isArray(value) || !value.every((item) => typeof item === "string" && item.trim())) {
-        throw new Error(`${key} 는 문자열 배열이다: ${JSON.stringify(value)}`);
+        throw new Error(`${key}: 문자열 배열이어야 한다. 받은 값: ${JSON.stringify(value)}`);
       }
       const names = value.map((item) => item.trim());
       config[key] = key === "ignoreFences" ? names.map((name) => name.toLowerCase()) : names;
     } else if (key !== "source" && key in config) {
       config[key] = value;
     } else {
-      throw new Error(`모르는 설정 키: ${key}. hanlint init 이 만드는 파일의 키만 쓴다`);
+      throw new Error(`모르는 설정 키: ${key}. hanlint init이 만드는 파일의 키만 쓴다`);
     }
   }
   return config;

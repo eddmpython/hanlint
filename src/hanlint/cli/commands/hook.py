@@ -1,6 +1,6 @@
-"""`hanlint hook`. 에이전트 훅에서 쓰기 전에는 작법서를 싣고, 쓴 뒤에는 같은 규칙 세트로 되먹임한다.
+"""`hanlint hook`. 에이전트 훅에서 쓰기 전에는 글쓰기 지침를 싣고, 쓴 뒤에는 같은 규칙 세트로 되먹임한다.
 
-명령 훅의 JSON을 stdin에서 읽는다. `--prime`에서는 SessionStart와 UserPromptSubmit 입력에 작법서
+명령 훅의 JSON을 stdin에서 읽는다. `--prime`에서는 SessionStart와 UserPromptSubmit 입력에 글쓰기 지침
 (data/koreanProse.txt) 본문을 additionalContext로 낸다. Claude Code와 Codex가 같은 JSON 꼴을 받는다.
 PostToolUse에서는 쓴 마크다운을 저장소 설정으로 검사한다. Claude Code는 Write와 Edit의 `file_path`를, Codex는
 `apply_patch`의 패치 본문 (`tool_input.command`) 머리 줄을 준다. `--reply`에서는 Stop의 마지막 답변을 chat
@@ -24,9 +24,9 @@ from ...report import renderCompact
 from ...rules import Finding, runAll
 from .shared import MARKDOWN, configFrom
 
-HELP = "쓰기 전에 작법서를 싣고, 저장하거나 답한 마크다운을 같은 턴에 검사한다"
+HELP = "쓰기 전에 글쓰기 지침을 넣어 주고, 저장하거나 답한 마크다운을 같은 턴에 검사한다"
 PRIME_EVENTS = ("SessionStart", "UserPromptSubmit")
-"""작법서를 싣는 이벤트. Claude Code와 Codex 모두 이 둘의 additionalContext를 모델 문맥에 넣는다."""
+"""글쓰기 지침를 싣는 이벤트. Claude Code와 Codex 모두 이 둘의 additionalContext를 모델 문맥에 넣는다."""
 AGENTS = ("claude", "codex")
 PATCH_HEADS = ("*** Add File: ", "*** Update File: ", "*** Move to: ")
 """Codex apply_patch 본문에서 쓴 파일을 가리키는 머리 줄 (Codex 훅 문서, 2026-09-21 확인)."""
@@ -34,7 +34,7 @@ PATCH_HEADS = ("*** Add File: ", "*** Update File: ", "*** Move to: ")
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--prime", action="store_true", help="SessionStart나 UserPromptSubmit에 작법서 본문을 싣는다")
+    mode.add_argument("--prime", action="store_true", help="SessionStart나 UserPromptSubmit에 글쓰기 지침 본문을 넣는다")
     mode.add_argument("--reply", action="store_true", help="Stop의 마지막 답변을 chat 프리셋으로 검사한다")
     parser.add_argument("--agent", choices=AGENTS, default="claude", help="Stop 출력 형식. codex는 systemMessage로 낸다")
     parser.add_argument("--config", type=Path, help="설정 파일. 없으면 쓴 파일이나 현재 폴더에서 찾는다")
@@ -71,7 +71,7 @@ def contextJson(eventName: str, context: str) -> str:
 def findingContext(eventName: str, found: list[tuple[str, list[Finding]]]) -> str:
     """Finding을 되먹이는 문맥의 본문. 파일마다 한 덩어리다."""
     where = "마지막 답변" if eventName == "Stop" else "방금 쓴 마크다운"
-    return f"hanlint가 {where}에서 센 Finding입니다.\n" + "\n".join(renderCompact(name, items) for name, items in found)
+    return f"hanlint가 {where}에서 찾은 지적입니다.\n" + "\n".join(renderCompact(name, items) for name, items in found)
 
 
 def patchPaths(patch: str) -> list[str]:

@@ -29,7 +29,7 @@ def check(doc: DocumentPrint, sections: tuple[SectionPrint, ...], fields: list[s
             "fieldEcho",
             section.startLine,
             value,
-            f"frontmatter 의 `{name}` 가 약속한 말이 {where}에 하나도 없다. 약속한 것을 {where}에서 그 말로 답한다",
+            f"frontmatter의 `{name}` 필드가 약속한 말이 {where}에 하나도 없다. 약속한 것을 {where}에서 그 말로 답한다",
             None,
             NOTICE,
             DOCUMENT,
@@ -39,20 +39,20 @@ def check(doc: DocumentPrint, sections: tuple[SectionPrint, ...], fields: list[s
 
 @rule("fieldEcho", mechanism="contrast")
 def fieldEcho(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
-    """frontmatter 가 약속한 것을 도입이나 마지막 절이 하나도 부르지 않는 글.
+    """frontmatter가 약속한 것을 도입이나 마지막 절이 하나도 부르지 않는 글.
 
-    왜: frontmatter 에 독자의 질문과 독자가 얻을 것을 적어 두고 본문이 다른 말을 하면, 검색해 들어온 독자는
-        미리보기에서 본 약속과 다른 글을 읽는다. 도입은 그 질문에 답하기 시작해야 하고 마지막 절은 얻을
-        것을 손에 남겨야 한다.
-    어디서: cinch 의 전역 blog-writing 스킬, 도입은 결핍부터와 결말. 실측 사례는 eddmpython 블로그의
-        frontmatter 로, readerQuestion 과 readerTakeaway 를 적어 두고 어떤 검사기도 본문과 맞춰 보지 않았다.
-        볼 필드는 config.introFields 와 config.endingFields 가 정한다. 둘 다 비어 있으면 이 규칙은 돌지 않는다.
+    왜: frontmatter에 독자의 질문과 독자가 얻을 것을 적어 두고 본문이 다른 말을 하면, 검색해 들어온 독자는
+        미리보기에서 본 약속과 다른 글을 읽는다. 도입은 그 질문에 답하기 시작해야 하고, 마지막 절은 독자가 얻을
+        것을 다시 말해야 한다.
+    어디서: 도입은 독자가 막힌 데서 시작하고 결말은 독자가 얻을 것으로 닫는다는 블로그 쓰기 방식에서 왔다. 실제
+        블로그의 frontmatter에 readerQuestion과 readerTakeaway를 적어 두었는데 어떤 검사기도 본문과 맞춰 보지
+        않았다. 볼 필드는 설정 introFields와 endingFields가 정한다. 둘 다 비어 있으면 이 규칙은 돌지 않는다.
     고치기: 도입 첫 문단에서 그 질문의 말을 그대로 쓰고, 마지막 절에서 얻을 것을 그 이름으로 다시 부른다.
-        본문이 맞고 frontmatter 가 낡았으면 frontmatter 를 고친다.
-    안 잡는 것: 설정에 필드를 적지 않은 글. frontmatter 에 그 필드가 없거나 빈 글. 화제어가 없는 값. 글의
-        끝은 마지막 절 하나가 아니라 결말과 그 뒤 목록을 아우른다. 마지막 두 절을 함께 본다. 실측: 004 와
-        005 의 마지막 절이 `더 해 볼 것` 이라 결말이 한 칸 앞에 있었고 그것이 오탐이었다. 화제어 중첩은
-        근사라 notice 로만 낸다.
+        본문이 맞고 frontmatter가 낡았으면 frontmatter를 고친다.
+    안 잡는 것: 설정에 필드를 적지 않은 글, frontmatter에 그 필드가 없거나 빈 글, 화제어가 없는 값은 잡지 않는다.
+        글의 끝은 마지막 절 하나가 아니라 결말과 그 뒤 목록을 아우르므로 마지막 두 절을 함께 본다. 실제 글 두 편의
+        마지막 절이 `더 해 볼 것`이라 결말이 한 칸 앞에 있었고, 마지막 절만 보았을 때 그것이 오탐이었다. 화제어가
+        겹치는지로 어림하는 규칙이라 확인 권고로만 낸다.
     """
     if not config.introFields and not config.endingFields:
         return

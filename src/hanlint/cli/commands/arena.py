@@ -42,7 +42,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     blind.add_argument("trial", type=Path)
     blind.add_argument("--seed", type=int, required=True)
     addCommonOptions(blind, ("json", "text"))
-    record = commands.add_parser("record", help="작성한 블라인드 평가를 검증하고 해시로 잠근다")
+    record = commands.add_parser("record", help="작성한 블라인드 평가를 검증하고 해시로 고정한다")
     record.add_argument("blind", type=Path)
     record.add_argument("evaluation", type=Path)
     outputOptions(record)
@@ -59,7 +59,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     panel.add_argument("--seed", type=int, required=True)
     panel.add_argument("--voice-references", dest="voiceReferences", type=Path)
     outputOptions(panel)
-    panelRecord = commands.add_parser("panel-record", help="사람 한 명의 독립 평가 묶음을 검증하고 잠근다")
+    panelRecord = commands.add_parser("panel-record", help="사람 한 명의 독립 평가 묶음을 검증하고 고정한다")
     panelRecord.add_argument("suite", type=Path)
     panelRecord.add_argument("reviewBatch", type=Path)
     outputOptions(panelRecord)
@@ -98,7 +98,9 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     reviewPage.add_argument("suite", type=Path)
     reviewPage.add_argument("assignment", type=Path)
     reviewPage.add_argument("--output", type=Path, required=True)
-    assignmentRecord = commands.add_parser("assignment-record", help="배정 화면의 좌우 선택을 suite 방향으로 되돌려 잠근다")
+    assignmentRecord = commands.add_parser(
+        "assignment-record", help="배정 화면의 좌우 선택을 평가 묶음의 방향으로 되돌려 고정한다"
+    )
     assignmentRecord.add_argument("suite", type=Path)
     assignmentRecord.add_argument("assignment", type=Path)
     assignmentRecord.add_argument("review", type=Path)
@@ -225,7 +227,7 @@ def renderJudgeConsistency(data: dict) -> str:
 def renderJudgeEvaluation(data: dict) -> str:
     lines = [f"자동 심사기: {data['evaluatorId']}"]
     for dimension, metric in data["preferences"].items():
-        # 비교할 사례가 없으면 수치 대신 몇 건을 견줬는지 말한다. 0.0 으로 찍으면 잰 적 없는 차원이
+        # 비교할 사례가 없으면 수치 대신 몇 건을 견줬는지 말한다. 0.0으로 찍으면 잰 적 없는 차원이
         # 심사기가 전부 틀린 차원과 같은 줄로 보인다 (2026-08-31).
         if metric["selectedAccuracy"] is None:
             lines.append(f"{dimension}: 견줄 사례 {metric['total']}건, 답한 것 {metric['answered']}건이라 재지 않았다")
@@ -247,7 +249,7 @@ def run(args: argparse.Namespace) -> int:
     if args.arenaCommand == "blind":
         trial = loadWritingTrial(args.trial)
         if args.preset and args.preset != trial.brief.preset:
-            raise ValueError(f"--preset {args.preset} 과 brief preset {trial.brief.preset} 이 다르다")
+            raise ValueError(f"--preset 값과 brief의 preset이 다르다: {args.preset}, {trial.brief.preset}")
         config = configFrom(args, start=args.trial.resolve().parent)
         emitData(prepareBlind(trial, args.seed, config), args.format, args.output, renderBlind)
     elif args.arenaCommand == "record":
@@ -255,7 +257,7 @@ def run(args: argparse.Namespace) -> int:
     elif args.arenaCommand == "reveal":
         trial = loadWritingTrial(args.trial)
         if args.preset and args.preset != trial.brief.preset:
-            raise ValueError(f"--preset {args.preset} 과 brief preset {trial.brief.preset} 이 다르다")
+            raise ValueError(f"--preset 값과 brief의 preset이 다르다: {args.preset}, {trial.brief.preset}")
         config = configFrom(args, start=args.trial.resolve().parent)
         evaluation = loadJson(args.evaluation) if args.evaluation else None
         emitData(revealTrial(trial, loadJson(args.blind), evaluation, config), args.format, args.output, renderResult)

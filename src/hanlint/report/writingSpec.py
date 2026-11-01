@@ -71,7 +71,7 @@ def selectedProfile(config: Config) -> Profile:
         return userProfile(config.profile)
     kind = PROFILE_OF[config.preset]
     if kind is None:
-        raise ValueError(f"{config.preset} 은 종류 프로파일이 없어 사양을 낼 수 없다")
+        raise ValueError(f"{config.preset} 프리셋은 비교할 프로파일이 없어 수치 목표를 낼 수 없다")
     profile = profileOf(kind)
     if profile is None:
         raise ValueError(f"{kind} 프로파일을 찾지 못했다")
@@ -86,9 +86,9 @@ def writingSpec(
     """현재 규칙 세트를 쓰기 전 숫자 사양으로 편다. 품질 점수나 새 임계는 만들지 않는다."""
     config = config or Config()
     if register not in REGISTERS:
-        raise ValueError(f"register 는 {', '.join(REGISTERS)} 가운데 하나다: {register}")
+        raise ValueError(f"register는 {', '.join(REGISTERS)} 가운데 하나여야 한다. 받은 값: {register}")
     if targetChars is not None and targetChars <= 0:
-        raise ValueError(f"chars 는 1 이상이어야 한다: {targetChars}")
+        raise ValueError(f"chars는 1 이상이어야 한다. 받은 값: {targetChars}")
     profile = selectedProfile(config)
     sentence = profile.sentence
     paragraph = profile.paragraph["sentenceCount"]
@@ -107,7 +107,7 @@ def writingSpec(
         amount = f"문단 {paragraphs}개, {amount}, 문장 {sentences}개 안팎"
     rows.append(WritingSpecRow("amount", "분량", amount, (f"profile.{profile.kind}.paragraph.sentenceCount",)))
 
-    length = f"중앙 {lengthP50}어절, 문장 90%가 {percentile(sentence['length'], 90)}어절 이하"
+    length = f"중앙값 {lengthP50}어절, 문장 90%가 {percentile(sentence['length'], 90)}어절 이하"
     lengthBasis = [f"profile.{profile.kind}.sentence.length"]
     if config.enabled("longSentence"):
         length += f". {config.longSentenceMax}어절을 넘으면 longSentence가 지적"
@@ -116,7 +116,7 @@ def writingSpec(
 
     ending = profile.endingRuns
     if ending is not None:
-        endingText = f"같은 끝맺음 연속 중앙 {percentile(ending, 50)}개, 90%가 {percentile(ending, 90)}개 이하"
+        endingText = f"같은 끝맺음 연속 중앙값 {percentile(ending, 50)}개, 90%가 {percentile(ending, 90)}개 이하"
         endingBasis = [f"profile.{profile.kind}.endingRuns"]
         if config.enabled("endingRepeat"):
             endingText += f". 인과나 독자 호출 없이 {config.endingRun}개부터 endingRepeat가 지적"
@@ -128,13 +128,14 @@ def writingSpec(
         WritingSpecRow(
             "commas",
             "쉼표",
-            f"문장 중앙 {percentile(commas, 50)}개, 90%가 {percentile(commas, 90)}개 이하, 99%가 {percentile(commas, 99)}개 이하",
+            f"문장 중앙값 {percentile(commas, 50)}개, 90%가 {percentile(commas, 90)}개 이하, "
+            f"99%가 {percentile(commas, 99)}개 이하",
             (f"profile.{profile.kind}.sentence.commas",),
         )
     )
 
     eui = sentence["euiCount"]
-    euiText = f"문장 중앙 {percentile(eui, 50)}개, 90%가 {percentile(eui, 90)}개 이하"
+    euiText = f"문장 중앙값 {percentile(eui, 50)}개, 90%가 {percentile(eui, 90)}개 이하"
     euiBasis = [f"profile.{profile.kind}.sentence.euiCount"]
     if config.enabled("euiChain"):
         euiText += ". 3개부터, 붙은 2개부터 euiChain이 지적"
@@ -154,7 +155,7 @@ def writingSpec(
         WritingSpecRow(
             "newTopics",
             "새 화제",
-            f"문장 중앙 {percentile(newTopics, 50)}개, 90%가 {percentile(newTopics, 90)}개 이하",
+            f"문장 중앙값 {percentile(newTopics, 50)}개, 90%가 {percentile(newTopics, 90)}개 이하",
             (f"profile.{profile.kind}.sentence.newTopics",),
         )
     )
@@ -164,7 +165,7 @@ def writingSpec(
         WritingSpecRow(
             "connector",
             "문두 접속",
-            f"문서 중앙은 문장의 {percent(connector['p50'])}%, 문서 90%가 {percent(connector['p90'])}% 이하",
+            f"문서 중앙값은 문장의 {percent(connector['p50'])}%, 문서 90%가 {percent(connector['p90'])}% 이하",
             (f"profile.{profile.kind}.rates.connector",),
         )
     )
@@ -173,7 +174,9 @@ def writingSpec(
     numberP50 = percentile(numbers, 50)
     numberP90 = percentile(numbers, 90)
     numberText = (
-        "문장 중앙과 90%에서 숫자 없음" if numberP50 == numberP90 == 0 else f"문장 중앙 {numberP50}개, 90%가 {numberP90}개 이하"
+        "문장 중앙값과 90%에서 숫자 없음"
+        if numberP50 == numberP90 == 0
+        else f"문장 중앙값 {numberP50}개, 90%가 {numberP90}개 이하"
     )
     rows.append(WritingSpecRow("numbers", "숫자", numberText, (f"profile.{profile.kind}.sentence.numbers",)))
 
@@ -182,12 +185,12 @@ def writingSpec(
         questionText = (
             "선택한 정책: 절이 2개 이상이면 글 전체에 물음표 최소 1개"
             if "noQuestion" in config.enforceStyle
-            else "물음표 부재는 notice다. 질문 없이 충분히 설명했다면 유지한다"
+            else "물음표가 없으면 확인 권고다. 질문 없이 충분히 설명했다면 그대로 둔다"
         )
         questionBasis = (f"profile.{profile.kind}.rates.question", "rule.noQuestion")
     else:
         questionText = (
-            f"규칙 요구 없음. 문서 중앙은 문장의 {percent(question['p50'])}%, 문서 90%가 {percent(question['p90'])}% 이하"
+            f"규칙 요구 없음. 문서 중앙값은 문장의 {percent(question['p50'])}%, 문서 90%가 {percent(question['p90'])}% 이하"
         )
         questionBasis = (f"profile.{profile.kind}.rates.question",)
     rows.append(WritingSpecRow("question", "물음표", questionText, questionBasis))
@@ -200,14 +203,14 @@ def renderWritingSpec(spec: WritingSpec) -> str:
     target = f", {spec.targetChars}자" if spec.targetChars is not None else ""
     lines = [
         f"hanlint spec  {spec.preset} 종류, {spec.register}체{target}. "
-        f"같은 규칙 세트의 임계와 {spec.profile} 프로파일을 쓰기 전 숫자로 편다"
+        f"같은 규칙의 기준값과 {spec.profile} 글의 평소 수치를 쓰기 전에 보여 준다"
     ]
     width = max(len(row.label) for row in spec.rows)
     lines.extend(f"  {row.label:<{width}}  {row.guidance}" for row in spec.rows)
     lines.extend(
         (
             "",
-            "이 사양은 품질 점수가 아니다. 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 Finding을 확인한다",
+            "이 수치 목표는 품질 점수가 아니다. 다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다",
         )
     )
     return "\n".join(lines)

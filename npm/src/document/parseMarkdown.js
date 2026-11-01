@@ -1,7 +1,7 @@
 // @ts-check
 /**
- * 마크다운 텍스트를 문서 모델로 바꾼다. 파이썬 document/parseMarkdown.py 와 같은 판정이다.
- * 빈 줄로 블록을 나누고 첫 줄로 종류를 정한다. 코드 펜스 안은 통째로 code 다. H2 가 절을 열고 첫 H2 앞은 도입 절이다.
+ * 마크다운 텍스트를 문서 모델로 바꾼다. 파이썬 document/parseMarkdown.py와 같은 판정이다.
+ * 빈 줄로 블록을 나누고 첫 줄로 종류를 정한다. 코드 펜스 안은 통째로 code다. H2가 절을 열고 첫 H2 앞은 도입 절이다.
  */
 import { splitLines } from "../text.js";
 import { CODE, EMBED, HEADING, HTML, IMAGE, LIST, PROSE, QUOTE, TABLE } from "./model.js";
@@ -16,14 +16,14 @@ const IMAGE_LINE = /^!\[/;
 const LIST_LINE = /^(\s*)(?:[-*+]|\d+[.)])\s+/;
 const TABLE_LINE = /^\s*\|/;
 const URL_LINE = /^\s*https?:\/\/\S+\s*$/;
-// 링크 하나만 있는 줄은 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크) 이라 주소만 있는 줄과 같은 embed 다. 파이썬과 같다.
+// 링크 하나만 있는 줄은 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크)이라 주소만 있는 줄과 같은 embed다. 파이썬과 같다.
 const LINK_ONLY_LINE = /^\s*\[[^\]\n]+\]\(\S+?(?:\s+"[^"\n]*")?\)\s*$/;
 const HTML_LINE = /^\s*</;
 const META_KEY = /^[A-Za-z][A-Za-z0-9_]*$/;
 const CONTROL = /^\s*<!--\s*hanlint-(disable-next-line|disable-next|disable|enable)\b([^>]*?)-->\s*$/;
 const ALL_RULES = "*";
 
-/** frontmatter 를 읽고 본문이 시작하는 줄 번호 (1 부터) 를 함께 준다. @param {string} text */
+/** frontmatter를 읽고 본문이 시작하는 줄 번호(1부터)를 함께 준다. @param {string} text */
 export function parseFrontmatter(text) {
   const match = FRONTMATTER.exec(text);
   if (!match) return { meta: {}, firstLine: 1 };
@@ -219,7 +219,7 @@ export function disabledRanges(blocks) {
   return ranges;
 }
 
-/** 코드 블록 첫 줄의 언어 표기 (```python 의 python). 없으면 빈 문자열. 소문자로 준다. @param {string} blockText */
+/** 코드 블록 첫 줄의 언어 표기 (```python의 python). 없으면 빈 문자열. 소문자로 준다. @param {string} blockText */
 export function fenceLanguage(blockText) {
   const opening = FENCE_OPEN.exec(blockText.split("\n", 1)[0]);
   if (!opening) return "";
@@ -228,8 +228,8 @@ export function fenceLanguage(blockText) {
 }
 
 /**
- * 언어 표기가 languages 에 든 펜스를 없앤 문서. 블록 순서 번호를 다시 매기고 절을 다시 묶는다. 인라인 제어는 원문 줄
- * 기준이라 그대로 두고, 뺀 펜스는 ignored 에 남긴다. 파이썬 dropFences 와 같다.
+ * 언어 표기가 languages에 든 펜스를 없앤 문서. 블록 순서 번호를 다시 매기고 절을 다시 묶는다. 인라인 제어는 원문 줄
+ * 기준이라 그대로 두고, 뺀 펜스는 ignored에 남긴다. 파이썬 dropFences와 같다.
  * @param {import("./model.js").Document} doc
  * @param {string[]} languages
  * @returns {import("./model.js").Document}

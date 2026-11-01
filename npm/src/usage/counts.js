@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 명사 연쇄 빈도표. 글 종류마다 data/usageCounts.<종류>.json 하나이고 값은 그 연쇄가 나온 문서 수다.
- * 뜻은 파이썬 usage/counts.py 가 소유한다. 표의 키는 nounRuns 의 어절들을 빈칸 하나로 이은 것이다.
+ * 뜻은 파이썬 usage/counts.py가 정한다. 표의 키는 nounRuns의 어절들을 빈칸 하나로 이은 것이다.
  */
 import { USAGE_OF } from "../config/settings.js";
 import { readText } from "../data/load.js";
@@ -12,7 +12,7 @@ import { readText } from "../data/load.js";
 const tables = new Map();
 
 /**
- * 이 설정이 볼 빈도표의 종류. usageKind 가 null 이면 프리셋이 정하고 "" 면 보지 않는다.
+ * 이 설정이 볼 빈도표의 종류. usageKind가 null이면 프리셋이 정하고 ""면 보지 않는다.
  * @param {import("../config/settings.js").Config} config @returns {string | null}
  */
 export function usageKindOf(config) {
@@ -46,7 +46,7 @@ export function patternDocuments(dictionary, pattern, kind) {
 }
 
 /**
- * 사전 항목이 그 종류의 문서 share 이상에 나오면 관용이다. 뜻은 파이썬 usage/counts.py 의 conventional 이 소유한다.
+ * 사전 항목이 그 종류의 문서 share 이상에 나오면 관용이다. 뜻은 파이썬 usage/counts.py의 conventional이 정한다.
  * @param {string} dictionary @param {string} pattern @param {string} kind @param {number} share
  */
 export function conventional(dictionary, pattern, kind, share) {

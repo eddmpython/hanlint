@@ -1,5 +1,5 @@
 // @ts-check
-/** 평문 지문의 문장을 마크다운 표식을 보존한 원문 문장에 다시 맞춘다. */
+/** 평문 분석 결과의 문장을 마크다운 표식을 보존한 원문 문장에 다시 맞춘다. */
 import { splitSentences } from "../analysis/splitSentences.js";
 import { plainText } from "../document/plainText.js";
 

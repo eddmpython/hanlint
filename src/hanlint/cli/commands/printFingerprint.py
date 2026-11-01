@@ -1,6 +1,6 @@
-"""`hanlint print 글.md`. 지문 계층을 JSON 으로 낸다. 다른 도구가 지문 위에 무엇을 얹을 때 쓴다.
+"""`hanlint print 글.md`. 지문 계층을 JSON으로 낸다. 다른 도구가 지문 위에 무엇을 얹을 때 쓴다.
 
-`--layer` 로 문장, 문단, 절, 글 가운데 한 층만 고른다. 위층은 아래층을 index 로 가리킨다.
+`--layer`로 문장, 문단, 절, 글 가운데 한 층만 고른다. 위층은 아래층을 index로 가리킨다.
 """
 
 from __future__ import annotations
@@ -12,13 +12,13 @@ from ...fingerprint import buildFingerprint
 from ...report import LAYERS, renderFingerprintJson
 from .shared import addCommonOptions, configFrom, emit, readInput, startFolder
 
-HELP = "분석표 계층을 JSON 으로 낸다"
+HELP = "글에서 잰 값을 문장·문단·절·글의 계층 JSON으로 낸다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("file", help="마크다운 파일. `-` 는 stdin")
-    parser.add_argument("--layer", choices=LAYERS, default="all", help="낼 층. 기본 all")
-    parser.add_argument("--path", dest="stdinPath", default="<stdin>", help="stdin 으로 넣은 글의 이름")
+    parser.add_argument("file", help="마크다운 파일. `-`는 stdin")
+    parser.add_argument("--layer", choices=LAYERS, default="all", help="출력할 부분. 기본 all")
+    parser.add_argument("--path", dest="stdinPath", default="<stdin>", help="stdin으로 넣은 글의 이름")
     addCommonOptions(parser, ("json",))
 
 

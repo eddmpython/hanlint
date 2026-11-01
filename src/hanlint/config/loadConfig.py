@@ -1,4 +1,4 @@
-"""설정 파일을 찾아 읽는다. `hanlint.toml` 이거나 `pyproject.toml` 의 `[tool.hanlint]` 다."""
+"""설정 파일을 찾아 읽는다. `hanlint.toml` 이거나 `pyproject.toml`의 `[tool.hanlint]`다."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def readConfigFile(path: Path) -> Config:
 
 
 def findConfigFile(start: Path) -> Path | None:
-    """start 에서 위로 올라가며 hanlint.toml 이나 [tool.hanlint] 를 가진 pyproject.toml 을 찾는다."""
+    """start에서 위로 올라가며 hanlint.toml이나 [tool.hanlint]를 가진 pyproject.toml을 찾는다."""
     for folder in (start, *start.parents):
         candidate = folder / CONFIG_NAME
         if candidate.exists():
@@ -35,7 +35,7 @@ def findConfigFile(start: Path) -> Path | None:
 
 
 def loadConfig(path: str | Path | None = None, start: str | Path | None = None) -> Config:
-    """`path` 를 주면 그 파일만 읽는다. 안 주면 `start` (기본 현재 폴더) 에서 찾고, 없으면 기본값이다."""
+    """`path`를 주면 그 파일만 읽는다. 안 주면 `start` (기본 현재 폴더)에서 찾고, 없으면 기본값이다."""
     if path is not None:
         return readConfigFile(Path(path))
     found = findConfigFile(Path(start or Path.cwd()).resolve())

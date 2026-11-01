@@ -1,5 +1,5 @@
 // @ts-check
-/** 파이썬 `analysis/grammar/voice.py`의 투영. 확정되는 사동과 피동의 겹만 분해한다. */
+/** 파이썬 `analysis/grammar/voice.py`를 옮긴 것. 확정되는 사동과 피동의 겹만 분해한다. */
 import { loadLines } from "../../data/load.js";
 
 export const PASSIVE = "피동";

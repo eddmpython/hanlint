@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 코드 줄에서 파일의 공급과 수요를 읽는다. 어떤 줄이 파일을 만들고 (쓰기, 폴더 만들기) 어떤 줄이 파일을 읽는가.
- * 파이썬 fingerprint/codeMarkers.py 와 같다. 줄마다 대조하므로 여러 줄에 걸친 호출은 보지 않는다.
+ * 파이썬 fingerprint/codeMarkers.py와 같다. 줄마다 대조하므로 여러 줄에 걸친 호출은 보지 않는다.
  */
 
 const QUOTED = "\\(\\s*[\"']([^\"'\\n]+)[\"']";
@@ -19,7 +19,7 @@ const WRITES = new RegExp(
 const SHELL_WRITES = /(?:>>?|-o|-O|--output|Out-File)\s*["']?([\w./\\-]+\.[A-Za-z0-9]+)/g;
 const SQL_PATHS = /FROM\s+'([^']+\.(?:csv|parquet|json|xlsx))'/gi;
 const MAKES_DIR = /(?:mkdir(?:\s+-p)?|makedirs|md)\s*\(?\s*["']?([\w./\\-]+)|Path\(\s*["']([^"']+)["']\s*\)\.mkdir/g;
-/** open 의 모드에 이 글자가 있으면 쓰기다. 없으면 (기본 r) 읽기다. */
+/** open의 모드에 이 글자가 있으면 쓰기다. 없으면 (기본 r) 읽기다. */
 const WRITE_MODES = [..."wax"];
 
 /** @param {string} path */
@@ -41,7 +41,7 @@ function all(pattern, text, group) {
 }
 
 /**
- * 코드 줄들이 만드는 [파일 이름, 폴더 이름]. 쓰기 함수, 셸 리다이렉션, 쓰기 모드의 open, mkdir 을 본다.
+ * 코드 줄들이 만드는 [파일 이름, 폴더 이름]. 쓰기 함수, 셸 리다이렉션, 쓰기 모드의 open, mkdir 호출을 본다.
  * @param {string[]} lines
  * @returns {[Set<string>, Set<string>]}
  */
@@ -59,7 +59,7 @@ export function createdIn(lines) {
   return [files, dirs];
 }
 
-/** 한 줄이 읽는 경로. 읽기 함수, 읽기 모드의 open, SQL 의 FROM 차례다. @param {string} code */
+/** 한 줄이 읽는 경로. 읽기 함수, 읽기 모드의 open, SQL의 FROM 차례다. @param {string} code */
 export function readsIn(code) {
   const reads = all(READS, code, 1);
   for (const match of code.matchAll(OPENS)) if (!isWriteMode(match[2])) reads.push(match[1]);

@@ -9,19 +9,19 @@ export const CONTRACT_VERSIONS = Object.freeze([CONTRACT_VERSION, LATEST_CONTRAC
 /** @param {unknown} value @param {string} where */
 function checkedString(value, where) {
   if (typeof value !== "string" || !value || value !== value.trim()) {
-    throw new Error(`${where} 는 양끝 공백 없는 문자열이다`);
+    throw new Error(`${where}: 양끝 공백 없는 문자열이어야 한다`);
   }
-  if (value !== value.normalize("NFC")) throw new Error(`${where} 는 NFC 문자열이어야 한다`);
+  if (value !== value.normalize("NFC")) throw new Error(`${where}: NFC 문자열이어야 한다`);
   return value;
 }
 
 /** @param {unknown} value @param {string} where @param {boolean} [allowEmpty] */
 function checkedStrings(value, where, allowEmpty = false) {
   if (!Array.isArray(value) || (!allowEmpty && !value.length)) {
-    throw new Error(`${where} 는 ${allowEmpty ? "문자열 배열" : "비지 않은 문자열 배열"}이다`);
+    throw new Error(`${where}: ${allowEmpty ? "문자열 배열" : "비지 않은 문자열 배열"}이어야 한다`);
   }
   const found = value.map((item, index) => checkedString(item, `${where} ${index + 1}번째`));
-  if (new Set(found).size !== found.length) throw new Error(`${where} 에 같은 값이 두 번 있다`);
+  if (new Set(found).size !== found.length) throw new Error(`${where}에 같은 값이 두 번 있다`);
   return found;
 }
 
@@ -45,7 +45,7 @@ export class Contract {
   /** @param {string} reader @param {string} goal @param {string[]} facts @param {number} [version] */
   constructor(reader, goal, facts, version = CONTRACT_VERSION) {
     if (!Number.isInteger(version) || version !== CONTRACT_VERSION) {
-      throw new Error(`reader contract version 은 ${CONTRACT_VERSION}이다: ${version}`);
+      throw new Error(`reader contract version이 맞지 않다: ${version} (맞는 값: ${CONTRACT_VERSION})`);
     }
     this.reader = checkedString(reader, "reader");
     this.goal = checkedString(goal, "goal");
@@ -56,13 +56,13 @@ export class Contract {
 
   /** @param {unknown} raw */
   static fromMapping(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract 는 JSON 객체다");
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract는 JSON 객체여야 한다");
     const data = /** @type {Record<string, unknown>} */ (raw);
     const expected = ["version", "reader", "goal", "facts"];
     const unknown = Object.keys(data).filter((key) => !expected.includes(key)).sort();
     const missing = expected.filter((key) => !(key in data)).sort();
-    if (unknown.length) throw new Error(`reader contract 의 모르는 키: ${unknown.join(", ")}`);
-    if (missing.length) throw new Error(`reader contract 의 빠진 키: ${missing.join(", ")}`);
+    if (unknown.length) throw new Error(`reader contract의 모르는 키: ${unknown.join(", ")}`);
+    if (missing.length) throw new Error(`reader contract의 빠진 키: ${missing.join(", ")}`);
     return new Contract(
       /** @type {string} */ (data.reader),
       /** @type {string} */ (data.goal),
@@ -96,13 +96,13 @@ export class ProtectedSurface {
 
   /** @param {unknown} raw */
   static fromMapping(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("surface 는 JSON 객체다");
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("surface는 JSON 객체여야 한다");
     const data = /** @type {Record<string, unknown>} */ (raw);
     const expected = ["numbers", "urls", "code", "links"];
     const unknown = Object.keys(data).filter((key) => !expected.includes(key)).sort();
     const missing = expected.filter((key) => !(key in data)).sort();
-    if (unknown.length) throw new Error(`surface 의 모르는 키: ${unknown.join(", ")}`);
-    if (missing.length) throw new Error(`surface 의 빠진 키: ${missing.join(", ")}`);
+    if (unknown.length) throw new Error(`surface의 모르는 키: ${unknown.join(", ")}`);
+    if (missing.length) throw new Error(`surface의 빠진 키: ${missing.join(", ")}`);
     return new ProtectedSurface(
       /** @type {string[]} */ (data.numbers),
       /** @type {string[]} */ (data.urls),
@@ -128,7 +128,7 @@ export class ProtectedSurface {
 export class Outline {
   /** @param {number} level @param {string[]} headings */
   constructor(level, headings) {
-    if (!Number.isInteger(level) || level < 1 || level > 6) throw new Error(`outline.level 은 1~6 정수다: ${level}`);
+    if (!Number.isInteger(level) || level < 1 || level > 6) throw new Error(`outline.level은 1~6 정수여야 한다. 받은 값: ${level}`);
     this.level = level;
     this.headings = Object.freeze(checkedStrings(headings, "outline.headings"));
     Object.freeze(this);
@@ -136,13 +136,13 @@ export class Outline {
 
   /** @param {unknown} raw */
   static fromMapping(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("outline 은 JSON 객체다");
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("outline은 JSON 객체여야 한다");
     const data = /** @type {Record<string, unknown>} */ (raw);
     const expected = ["level", "headings"];
     const unknown = Object.keys(data).filter((key) => !expected.includes(key)).sort();
     const missing = expected.filter((key) => !(key in data)).sort();
-    if (unknown.length) throw new Error(`outline 의 모르는 키: ${unknown.join(", ")}`);
-    if (missing.length) throw new Error(`outline 의 빠진 키: ${missing.join(", ")}`);
+    if (unknown.length) throw new Error(`outline의 모르는 키: ${unknown.join(", ")}`);
+    if (missing.length) throw new Error(`outline의 빠진 키: ${missing.join(", ")}`);
     return new Outline(/** @type {number} */ (data.level), /** @type {string[]} */ (data.headings));
   }
 
@@ -155,7 +155,7 @@ export class ContractV2 {
   /** @param {string} reader @param {string} goal @param {string[]} facts @param {ProtectedSurface | Record<string, unknown>} surface @param {Outline | Record<string, unknown>} outline @param {number} [version] */
   constructor(reader, goal, facts, surface, outline, version = LATEST_CONTRACT_VERSION, lockedFacts = [], editPolicy = {}) {
     if (!Number.isInteger(version) || version !== LATEST_CONTRACT_VERSION) {
-      throw new Error(`reader contract version 은 ${LATEST_CONTRACT_VERSION}다: ${version}`);
+      throw new Error(`reader contract version이 맞지 않다: ${version} (맞는 값: ${LATEST_CONTRACT_VERSION})`);
     }
     this.reader = checkedString(reader, "reader");
     this.goal = checkedString(goal, "goal");
@@ -163,14 +163,14 @@ export class ContractV2 {
     this.surface = surface instanceof ProtectedSurface ? surface : ProtectedSurface.fromMapping(surface);
     this.outline = outline instanceof Outline ? outline : Outline.fromMapping(outline);
     this.lockedFacts = Object.freeze(checkedStrings(lockedFacts, "lockedFacts", true));
-    if (this.lockedFacts.some((fact) => !this.facts.includes(fact))) throw new Error("lockedFacts must select approved facts");
-    if (!editPolicy || typeof editPolicy !== "object" || Array.isArray(editPolicy)) throw new Error("editPolicy must be an object");
+    if (this.lockedFacts.some((fact) => !this.facts.includes(fact))) throw new Error("lockedFacts는 승인한 facts 가운데서 골라야 한다");
+    if (!editPolicy || typeof editPolicy !== "object" || Array.isArray(editPolicy)) throw new Error("editPolicy는 객체여야 한다");
     this.editPolicy = Object.freeze(Object.fromEntries(Object.entries(editPolicy).sort(([a], [b]) => compareText(a, b)).map(([rule, limits]) => {
-      if (!rule || rule !== rule.trim()) throw new Error("editPolicy requires rule names");
+      if (!rule || rule !== rule.trim()) throw new Error("editPolicy에는 규칙 이름이 있어야 한다");
       if (!limits || typeof limits !== "object" || Array.isArray(limits) || Object.keys(limits).sort().join(",") !== "maxChars,maxLines") {
-        throw new Error("editPolicy requires maxChars and maxLines");
+        throw new Error("editPolicy의 규칙마다 maxChars와 maxLines가 있어야 한다");
       }
-      if (Object.values(limits).some((n) => !Number.isInteger(n) || n < 1)) throw new Error("editPolicy limits must be positive integers");
+      if (Object.values(limits).some((n) => !Number.isInteger(n) || n < 1)) throw new Error("editPolicy의 한도는 양의 정수여야 한다");
       return [rule, Object.freeze({maxChars: limits.maxChars, maxLines: limits.maxLines})];
     })));
     this.version = version;
@@ -179,13 +179,13 @@ export class ContractV2 {
 
   /** @param {unknown} raw */
   static fromMapping(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract 는 JSON 객체다");
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract는 JSON 객체여야 한다");
     const data = /** @type {Record<string, unknown>} */ (raw);
     const expected = ["version", "reader", "goal", "facts", "surface", "outline"];
     const unknown = Object.keys(data).filter((key) => !expected.includes(key) && !["lockedFacts", "editPolicy"].includes(key)).sort();
     const missing = expected.filter((key) => !(key in data)).sort();
-    if (unknown.length) throw new Error(`reader contract 의 모르는 키: ${unknown.join(", ")}`);
-    if (missing.length) throw new Error(`reader contract 의 빠진 키: ${missing.join(", ")}`);
+    if (unknown.length) throw new Error(`reader contract의 모르는 키: ${unknown.join(", ")}`);
+    if (missing.length) throw new Error(`reader contract의 빠진 키: ${missing.join(", ")}`);
     return new ContractV2(
       /** @type {string} */ (data.reader),
       /** @type {string} */ (data.goal),
@@ -237,9 +237,9 @@ export class ContractV2 {
 
 /** @param {unknown} raw */
 export function parseContract(raw) {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract 는 JSON 객체다");
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("reader contract는 JSON 객체여야 한다");
   const version = /** @type {Record<string, unknown>} */ (raw).version;
   if (version === CONTRACT_VERSION) return Contract.fromMapping(raw);
   if (version === LATEST_CONTRACT_VERSION) return ContractV2.fromMapping(raw);
-  throw new Error(`reader contract version 은 ${CONTRACT_VERSIONS.join(",")} 가운데 하나다: ${version}`);
+  throw new Error(`reader contract version이 맞지 않다: ${version} (맞는 값: ${CONTRACT_VERSIONS.join(",")} 가운데 하나)`);
 }

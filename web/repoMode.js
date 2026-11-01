@@ -1,19 +1,19 @@
 // @ts-check
 /**
- * 저장소 모드. GitHub 주소 하나로 소스의 화면 글을 표로 보고, 고침 칸을 적어 시트로 다운로드한다.
- * 코어는 CLI `hanlint sheet` 와 같은 sheetRows 이고 (워커의 `sheet` 액션), 다운로드한 시트는 `hanlint sheet apply` 가 그대로 읽는다.
- * 저장소의 글은 문자열로만 다루고 textContent 로만 그린다.
+ * 저장소 모드. GitHub 주소 하나로 소스의 화면 문구를 표로 보고, 고침 칸을 적어 저장소에 쓰거나 시트로 다운로드한다.
+ * 코어는 CLI `hanlint sheet`와 같은 sheetRows이고 (워커의 `sheet` 액션), 다운로드한 시트는 `hanlint sheet apply`가 그대로 읽는다.
+ * 저장소의 글은 문자열로만 다루고 textContent로만 그린다.
  */
-import { get, element, button, download } from "./dom.js";
+import { get, element, button, download, errorText } from "./dom.js";
 import { RepoSource, blobUrl, checkBudget, parseRepoUrl, selectFiles } from "./repoSource.js";
 import { RepoWriter } from "./repoWrite.js";
 
-/** 마지막에 연 주소 하나만 기억한다. 기록 JSON (records.js) 과는 다른 키다. */
+/** 마지막에 연 주소 하나만 기억한다. 기록 JSON(records.js)과는 다른 키다. */
 const REPO_KEY = "hanlint.repo";
-/** 워커 요청 하나에 넣는 파일 수와 바이트. EngineClient 의 30초 안에 넉넉히 끝나는 크기다. */
+/** 워커 요청 하나에 넣는 파일 수와 바이트. EngineClient의 30초 안에 넉넉히 끝나는 크기다. */
 const BATCH_FILES = 20;
 const BATCH_BYTES = 400_000;
-/** 묶음 하나의 검사 제한. 편집기의 기본 30초보다 길게 주어 큰 묶음이 워커를 다시 띄우지 않게 한다. */
+/** 묶음 하나의 검사 제한. 편집기의 기본 30초보다 길게 주어 큰 묶음 때문에 워커를 다시 시작하지 않게 한다. */
 const SHEET_TIMEOUT_MS = 60_000;
 const TOGGLED = ["sampleButton", "newButton", "repoButton"];
 const TEXT_FILE = /\.(md|markdown|txt)$/i;
@@ -37,7 +37,7 @@ function sameFilter(a, b) {
   return Boolean(a) && Boolean(b) && a.rule === b.rule && Boolean(a.proposed) === Boolean(b.proposed);
 }
 
-/** 원고로 열 수 있는 글 파일 (md, txt) 을 가리키는 주소인가. 저장소 모드 대신 원문으로 연다. */
+/** 원고로 열 수 있는 글 파일(md, txt)을 가리키는 주소인가. 저장소 모드 대신 원문으로 연다. */
 export function isTextFileUrl(parsed) {
   return parsed !== null && parsed.ref !== null && TEXT_FILE.test(parsed.path);
 }
@@ -58,7 +58,7 @@ export class RepoMode {
     this.previousPreset = "blog";
     /** 사람이 적은 고침. 자리 키 → 글. 표를 다시 만들어도 남기고 새 저장소를 열면 비운다. */
     this.edited = new Map();
-    /** 고른 칩. null 이면 전체다. 새 표를 만들면 유지하고 저장소를 바꾸면 비운다. */
+    /** 고른 칩. null이면 전체다. 새 표를 만들면 유지하고 저장소를 바꾸면 비운다. */
     this.filter = null;
     this.reset();
     get("repoButton").onclick = () => this.enter();
@@ -69,7 +69,7 @@ export class RepoMode {
     get("sheetDownloadButton").onclick = () => this.downloadSheet();
     get("repoWriteButton").onclick = () => this.openWrite();
     get("writeRun").onclick = () => this.writeBack();
-    get("writeClear").onclick = () => { this.writer.forget(); get("writeToken").value = ""; get("writeStatus").textContent = "토큰을 지웠습니다."; };
+    get("writeClear").onclick = () => { this.writer.forget(); get("writeToken").value = ""; get("writeStatus").textContent = "토큰을 지웠어요."; };
   }
 
   reset() {
@@ -89,11 +89,11 @@ export class RepoMode {
       this.previousPreset = get("preset").value;
       get("preset").value = "screen";
       this.toggle(true);
-      this.summary("github.com 주소를 넣으면 소스의 화면 글을 표로 봅니다.");
+      this.summary("github.com 주소를 넣으면 소스의 화면 문구를 표로 보여 줘요.");
       get("findings").replaceChildren();
       get("findingCount").textContent = "·";
       get("repoFiles").replaceChildren();
-      get("sourceStats").textContent = "공개 저장소의 소스를 읽습니다";
+      get("sourceStats").textContent = "공개 저장소의 소스를 읽어요";
       get("sheetDownloadButton").disabled = true;
       get("repoWriteButton").disabled = true;
       get("repoLoadButton").disabled = false;
@@ -134,16 +134,16 @@ export class RepoMode {
     for (const id of TOGGLED) get(id).hidden = on;
     get("fileLabel").hidden = on;
     get("sourceTitle").textContent = on ? "저장소" : "원문";
-    get("resultTitle").textContent = on ? "화면 글 시트" : "검사 결과";
+    get("resultTitle").textContent = on ? "화면 문구 표" : "검사 결과";
     get("resultOrigin").textContent = on ? "저장소" : "원문";
-    get("resultHint").textContent = on ? "고침 칸을 적고 시트를 다운로드해 hanlint sheet apply 로 되돌려 씁니다" : "확정할 수 있는 표현만 수정합니다";
+    get("resultHint").textContent = on ? "고침 칸을 채우고 '저장소에 쓰기'를 누르면 원래 파일에 반영돼요" : "확실히 틀린 표현만 고쳐요";
   }
 
   summary(text) {
     get("reviewSummary").textContent = text;
   }
 
-  /** 글 파일 (md, txt) 주소의 내용을 원고로 쓰기 위해 받는다. 저장소 모드에 들어가지 않는다. */
+  /** 글 파일(md, txt) 주소의 내용을 원고로 쓰기 위해 받는다. 저장소 모드에 들어가지 않는다. */
   async fetchText(parsed) {
     const controller = new AbortController();
     const target = { ...parsed, ref: parsed.ref };
@@ -154,7 +154,7 @@ export class RepoMode {
   /** 주소 → 브랜치 → 트리 → 고르기 → 예산 → raw → 표. 새 불러오기나 나가기가 오면 이전 것을 끊고 결과를 버린다. */
   async load(text) {
     const parsed = parseRepoUrl(text);
-    if (!parsed) return this.deps.notify("github.com/계정/저장소 꼴의 주소를 넣어 주세요.", true);
+    if (!parsed) return this.deps.notify("github.com/계정/저장소 형식의 주소를 넣어 주세요.", true);
     this.controller?.abort();
     const controller = new AbortController();
     this.controller = controller;
@@ -166,7 +166,7 @@ export class RepoMode {
     get("repoFiles").replaceChildren();
     this.reset();
     try {
-      this.summary("파일 목록 받는 중");
+      this.summary("파일 목록을 받고 있어요.");
       const ref = parsed.ref ?? await this.source.defaultBranch(parsed.owner, parsed.repo, controller.signal);
       const [{ target, tree }, { suffixes }] = await Promise.all([
         this.source.resolveTree({ ...parsed, ref }, controller.signal),
@@ -174,11 +174,11 @@ export class RepoMode {
       ]);
       if (stale()) return;
       const { files, bytes, oversized } = selectFiles(tree, { suffixes, path: target.path });
-      if (!files.length) throw new Error(`검사할 소스 파일 (${suffixes.join(", ")}) 이 없습니다.`);
+      if (!files.length) throw new Error(`검사할 소스 파일(${suffixes.join(", ")})이 없어요.`);
       checkBudget(files, bytes);
       this.renderFiles(target, files, oversized);
-      this.summary(`파일 다운로드 중 0 / ${files.length}`);
-      const sources = await this.source.fetchSources(target, files, (done, total) => { if (!stale()) this.summary(`파일 다운로드 중 ${done} / ${total}`); }, controller.signal);
+      this.summary(`파일을 받고 있어요 · 0/${files.length}`);
+      const sources = await this.source.fetchSources(target, files, (done, total) => { if (!stale()) this.summary(`파일을 받고 있어요 · ${done}/${total}`); }, controller.signal);
       if (stale()) return;
       this.target = target;
       this.files = files;
@@ -188,8 +188,9 @@ export class RepoMode {
       await this.runSheet();
     } catch (error) {
       if (stale()) return;
-      this.summary(error.message);
-      this.deps.notify(error.message, true);
+      const message = errorText(error, "저장소를 불러오지 못했어요.");
+      this.summary(message);
+      this.deps.notify(message, true);
     } finally {
       if (controller === this.controller) this.controller = null;
       if (this.active && this.controller === null) get("repoLoadButton").disabled = false;
@@ -202,7 +203,7 @@ export class RepoMode {
     get("sourceStats").textContent = `${target.owner}/${target.repo} @ ${target.ref} · 파일 ${files.length}개${skipped}`;
   }
 
-  /** 받아 둔 소스로 표를 다시 만든다. 프리셋이나 `지적 없는 글도` 가 바뀔 때 다시 받지 않는다. 불러오는 중이면 그 끝에 만든다. */
+  /** 받아 둔 소스로 표를 다시 만든다. 글 종류나 `지적 없는 문구도 표에 넣기`가 바뀔 때 다시 받지 않는다. 불러오는 중이면 그 끝에 만든다. */
   async runSheet() {
     if (!this.active || this.controller || !this.sources.length) return;
     const run = ++this.sheetRun;
@@ -222,7 +223,7 @@ export class RepoMode {
     try {
       let done = 0;
       for (const files of batches) {
-        this.summary(`검사 중 ${done} / ${this.sources.length}`);
+        this.summary(`검사하고 있어요 · ${done}/${this.sources.length}`);
         const part = await this.deps.engine.request({ action: "sheet", preset, patches: [], files, everything }, SHEET_TIMEOUT_MS);
         if (run !== this.sheetRun || target !== this.target) return;
         rows.push(...part);
@@ -230,8 +231,9 @@ export class RepoMode {
       }
     } catch (error) {
       if (run !== this.sheetRun || target !== this.target) return;
-      this.summary(error.message);
-      return this.deps.notify(error.message, true);
+      const message = errorText(error, "표를 만들지 못했어요.");
+      this.summary(message);
+      return this.deps.notify(message, true);
     }
     for (const row of rows) if (this.edited.has(placeKey(row))) row.fix = this.edited.get(placeKey(row));
     this.rows = rows;
@@ -243,13 +245,13 @@ export class RepoMode {
     root.replaceChildren();
     const flagged = this.rows.filter((row) => row.findings.length).length;
     get("findingCount").textContent = String(flagged);
-    this.summary(`파일 ${this.files.length}개 · 글 ${this.rows.length}개 · 지적 있는 글 ${flagged}개`);
+    this.summary(`파일 ${this.files.length}개 · 문구 ${this.rows.length}개 · 지적 있는 문구 ${flagged}개`);
     get("sheetDownloadButton").disabled = false;
     this.refreshWrite();
     if (!this.rows.length) {
       const node = element("div", "emptyState");
-      if (everything) node.append(element("strong", "", "이 파일들에서 한국어 화면 글을 찾지 못했어요."), document.createTextNode("다른 폴더나 브랜치의 주소를 넣어 보세요."));
-      else node.append(element("strong", "", "이 기준에서 지적할 글이 없어요."), document.createTextNode("프리셋을 바꾸거나 지적 없는 글도 표에 넣어 볼 수 있어요."));
+      if (everything) node.append(element("strong", "", "이 파일들에는 한국어 화면 문구가 없어요."), document.createTextNode("다른 폴더나 브랜치의 주소를 넣어 보세요."));
+      else node.append(element("strong", "", "이 기준에서 지적할 문구가 없어요."), document.createTextNode("글 종류를 바꾸거나 '지적 없는 문구도 표에 넣기'를 켜 보세요."));
       root.append(node);
       return;
     }
@@ -266,7 +268,7 @@ export class RepoMode {
     this.applyFilter();
   }
 
-  /** 규칙별 개수 칩. 누르면 그 규칙의 행만 보이고 다시 누르면 전체다. `제안 있음` 은 고침 칸이 채워진 행이다. */
+  /** 규칙별 개수 칩. 누르면 그 규칙의 행만 보이고 다시 누르면 전체다. `제안 있음`은 고침 칸이 채워진 행이다. */
   renderChips() {
     const counts = new Map();
     for (const row of this.rows) for (const rule of new Set(row.findings.map((finding) => finding.rule))) counts.set(rule, (counts.get(rule) ?? 0) + 1);
@@ -314,7 +316,7 @@ export class RepoMode {
       if (!byRule.has(finding.rule)) byRule.set(finding.rule, []);
       if (!byRule.get(finding.rule).includes(finding.why)) byRule.get(finding.rule).push(finding.why);
     }
-    // CLI 의 findingCell 과 같은 꼴: 첫 이유는 온전히, 같은 규칙의 나머지는 단서만.
+    // CLI의 findingCell과 같은 형식: 첫 이유는 온전히, 같은 규칙의 나머지는 단서만.
     for (const [rule, reasons] of byRule) {
       const item = element("div", "sheetRule");
       item.append(element("strong", "", rule), element("span", "", reasons[0]));
@@ -327,8 +329,8 @@ export class RepoMode {
     const fix = element("td", "sheetFix");
     const input = element("input");
     input.value = row.fix;
-    input.placeholder = "새 글";
-    input.setAttribute("aria-label", `${row.text} 의 고침`);
+    input.placeholder = "바꿀 문구";
+    input.setAttribute("aria-label", `${row.text}의 고침`);
     input.addEventListener("input", () => { row.fix = input.value; this.edited.set(placeKey(row), input.value); this.refreshWrite(); });
     fix.append(input);
     const cells = [place, text, why, fix];
@@ -345,20 +347,20 @@ export class RepoMode {
   openWrite() {
     const fixed = this.rows.filter((row) => row.fix);
     const files = new Set(fixed.map((row) => row.file)).size;
-    get("writeSummary").textContent = `${this.target.owner}/${this.target.repo} 의 ${this.target.ref} 브랜치에 고침 ${fixed.length}곳을 파일 ${files}개로 씁니다. 파일마다 commit 하나가 생깁니다.`;
+    get("writeSummary").textContent = `${this.target.owner}/${this.target.repo} 저장소의 ${this.target.ref} 브랜치에서 파일 ${files}개에 고침 ${fixed.length}곳을 써요. 파일마다 커밋이 하나씩 생겨요.`;
     get("writeStatus").textContent = "";
     get("writeDialog").showModal();
     get("writeToken").focus();
   }
 
-  /** 파일마다 읽고 바꾸고 commit 한다. 끝나면 바뀐 소스로 표를 다시 만든다. */
+  /** 파일마다 읽고 바꾸고 커밋한다. 끝나면 바뀐 소스로 표를 다시 만든다. */
   async writeBack() {
     const status = get("writeStatus");
     const target = this.target;
     if (!target) return;
     get("writeRun").disabled = true;
     try {
-      const result = await this.writer.write(target, this.rows, get("writeToken").value.trim(), (done, total, file) => { status.textContent = `쓰는 중 ${done} / ${total} · ${file}`; });
+      const result = await this.writer.write(target, this.rows, get("writeToken").value.trim(), (done, total, file) => { status.textContent = `쓰고 있어요 · ${done}/${total} · ${file}`; });
       for (const item of result.files) {
         if (item.source === null) continue;
         const entry = this.sources.find((source) => source.label === item.file);
@@ -368,11 +370,11 @@ export class RepoMode {
       const problems = result.files.flatMap((item) => item.failed);
       status.textContent = `적용 ${result.applied}곳, 실패 ${result.failed}곳` + (problems.length ? `\n${problems.join("\n")}` : "");
       if (result.applied) {
-        this.deps.notify(`GitHub 에 ${result.applied}곳을 썼습니다. 표를 다시 만듭니다.`);
+        this.deps.notify(`GitHub에 ${result.applied}곳을 썼어요. 표를 다시 만들어요.`);
         await this.runSheet();
       }
     } catch (error) {
-      status.textContent = error.message;
+      status.textContent = errorText(error, "저장소에 쓰지 못했어요.");
     } finally {
       get("writeRun").disabled = false;
     }
@@ -383,9 +385,9 @@ export class RepoMode {
     try {
       const markdown = await this.deps.engine.request({ action: "sheetText", preset: get("preset").value, patches: [], rows: this.rows, fileCount: this.files.length });
       download(`hanlint-sheet-${this.target.owner}-${this.target.repo}.md`, markdown, "text/markdown;charset=utf-8");
-      this.deps.notify("시트를 받았습니다. 저장소 루트에서 hanlint sheet apply 시트.md 로 되돌려 씁니다.");
+      this.deps.notify("시트를 다운로드했어요. '저장소에 쓰기'로 원래 파일에 바로 반영할 수도 있어요.");
     } catch (error) {
-      this.deps.notify(error.message, true);
+      this.deps.notify(errorText(error, "시트를 만들지 못했어요."), true);
     }
   }
 }

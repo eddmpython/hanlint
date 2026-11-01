@@ -27,7 +27,7 @@ function percent(value) {
 function selectedProfile(config) {
   if (config.profile) return userProfile(config.profile);
   const kind = PROFILE_OF[config.preset];
-  if (kind === null) throw new Error(`${config.preset} 은 종류 프로파일이 없어 사양을 낼 수 없다`);
+  if (kind === null) throw new Error(`${config.preset} 프리셋은 비교할 프로파일이 없어 수치 목표를 낼 수 없다`);
   const profile = profileOf(kind);
   if (profile === null) throw new Error(`${kind} 프로파일을 찾지 못했다`);
   return profile;
@@ -40,8 +40,8 @@ function selectedProfile(config) {
  * @param {number | null} [targetChars]
  */
 export function writingSpec(config = defaultConfig(), register = HAPNIDA, targetChars = null) {
-  if (!REGISTERS.includes(register)) throw new Error(`register 는 ${REGISTERS.join(", ")} 가운데 하나다: ${register}`);
-  if (targetChars !== null && targetChars <= 0) throw new Error(`chars 는 1 이상이어야 한다: ${targetChars}`);
+  if (!REGISTERS.includes(register)) throw new Error(`register는 ${REGISTERS.join(", ")} 가운데 하나여야 한다. 받은 값: ${register}`);
+  if (targetChars !== null && targetChars <= 0) throw new Error(`chars는 1 이상이어야 한다. 받은 값: ${targetChars}`);
   const profile = selectedProfile(config);
   const sentence = profile.sentence;
   const paragraph = profile.paragraph.get("sentenceCount");
@@ -62,7 +62,7 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   }
   rows.push({ id: "amount", label: "분량", guidance: amount, basis: [`profile.${profile.kind}.paragraph.sentenceCount`] });
 
-  let length = `중앙 ${lengthP50}어절, 문장 90%가 ${percentile(lengthHistogram, 90)}어절 이하`;
+  let length = `중앙값 ${lengthP50}어절, 문장 90%가 ${percentile(lengthHistogram, 90)}어절 이하`;
   const lengthBasis = [`profile.${profile.kind}.sentence.length`];
   if (enabled(config, "longSentence")) {
     length += `. ${config.longSentenceMax}어절을 넘으면 longSentence가 지적`;
@@ -71,7 +71,7 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   rows.push({ id: "sentenceLength", label: "문장 길이", guidance: length, basis: lengthBasis });
 
   if (profile.endingRuns !== null) {
-    let endingText = `같은 끝맺음 연속 중앙 ${percentile(profile.endingRuns, 50)}개, 90%가 ${percentile(profile.endingRuns, 90)}개 이하`;
+    let endingText = `같은 끝맺음 연속 중앙값 ${percentile(profile.endingRuns, 50)}개, 90%가 ${percentile(profile.endingRuns, 90)}개 이하`;
     const endingBasis = [`profile.${profile.kind}.endingRuns`];
     if (enabled(config, "endingRepeat")) {
       endingText += `. 인과나 독자 호출 없이 ${config.endingRun}개부터 endingRepeat가 지적`;
@@ -85,13 +85,13 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   rows.push({
     id: "commas",
     label: "쉼표",
-    guidance: `문장 중앙 ${percentile(commas, 50)}개, 90%가 ${percentile(commas, 90)}개 이하, 99%가 ${percentile(commas, 99)}개 이하`,
+    guidance: `문장 중앙값 ${percentile(commas, 50)}개, 90%가 ${percentile(commas, 90)}개 이하, 99%가 ${percentile(commas, 99)}개 이하`,
     basis: [`profile.${profile.kind}.sentence.commas`],
   });
 
   const eui = sentence.get("euiCount");
   if (!eui) throw new Error("프로파일에 sentence.euiCount가 없다");
-  let euiText = `문장 중앙 ${percentile(eui, 50)}개, 90%가 ${percentile(eui, 90)}개 이하`;
+  let euiText = `문장 중앙값 ${percentile(eui, 50)}개, 90%가 ${percentile(eui, 90)}개 이하`;
   const euiBasis = [`profile.${profile.kind}.sentence.euiCount`];
   if (enabled(config, "euiChain")) {
     euiText += ". 3개부터, 붙은 2개부터 euiChain이 지적";
@@ -114,7 +114,7 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   rows.push({
     id: "newTopics",
     label: "새 화제",
-    guidance: `문장 중앙 ${percentile(newTopics, 50)}개, 90%가 ${percentile(newTopics, 90)}개 이하`,
+    guidance: `문장 중앙값 ${percentile(newTopics, 50)}개, 90%가 ${percentile(newTopics, 90)}개 이하`,
     basis: [`profile.${profile.kind}.sentence.newTopics`],
   });
 
@@ -122,7 +122,7 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   rows.push({
     id: "connector",
     label: "문두 접속",
-    guidance: `문서 중앙은 문장의 ${percent(connector.p50)}%, 문서 90%가 ${percent(connector.p90)}% 이하`,
+    guidance: `문서 중앙값은 문장의 ${percent(connector.p50)}%, 문서 90%가 ${percent(connector.p90)}% 이하`,
     basis: [`profile.${profile.kind}.rates.connector`],
   });
 
@@ -132,8 +132,8 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   const numberP90 = percentile(numbers, 90);
   const numberText =
     numberP50 === 0 && numberP90 === 0
-      ? "문장 중앙과 90%에서 숫자 없음"
-      : `문장 중앙 ${numberP50}개, 90%가 ${numberP90}개 이하`;
+      ? "문장 중앙값과 90%에서 숫자 없음"
+      : `문장 중앙값 ${numberP50}개, 90%가 ${numberP90}개 이하`;
   rows.push({ id: "numbers", label: "숫자", guidance: numberText, basis: [`profile.${profile.kind}.sentence.numbers`] });
 
   const question = profile.rates.question;
@@ -142,10 +142,10 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   if (enabled(config, "noQuestion")) {
     questionText = config.enforceStyle.includes("noQuestion")
       ? "선택한 정책: 절이 2개 이상이면 글 전체에 물음표 최소 1개"
-      : "물음표 부재는 notice다. 질문 없이 충분히 설명했다면 유지한다";
+      : "물음표가 없으면 확인 권고다. 질문 없이 충분히 설명했다면 그대로 둔다";
     questionBasis = [`profile.${profile.kind}.rates.question`, "rule.noQuestion"];
   } else {
-    questionText = `규칙 요구 없음. 문서 중앙은 문장의 ${percent(question.p50)}%, 문서 90%가 ${percent(question.p90)}% 이하`;
+    questionText = `규칙 요구 없음. 문서 중앙값은 문장의 ${percent(question.p50)}%, 문서 90%가 ${percent(question.p90)}% 이하`;
     questionBasis = [`profile.${profile.kind}.rates.question`];
   }
   rows.push({ id: "question", label: "물음표", guidance: questionText, basis: questionBasis });
@@ -165,10 +165,10 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
 export function renderWritingSpec(spec) {
   const target = spec.targetChars !== null ? `, ${spec.targetChars}자` : "";
   const lines = [
-    `hanlint spec  ${spec.preset} 종류, ${spec.register}체${target}. 같은 규칙 세트의 임계와 ${spec.profile} 프로파일을 쓰기 전 숫자로 편다`,
+    `hanlint spec  ${spec.preset} 종류, ${spec.register}체${target}. 같은 규칙의 기준값과 ${spec.profile} 글의 평소 수치를 쓰기 전에 보여 준다`,
   ];
   const width = Math.max(...spec.rows.map((row) => row.label.length));
   for (const row of spec.rows) lines.push(`  ${row.label.padEnd(width)}  ${row.guidance}`);
-  lines.push("", "이 사양은 품질 점수가 아니다. 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 Finding을 확인한다");
+  lines.push("", "이 수치 목표는 품질 점수가 아니다. 다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다");
   return lines.join("\n");
 }

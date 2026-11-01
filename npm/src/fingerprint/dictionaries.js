@@ -1,5 +1,5 @@
 // @ts-check
-/** 사전들을 한 번 컴파일하고 문장에서 맞는 자리를 찾는다. 설정의 dictionary 항목을 더한다. */
+/** 사전들을 한 번 컴파일하고 문장에서 맞는 부분을 찾는다. 설정의 dictionary 항목을 더한다. */
 import { loadEntries } from "../data/load.js";
 import { compile } from "../regex.js";
 
@@ -20,11 +20,11 @@ export const DICTIONARY_FILES = {
 };
 const GROUP_REF = /\$(\d)/g;
 const FINALS = { ㄴ: 4, ㄹ: 8 };
-// {조사} 자리표시자. 낱말 뒤에 조사가 붙었거나 낱말이 끝나는 자리. 파이썬 dictionaries.py 와 같은 글자다.
+// {조사} 자리표시자. 단어 뒤에 조사가 붙었거나 단어가 끝나는 곳. 파이썬 dictionaries.py와 같은 글자다.
 const JOSA_TAIL = "(?=(?:에서는|으로는|에서|에게|까지|부터|보다|처럼|으로|이나|은|는|이|가|을|를|의|에|로|와|과|도|만)?(?![가-힣]))";
 const PLACEHOLDER = /\{(ㄴ|ㄹ|조사)\}/g;
 
-/** 받침으로 끝나는 음절 399개의 문자 부류. @param {"ㄴ" | "ㄹ"} final */
+/** 받침으로 끝나는 음절 399개의 글자 집합. @param {"ㄴ" | "ㄹ"} final */
 function syllableClass(final) {
   let chars = "";
   for (let initial = 0; initial < 19; initial++) {
@@ -46,8 +46,8 @@ export function expandClasses(pattern) {
  * @property {string} source
  * @property {string | null} fix
  * @property {{ pattern: import("../regex.js").Pattern, into: string }[]} to 문장 전체를 다시 쓰는 규칙. 앞의 것부터 시도한다
- * @property {string} raw pattern 의 원문. 내장 항목만 갖고 설정 항목은 빈 글자라 관용으로 접히지 않는다
- * @property {import("../regex.js").Pattern | null} unless 문장 전체에서 이것이 맞으면 그 문장에서는 항목이 맞지 않는다. 파이썬 Entry.unless 와 같다
+ * @property {string} raw pattern의 원문. 내장 항목만 갖고 설정 항목은 빈 글자라 관용으로 접히지 않는다
+ * @property {import("../regex.js").Pattern | null} unless 문장 전체에서 이것이 맞으면 그 문장에서는 항목이 맞지 않는다. 파이썬 Entry.unless와 같다
  */
 
 /**
@@ -96,7 +96,7 @@ export function entriesFor(config) {
   const extra = [];
   for (const [dictionary, items] of Object.entries(config.dictionary)) {
     if (!(dictionary in DICTIONARY_FILES)) {
-      throw new Error(`모르는 사전: ${dictionary}. ${Object.keys(DICTIONARY_FILES).join(", ")} 가운데 하나다`);
+      throw new Error(`모르는 사전: ${dictionary}. 쓸 수 있는 이름: ${Object.keys(DICTIONARY_FILES).join(", ")}`);
     }
     for (const raw of items) extra.push(entryFrom(dictionary, /** @type {Record<string, unknown> | string} */ (raw)));
   }
@@ -110,7 +110,7 @@ export function applyFix(match, fix) {
 
 /**
  * to 규칙으로 문장을 다시 쓴다. 빈 그룹이 남긴 겹 공백은 하나로 줄이고 양끝을 다듬는다. 원문과 같으면 null.
- * 뜻은 파이썬 fingerprint/dictionaries.py 의 rewriteBy 가 소유한다.
+ * 뜻은 파이썬 fingerprint/dictionaries.py의 rewriteBy가 정한다.
  * @param {string} text @param {Entry["to"]} rules
  */
 export function rewriteBy(text, rules) {

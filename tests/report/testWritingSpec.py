@@ -34,7 +34,7 @@ def testWritingSpecCombinesProfileAndEnabledRules():
 
     rendered = renderWritingSpec(spec)
     assert rendered.startswith("hanlint spec  blog 종류, 합니다체, 800자.")
-    assert rendered.endswith("쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 Finding을 확인한다")
+    assert rendered.endswith("다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다")
 
 
 def testWritingSpecDoesNotClaimDisabledRules():
@@ -49,7 +49,7 @@ def testWritingSpecDoesNotClaimDisabledRules():
 
 
 def testWritingSpecRejectsMissingProfileAndInvalidLength():
-    with pytest.raises(ValueError, match="종류 프로파일이 없어"):
+    with pytest.raises(ValueError, match="비교할 프로파일이 없어"):
         writingSpec(Config(preset="chat"))
-    with pytest.raises(ValueError, match="chars 는 1 이상"):
+    with pytest.raises(ValueError, match="chars는 1 이상"):
         writingSpec(targetChars=0)

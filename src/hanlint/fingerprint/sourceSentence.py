@@ -1,4 +1,4 @@
-"""평문 지문의 문장을 마크다운 표식을 보존한 원문 문장에 다시 맞춘다."""
+"""평문 분석 결과의 문장을 마크다운 표식을 보존한 원문 문장에 다시 맞춘다."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from .sentencePrint import SentencePrint
 
 
 def sourceSentenceTexts(doc: DocumentPrint) -> dict[int, str]:
-    """문장 수와 평문이 모두 같은 블록만 맞춘다. 확실하지 않으면 그 블록 전체를 기권한다."""
+    """문장 수와 평문이 모두 같은 블록만 맞춘다. 확실하지 않으면 그 블록 전체를 맞추지 않는다."""
     byBlock: dict[int, list[SentencePrint]] = {}
     for sentence in doc.sentences:
         byBlock.setdefault(sentence.blockIndex, []).append(sentence)

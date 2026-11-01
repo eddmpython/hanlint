@@ -26,13 +26,13 @@ MARKDOWN = (".md", ".markdown")
 SKIPPED_FOLDERS = ("node_modules",)
 """폴더를 훑을 때 안 들어가는 이름. 점으로 시작하는 폴더도 함께 건너뛴다.
 
-**왜 있는가.** 실측: 블로그 저장소 모양 (내 글 2편, node_modules 패키지 150개, .git 과 .venv 안에도
-마크다운) 에서 `hanlint .` 이 파일 156개를 훑어 error 305건을 냈다. 내 글은 출력 3435줄 가운데 3338줄째,
-97% 지점에 처음 나왔다. 그 305건은 남이 쓴 영어 README 의 것이고 내 글의 수가 아니다. 더 나쁜 것은
-`hanlint fix .` 이 npm 과 pip 가 소유한 파일을 실제로 덮어썼다는 것이다.
+**왜 있는가.** 실측: 블로그 저장소 모양 (내 글 2편, node_modules 패키지 150개, .git과 .venv 안에도
+마크다운)에서 `hanlint .`이 파일 156개를 훑어 error 305건을 냈다. 내 글은 출력 3435줄 가운데 3338줄째,
+97% 지점에 처음 나왔다. 그 305건은 남이 쓴 영어 README의 것이고 내 글의 수가 아니다. 더 나쁜 것은
+`hanlint fix .`이 npm과 pip가 소유한 파일을 실제로 덮어썼다는 것이다.
 
 **목록을 키우지 않는다.** 점 폴더와 `node_modules` 둘로 끝낸다. `venv`, `dist`, `build`, `vendor`,
-`target` 을 하나씩 더하기 시작하면 끝이 없고 언어마다 다르다. 그 둘이 실측 사례를 덮고, 나머지는
+`target`을 하나씩 더하기 시작하면 끝이 없고 언어마다 다르다. 그 둘이 실측 사례를 덮고, 나머지는
 건너뛴 것을 알려 주는 줄을 본 사용자가 폴더를 좁혀서 푼다.
 
 **명시가 규칙을 이긴다.** 파일이나 폴더를 직접 주면 이 목록과 무관하게 검사한다."""
@@ -59,14 +59,14 @@ def markdownUnder(folder: Path) -> list[str]:
 
 
 def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] = ("text", "json"), output: bool = True) -> None:
-    """설정과 출력 형식 옵션. `output` 은 그 명령이 실제로 파일로 쓸 수 있을 때만 켠다.
+    """설정과 출력 형식 옵션. `output`은 그 명령이 실제로 파일로 쓸 수 있을 때만 켠다.
 
-    받아 놓고 안 쓰는 옵션은 거짓말이다. 특히 `--output` 은 조용히 무시되면 사용자가 기다리던 파일이
-    안 생긴다 (실측: rules, doctor, fix, watch 넷이 그랬다). 그래서 emit 을 부르는 명령만 받는다.
-    `--no-color` 는 아직 색이 없는 출력에서도 받는다. 스크립트가 관례로 붙이는 것을 막을 이유가 없고
+    받아 놓고 안 쓰는 옵션은 거짓말이다. 특히 `--output`은 조용히 무시되면 사용자가 기다리던 파일이
+    안 생긴다 (실측: rules, doctor, fix, watch 넷이 그랬다). 그래서 emit을 부르는 명령만 받는다.
+    `--no-color`는 아직 색이 없는 출력에서도 받는다. 스크립트가 관례로 붙이는 것을 막을 이유가 없고
     무시돼도 잃는 것이 없다.
     """
-    parser.add_argument("--config", type=Path, help="설정 파일. 없으면 hanlint.toml 이나 pyproject.toml 을 찾는다")
+    parser.add_argument("--config", type=Path, help="설정 파일. 없으면 hanlint.toml이나 pyproject.toml을 찾는다")
     parser.add_argument(
         "--preset",
         choices=PRESET_NAMES,
@@ -83,14 +83,14 @@ def addCommonOptions(parser: argparse.ArgumentParser, formats: tuple[str, ...] =
 
 
 def addOutputOption(parser: argparse.ArgumentParser) -> None:
-    """`--output`. 이 옵션을 받는 명령은 반드시 `emit` 으로 그 값을 쓴다."""
+    """`--output`. 이 옵션을 받는 명령은 반드시 `emit`으로 그 값을 쓴다."""
     parser.add_argument("--output", type=Path, help="출력을 파일로 쓴다")
 
 
 def addSeverityOptions(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--severity", choices=SEVERITIES, default="all", help="보여 줄 지적. 기본 all")
-    parser.add_argument("--errors-only", dest="errorsOnly", action="store_true", help="--severity error 와 같다")
-    parser.add_argument("--notices", action="store_true", help="접힌 확인 권고 (notice) 를 다 편다. text 형식에서만")
+    parser.add_argument("--errors-only", dest="errorsOnly", action="store_true", help="--severity error와 같다")
+    parser.add_argument("--notices", action="store_true", help="접힌 확인 권고 (notice)를 다 편다. text 형식에서만")
 
 
 def severityOf(args: argparse.Namespace) -> str:
@@ -119,19 +119,19 @@ def nearNames(query: str, names: list[str]) -> list[str]:
 
 
 def checkDisabled(config: Config) -> None:
-    """`disable` 에 없는 규칙 이름이 있으면 멈춘다.
+    """`disable`에 없는 규칙 이름이 있으면 멈춘다.
 
-    실측: `--disable 없는규칙` 이 조용히 지나갔고 `hanlint doctor` 는 그것을 꺼진 규칙으로 세어
-    `꺼진 규칙 ..., 없는규칙` 이라고 확인해 줬다. 껐다고 믿은 규칙이 계속 잡히는데 도구는 껐다고 말한다.
-    `preset` 은 이미 모르는 값을 거절한다. 규칙 이름만 예외일 이유가 없다.
+    실측: `--disable 없는규칙`이 조용히 지나갔고 `hanlint doctor`는 그것을 꺼진 규칙으로 세어
+    `꺼진 규칙 ..., 없는규칙`이라고 확인해 줬다. 껐다고 믿은 규칙이 계속 잡히는데 도구는 껐다고 말한다.
+    `preset`은 이미 모르는 값을 거절한다. 규칙 이름만 예외일 이유가 없다.
     """
     names = ruleNames()
     unknown = sorted(set(config.disable) - set(names))
     if not unknown:
         return
     near = nearNames(unknown[0], names)
-    hint = f" 가까운 이름: {', '.join(near)}." if near else ""
-    raise ValueError(f"모르는 규칙 이름: {', '.join(unknown)}.{hint} 목록은 hanlint rules --names")
+    hint = f" 비슷한 이름: {', '.join(near)}." if near else ""
+    raise ValueError(f"없는 규칙 이름: {', '.join(unknown)}.{hint} 목록은 hanlint rules --names")
 
 
 def configFrom(args: argparse.Namespace, start: Path | None = None) -> Config:
@@ -146,9 +146,9 @@ def configFrom(args: argparse.Namespace, start: Path | None = None) -> Config:
 def configLabel(config: Config) -> str:
     """출력 첫 줄에 적을 설정 출처. 현재 폴더 아래면 상대 경로, 아니면 그대로.
 
-    **경로 구분자는 언제나 `/` 다.** 윈도에서 파이썬은 `str(Path)` 로 역슬래시를 내고 npm 은 받은
-    문자열을 그대로 들어, 설정이 작업 폴더 밖일 때 두 구현의 첫 줄과 JSON 의 config 값이 갈렸다
-    (2026-08-31). 게이트가 늘 tmp_path 의 역슬래시만 넘겨 이 자리를 못 봤다.
+    **경로 구분자는 언제나 `/`다.** 윈도에서 파이썬은 `str(Path)`로 역슬래시를 내고 npm은 받은
+    문자열을 그대로 들어, 설정이 작업 폴더 밖일 때 두 구현의 첫 줄과 JSON의 config 값이 갈렸다
+    (2026-08-31). 게이트가 늘 tmp_path의 역슬래시만 넘겨 이 자리를 못 봤다.
     """
     if config.source is None:
         return "기본값"
@@ -169,13 +169,13 @@ def header(config: Config) -> str:
 def summary(results: dict[str, list[Finding]]) -> str:
     """글에 실제로 있는 수. **거른 뒤가 아니라 거르기 전을 센다.**
 
-    실측: error 2건짜리 글에 `--severity notice` 를 붙이면 요약이 `error 0` 이라고 적었다. 보여 줄 것을
+    실측: error 2건짜리 글에 `--severity notice`를 붙이면 요약이 `error 0`이라고 적었다. 보여 줄 것을
     고르는 옵션이 있는 것을 없다고 말하게 만들고 있었다. 다음 걸음도 같은 이유로 `error 0` 이라며
     사람과 LLM 평가로 보냈다. 무엇을 보여 줄지와 무엇이 있는지는 다른 질문이다.
     """
     errors = sum(1 for findings in results.values() for f in findings if f.severity == "error")
     notices = sum(1 for findings in results.values() for f in findings if f.severity == "notice")
-    return f"파일 {len(results)}개, error {errors}, notice {notices}"
+    return f"파일 {len(results)}개, 오류 {errors}건, 확인 권고 {notices}건"
 
 
 def commonest(findings: list[Finding]) -> str:
@@ -191,11 +191,11 @@ def commonest(findings: list[Finding]) -> str:
 
 
 def fixableCount(texts: dict[str, str], results: dict[str, list[Finding]]) -> int:
-    """`hanlint fix` 가 실제로 고칠 error 수. 고침이 달렸다는 것과 자리를 잡을 수 있다는 것은 다르다.
+    """`hanlint fix`가 실제로 고칠 error 수. 고침이 달렸다는 것과 자리를 잡을 수 있다는 것은 다르다.
 
-    실측: `그러면 `에 있어서` 를 봅니다` 에서 다음 걸음은 `1건은 hanlint fix 가 바로 고친다` 라고 했는데
-    fix 는 `0곳 고침, 1곳 건너뜀` 을 냈다. 조각이 백틱 안이라 원문에서 자리를 못 잡은 것이다. 약속과
-    실제가 갈리면 사람은 lint 와 fix 를 무한히 왕복한다. 그래서 세는 쪽이 실제로 고치는 함수를 부른다.
+    실측: `그러면 `에 있어서`를 봅니다`에서 다음 걸음은 `1건은 hanlint fix가 바로 고친다`라고 했는데
+    fix는 `0곳 고침, 1곳 건너뜀`을 냈다. 조각이 백틱 안이라 원문에서 자리를 못 잡은 것이다. 약속과
+    실제가 갈리면 사람은 lint와 fix를 무한히 왕복한다. 그래서 세는 쪽이 실제로 고치는 함수를 부른다.
     """
     total = 0
     for name, findings in results.items():
@@ -210,7 +210,7 @@ def fixableCount(texts: dict[str, str], results: dict[str, list[Finding]]) -> in
 def nextStep(results: dict[str, list[Finding]], fixable: int = 0) -> str:
     """검사 끝에 붙는 다음 행동 한 줄. 합격을 판정하지 않고 지금 무엇을 하면 되는지만 말한다.
 
-    `fixable` 은 `fixableCount` 가 낸 실제로 고쳐질 수다. 부르는 쪽이 원문을 들고 있을 때만 준다.
+    `fixable`은 `fixableCount`가 낸 실제로 고쳐질 수다. 부르는 쪽이 원문을 들고 있을 때만 준다.
     """
     findings = [f for found in results.values() for f in found]
     errors = [f for f in findings if f.severity == "error"]
@@ -218,13 +218,13 @@ def nextStep(results: dict[str, list[Finding]], fixable: int = 0) -> str:
     if errors:
         rule = commonest(errors)
         if fixable:
-            return f"다음: error {len(errors)}건 가운데 {fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다"
+            return f"다음: 오류 {len(errors)}건 가운데 {fixable}건은 hanlint fix가 바로 고친다. 나머지는 손으로 고친다"
         if patternsAvoiding(rule):
-            return f"다음: error {len(errors)}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule {rule}"
-        return f"다음: error {len(errors)}건을 고친다. 규칙이 왜 있는지는 hanlint explain {rule}"
+            return f"다음: 오류 {len(errors)}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule {rule}"
+        return f"다음: 오류 {len(errors)}건을 고친다. 규칙이 왜 있는지는 hanlint explain {rule}"
     if notices:
-        return f"다음: error 0. 확인 권고 {notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다"
-    return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다"
+        return f"다음: 오류는 없다. 확인 권고 {notices}건을 읽고 고칠지 정한다"
+    return "다음: 규칙으로 찾은 잘못이 없다. 좋은 글이라는 뜻은 아니니 사람이 읽어 본다"
 
 
 def isStdin(path: Path | str) -> bool:
@@ -232,7 +232,7 @@ def isStdin(path: Path | str) -> bool:
 
 
 def collectFiles(paths: list) -> list[str]:
-    """폴더를 주면 그 아래 마크다운을 이름 순으로 편다. 파일과 `-` 는 그대로 둔다."""
+    """폴더를 주면 그 아래 마크다운을 이름 순으로 편다. 파일과 `-`는 그대로 둔다."""
     found: list[str] = []
     for path in paths:
         if isStdin(path):
@@ -243,7 +243,7 @@ def collectFiles(paths: list) -> list[str]:
             inside = markdownUnder(candidate)
             if not inside:
                 raise ValueError(
-                    f"{path} 안에 마크다운 파일이 없다. 점으로 시작하는 폴더와 node_modules 는 건너뛴다. "
+                    f"{path} 안에 마크다운 파일이 없다. 점으로 시작하는 폴더와 node_modules는 건너뛴다. "
                     "그 안을 보려면 그 폴더를 직접 준다"
                 )
             found.extend(inside)
@@ -253,10 +253,10 @@ def collectFiles(paths: list) -> list[str]:
 
 
 def readInput(path: Path | str, stdinName: str = STDIN_NAME) -> tuple[str, str]:
-    """(이름, 본문). `-` 면 stdin 을 UTF-8 로 읽는다.
+    """(이름, 본문). `-`면 stdin을 UTF-8로 읽는다.
 
-    폴더를 주면 말로 막는다. 실측: `hanlint audit 글들/` 이 폴더를 파일로 열어 파이썬 PermissionError
-    트레이스백을 뱉었다. 지문 지도와 계층 JSON 은 글 하나를 보는 화면이라 폴더를 받지 않는다.
+    폴더를 주면 말로 막는다. 실측: `hanlint audit 글들/`이 폴더를 파일로 열어 파이썬 PermissionError
+    트레이스백을 뱉었다. 지문 지도와 계층 JSON은 글 하나를 보는 화면이라 폴더를 받지 않는다.
     """
     if isStdin(path):
         return stdinName, sys.stdin.buffer.read().decode("utf-8")
@@ -264,7 +264,7 @@ def readInput(path: Path | str, stdinName: str = STDIN_NAME) -> tuple[str, str]:
 
 
 def startFolder(paths: list) -> Path:
-    """설정을 찾기 시작할 폴더. 첫 실제 파일의 폴더, 전부 stdin 이면 현재 폴더."""
+    """설정을 찾기 시작할 폴더. 첫 실제 파일의 폴더, 전부 stdin이면 현재 폴더."""
     for path in paths:
         if not isStdin(path):
             return Path(path).resolve().parent
@@ -274,12 +274,12 @@ def startFolder(paths: list) -> Path:
 def readFile(path: Path) -> str:
     """글 하나를 읽는다. 폴더를 주면 말로 막는다.
 
-    실측: `hanlint audit 글들/` 이 폴더를 파일로 열어 파이썬 PermissionError 트레이스백을 뱉었다.
-    지문 지도와 계층 JSON 과 초안 비교는 글 하나를 보는 화면이라 폴더를 받지 않는다. 폴더를 받는 것은
-    lint 와 fix 와 baseline 이고 그것들은 collectFiles 를 지난다.
+    실측: `hanlint audit 글들/`이 폴더를 파일로 열어 파이썬 PermissionError 트레이스백을 뱉었다.
+    지문 지도와 계층 JSON과 초안 비교는 글 하나를 보는 화면이라 폴더를 받지 않는다. 폴더를 받는 것은
+    lint와 fix와 baseline이고 그것들은 collectFiles를 지난다.
     """
     if path.is_dir():
-        raise ValueError(f"{path} 는 폴더다. 이 명령은 글 하나를 본다. 폴더는 hanlint 와 hanlint fix 가 받는다")
+        raise ValueError(f"폴더를 받았다: {path}. 이 명령은 글 하나를 본다. 폴더는 hanlint와 hanlint fix가 받는다")
     return path.read_text(encoding="utf-8")
 
 
@@ -288,7 +288,7 @@ def emit(text: str, output: Path | None) -> None:
         print(text)
         return
     output.write_text(text + ("\n" if not text.endswith("\n") else ""), encoding="utf-8", newline="\n")
-    print(f"{output} 에 썼다", file=sys.stderr)
+    print(f"{output}에 썼다", file=sys.stderr)
 
 
 def colorEnabled(args: argparse.Namespace) -> bool:

@@ -1,10 +1,10 @@
-"""받침에 따라 꼴이 갈리는 조사를 맞춘다. 분석기와 무관하게 참인 한국어 사실이라 형태 층에 둔다.
+"""받침에 따라 꼴이 갈리는 조사를 맞춘다. 분석기와 무관하게 참인 한국어 사실이라 형태 부분에 둔다.
 
-**왜 있는가.** 실측: `이슈로 알려 주면 된다` 에서 `이슈` 를 `쟁점` 으로 바꾸라는 제안이
-`쟁점로 알려 주면 된다` 를 냈다. 받침 뒤는 `으로` 다. **한국어 린터가 비문을 고침이라고 내밀고
+**왜 있는가.** 실측: `이슈로 알려 주면 된다`에서 `이슈`를 `쟁점`으로 바꾸라는 제안이
+`쟁점로 알려 주면 된다`를 냈다. 받침 뒤는 `으로`다. **한국어 린터가 비문을 고침이라고 내밀고
 있었다.** 이 저장소의 README 출력에도 그대로 있었다.
 
-낱말을 바꾸면 뒤에 붙은 조사의 꼴이 따라 바뀐다. 사전이 낱말만 갈아 끼우면 그 문장이 틀린다.
+단어를 바꾸면 뒤에 붙은 조사의 꼴도 따라 바뀐다. 사전이 단어만 바꿔 넣으면 그 문장이 틀린다.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ PAIRS: tuple[tuple[str, str], ...] = (
     ("과", "와"),
     ("아", "야"),
 )
-"""(받침 뒤 꼴, 받침 없는 뒤 꼴). 긴 것부터 대조해야 `으로` 가 `은` 보다 먼저 걸린다."""
+"""(받침 뒤 꼴, 받침 없는 뒤 꼴). 긴 것부터 대조해야 `으로`가 `은`보다 먼저 걸린다."""
 
 DIGIT_FINALS = (
     hangul.IEUNG,
@@ -54,21 +54,21 @@ DIGIT_FINALS = (
 영 ㅇ, 일 ㄹ, 삼 ㅁ, 육 ㄱ, 칠 ㄹ, 팔 ㄹ 이고 나머지는 받침이 없다."""
 
 PLACE_FINALS = {1: hangul.BIEUP, 2: hangul.GIYEOK, 3: hangul.NIEUN}
-"""뒤에 붙은 0 의 개수가 정하는 자리값의 종성. 십 ㅂ, 백 ㄱ, 천 ㄴ 이다."""
+"""뒤에 붙은 0의 개수가 정하는 자리값의 종성. 십 ㅂ, 백 ㄱ, 천 ㄴ이다."""
 
 GROUP_FINALS = (hangul.NIEUN, hangul.GIYEOK, hangul.NONE, hangul.IEUNG)
 """네 자리 묶음의 이름. 만 ㄴ, 억 ㄱ, 조 (받침 없음), 경 ㅇ 차례다."""
 
 
 def digitFinal(digits: str) -> int:
-    """숫자를 한자어로 읽었을 때 마지막 소리의 종성. `20` 은 이십이라 ㅂ 이고 `24` 는 사라 없다.
+    """숫자를 한자어로 읽었을 때 마지막 소리의 종성. `20`은 이십이라 ㅂ이고 `24`는 사라 없다.
 
-    끝자리만 보면 틀린다. `20` 의 끝자리는 0 인데 읽을 때는 십으로 끝난다. 그래서 뒤에 붙은 0 의
+    끝자리만 보면 틀린다. `20`의 끝자리는 0인데 읽을 때는 십으로 끝난다. 그래서 뒤에 붙은 0의
     개수로 어느 자리값이 마지막에 읽히는지를 정한다.
     """
     body = digits.rstrip("0")
     if not body:
-        return DIGIT_FINALS[0]  # 0 은 자리값이 없다. 그냥 영이다
+        return DIGIT_FINALS[0]  # 0은 자리값이 없다. 그냥 영이다
     zeros = len(digits) - len(body)
     if zeros == 0:
         return DIGIT_FINALS[int(digits[-1])]
@@ -80,9 +80,9 @@ def digitFinal(digits: str) -> int:
 def finalOf(word: str) -> int | None:
     """마지막 소리의 종성 번호. 셀 수 없으면 None.
 
-    한글은 글자에서 바로 읽고, 숫자는 한자어 읽기로 센다. 로마자와 기호만 None 이다. 그것은
-    발음에 따라 갈리고 (`SQL` 은 에스큐엘로도 시퀄로도 읽는다) 발음은 세어서 확정되지 않는다.
-    이 도구가 뜻을 다루지 않기로 한 자리라 규칙을 안 만든 것이지 미룬 것이 아니다.
+    한글은 글자에서 바로 읽고, 숫자는 한자어 읽기로 센다. 로마자와 기호만 None이다. 그것은
+    발음에 따라 갈리고 (`SQL`은 에스큐엘로도 시퀄로도 읽는다) 발음은 세어서 확정되지 않는다.
+    이 도구는 뜻을 다루지 않기로 했으므로 규칙을 안 만든 것이지 미룬 것이 아니다.
     """
     if not word:
         return None
@@ -95,7 +95,7 @@ def finalOf(word: str) -> int | None:
 def josaSwap(word: str, following: str) -> tuple[str, str] | None:
     """`word` 뒤 첫 조사가 바뀌어야 하면 (지금 꼴, 바꿀 꼴). 안 바뀌거나 조사가 아니면 None.
 
-    `finalOf` 가 셀 수 없다고 한 낱말 (로마자, 기호) 은 그대로 둔다. 고쳐야 할 자리를 놓치는 쪽이
+    `finalOf`가 셀 수 없다고 한 단어(로마자, 기호)는 그대로 둔다. 고쳐야 할 곳을 놓치는 쪽이
     멀쩡한 문장을 망가뜨리는 쪽보다 낫다.
     """
     final = finalOf(word)
@@ -107,7 +107,7 @@ def josaSwap(word: str, following: str) -> tuple[str, str] | None:
                 continue
             rest = following[len(form) :]
             if rest and rest[0].isalnum():
-                # 조사가 아니라 더 긴 낱말의 앞머리다 (`이유`, `과정`, `로그`). 한글도 isalnum 이 참이다
+                # 조사가 아니라 더 긴 단어의 앞머리다(`이유`, `과정`, `로그`). 한글도 isalnum이 참이다
                 break
             if withFinal == "으로":
                 wanted = withoutFinal if final in (hangul.NONE, hangul.RIEUL) else withFinal
@@ -118,7 +118,7 @@ def josaSwap(word: str, following: str) -> tuple[str, str] | None:
 
 
 def fitJosa(word: str, following: str) -> str:
-    """`word` 뒤에 오는 `following` 의 첫 조사 꼴을 받침에 맞춘 글. 바꿀 것이 없으면 그대로다."""
+    """`word` 뒤에 오는 `following`의 첫 조사 꼴을 받침에 맞춘 글. 바꿀 것이 없으면 그대로다."""
     swap = josaSwap(word, following)
     if swap is None:
         return following

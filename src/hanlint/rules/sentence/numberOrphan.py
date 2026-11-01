@@ -28,19 +28,18 @@ def isAnchored(text: str, start: int) -> bool:
 
 @rule("numberOrphan", mechanism="reader")
 def numberOrphan(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
-    """A 에서 B 로 라고 견주는데 A 가 글 앞에 한 번도 나온 적 없는 자리.
+    """`A에서 B로`라고 비교하는데 A가 글 앞에 한 번도 나온 적 없는 경우.
 
-    왜: 독자는 앞에서 본 값을 기준으로 변화를 읽는다. 기준값이 그 자리에서 처음 나오면 무엇에서 무엇으로
+    왜: 독자는 앞에서 본 값을 기준으로 변화를 읽는다. 기준값이 그 문장에서 처음 나오면 무엇에서 무엇으로
         움직인 것인지 알 수 없고, 앞으로 되돌아가 찾다가 없다는 것을 확인하고 멈춘다.
-    어디서: 실측. 블로그 004 의 `이 5백만 줄 표를 넘길 때 파이썬이 잡은 메모리 최대치는 453MB 에서 700MB 로
-        올라갔습니다` 를 평가자가 집었다. 453MB 가 앞의 어떤 실행에도 없었다. cinch 의 전역 blog-writing 스킬,
-        새로 나온 값과 옵션은 무엇인지 왜 그 값인지 독자가 지금 무엇을 하면 되는지를 그 자리에서 준다.
-        독자가 앞에서 본 수는 독자 상태 (fingerprint/readerState.py) 의 numerals 다.
+    어디서: 실측. 실제 블로그 글의 `이 5백만 줄 표를 넘길 때 파이썬이 잡은 메모리 최대치는 453MB에서 700MB로
+        올라갔습니다`를 평가자가 지적했다. 453MB가 앞의 어떤 실행에도 없었다. 새로 나온 값과 옵션은 무엇인지,
+        왜 그 값인지, 독자가 지금 무엇을 하면 되는지를 그 자리에서 알려 준다는 글쓰기 원칙.
     고치기: 기준값이 어디서 나온 것인지 한 문장으로 밝히거나, 그 값을 만든 실행을 앞에 둔다.
-    안 잡는 것: 한 자리 수 (세는 말이지 재는 값이 아니다). 앞선 문장, 코드 블록, 출력, 표, 목록, 제목에 이미
-        나온 값. 같은 문장 안에서 앞서 나온 값. 값 바로 앞이 그 값의 출처를 밝히는 자리 (`1년 전 26.14% 에서
-        18.53% 로` 는 어디서 온 값인지 이미 말했다. 실측 오탐이었고 data/baselineAnchors.txt 로 걸렀다).
-        표층으로 세는 근사라 notice 로만 낸다.
+    안 잡는 것: 한 자리 수(재는 값이 아니라 세는 말이다). 앞선 문장, 코드 블록, 출력, 표, 목록, 제목에 이미
+        나온 값. 같은 문장 안에서 앞서 나온 값. 값 바로 앞에서 그 값의 출처를 밝힌 경우(`1년 전 26.14%에서
+        18.53%로`는 어디서 온 값인지 이미 말했다. 실측에서 오탐이었고 data/baselineAnchors.txt로 걸렀다).
+        겉으로 보이는 글자로 어림해 세는 규칙이라 확인 권고로만 낸다.
     """
     for sentence in doc.sentences:
         reader = doc.reader.beforeSentence[sentence.index]
@@ -56,7 +55,7 @@ def numberOrphan(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                 "numberOrphan",
                 sentence.line,
                 sentence.text,
-                f"`{base}` {fitJosa(base, '가')} 여기서 처음 나오는 값이다. 무엇에서 올라간 것인지 알 수 없다. "
+                f"`{base}`{fitJosa(base, '가')} 여기서 처음 나오는 값이다. 무엇에서 올라간 것인지 알 수 없다. "
                 "그 값이 어디서 나왔는지 밝힌다",
                 None,
                 NOTICE,

@@ -66,7 +66,7 @@ try {
   await open();
   await waitFor("document.querySelector('#version').textContent.length > 0");
   await click("내 기록");
-  await click("이 브라우저 기록 삭제"); await click("브라우저 기록 삭제");
+  await click("이 브라우저에 저장한 기록 지우기"); await click("모두 지우기");
   await click("예문");
   await close(); await open();
   await waitFor("document.querySelectorAll('.findingCard').length > 0");
@@ -105,13 +105,13 @@ try {
   await click("전후 비교");
   assert.equal(await evaluate("document.querySelector('#originalPane').hidden"), false);
   await capture("revision");
-  await click("수정본 기록");
+  await click("기록에 남기기");
   await waitFor(`JSON.parse(localStorage.getItem(${storageKey})).records.length === 1`);
   assert.equal(await evaluate("document.querySelector('dialog[open]') === null"), true);
   assert.ok((await evaluate("document.querySelector('#protection').innerText")).includes("변화 없음"));
   await waitFor("document.querySelectorAll('#memory .memoryItem').length > 0");
   assert.equal(await evaluate("document.querySelector('#memoryPanel').hidden"), false);
-  await click("doublePassive 1줄 고침 기억");
+  await click("뜻이 같으니 기억하기 (1줄 doublePassive)");
   await waitFor(`JSON.parse(localStorage.getItem(${storageKey})).patches.length === 1`);
   assert.equal(await evaluate("document.querySelector('dialog[open]') === null"), true);
   await capture("remember");

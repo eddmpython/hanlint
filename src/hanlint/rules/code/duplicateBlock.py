@@ -28,12 +28,13 @@ def similarity(a: list[str], b: list[str]) -> float:
 def duplicateBlock(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """앞선 코드나 출력 블록과 거의 같은 블록.
 
-    왜: 서른 줄 가운데 한 줄만 다른 블록을 두 번 읽으면 독자는 다른 한 줄을 찾느라 표를 훑는다. 다른 줄만 보이거나
-        앞 블록을 가리키는 것이 낫다.
-    어디서: 실측. 블로그 004 에서 두 엔진의 출력 서른 줄 가운데 다른 것은 한 줄이었고 사람 평가자가 집었다.
-        임계는 config.duplicateBlockRatio, 최소 줄 수는 넷.
+    왜: 서른 줄 가운데 한 줄만 다른 블록을 두 번 읽으면 독자는 다른 한 줄을 찾느라 블록 전체를 훑는다. 다른 줄만
+        보이거나 앞 블록을 가리키는 것이 낫다.
+    어디서: 실제 블로그 글 하나에서 두 엔진의 출력 서른 줄 가운데 다른 것이 한 줄이었고 사람 평가자가 짚었다.
+        줄이 90% 이상 겹치면 잡는다(설정 duplicateBlockRatio, 기본 0.9). 블록은 넉 줄 이상이어야 한다.
     고치기: 다른 줄만 남기고 나머지는 앞 블록을 가리킨다. 정말 둘 다 필요하면 무엇이 다른지 산문에서 먼저 말한다.
-    안 잡는 것: 넉 줄 미만 블록. 종류가 다른 블록 (코드와 출력). 임계 아래. notice 로만 낸다.
+    안 잡는 것: 넉 줄 미만인 블록, 종류가 다른 두 블록(코드와 출력), 겹친 줄이 기준값보다 적은 블록은 잡지 않는다.
+        확인 권고로만 낸다.
     """
     blocks = [b for b in doc.codeBlocks if len([line for _, line in b.lines if line.strip()]) >= MIN_LINES]
     for later in range(len(blocks)):

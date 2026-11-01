@@ -1,5 +1,5 @@
 // @ts-check
-/** Reader Contract 검사와 이유가 붙은 국소 Patch 검증. */
+/** Reader Contract 검사와, 이유를 붙여 한 곳만 바꾸는 Patch의 검증. */
 import { sha256 } from "../digest.js";
 
 import { Patch } from "../config/patch.js";
@@ -19,7 +19,7 @@ function digest(text) {
   return sha256(text);
 }
 
-/** 원문의 보호 표면을 모두 덮는 version 1 Contract 초안을 만든다. @param {string} text @param {string} reader @param {string} goal */
+/** 원문의 지켜야 할 숫자·링크·코드를 모두 담는 version 1 Contract 초안을 만든다. @param {string} text @param {string} reader @param {string} goal */
 export function contractFromText(text, reader, goal) {
   const contract = new Contract(reader, goal, factLines(text));
   const result = surfaceDiff(contract.text, text);
@@ -27,15 +27,15 @@ export function contractFromText(text, reader, goal) {
   for (const kind of ["missingNumbers", "missingUrls", "missingCode", "missingLinks"]) {
     for (const value of result[/** @type {keyof typeof result} */ (kind)]) missing.push(`${kind}=${value}`);
   }
-  if (missing.length) throw new Error(`reader 또는 goal이 원문에 없는 보호 원자를 넣었다: ${missing.join(", ")}`);
+  if (missing.length) throw new Error(`reader나 goal에 원문에 없는 숫자·링크·코드가 들었다: ${missing.join(", ")}`);
   if (surfaceViolationCount(result)) {
     const issues = Object.entries(result).flatMap(([kind, values]) => values.map((value) => `${kind}=${value}`));
-    throw new Error(`계약 초안이 원문의 보호 표면을 모두 담지 못했다: ${issues.join(", ")}`);
+    throw new Error(`계약 초안이 원문의 지켜야 할 숫자·링크·코드를 모두 담지 못했다: ${issues.join(", ")}`);
   }
   return contract;
 }
 
-/** 원문의 자동 표면과 한 수준의 제목을 분리한 version 2 Contract 초안을 만든다. @param {string} text @param {string} reader @param {string} goal @param {number} [outlineLevel] @param {string[]} [facts] */
+/** 원문에서 자동으로 찾은 숫자·링크·코드와 한 수준의 제목을 따로 담은 version 2 Contract 초안을 만든다. @param {string} text @param {string} reader @param {string} goal @param {number} [outlineLevel] @param {string[]} [facts] */
 export function contractFromTextV2(text, reader, goal, outlineLevel = 2, facts = []) {
   const doc = parseMarkdown(text);
   const headings = headingsOf(doc, outlineLevel).map((heading) => heading.text);
@@ -50,7 +50,7 @@ export function contractFromTextV2(text, reader, goal, outlineLevel = 2, facts =
   const result = surfaceDiff(contract.text, text);
   if (surfaceViolationCount(result)) {
     const issues = Object.entries(result).flatMap(([kind, values]) => values.map((value) => `${kind}=${value}`));
-    throw new Error(`reader, goal 또는 facts가 원문에 없는 보호 원자를 넣었다: ${issues.join(", ")}`);
+    throw new Error(`reader, goal, facts에 원문에 없는 숫자·링크·코드가 들었다: ${issues.join(", ")}`);
   }
   return contract;
 }

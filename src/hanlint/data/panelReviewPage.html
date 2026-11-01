@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>hanlint 눈가림 글 평가</title>
+  <title>hanlint 블라인드 글 평가</title>
   <style>
     :root {
       color-scheme: light;
@@ -106,12 +106,12 @@
 <body>
   <a class="skip" href="#reviewMain">평가 본문으로 건너뛰기</a>
   <header>
-    <h1>눈가림 글 평가</h1>
+    <h1>블라인드 글 평가</h1>
     <p>작성자나 생성 방법을 추측하지 말고, 주어진 독자와 과업에서 두 글만 비교합니다. 다른 평가자의 선택은 보이지 않습니다.</p>
     <div class="topMeta">
       <span id="evaluatorMeta"></span>
       <span id="suiteMeta"></span>
-      <span>브라우저 안에만 임시 저장</span>
+      <span>이 브라우저에만 임시로 저장합니다</span>
     </div>
   </header>
   <noscript><div class="noscript">이 평가 화면은 진행 저장과 JSON 내보내기에 JavaScript가 필요합니다.</div></noscript>
@@ -133,11 +133,11 @@
         <div class="contextGrid">
           <div class="contextItem"><strong>독자</strong><span id="readerText"></span></div>
           <div class="contextItem"><strong>과업</strong><span id="taskText"></span></div>
-          <div class="contextItem facts"><strong>확인할 원자 사실</strong><ol id="factList"></ol></div>
-          <div class="contextItem"><strong>반드시 들어갈 표면</strong><span id="mustText"></span></div>
-          <div class="contextItem"><strong>허용 수치</strong><span id="numberText"></span></div>
-          <div class="contextItem"><strong>금지 표면</strong><span id="forbiddenText"></span></div>
-          <div class="contextItem"><strong>길이 계약</strong><span id="lengthText"></span></div>
+          <div class="contextItem facts"><strong>하나씩 확인할 사실</strong><ol id="factList"></ol></div>
+          <div class="contextItem"><strong>반드시 들어갈 말</strong><span id="mustText"></span></div>
+          <div class="contextItem"><strong>써도 되는 숫자</strong><span id="numberText"></span></div>
+          <div class="contextItem"><strong>쓰면 안 되는 말</strong><span id="forbiddenText"></span></div>
+          <div class="contextItem"><strong>글자 수 범위</strong><span id="lengthText"></span></div>
           <div class="contextItem facts"><strong>목소리 표본</strong><pre id="voiceText"></pre></div>
         </div>
       </section>
@@ -149,13 +149,13 @@
 
       <section class="card rubric" aria-labelledby="rubricHeading">
         <h2 id="rubricHeading">판정 기준</h2>
-        <details open><summary>먼저 content를 확인합니다</summary><p id="contentRubric"></p></details>
-        <details><summary>네 선호 차원의 뜻</summary><div id="dimensionRubric"></div></details>
+        <details open><summary>먼저 내용을 확인합니다</summary><p id="contentRubric"></p></details>
+        <details><summary>네 가지 평가 항목의 뜻</summary><div id="dimensionRubric"></div></details>
       </section>
 
       <section class="card" aria-labelledby="choiceHeading">
         <h2 id="choiceHeading">이 사례 판정</h2>
-        <p class="contentWarning" role="note">content가 모두 pass가 아니므로 선호는 판단 불가로 기록됩니다.</p>
+        <p class="contentWarning" role="note">두 글 가운데 하나라도 내용 확인을 통과하지 않아 네 평가 항목은 '판단 불가'로 기록됩니다.</p>
         <div id="contentFields"></div>
         <div id="preferenceFields"></div>
         <h3>선택 근거</h3>
@@ -180,7 +180,7 @@
       <section class="card exportPanel" id="exportPanel" hidden aria-labelledby="exportHeading">
         <h2 id="exportHeading" tabindex="-1">내보낼 JSON</h2>
         <p>아래 내용을 파일로 저장한 뒤 평가 담당자에게 전달합니다. 글 생성 결과나 다른 사람의 평가는 들어 있지 않습니다.</p>
-        <textarea id="exportText" readonly aria-label="내보낼 panel assignment review JSON"></textarea>
+        <textarea id="exportText" readonly aria-label="내보낼 평가 결과 JSON"></textarea>
         <a class="download" id="downloadLink" download>JSON 파일 저장</a>
       </section>
     </main>
@@ -194,12 +194,12 @@
     const dimensionNames = {
       naturalness: "자연스러움",
       clarity: "명료성",
-      taskUtility: "독자 과업",
+      taskUtility: "과업에 도움",
       voice: "목소리 보존"
     };
     const genreNames = {
       blog: "블로그",
-      report: "보고문",
+      report: "보고서",
       docs: "기술 문서",
       guide: "안내서",
       essay: "수필",
@@ -271,12 +271,12 @@
         const fieldset = document.createElement("fieldset");
         fieldset.dataset.contentSide = side;
         const legend = document.createElement("legend");
-        legend.textContent = `${side === "left" ? "왼쪽" : "오른쪽"} 글 content`;
+        legend.textContent = `${side === "left" ? "왼쪽" : "오른쪽"} 글 내용 확인`;
         const row = document.createElement("div");
         row.className = "choiceRow";
         row.append(
-          makeChoice(`content-${side}`, "pass", "pass"),
-          makeChoice(`content-${side}`, "fail", "fail"),
+          makeChoice(`content-${side}`, "pass", "통과"),
+          makeChoice(`content-${side}`, "fail", "탈락"),
           makeChoice(`content-${side}`, "cannotJudge", "판단 불가")
         );
         fieldset.append(legend, row);
@@ -294,7 +294,7 @@
         row.append(
           makeChoice(`preference-${dimension}`, "left", "왼쪽"),
           makeChoice(`preference-${dimension}`, "right", "오른쪽"),
-          makeChoice(`preference-${dimension}`, "tie", "무승부"),
+          makeChoice(`preference-${dimension}`, "tie", "비슷함"),
           makeChoice(`preference-${dimension}`, "cannotJudge", "판단 불가")
         );
         fieldset.append(legend, row);
@@ -312,11 +312,11 @@
       for (const name of ["content", ...dimensions]) {
         const label = document.createElement("label");
         if (name === "content") label.className = "wide";
-        label.textContent = name === "content" ? "content 근거" : `${dimensionNames[name]} 근거`;
+        label.textContent = name === "content" ? "내용 확인 근거" : `${dimensionNames[name]} 근거`;
         const textarea = document.createElement("textarea");
         textarea.dataset.reasonName = name;
         textarea.required = true;
-        textarea.placeholder = "글의 구체적인 자리와 선택 이유를 적으세요";
+        textarea.placeholder = "어느 문장을 보고 그렇게 골랐는지 적으세요";
         label.append(textarea);
         reasonFields.append(label);
       }
@@ -364,7 +364,7 @@
       document.querySelector(".contentWarning").classList.toggle("visible", contentComplete && !bothPass);
       const locks = hanlintReview.preferenceLock(panelCase, review, dimensions);
       byId("voiceChoiceHint").textContent = panelCase.context.voiceReference === null
-        ? "목소리 표본이 없어 판단 불가로 고정됩니다."
+        ? "목소리 표본이 없어 '판단 불가'로 고정됩니다."
         : "위에 제공된 목소리 표본과 두 글을 대조합니다.";
       for (const dimension of dimensions) {
         const lock = locks[dimension];
@@ -387,7 +387,7 @@
       byId("lengthText").textContent = `${panelCase.context.length.min}자 이상 ${panelCase.context.length.max}자 이하`;
       byId("voiceText").textContent = panelCase.context.voiceReference
         ? panelCase.context.voiceReference.text
-        : "제공되지 않음. 목소리 보존은 판단 불가로 기록됩니다.";
+        : "목소리 표본이 없습니다. 목소리 보존은 '판단 불가'로 기록됩니다.";
       byId("leftText").textContent = panelCase.comparison.left;
       byId("rightText").textContent = panelCase.comparison.right;
       const factList = byId("factList");
@@ -431,7 +431,7 @@
     function moveTo(index, requireCurrent) {
       const current = assignment.cases[state.currentIndex];
       if (requireCurrent && !caseComplete(current)) {
-        announce("content, 네 선호와 다섯 근거를 모두 채운 뒤 다음 사례로 이동하세요.");
+        announce("내용 확인, 평가 항목 네 가지, 근거 다섯 칸을 모두 채운 뒤 다음 사례로 이동하세요.");
         return;
       }
       state.currentIndex = Math.max(0, Math.min(assignment.cases.length - 1, index));

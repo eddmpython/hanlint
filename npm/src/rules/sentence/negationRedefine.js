@@ -24,7 +24,7 @@ export function run(doc) {
       const current = sentences[i];
       const following = sentences[i + 1];
       if (NEGATION.test(current.text) && isDefinition(following.text)) {
-        findings.push(finding(name, current.line, current.text, "단순한 X 가 아닙니다 뒤에 Y 입니다 로 재정의하는 공식이다. 앞 문장을 지우고 Y 를 바로 쓴다", null, "error", SENTENCE, current.index));
+        findings.push(finding(name, current.line, current.text, "`단순한 X가 아닙니다` 뒤에 `Y입니다`로 다시 정의하는 공식이다. 앞 문장을 지우고 Y를 바로 쓴다", null, "error", SENTENCE, current.index));
       }
     }
   }

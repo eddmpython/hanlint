@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * data 폴더를 읽는다. 파이썬 정본의 투영이라 파일 모양이 같다. txt 는 한 줄에 항목 하나, json 은 toml 을 옮긴 것.
+ * data 폴더를 읽는다. 파이썬 자료에서 만든 사본이라 파일 모양이 같다. txt는 한 줄에 항목 하나이고, json은 toml을 옮긴 것이다.
  * 한 번 읽은 것은 기억한다.
  */
 import { compile } from "../regex.js";
@@ -24,7 +24,7 @@ export function readText(name) {
   return readData(name);
 }
 
-/** `#` 으로 시작하면 주석, 빈 줄은 무시. @param {string} name @returns {string[]} */
+/** `#`으로 시작하면 주석, 빈 줄은 무시. @param {string} name @returns {string[]} */
 export function loadLines(name) {
   return cached(`lines:${name}`, () =>
     readText(name)
@@ -39,7 +39,7 @@ export function loadPatterns(name) {
   return cached(`patterns:${name}`, () => loadLines(name).map((line) => compile(line)));
 }
 
-/** toml 의 `[[entry]]` 목록. @param {string} name @returns {Record<string, unknown>[]} */
+/** toml의 `[[entry]]` 목록. @param {string} name @returns {Record<string, unknown>[]} */
 export function loadEntries(name) {
   return cached(`entries:${name}`, () => {
     const data = JSON.parse(readText(name.replace(/\.toml$/, ".json")));
@@ -47,17 +47,17 @@ export function loadEntries(name) {
   });
 }
 
-/** @returns {Record<string, string>} 규칙 이름 → 기술서 (파이썬 docstring 의 투영) */
+/** @returns {Record<string, string>} 규칙 이름 → 설명서(파이썬 docstring에서 만든 사본) */
 export function loadRuleDocs() {
   return cached("ruleDocs", () => JSON.parse(readText("ruleDocs.json")));
 }
 
-/** @returns {Record<string, string>} 규칙 이름 → 부류 (규칙 파일이 사는 폴더의 투영) */
+/** @returns {Record<string, string>} 규칙 이름 → 묶음(규칙 파일이 있는 폴더에서 만든 사본) */
 export function loadRuleCategories() {
   return cached("ruleCategories", () => JSON.parse(readText("ruleCategories.json")));
 }
 
-/** @returns {Record<string, string>} 규칙 이름 → 기제 (파이썬 등록부의 투영) */
+/** @returns {Record<string, string>} 규칙 이름 → 찾는 방법(파이썬 규칙 목록에서 만든 사본) */
 export function loadRuleMechanisms() {
   return cached("ruleMechanisms", () => JSON.parse(readText("ruleMechanisms.json")));
 }

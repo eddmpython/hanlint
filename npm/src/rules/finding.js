@@ -1,5 +1,5 @@
 // @ts-check
-/** 지적 하나의 모양. 파이썬 rules/finding.py 와 같은 필드와 같은 JSON 순서다. */
+/** 지적 하나의 형식. 파이썬 rules/finding.py와 필드도 JSON 순서도 같다. */
 
 export const ERROR = "error";
 export const NOTICE = "notice";
@@ -18,10 +18,10 @@ const MIN_LOCAL_CUE = 2;
  * @property {string} quote
  * @property {string} why
  * @property {string | null} fix 기계가 낼 수 있을 때만
- * @property {string} severity error 는 규칙 위반, notice 는 확인이 필요한 것
+ * @property {string} severity error는 규칙 위반, notice는 확인이 필요한 것
  * @property {string} scope sentence, paragraph, section, document
- * @property {number} at scope 가 가리키는 지문의 index
- * @property {string | null} fragment 원문에서 바꿀 조각. hanlint fix 가 replacement 로 바꾼다
+ * @property {number} at scope가 가리키는 분석 결과의 index
+ * @property {string | null} fragment 원문에서 바꿀 조각. hanlint fix가 replacement로 바꾼다
  * @property {string | null} replacement
  * @property {Candidate[]} candidates 뜻을 정하지 않고 형태로 좁힐 수 있을 때만. 순위와 점수는 없다
  */

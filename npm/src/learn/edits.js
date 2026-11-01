@@ -1,5 +1,5 @@
 // @ts-check
-/** Python learn/edits.py와 같은 원문 문장 대응 및 지적 소멸 후보다. */
+/** Python learn/edits.py와 같은 방법으로 문장을 짝짓고, 지적이 사라진 문장 짝을 후보로 낸다. */
 import { sourceSentenceTexts } from "../fingerprint/sourceSentence.js";
 import { readerKind } from "../fingerprint/readerState.js";
 import { localCue, SENTENCE } from "../rules/finding.js";
@@ -21,7 +21,7 @@ export function learnExemplars(beforeDoc, afterDoc, beforeFindings, afterFinding
     if (!afterText || before.text.trim() === afterPlain) continue;
     seen.add(key);
     learned.push({ rule: finding.rule, before: (rawBefore.get(before.index) ?? before.text).trim(), after: afterText,
-      moved: "실제 수정본의 문장으로 바꿈", why: finding.why, beforeLine: before.line,
+      moved: "실제로 고친 문장으로 바꿨다", why: finding.why, beforeLine: before.line,
       afterLines: [...new Set(after.map((item) => item.line))], sentence: before.text.trim(),
       cue: localCue(finding), reader: readerKind(before, beforeDoc.reader.beforeSentence[finding.at]),
       ...(preset ? { presets: [preset] } : {}),

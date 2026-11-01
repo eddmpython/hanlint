@@ -56,7 +56,7 @@ def testCandidatesAppearInJsonAndBelowExemplarsInText():
     candidate = data["files"][0]["findings"][0]["candidates"][0]
     assert candidate == {"text": "표를 넣습니다.", "why": "바로 앞 문장에 나온 명사 `표`"}
     text = renderText("글.md", [finding])
-    assert text.index("본보기") < text.index("후보 (기계가 고르지 않음)")
+    assert text.index("예시") < text.index("후보 (hanlint가 하나를 고르지 않았다)")
 
 
 def testRulesWithoutCandidatesOmitTheJsonField():

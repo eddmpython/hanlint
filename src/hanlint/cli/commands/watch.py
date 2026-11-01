@@ -3,8 +3,8 @@
 글을 쓰는 사람은 저장하고, 터미널로 옮겨 가서, 명령을 다시 치고, 편집기로 돌아온다. 그 왕복이 검사를
 안 돌리게 만든다. 편집기가 무엇이든 터미널 하나를 띄워 두면 되도록 이 명령이 그 자리를 메운다.
 
-파이썬 쪽에만 있다 (audit, map, profile, coverage, diff 와 같다). 폴링으로 본다. 감시 라이브러리를
-넣으면 런타임 의존성 0 이 깨지고, 글 몇 개를 보는 데 파일 시스템 이벤트까지는 필요하지 않다.
+파이썬 쪽에만 있다 (audit, map, profile, coverage, diff와 같다). 폴링으로 본다. 감시 라이브러리를
+넣으면 런타임 의존성 0이 깨지고, 글 몇 개를 보는 데 파일 시스템 이벤트까지는 필요하지 않다.
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ def report(paths: list[str], args: argparse.Namespace, config: Config) -> str:
 
 
 def run(args: argparse.Namespace, rounds: int | None = None) -> int:
-    """`rounds` 는 시험이 준다. None 이면 Ctrl+C 까지 돈다."""
+    """`rounds`는 시험이 준다. None이면 Ctrl+C까지 돈다."""
     files = collectFiles(args.files)
     config = configFrom(args, start=startFolder(files))
     if not args.quiet:

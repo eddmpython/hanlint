@@ -1,4 +1,4 @@
-"""사람 합의 한국어 근거 쌍으로 외부 함의 평가기의 예측과 기권을 잰다."""
+"""사람이 합의한 한국어 근거 쌍으로 외부 함의 평가기의 예측과 답하지 않은 비율을 잰다."""
 
 from __future__ import annotations
 
@@ -39,35 +39,35 @@ def stableDigest(value: object) -> str:
 
 def exactKeys(data: object, expected: set[str], where: str) -> dict:
     if not isinstance(data, dict):
-        raise ValueError(f"{where}는 JSON 객체다")
+        raise ValueError(f"{where} 값은 JSON 객체여야 한다")
     unknown = sorted(set(data) - expected)
     missing = sorted(expected - set(data))
     if unknown:
-        raise ValueError(f"{where}의 모르는 키: {', '.join(unknown)}")
+        raise ValueError(f"모르는 키({where}): {', '.join(unknown)}")
     if missing:
-        raise ValueError(f"{where}의 빠진 키: {', '.join(missing)}")
+        raise ValueError(f"빠진 키({where}): {', '.join(missing)}")
     return data
 
 
 def checkedString(value: object, where: str) -> str:
     if not isinstance(value, str) or not value or value != value.strip():
-        raise ValueError(f"{where}는 양끝 공백 없는 문자열이다")
+        raise ValueError(f"{where} 값은 양끝 공백 없는 문자열이어야 한다")
     if not is_normalized("NFC", value):
-        raise ValueError(f"{where}는 NFC 문자열이어야 한다")
+        raise ValueError(f"{where} 값은 NFC 문자열이어야 한다")
     return value
 
 
 def checkedSha(value: object, where: str) -> str:
     value = checkedString(value, where)
     if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
-        raise ValueError(f"{where}는 소문자 SHA256이다")
+        raise ValueError(f"{where} 값은 소문자 SHA256이어야 한다")
     return value
 
 
 def checkedLabel(value: object, choices: tuple[str, ...], where: str) -> str:
     value = checkedString(value, where)
     if value not in choices:
-        raise ValueError(f"{where}는 {', '.join(choices)} 가운데 하나다")
+        raise ValueError(f"{where} 값은 {', '.join(choices)} 가운데 하나여야 한다")
     return value
 
 
@@ -214,7 +214,7 @@ def checkedBenchmark(data: object) -> dict:
             or item["locator"] != sourceGuid
             or item["license"] != source["license"]
         ):
-            raise ValueError(f"{where}의 출처 버전·locator·라이선스가 정본과 다르다")
+            raise ValueError(f"{where}의 출처 버전·locator·라이선스가 고정한 자료와 다르다")
         caseSha = checkedSha(item["caseSha256"], f"{where}.caseSha256")
         if caseSha != stableDigest({key: value for key, value in item.items() if key != "caseSha256"}):
             raise ValueError(f"{where}.caseSha256이 내용과 다르다")
@@ -409,7 +409,7 @@ def entailmentCases() -> dict:
 
 
 def evaluateEntailment(predictions: EntailmentPredictions | dict) -> EntailmentEvaluationResult:
-    """gold를 공개하지 않고 3분류와 기권 지표를 결정적으로 집계한다."""
+    """gold를 공개하지 않고 3분류 지표와 답하지 않은 비율을 늘 같은 방식으로 집계한다."""
     if isinstance(predictions, EntailmentPredictions):
         predictions = EntailmentPredictions.fromMapping(predictions.asDict())
     elif isinstance(predictions, dict):

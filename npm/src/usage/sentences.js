@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * 문장 역인덱스. 뜻과 파일 꼴은 파이썬 usage/sentences.py 가 소유한다. 같은 글에서 같은 바이트를 만들고 같은 순서로 답한다.
+ * 문장 역인덱스. 뜻과 파일 꼴은 파이썬 usage/sentences.py가 정한다. 같은 글에서 같은 바이트를 만들고 같은 순서로 답한다.
  * 토큰은 조사를 뗀 어절과 한글 어절의 글자 두 개짜리 조각, 순서는 BM25 (k1 1.5, b 0.75) 값, 값은 SCORE_SCALE 배의
- * 정수로 내려 견준다 (두 구현의 log 가 마지막 자리에서 다를 수 있다). 만들기는 문장 표를 바로 쓰고 postings 를 조각으로
+ * 정수로 내려 비교한다 (두 구현의 log가 마지막 자리에서 다를 수 있다). 만들기는 문장 표를 바로 쓰고 postings를 조각으로
  * 내렸다가 병합한다 (파이썬과 같은 조각 크기, 같은 병합 결과). 함께 쓰는 말은 조회 때 postings 앞 문장을 읽어 센다.
  */
 import { createHash } from "node:crypto";
@@ -66,7 +66,7 @@ export function defaultRoot() {
   return join(homedir(), ".cache", "hanlint", "usage");
 }
 
-/** 파이썬 sorted() 와 같은 코드 포인트 순. @param {string} a @param {string} b */
+/** 파이썬 sorted()와 같은 코드 포인트 순. @param {string} a @param {string} b */
 export function compareCodePoints(a, b) {
   const left = [...a];
   const right = [...b];
@@ -78,7 +78,7 @@ export function compareCodePoints(a, b) {
   return left.length - right.length;
 }
 
-/** 두 구현이 같은 글자를 보게 한다. 뜻은 파이썬 normalized 가 소유한다. @param {string} text */
+/** 두 구현이 같은 글자를 보게 한다. 뜻은 파이썬 normalized가 정한다. @param {string} text */
 export function normalized(text) {
   return text.replace(BOM, "").replace(STRAY, " ");
 }
@@ -104,7 +104,7 @@ export function indexTokens(text) {
   return found;
 }
 
-/** 함께 쓰는 말을 물을 낱말. 뜻은 파이썬 queryCores 가 소유한다. @param {string} text @returns {string[]} */
+/** 함께 쓰는 말을 물을 단어. 뜻은 파이썬 queryCores가 정한다. @param {string} text @returns {string[]} */
 export function queryCores(text) {
   /** @type {string[]} */
   const found = [];
@@ -120,7 +120,7 @@ export function sentenceKey(text) {
   return text.replace(SPACE, " ").trim().replace(DIGITS, "0");
 }
 
-/** 접는 꼴의 64비트 해시 (SHA-256 앞 8바이트, little endian). 파이썬 keyHash 와 같은 값이다. @param {string} key */
+/** 접는 꼴의 64비트 해시 (SHA-256 앞 8바이트, little endian). 파이썬 keyHash와 같은 값이다. @param {string} key */
 export function keyHash(key) {
   return createHash("sha256").update(key, "utf-8").digest().readBigUInt64LE(0);
 }
@@ -186,8 +186,8 @@ export function decodeVarints(data) {
 }
 
 /**
- * 폴더 (하위 포함) 의 txt 와 md 는 파일 하나가 문서 하나, jsonl 은 줄 하나가 문서 하나. 폴더 기준 posix 경로의 코드 포인트
- * 순이라 파이썬 readDocuments 와 같은 차례다. 큰 jsonl 을 통째로 들지 않게 generator 다.
+ * 폴더(하위 포함)의 txt와 md는 파일 하나가 문서 하나, jsonl은 줄 하나가 문서 하나. 폴더 기준 posix 경로의 코드 포인트
+ * 순이라 파이썬 readDocuments와 같은 차례다. 큰 jsonl을 통째로 들지 않게 generator다.
  * @param {string} folder @returns {Generator<[string, string]>}
  */
 export function* readDocuments(folder) {
@@ -213,7 +213,7 @@ export function* readDocuments(folder) {
   }
 }
 
-/** jsonl 을 줄 단위로 읽는다. 위키백과처럼 1 GB 가 넘는 파일을 한 번에 들지 않는다. @param {string} path @returns {Generator<[string, string]>} */
+/** jsonl을 줄 단위로 읽는다. 위키백과처럼 1 GB가 넘는 파일을 한 번에 들지 않는다. @param {string} path @returns {Generator<[string, string]>} */
 function* readJsonl(path) {
   const fd = openSync(path, "r");
   const chunk = Buffer.alloc(1 << 20);
@@ -254,7 +254,7 @@ function littleEndian(values) {
 }
 
 /**
- * 조각 하나. 토큰 순 terms 줄과 (절대 문장 번호, 빈도) varint 덩어리. 뜻은 파이썬 writeShard 가 소유한다.
+ * 조각 하나. 토큰 순 terms 줄과 (절대 문장 번호, 빈도) varint 덩어리. 뜻은 파이썬 writeShard가 정한다.
  * @param {string} work @param {number} index @param {Map<string, number[]>} postingIds @param {Map<string, number[]>} postingTfs
  */
 function writeShard(work, index, postingIds, postingTfs) {
@@ -295,7 +295,7 @@ function shardLines(path) {
 }
 
 /**
- * 조각들을 토큰 순으로 병합해 postings.bin, terms.tsv, termOffsets.bin 을 쓴다. 뜻은 파이썬 mergeShards 가 소유한다.
+ * 조각들을 토큰 순으로 병합해 postings.bin, terms.tsv, termOffsets.bin을 쓴다. 뜻은 파이썬 mergeShards가 정한다.
  * @param {string} work @param {string[]} shards @param {string} target @returns {number}
  */
 function mergeShards(work, shards, target) {
@@ -462,7 +462,7 @@ function collocationStops() {
 }
 
 /**
- * 용언 어절의 어간. 뜻은 파이썬 predicateStem 이 소유한다. 용언이 아니면 null, 어간이 한 글자면 "".
+ * 용언 어절의 어간. 뜻은 파이썬 predicateStem이 정한다. 용언이 아니면 null, 어간이 한 글자면 "".
  * @param {string} core @returns {string | null}
  */
 export function predicateStem(core) {
@@ -483,7 +483,7 @@ export function predicateStem(core) {
   return [...stem].length >= 2 && HANGUL_WORD.test(stem) ? stem : "";
 }
 
-/** 이웃 어절을 [부류, 낱말] 로. 뜻은 파이썬 neighbourOf 가 소유한다. @param {string} core @returns {["predicate" | "noun", string] | null} */
+/** 이웃 어절을 [묶음, 단어]로. 뜻은 파이썬 neighbourOf가 정한다. @param {string} core @returns {["predicate" | "noun", string] | null} */
 export function neighbourOf(core) {
   if (collocationStops().has(core) || nonNouns().has(core)) return null;
   const stem = predicateStem(core);
@@ -504,7 +504,7 @@ export class UsageIndex {
   constructor(folder) {
     this.folder = folder;
     this.meta = JSON.parse(readFileSync(join(folder, "meta.json"), "utf-8"));
-    if (this.meta.format !== FORMAT) throw new Error(`${folder} 의 색인 format 이 ${this.meta.format} 이다. ${FORMAT} 으로 다시 만든다`);
+    if (this.meta.format !== FORMAT) throw new Error(`색인 format이 지금 버전과 다르다: ${folder} (색인 ${this.meta.format}, 지금 ${FORMAT}). hanlint usage build로 다시 만든다`);
     const lengthBytes = readFileSync(join(folder, "lengths.bin"));
     this.lengths = new Uint32Array(lengthBytes.buffer, lengthBytes.byteOffset, lengthBytes.length / 4);
     const documentBytes = readFileSync(join(folder, "documents.bin"));
@@ -535,7 +535,7 @@ export class UsageIndex {
     }
   }
 
-  /** offsetsName 의 index 번째 위치에서 name 의 한 줄. @param {string} name @param {string} offsetsName @param {number} index */
+  /** offsetsName의 index 번째 위치에서 name의 한 줄. @param {string} name @param {string} offsetsName @param {number} index */
   lineAt(name, offsetsName, index) {
     const offset = Number(this.readAt(offsetsName, index * 8, 8).readBigUInt64LE(0));
     const size = statSync(join(this.folder, name)).size;
@@ -550,7 +550,7 @@ export class UsageIndex {
   }
 
   /**
-   * [문서 빈도, postings 위치, 바이트 수]. 토큰 표를 코드 포인트 순으로 이분 탐색한다. 뜻은 파이썬 lookup 이 소유한다.
+   * [문서 빈도, postings 위치, 바이트 수]. 토큰 표를 코드 포인트 순으로 이분 탐색한다. 뜻은 파이썬 lookup이 정한다.
    * @param {string} term @returns {[number, number, number] | null}
    */
   lookup(term) {
@@ -618,7 +618,7 @@ export class UsageIndex {
     });
   }
 
-  /** 그 낱말 바로 앞뒤에 오는 말. 뜻은 파이썬 collocations 가 소유한다. @param {string} term @returns {Collocation | null} */
+  /** 그 단어 바로 앞뒤에 오는 말. 뜻은 파이썬 collocations가 정한다. @param {string} term @returns {Collocation | null} */
   collocations(term) {
     const found = this.lookup(term);
     if (!found) return null;

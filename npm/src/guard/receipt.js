@@ -1,14 +1,14 @@
 // @ts-check
-/** Reader Contract 검사와 Patch 검증의 결정적 영수증. */
+/** Reader Contract 검사와 Patch 검증의 결과 기록. 같은 입력이면 늘 같은 결과다. */
 
 import { findingAsDict } from "../rules/finding.js";
 import { readerDebts } from "../rules/readerDebt.js";
 import { compareText, surfaceViolationCount } from "./surface.js";
 
 export const CHECK_MEANING = "violationCount는 선언한 보호 원자와 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
-export const CHECK_MEANING_V2 = "violationCount는 선언한 보호 원자, 제목 구조, 잠금 문구 누락과 hanlint error의 수다. facts의 관계와 진실, 빠진 의미, 독자 효용과 자연스러움은 검증하지 않는다";
+export const CHECK_MEANING_V2 = "violationCount는 계약에 적은 숫자·링크·코드의 어긋남, 제목 구조의 어긋남, 빠진 고정 문구, hanlint 오류를 더한 수다. facts 사이의 관계와 사실 여부, 빠진 뜻, 독자에게 쓸모 있는지와 자연스러운지는 검사하지 않는다";
 export const PATCH_MEANING = "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 보호 원자 위반과 새 error를 만들지 않았다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다";
-export const PATCH_MEANING_V2 = "verified는 정확히 한 자리를 바꾸고 명시한 기존 위반을 줄이며 새 계약 위반과 새 error를 만들지 않고 선택한 수정 예산을 지켰다는 뜻뿐이다. 수정문의 의미와 진실, 자연스러움은 승인하지 않는다";
+export const PATCH_MEANING_V2 = "verified는 정확히 한 곳을 바꾸고, 적어 둔 기존 위반을 줄이고, 새 계약 위반과 새 오류를 만들지 않고, 고른 수정 예산을 지켰다는 뜻뿐이다. 고친 문장의 뜻이 맞는지, 사실인지, 자연스러운지는 보증하지 않는다";
 
 /** @param {import("../rules/finding.js").Finding[]} findings */
 function errorRules(findings) {
@@ -32,7 +32,7 @@ export class CheckResult {
     this.document = document;
     this.missingFacts = missingFacts;
     if (![1, 2].includes(contractVersion)) {
-      throw new Error(`check result contractVersion 은 1 또는 2다: ${contractVersion}`);
+      throw new Error(`check result의 contractVersion은 1이나 2여야 한다. 받은 값: ${contractVersion}`);
     }
     const hasStructure = outline !== null && document !== null;
     if (hasStructure !== (contractVersion === 2)) {
@@ -89,7 +89,7 @@ export class PatchResult {
     this.resultText = values.resultText;
     this.contractVersion = values.contractVersion;
     if (![1, 2].includes(values.contractVersion)) {
-      throw new Error(`patch result contractVersion 은 1 또는 2다: ${values.contractVersion}`);
+      throw new Error(`patch result의 contractVersion은 1이나 2여야 한다. 받은 값: ${values.contractVersion}`);
     }
   }
 
@@ -137,7 +137,7 @@ export class PatchResult {
   }
 }
 
-/** 사람이 결론, 근거, 다음 행동 순서로 읽는 검사 영수증. @param {CheckResult} result */
+/** 사람이 결론, 근거, 다음 할 일의 순서로 읽는 검사 결과. @param {CheckResult} result */
 export function renderCheck(result) {
   const lines = [result.violationCount === 0 ? "계약 위반 없음" : `계약 위반 ${result.violationCount}건`];
   const labels = [
@@ -162,19 +162,19 @@ export function renderCheck(result) {
   if (result.document) {
     lines.push(`- 글: 문장 ${result.document.sentenceCount}, 문단 ${result.document.paragraphCount}, 절 ${result.document.sectionCount}`);
     result.document.sections.forEach((section, index) => {
-      lines.push(`  ${index + 1}. ${section.heading} (${section.line}행, 문단 ${section.paragraphCount}, 코드 ${section.codeBlockCount})`);
+      lines.push(`  ${index + 1}. ${section.heading} (${section.line}줄, 문단 ${section.paragraphCount}, 코드 ${section.codeBlockCount})`);
     });
   }
-  lines.push(`- lint: error ${result.errorCount}, notice ${result.noticeCount}`);
+  lines.push(`- lint: 오류 ${result.errorCount}건, 확인 권고 ${result.noticeCount}건`);
   if (result.errorCount) {
     lines.push(`  ${Object.entries(errorRules(result.findings)).map(([rule, count]) => `${rule} ${count}`).join(", ")}`);
   }
   const debts = readerDebts(result.findings);
-  lines.push(debts.length ? `- 독자 부채: ${debts.length}건` : "- 독자 부채: 없음");
-  for (const debt of debts) lines.push(`  ${debt.line}행 [${debt.rule}] ${debt.why}`);
-  if (result.violationCount) lines.push("\n다음: 계약과 글 가운데 틀린 쪽을 바로잡고 같은 check를 다시 실행한다");
-  else if (result.noticeCount) lines.push("\n다음: notice를 읽고 고칠지 유지할지 판단한 뒤 사람과 LLM 평가로 넘어간다");
-  else lines.push("\n다음: 세어서 잡히는 계약 위반이 없다. 사람과 LLM 평가로 넘어간다");
+  lines.push(debts.length ? `- 독자가 막힐 곳: ${debts.length}건` : "- 독자가 막힐 곳: 없음");
+  for (const debt of debts) lines.push(`  ${debt.line}줄 [${debt.rule}] ${debt.why}`);
+  if (result.violationCount) lines.push("\n다음: 계약과 글 가운데 틀린 쪽을 고치고 같은 check를 다시 돌린다");
+  else if (result.noticeCount) lines.push("\n다음: 확인 권고를 읽고 고칠지 그대로 둘지 정한다");
+  else lines.push("\n다음: 규칙으로 셀 수 있는 계약 위반은 없다. 뜻과 자연스러움은 사람이 읽고 판단한다");
   lines.push("", result.contractVersion === 1 ? CHECK_MEANING : CHECK_MEANING_V2);
   return lines.join("\n");
 }

@@ -1,21 +1,21 @@
 // @ts-check
 /**
- * 명령줄 진입점. 파이썬 CLI 와 같은 인자, 같은 출력, 같은 종료 코드다 (0 지적 없음, 1 error 있음, 2 파일이나 설정 문제).
+ * 명령줄 진입점. 파이썬 CLI와 같은 인자, 같은 출력, 같은 종료 코드다 (0 지적 없음, 1 error 있음, 2 파일이나 설정 문제).
  *
  * ```
  * hanlint                       인자가 없으면 첫 화면. 무엇을 칠 수 있는지 보인다
- * hanlint 글.md [다른.md ...]   검사. 서브커맨드 없이 파일이나 폴더만 주면 lint 다. `-` 는 stdin
+ * hanlint 글.md [다른.md ...]   검사. 서브커맨드 없이 파일이나 폴더만 주면 lint다. `-`는 stdin
  * hanlint fix 글.md             기계가 고칠 수 있는 지적을 원문에 적용
  * hanlint print 글.md           분석표 계층 JSON
- * hanlint rules                 규칙 목록을 부류로 묶어서
+ * hanlint rules                 규칙 목록을 묶음로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
- * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
- * hanlint primer --preset <종류> 쓰기 전에 읽는 한 장. 작법서 일곱 줄과 켜진 규칙의 고치는 법, 본보기 전후
- * hanlint hook                  에이전트 훅. --prime 은 쓰기 전 작법서, 나머지는 쓴 마크다운의 비차단 검사
+ * hanlint patterns             문장 틀. --rule로 그 규칙을 피하는 것만
+ * hanlint primer --preset <종류> 쓰기 전에 읽는 한 장. 글쓰기 지침 일곱 줄과 켜진 규칙의 고치는 법, 예시 전후
+ * hanlint hook                  에이전트 훅. --prime은 쓰기 전 글쓰기 지침, 나머지는 쓴 마크다운의 비차단 검사
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint baseline 글들/        지금 있는 지적을 잠근다. 그다음부터 새것만 막힌다
  * hanlint doctor                설정과 꺼진 규칙
- * hanlint init                  주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
+ * hanlint init                  주석 달린 hanlint.toml. --output과 --preset blog|report|docs
  * hanlint contract init 글.md   원문에서 최소 Reader Contract 초안
  * ```
  * audit, guard, arena, blueprint, evidence, entailment 같은 확장 명령은 파이썬 패키지에 있다.
@@ -88,11 +88,11 @@ const PYTHON_ONLY = [
 ];
 const FORMATS = ["text", "compact", "json", "github"];
 const SEVERITIES = ["all", "error", "notice"];
-/** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py 가 소유한다. */
+/** 오탐과 미탐을 받는 자리. 뜻은 파이썬 cli/commands/explain.py가 소유한다. */
 const ISSUES = "github.com/eddmpython/hanlint/issues";
 const STDIN = "-";
 const STDIN_NAME = "<stdin>";
-/** 폴더를 주면 이 확장자만 찾는다. 파이썬 cli/commands/shared.py 의 MARKDOWN 과 같다. */
+/** 폴더를 주면 이 확장자만 찾는다. 파이썬 cli/commands/shared.py의 MARKDOWN과 같다. */
 const THRESHOLD_FIELDS = [
   "fragmentRun",
   "introMaxParagraphs",
@@ -180,13 +180,13 @@ function parseArgs(args) {
       options[arg] = true;
       continue;
     }
-    // 값을 줘도 되고 안 줘도 되는 옵션. 다음 인자가 다른 옵션이거나 없으면 true 로 둔다 (파이썬의 nargs="?").
+    // 값을 줘도 되고 안 줘도 되는 옵션. 다음 인자가 다른 옵션이거나 없으면 true로 둔다 (파이썬의 nargs="?").
     if (kind === "optional" && inlineValue === null && (args[i + 1] === undefined || args[i + 1].startsWith("--"))) {
       options[arg] = true;
       continue;
     }
     const value = inlineValue ?? args[++i];
-    if (value === undefined) throw new UsageError(`${arg} 에 값이 없다`);
+    if (value === undefined) throw new UsageError(`${arg}에 값이 없다`);
     if (kind === "list") {
       const list = /** @type {string[]} */ (options[arg] ?? []);
       list.push(value);
@@ -199,10 +199,10 @@ function parseArgs(args) {
 }
 
 /**
- * 서브커맨드 없이 파일이나 옵션만 주면 lint 로 본다. 빈 인자는 여기서 다루지 않는다. `main` 이 첫 화면으로 보낸다.
+ * 서브커맨드 없이 파일이나 옵션만 주면 lint로 본다. 빈 인자는 여기서 다루지 않는다. `main`이 첫 화면으로 보낸다.
  * @param {string[]} argv
  */
-export /** 파일 이름이 아니라 서브커맨드를 치려던 것으로 보이나. 뜻은 파이썬 cli/main.py 가 소유한다. @param {string} word */
+export /** 파일 이름이 아니라 서브커맨드를 치려던 것으로 보이나. 뜻은 파이썬 cli/main.py가 소유한다. @param {string} word */
 function looksLikeCommand(word) {
   if (!word || !/^[A-Za-z]+$/.test(word)) return false;
   return !existsSync(word);
@@ -213,15 +213,15 @@ function normalizeArgv(argv) {
   if (COMMANDS.includes(argv[0]) || PYTHON_ONLY.includes(argv[0]) || ["-h", "--help", "--version"].includes(argv[0])) return argv;
   if (looksLikeCommand(argv[0])) {
     const near = nearNames(argv[0], [...COMMANDS, ...PYTHON_ONLY]);
-    const hint = near.length ? ` 가까운 이름: ${near.join(", ")}.` : "";
-    throw new Error(`${argv[0]} 는 모르는 명령이다.${hint} 전체 목록은 hanlint --help`);
+    const hint = near.length ? ` 비슷한 이름: ${near.join(", ")}.` : "";
+    throw new Error(`없는 명령: ${argv[0]}.${hint} 전체 목록은 hanlint --help`);
   }
   return ["lint", ...argv];
 }
 
 /** @param {string} value @param {string[]} choices @param {string} option */
 function choose(value, choices, option) {
-  if (!choices.includes(value)) throw new UsageError(`${option} 는 ${choices.join(", ")} 가운데 하나다: ${value}`);
+  if (!choices.includes(value)) throw new UsageError(`${option} 값으로 쓸 수 없다: ${value}. ${choices.join(", ")} 가운데 하나를 쓴다`);
   return value;
 }
 
@@ -232,10 +232,10 @@ function emit(text, output) {
     return;
   }
   writeFileSync(output, text.endsWith("\n") ? text : `${text}\n`, "utf-8");
-  process.stderr.write(`${output} 에 썼다\n`);
+  process.stderr.write(`${output}에 썼다\n`);
 }
 
-/** 설정을 찾기 시작할 폴더. 첫 실제 파일의 폴더, 전부 stdin 이면 현재 폴더. @param {string[]} paths */
+/** 설정을 찾기 시작할 폴더. 첫 실제 파일의 폴더, 전부 stdin이면 현재 폴더. @param {string[]} paths */
 function startFolder(paths) {
   for (const path of paths) if (path !== STDIN) return dirname(resolve(path));
   return process.cwd();
@@ -247,8 +247,8 @@ function checkDisabled(config) {
   const unknown = [...config.disable].filter((rule) => !names.includes(rule)).sort();
   if (!unknown.length) return;
   const near = nearNames(unknown[0], names);
-  const hint = near.length ? ` 가까운 이름: ${near.join(", ")}.` : "";
-  throw new Error(`모르는 규칙 이름: ${unknown.join(", ")}.${hint} 목록은 hanlint rules --names`);
+  const hint = near.length ? ` 비슷한 이름: ${near.join(", ")}.` : "";
+  throw new Error(`없는 규칙 이름: ${unknown.join(", ")}.${hint} 목록은 hanlint rules --names`);
 }
 
 /** @param {Record<string, string | string[] | boolean>} options @param {string[]} paths */
@@ -278,7 +278,7 @@ function header(config) {
 
 /** @param {Map<string, import("../rules/finding.js").Finding[]>} results */
 function summary(results) {
-  // 글에 실제로 있는 수. 거른 뒤가 아니라 거르기 전을 센다. 뜻은 파이썬 shared.summary 가 소유한다.
+  // 글에 실제로 있는 수. 거른 뒤가 아니라 거르기 전을 센다. 뜻은 파이썬 shared.summary가 소유한다.
   let errors = 0;
   let notices = 0;
   for (const findings of results.values()) {
@@ -287,16 +287,16 @@ function summary(results) {
       else if (f.severity === "notice") notices += 1;
     }
   }
-  return `파일 ${results.size}개, error ${errors}, notice ${notices}`;
+  return `파일 ${results.size}개, 오류 ${errors}건, 확인 권고 ${notices}건`;
 }
 
-/** (이름, 본문). `-` 면 stdin 을 UTF-8 로 읽는다. @param {string} path @param {string} stdinName @returns {[string, string]} */
+/** (이름, 본문). `-`면 stdin을 UTF-8로 읽는다. @param {string} path @param {string} stdinName @returns {[string, string]} */
 function readInput(path, stdinName) {
   if (path === STDIN) return [stdinName, readFileSync(0, "utf-8")];
   return [path, readOne(path)];
 }
 
-/** 글 하나를 읽는다. 폴더를 주면 말로 막는다. 뜻은 파이썬 shared.readFile 이 소유한다. @param {string} path */
+/** 글 하나를 읽는다. 폴더를 주면 말로 막는다. 뜻은 파이썬 shared.readFile이 소유한다. @param {string} path */
 function readOne(path) {
   let isFolder = false;
   try {
@@ -304,11 +304,11 @@ function readOne(path) {
   } catch {
     isFolder = false;
   }
-  if (isFolder) throw new Error(`${path} 는 폴더다. 이 명령은 글 하나를 본다. 폴더는 hanlint 와 hanlint fix 가 받는다`);
+  if (isFolder) throw new Error(`폴더를 받았다: ${path}. 이 명령은 글 하나를 본다. 폴더는 hanlint와 hanlint fix가 받는다`);
   return readFileSync(path, "utf-8");
 }
 
-/** 폴더를 주면 그 아래 마크다운을 편다. 파일과 `-` 는 그대로 둔다. @param {string[]} paths */
+/** 폴더를 주면 그 아래 마크다운을 편다. 파일과 `-`는 그대로 둔다. @param {string[]} paths */
 function collectFiles(paths) {
   /** @type {string[]} */
   const found = [];
@@ -330,7 +330,7 @@ function collectFiles(paths) {
     const inside = markdownUnder(path).sort();
     if (!inside.length)
       throw new Error(
-        `${path} 안에 마크다운 파일이 없다. 점으로 시작하는 폴더와 node_modules 는 건너뛴다. 그 안을 보려면 그 폴더를 직접 준다`,
+        `${path} 안에 마크다운 파일이 없다. 점으로 시작하는 폴더와 node_modules는 건너뛴다. 그 안을 보려면 그 폴더를 직접 준다`,
       );
     found.push(...inside);
   }
@@ -346,7 +346,7 @@ function commonest(findings) {
   return [...counted.keys()].sort((a, b) => (counted.get(b) ?? 0) - (counted.get(a) ?? 0) || a.localeCompare(b))[0];
 }
 
-/** `hanlint fix` 가 실제로 고칠 error 수. 고침이 달렸다는 것과 자리를 잡을 수 있다는 것은 다르다.
+/** `hanlint fix`가 실제로 고칠 error 수. 고침이 달렸다는 것과 자리를 잡을 수 있다는 것은 다르다.
  * @param {Map<string, string>} texts @param {Map<string, import("../rules/finding.js").Finding[]>} results */
 function fixableCount(texts, results) {
   let total = 0;
@@ -358,7 +358,7 @@ function fixableCount(texts, results) {
   return total;
 }
 
-/** 검사 끝에 붙는 다음 행동 한 줄. 뜻은 파이썬 cli/commands/shared.py 가 소유한다.
+/** 검사 끝에 붙는 다음 행동 한 줄. 뜻은 파이썬 cli/commands/shared.py가 소유한다.
  * @param {Map<string, import("../rules/finding.js").Finding[]>} results @param {number} [fixable] */
 function nextStep(results, fixable = 0) {
   const findings = [...results.values()].flat();
@@ -366,17 +366,17 @@ function nextStep(results, fixable = 0) {
   const notices = findings.length - errors.length;
   if (errors.length) {
     const rule = commonest(errors);
-    if (fixable) return `다음: error ${errors.length}건 가운데 ${fixable}건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다`;
-    if (patternsAvoiding(rule).length) return `다음: error ${errors.length}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule ${rule}`;
-    return `다음: error ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
+    if (fixable) return `다음: 오류 ${errors.length}건 가운데 ${fixable}건은 hanlint fix가 바로 고친다. 나머지는 손으로 고친다`;
+    if (patternsAvoiding(rule).length) return `다음: 오류 ${errors.length}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule ${rule}`;
+    return `다음: 오류 ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
   }
-  if (notices) return `다음: error 0. 확인 권고 ${notices}건을 읽고 판단한 뒤 사람과 LLM 평가로 넘어간다`;
-  return "다음: 세어서 잡히는 결함이 없다. 좋은 글이라는 뜻은 아니므로 사람과 LLM 평가로 넘어간다";
+  if (notices) return `다음: 오류는 없다. 확인 권고 ${notices}건을 읽고 고칠지 정한다`;
+  return "다음: 규칙으로 찾은 잘못이 없다. 좋은 글이라는 뜻은 아니니 사람이 읽어 본다";
 }
 
 /** @param {Baseline} baseline */
 function lockedNote(baseline) {
-  return `잠근 자리 ${baseline.count}건은 넘겼다 (${baseline.source}). 그 문장을 고치면 다시 나온다`;
+  return `기준 파일에 든 지적 ${baseline.count}건은 보이지 않았다 (${baseline.source}). 그 문장을 고치면 다시 나온다`;
 }
 
 /** 옵션과 설정에서 잠금 파일을 연다. 둘 다 없으면 빈 잠금이다. @param {Record<string, string | string[] | boolean>} options @param {import("../config/settings.js").Config} config */
@@ -401,10 +401,10 @@ function runBaseline(args) {
   }
   const baseline = options["--prune"] ? pruneBaseline(loadBaseline(target), results) : buildBaseline(results, target);
   writeFileSync(target, `${renderBaseline(baseline)}\n`, "utf-8");
-  const what = options["--prune"] ? "잠금을 줄였다" : "지적을 잠갔다";
+  const what = options["--prune"] ? "글에 더 없는 지적을 지웠다" : "지금 있는 지적이다";
   process.stdout.write(
-    `${baseline.source} 에 ${baseline.count}건을 적었다. ${files.length}개 글의 ${what}.\n` +
-      "다음: 검사할 때 --baseline 을 붙이거나 설정에 baseline 을 적는다. 잠긴 자리를 고치면 새 지적으로 다시 나온다\n",
+    `${baseline.source}에 ${baseline.count}건을 적었다. ${files.length}개 글에서 ${what}.\n` +
+      "다음: 검사할 때 --baseline을 붙이거나 설정에 baseline을 적는다. 기준 파일에 든 문장을 고치면 새 지적으로 다시 나온다\n",
   );
   return 0;
 }
@@ -446,7 +446,7 @@ function runContract(args) {
   }
   const output = options["--output"];
   if (typeof output === "string" && existsSync(output) && !options["--force"]) {
-    throw new Error(`${output} 가 이미 있다. 덮어쓰려면 --force`);
+    throw new Error(`이미 있는 파일: ${output}. 덮어쓰려면 --force를 붙인다`);
   }
   const outline = options["--outline"];
   const facts = /** @type {string[]} */ (options["--fact"] ?? []);
@@ -567,18 +567,18 @@ function runFix(args) {
   const lines = [];
   for (const path of files) {
     const text = readFileSync(path, "utf-8");
-    // notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
+    // notice는 제안이라 손으로 정한다. 확정된 error만 원문에 넣는다.
     const errors = runAll(fingerprint(text, config, path), config).filter((f) => f.severity === "error");
     const result = applyFixes(text, errors);
     for (const [line, fragment, replacement] of result.applied) lines.push(`${path}:${line}  ${fragment} → ${replacement}`);
     for (const [line, fragment, reason] of result.skipped) lines.push(`${path}:${line}  건너뜀 ${fragment}: ${reason}`);
     if (result.text !== text && !options["--dry-run"]) writeFileSync(path, result.text, "utf-8");
-    // 남은 수를 함께 말한다. `0곳 고침, 0곳 건너뜀` 만 보면 손볼 것이 없다는 뜻으로 읽힌다
+    // 남은 수를 함께 말한다. `0곳 고침, 0곳 건너뜀`만 보면 손볼 것이 없다는 뜻으로 읽힌다
     const left = errors.length - result.applied.length;
-    const rest = left ? `. 손으로 고칠 error ${left}건이 남았다 (hanlint ${path})` : "";
+    const rest = left ? `. 손으로 고칠 오류 ${left}건이 남았다 (hanlint ${path})` : "";
     lines.push(
       `${path}  ${result.applied.length}곳 고침, ${result.skipped.length}곳 건너뜀` +
-        (options["--dry-run"] ? " (미리보기, 파일은 그대로)" : "") +
+        (options["--dry-run"] ? " (미리보기라 파일은 그대로다)" : "") +
         rest,
     );
   }
@@ -589,7 +589,7 @@ function runFix(args) {
 /** @param {string[]} args */
 function runPrint(args) {
   const { options, positionals } = parseArgs(args);
-  if (positionals.length !== 1) throw new UsageError("마크다운 파일 하나가 필요하다. `-` 는 stdin");
+  if (positionals.length !== 1) throw new UsageError("마크다운 파일 하나가 필요하다. `-`는 stdin");
   const layer = choose(/** @type {string} */ (options["--layer"] ?? "all"), LAYERS, "--layer");
   const config = configFrom(options, positionals);
   const [name, text] = readInput(positionals[0], /** @type {string} */ (options["--path"] ?? STDIN_NAME));
@@ -632,15 +632,15 @@ function runRules(args) {
   let tail = `규칙 ${names.length}개`;
   if (off.size) {
     const byPreset = PRESETS[config.preset].length;
-    tail += `, 그중 ${off.size}개가 꺼져 있다 (preset ${config.preset} 이 ${byPreset}개, disable 이 ${off.size - byPreset}개)`;
+    tail += ` 가운데 ${off.size}개가 꺼져 있다 (${config.preset} 프리셋 ${byPreset}개, disable ${off.size - byPreset}개)`;
   }
   lines.push(`${tail}. 하나를 자세히 보려면 hanlint explain <규칙>`);
-  lines.push(`프리셋은 ${PRESET_NAMES.join(", ")} 이고 hanlint init --preset <이름> 이 설정에 적는다`);
+  lines.push(`프리셋: ${PRESET_NAMES.join(", ")}. hanlint init --preset <이름>이 설정 파일에 적는다`);
   emit(lines.join("\n"), output);
   return 0;
 }
 
-/** 여러 줄짜리 본보기를 첫 줄에만 표를 달고 나머지는 맞춰 들여쓴다. @param {string} text @param {string} label */
+/** 여러 줄짜리 예시를 첫 줄에만 표를 달고 나머지는 맞춰 들여쓴다. @param {string} text @param {string} label */
 function indent(text, label) {
   const pad = " ".repeat(label.length);
   return text.replace(/\n+$/, "").split("\n").map((line, index) => (index === 0 ? label : pad) + line).join("\n");
@@ -651,7 +651,7 @@ const NEAR_LIMIT = 3;
 /** 앞 몇 글자가 같으면 가까운 이름으로 보는가. */
 const NEAR_PREFIX = 3;
 
-/** 오타에 가까운 이름. 파이썬 cli/commands/explain.py 의 nearNames 와 같다. @param {string} query @param {string[]} names */
+/** 오타에 가까운 이름. 파이썬 cli/commands/explain.py의 nearNames와 같다. @param {string} query @param {string[]} names */
 function nearNames(query, names) {
   const lowered = query.toLowerCase();
   /** @type {[number, string][]} */
@@ -671,15 +671,15 @@ function runExplain(args) {
   const names = ruleNames();
   if (!positionals.length) {
     process.stdout.write("규칙 이름 하나가 필요하다. 예: hanlint explain doublePassive\n");
-    process.stdout.write(`\n규칙 ${names.length}개를 부류로 묶어 보려면 hanlint rules, 이름만 보려면 hanlint rules --names\n`);
+    process.stdout.write(`\n규칙 ${names.length}개를 묶음별로 보려면 hanlint rules, 이름만 보려면 hanlint rules --names\n`);
     return 2;
   }
-  if (positionals.length !== 1) throw new UsageError("규칙 이름 하나가 필요하다. hanlint rules 로 목록을 본다");
+  if (positionals.length !== 1) throw new UsageError("규칙 이름 하나가 필요하다. hanlint rules로 목록을 본다");
   const wanted = positionals[0];
   if (!names.includes(wanted)) {
     const near = nearNames(wanted, names);
-    const hint = near.length ? ` 이것을 찾았나: ${near.join(", ")}` : " hanlint rules 로 목록을 본다";
-    throw new Error(`모르는 규칙: ${wanted}.${hint}`);
+    const hint = near.length ? ` 비슷한 이름: ${near.join(", ")}` : " 목록은 hanlint rules";
+    throw new Error(`없는 규칙: ${wanted}.${hint}`);
   }
   const category = ruleCategory(wanted);
   const config = configFrom(options, []);
@@ -698,18 +698,18 @@ function runExplain(args) {
     return 0;
   }
   const mechanism = ruleMechanism(wanted);
-  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n기제: ${mechanism}. ${MECHANISMS[mechanism]}\n\n${ruleDoc(wanted)}\n`);
+  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n찾는 방법: ${MECHANISMS[mechanism]} (${mechanism})\n\n${ruleDoc(wanted)}\n`);
   const exemplar = exemplarOf ? exemplarInRegister(exemplarOf, register) : undefined;
   if (exemplar) {
-    process.stdout.write("\n본보기\n");
+    process.stdout.write("\n예시\n");
     process.stdout.write(`${indent(exemplar.before, "  전  ")}\n`);
     process.stdout.write(`${indent(exemplar.after, "  후  ")}\n`);
     process.stdout.write(`  달라진 것: ${exemplar.moved}\n`);
   }
   const siblings = names.filter((name) => ruleCategory(name) === category && name !== wanted);
-  process.stdout.write(`\n같은 부류: ${siblings.join(", ")}\n`);
-  process.stdout.write(`끄려면 hanlint.toml 의 disable 에 ${wanted} 를 넣는다. 한 자리만 끄려면 <!-- hanlint-disable ${wanted} -->\n`);
-  process.stdout.write(`정당한 문장인데 잡혔으면 끄고 끝내지 말고 알려 준다: ${ISSUES}\n`);
+  process.stdout.write(`\n같은 묶음: ${siblings.join(", ")}\n`);
+  process.stdout.write(`끄려면 hanlint.toml의 disable 목록에 넣는다: ${wanted}. 한 곳만 끄려면 <!-- hanlint-disable ${wanted} -->\n`);
+  process.stdout.write(`맞는 문장인데 잡혔다면 끄기만 하지 말고 여기에 알린다: ${ISSUES}\n`);
   return 0;
 }
 
@@ -719,7 +719,7 @@ function runPatterns(args) {
   const rule = /** @type {string | undefined} */ (options["--rule"]);
   const register = choose(/** @type {string} */ (options["--register"] ?? HAPNIDA), REGISTERS, "--register");
   const chosen = (rule ? patternsAvoiding(rule) : patterns()).map((pattern) => patternInRegister(pattern, register));
-  if (!chosen.length) throw new Error(` 을 피하는 문형이 없다. hanlint patterns 로 전부 본다`);
+  if (!chosen.length) throw new Error(`을 피하는 문형이 없다. hanlint patterns로 전부 본다`);
   const output = /** @type {string | undefined} */ (options["--output"]);
   if (options["--format"] === "json") {
     emit(JSON.stringify({ version: 1, patterns: chosen }, null, 2), output);
@@ -727,7 +727,7 @@ function runPatterns(args) {
   }
   const lines = [];
   for (const pattern of chosen) {
-    lines.push(`${pattern.name}  (${pattern.avoids.join(", ")} 를 피한다)`);
+    lines.push(`${pattern.name}  (피하는 규칙: ${pattern.avoids.join(", ")})`);
     lines.push(`  틀    ${pattern.form}`);
     lines.push(`  언제  ${pattern.when}`);
     lines.push(indent(pattern.example, "  예시  "));
@@ -735,13 +735,13 @@ function runPatterns(args) {
     lines.push(`  출처  ${pattern.source}`);
     lines.push("");
   }
-  lines.push(`문형 ${chosen.length}개. 예시는 전부 hanlint 를 error 0 으로 통과한다 (게이트가 확인한다)`);
+  lines.push(`문형 ${chosen.length}개. 예시 문장은 모두 hanlint 검사에서 오류가 없다`);
   if (!rule) lines.push("지적을 받은 자리를 다시 쓰려면 hanlint patterns --rule <규칙>");
   emit(lines.join("\n"), output);
   return 0;
 }
 
-/** 여러 줄을 한 줄로. 줄바꿈은 ¶ 다. 파이썬 cli/commands/primer.py 의 flat 과 같다. @param {string} text */
+/** 여러 줄을 한 줄로. 줄바꿈은 ¶ 다. 파이썬 cli/commands/primer.py의 flat과 같다. @param {string} text */
 function flat(text) {
   return text
     .split("\n")
@@ -751,7 +751,7 @@ function flat(text) {
 }
 
 /**
- * 설정에서 켜진 규칙마다 항목 하나. 부류 순서, 그 안은 이름 순서. 파이썬 primerEntries 와 같다.
+ * 설정에서 켜진 규칙마다 항목 하나. 묶음 순서, 그 안은 이름 순서. 파이썬 primerEntries와 같다.
  * @param {import("../config/settings.js").Config} config @param {string} register
  */
 function primerEntries(config, register) {
@@ -761,7 +761,7 @@ function primerEntries(config, register) {
     for (const name of ruleNames()) {
       if (ruleCategory(name) !== category || off.has(name)) continue;
       const exemplar = exemplarFor(name, config.preset, config.exemplars);
-      if (!exemplar) throw new Error(`본보기가 없는 규칙: ${name}`);
+      if (!exemplar) throw new Error(`예시가 없는 규칙: ${name}`);
       const shown = exemplarInRegister(exemplar, register);
       entries.push({ rule: name, category, fix: ruleFix(name), before: shown.before, after: shown.after });
     }
@@ -769,17 +769,17 @@ function primerEntries(config, register) {
   return entries;
 }
 
-/** 작법서를 절마다 한 줄로. 제목 두 칸 띄고 본문이다. 파이썬 proseLines 와 같다. */
+/** 글쓰기 지침를 절마다 한 줄로. 제목 두 칸 띄고 본문이다. 파이썬 proseLines와 같다. */
 function proseLines() {
   return proseSections().map(([title, body]) => `${title}  ${body.split(/\s+/).filter(Boolean).join(" ")}`);
 }
 
-/** 사람과 AI 가 읽는 한 장. 파이썬 renderPrimer 와 글자 단위로 같다. @param {ReturnType<typeof primerEntries>} entries @param {string} preset @param {string} register */
+/** 사람과 AI가 읽는 한 장. 파이썬 renderPrimer와 글자 단위로 같다. @param {ReturnType<typeof primerEntries>} entries @param {string} preset @param {string} register */
 function renderPrimer(entries, preset, register) {
   const lines = [
     ...proseLines(),
     "",
-    `hanlint primer  ${preset} 종류, ${register}체, 규칙 ${entries.length}개. 줄마다 규칙 이름, 고치는 법, 전 (그 규칙에 잡히는 글), 후 (그 본보기에서 고친 글) 순서다. 본보기의 줄바꿈은 ¶ 다`,
+    `hanlint primer  ${preset} 종류, ${register}체, 규칙 ${entries.length}개. 줄마다 규칙 이름, 고치는 법, 전(그 규칙에 잡히는 글), 후(그 예시에서 고친 글) 순서다. 예시의 줄바꿈은 ¶로 보인다`,
   ];
   for (const [category, title] of Object.entries(CATEGORY_TITLES)) {
     const inside = entries.filter((entry) => entry.category === category);
@@ -787,7 +787,7 @@ function renderPrimer(entries, preset, register) {
     lines.push("", `${title} (${inside.length})`);
     for (const entry of inside) lines.push(`${entry.rule}  ${entry.fix}  전: ${flat(entry.before)}  후: ${flat(entry.after)}`);
   }
-  lines.push("", "본보기는 해당 문맥의 예시다. 용어와 사실을 보존하고, 치환을 다른 문맥에 적용하지 않는다. 규칙을 더 보려면 hanlint explain <규칙>");
+  lines.push("", "예시는 그 문장에만 맞는다. 용어와 사실은 그대로 두고, 바꾼 말을 다른 글에 그대로 옮겨 쓰지 않는다. 규칙을 더 보려면 hanlint explain <규칙>");
   return lines.join("\n");
 }
 
@@ -816,7 +816,7 @@ function runSpec(args) {
   if (options["--chars"] !== undefined) {
     const raw = /** @type {string} */ (options["--chars"]);
     targetChars = Number(raw);
-    if (!Number.isInteger(targetChars) || targetChars <= 0) throw new UsageError(`--chars 는 1 이상의 정수다: ${raw}`);
+    if (!Number.isInteger(targetChars) || targetChars <= 0) throw new UsageError(`--chars는 1 이상의 정수다: ${raw}`);
   }
   const result = writingSpec(config, register, targetChars);
   const output = /** @type {string | undefined} */ (options["--output"]);
@@ -825,7 +825,7 @@ function runSpec(args) {
   return 0;
 }
 
-/** 작법서를 싣는 이벤트. Claude Code와 Codex 모두 이 둘의 additionalContext를 모델 문맥에 넣는다. */
+/** 글쓰기 지침를 싣는 이벤트. Claude Code와 Codex 모두 이 둘의 additionalContext를 모델 문맥에 넣는다. */
 const PRIME_EVENTS = ["SessionStart", "UserPromptSubmit"];
 
 /** 에이전트가 다음 모델 요청에 넣는 비차단 문맥. @param {string} eventName @param {string} context */
@@ -833,10 +833,10 @@ function hookContext(eventName, context) {
   return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: context } });
 }
 
-/** Finding을 되먹이는 문맥의 본문. 파일마다 한 덩어리다. 파이썬 findingContext 와 같다. @param {string} eventName @param {[string, import("../rules/finding.js").Finding[]][]} found */
+/** Finding을 되먹이는 문맥의 본문. 파일마다 한 덩어리다. 파이썬 findingContext와 같다. @param {string} eventName @param {[string, import("../rules/finding.js").Finding[]][]} found */
 function findingContext(eventName, found) {
   const where = eventName === "Stop" ? "마지막 답변" : "방금 쓴 마크다운";
-  return `hanlint가 ${where}에서 센 Finding입니다.\n${found.map(([name, items]) => renderCompact(name, items)).join("\n")}`;
+  return `hanlint가 ${where}에서 찾은 지적입니다.\n${found.map(([name, items]) => renderCompact(name, items)).join("\n")}`;
 }
 
 /** Codex apply_patch 본문에서 쓴 파일을 가리키는 머리 줄 (Codex 훅 문서, 2026-09-21 확인). */
@@ -891,7 +891,7 @@ function writtenFindings(payload, options) {
 
 /** 명령 훅 JSON을 stdin에서 읽어 저장 파일이나 마지막 답변을 검사한다. 언제나 종료 코드 0이다. @param {string[]} args */
 function runHook(args) {
-  if (args.includes("--prime") && args.includes("--reply")) throw new UsageError("--prime 과 --reply 는 함께 쓰지 않는다");
+  if (args.includes("--prime") && args.includes("--reply")) throw new UsageError("--prime과 --reply는 함께 쓰지 않는다");
   const { options, positionals } = parseArgs(args);
   const agent = choose(/** @type {string} */ (options["--agent"] ?? "claude"), ["claude", "codex"], "--agent");
   try {
@@ -929,13 +929,13 @@ function runHook(args) {
   return 0;
 }
 
-/** 잠근 지적이 몇 건인지. baseline 이 빚을 감추는 자리가 되지 않게 늘 보인다. @param {import("../config/settings.js").Config} config */
+/** 잠근 지적이 몇 건인지. baseline이 빚을 감추는 자리가 되지 않게 늘 보인다. @param {import("../config/settings.js").Config} config */
 function baselineState(config) {
-  if (!config.baseline) return "없다 (hanlint baseline 글들/ 로 지금 지적을 잠근다)";
+  if (!config.baseline) return "없음 (만들려면 hanlint baseline 글들/)";
   try {
-    return `${loadBaseline(config.baseline).count}건이 ${config.baseline} 에 잠겨 있다. 그 문장을 고치면 다시 나온다`;
+    return `${config.baseline}에 지적 ${loadBaseline(config.baseline).count}건이 들어 있다. 그 문장을 고치면 다시 나온다`;
   } catch (error) {
-    return `${config.baseline} 를 못 읽었다: ${/** @type {Error} */ (error).message}`;
+    return `읽지 못했다: ${config.baseline} (${/** @type {Error} */ (error).message})`;
   }
 }
 
@@ -952,22 +952,22 @@ function runDoctor(args) {
     `설정      ${configLabel(config)}`,
     `프리셋    ${config.preset} (${PRESET_NAMES.join(", ")} 가운데)`,
     `규칙      ${names.length - off.length}개 켜짐, ${off.length}개 꺼짐`,
-    `잠금      ${baselineState(config)}`,
-    `폴더      점으로 시작하는 폴더와 ${SKIPPED_FOLDERS.join(", ")} 는 건너뛴다. 직접 주면 검사한다`,
+    `기준 파일 ${baselineState(config)}`,
+    `폴더      건너뛰는 것: 점으로 시작하는 폴더, ${SKIPPED_FOLDERS.join(", ")}. 직접 주면 검사한다`,
   ];
   if (off.length) lines.push(`꺼진 규칙  ${off.join(", ")}`);
-  lines.push("", "다음: hanlint 글.md 로 검사한다. 설정이 기본값이면 hanlint init 으로 파일을 만든다");
+  lines.push("", "다음: hanlint 글.md로 검사한다. 설정 파일이 없으면 hanlint init으로 만든다");
   process.stdout.write(`${lines.join("\n")}\n`);
   return 0;
 }
 
-/** 주석 달린 hanlint.toml. 파이썬 `hanlint init` 과 같은 글자다. @param {string} [preset] */
+/** 주석 달린 hanlint.toml. 파이썬 `hanlint init`과 같은 글자다. @param {string} [preset] */
 export function renderInit(preset = "blog") {
   const defaults = defaultConfig();
   const lines = [
-    "# hanlint 설정. 규칙을 끄려면 disable 에 이름을 넣는다. 규칙의 기술서는 hanlint explain <규칙>.",
+    "# hanlint 설정. 규칙을 끄려면 disable에 이름을 넣는다. 규칙 설명은 hanlint explain <규칙>으로 본다.",
     "",
-    "# 글의 종류. 그 종류에 안 맞는 규칙을 처음부터 끈다. disable 은 그 위에 더한다.",
+    "# 글의 종류. 그 종류에 안 맞는 규칙을 처음부터 끈다. disable은 그 위에 더한다.",
   ];
   for (const [name, off] of Object.entries(PRESETS)) lines.push(`#   ${name}: ${off.length ? off.join(", ") : "전부 켠다"}`);
   lines.push(`preset = "${preset}"`, "", "# 규칙 목록과 한 줄 설명");
@@ -981,23 +981,23 @@ export function renderInit(preset = "blog") {
     "",
     "disable = []",
     "",
-    "# 대표 검색어를 읽을 frontmatter 필드. 없으면 keywordMissing 은 돌지 않는다",
+    "# 대표 검색어를 읽을 frontmatter 필드. 없으면 keywordMissing은 돌지 않는다",
     '# keywordField = "primaryKeyword"',
     "",
-    "# 도입과 마지막 절이 담아야 하는 frontmatter 필드. 비어 있으면 fieldEcho 는 돌지 않는다",
+    "# 도입과 마지막 절이 담아야 하는 frontmatter 필드. 비어 있으면 fieldEcho는 돌지 않는다",
     '# introFields = ["readerQuestion"]',
     '# endingFields = ["readerTakeaway"]',
     "",
-    "# hanlint profile build 가 만든 파일. 있으면 종류의 프로파일 대신 그것과 견준다 (outsideProfile)",
+    "# hanlint profile build가 만든 파일. 있으면 글 종류의 기본 프로파일 대신 이 파일과 비교한다(outsideProfile)",
     '# profile = "profile.json"',
     "",
-    "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",
+    "# hanlint baseline이 만든 기준 파일. 있으면 그 안의 지적은 보이지 않고 새로 생긴 지적만 막는다",
     '# baseline = ".hanlint-baseline.json"',
     "",
-    "# 코드도 산문도 아닌 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록으로 세지 않고 분석표에서 뺀다",
+    "# 코드도 산문도 아닌 펜스의 언어 이름. 이 펜스는 코드 블록으로 세지 않고 검사에서도 뺀다",
     '# ignoreFences = ["course-scene", "mermaid"]',
     "",
-    "# 임계. 기본값의 기준은 hanlint 의 config/settings.py 다",
+    "# 기준값. 아래 값이 기본값이다",
   );
   for (const name of THRESHOLD_FIELDS) {
     const value = /** @type {number} */ (defaults[name]);
@@ -1006,9 +1006,9 @@ export function renderInit(preset = "blog") {
   }
   lines.push(
     "",
-    "# 용례. nounPile 은 그 종류의 실제 글에서 usageMin 편 이상의 문서에 나온 명사 연쇄를 짚지 않고, 사전 규칙은",
-    "# 그 종류의 문서 usageShare 이상에 나오는 항목 (사업보고서의 `에 대한`) 을 짚지 않는다.",
-    "# 종류는 프리셋이 정한다 (report 만 있다). 빈 문자열이면 어떤 프리셋에서도 용례를 보지 않는다",
+    "# 용례. 그 종류의 실제 글에 흔한 명사 연쇄(nounPile)와 사전 표현은 짚지 않는다. 명사 연쇄는 usageMin편 이상의",
+    "# 문서에 나온 것, 사전 표현은 문서의 usageShare 비율 이상에 나온 것(사업보고서의 `에 대한`)이다.",
+    "# 종류는 프리셋이 정한다 (report만 있다). 빈 문자열이면 어떤 프리셋에서도 용례를 보지 않는다",
     '# usageKind = ""',
     "# usageMin = 3",
     "# usageShare = 0.9",
@@ -1019,31 +1019,31 @@ export function renderInit(preset = "blog") {
     '# cliches = ["우리의 여정"]',
     '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',
     "",
-    "# 표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어. 수치와 라틴 식별자는 자동으로 보호한다",
+    "# 자동 고침이 건드리지 말아야 할 한국어 고유명사와 프로젝트 용어. 숫자와 영문 식별자는 저절로 지킨다",
     '# protectedTerms = ["한린트", "김민지"]',
-    '# enforceStyle = ["noQuestion", "nounPile"]  # 선택한 문체 신호만 error로 강제한다',
+    '# enforceStyle = ["noQuestion", "nounPile"]  # 고른 문체 규칙만 오류로 낸다',
     "",
-    "# 사람이 승인한 프로젝트 본보기. 같은 규칙과 프리셋의 내장 본보기를 덮어쓴다",
+    "# 사람이 승인한 프로젝트 예시. 같은 규칙과 프리셋의 기본 예시 대신 쓴다",
     "# [[exemplars]]",
     '# rule = "translationese"',
     '# before = "설계에 대한 이해가 필요합니다."',
     '# after = "설계를 알아야 합니다."',
-    '# moved = "명사구를 서술어로 풀어 씀"',
+    '# moved = "명사구를 서술어로 풀어 썼다"',
     '# presets = ["blog"]',
     "",
-    "# 사람이 승인한 국소 고침. 원문을 포함한 모든 조건이 맞을 때만 그대로 재생한다",
+    "# 사람이 승인한 그 자리만의 고침. 원문을 포함해 조건이 모두 맞을 때만 그대로 적용한다",
     "# [[patches]]",
     '# rule = "translationese"',
     '# before = "설계에 대한 이해가 필요합니다."',
     '# after = "설계를 알아야 합니다."',
-    '# moved = "명사구를 서술어로 풀어 씀"',
+    '# moved = "명사구를 서술어로 풀어 썼다"',
     '# sourceText = "설계에 대한 이해가 필요합니다."  # before의 마크다운까지 보존한 선택용 원문',
     '# sentence = "설계에 대한 이해가 필요합니다."  # before에서 마크다운 표식을 걷은 선택용 원문',
     '# cue = "에 대한"',
     '# reader = "new"',
     '# presets = ["blog"]',
     "",
-    "# 사람이 적용 범위까지 승인한 표면 치환. 단어 경계 한 자리와 보호 원자가 맞을 때만 결과를 낸다",
+    "# 사람이 적용 범위까지 승인한 글자 바꾸기. 단어 경계가 맞고 숫자·링크·코드가 그대로일 때만 바꾼다",
     "# [[operations]]",
     '# before = "여러가지"',
     '# after = "여러 가지"',
@@ -1058,15 +1058,15 @@ function runInit(args) {
   const { options } = parseArgs(args);
   const path = /** @type {string} */ (options["--output"] ?? "hanlint.toml");
   const preset = choose(/** @type {string} */ (options["--preset"] ?? "blog"), PRESET_NAMES, "--preset");
-  if (existsSync(path) && !options["--force"]) throw new Error(`${path} 가 이미 있다. 덮어쓰려면 --force`);
+  if (existsSync(path) && !options["--force"]) throw new Error(`이미 있는 파일: ${path}. 덮어쓰려면 --force를 붙인다`);
   writeFileSync(path, renderInit(preset), "utf-8");
   const off = PRESETS[preset];
-  const tail = off.length ? `preset ${preset} 이 ${off.length}개를 끈다` : `preset ${preset} 은 규칙을 전부 켠다`;
-  process.stdout.write(`${path} 를 만들었다. ${tail}. 더 끄려면 disable 에 이름을 넣는다\n`);
+  const tail = off.length ? `${preset} 프리셋은 규칙 ${off.length}개를 끈다` : `${preset} 프리셋은 규칙을 전부 켠다`;
+  process.stdout.write(`만들었다: ${path}. ${tail}. 더 끄려면 disable에 이름을 넣는다\n`);
   return 0;
 }
 
-/** 폴더 아래 소스 파일. 뜻은 파이썬 cli/commands/sheet.py 의 sourceUnder 가 소유한다. @param {string} folder @returns {string[]} */
+/** 폴더 아래 소스 파일. 뜻은 파이썬 cli/commands/sheet.py의 sourceUnder가 소유한다. @param {string} folder @returns {string[]} */
 function sourceUnder(folder) {
   /** @type {string[]} */
   const found = [];
@@ -1076,24 +1076,24 @@ function sourceUnder(folder) {
       if (!isSkipped(name)) found.push(...sourceUnder(path));
     } else if (SOURCE_SUFFIXES.includes(extname(name).toLowerCase())) found.push(path);
   }
-  // 구분자를 / 로 맞춘 뒤 정렬한다. 뜻은 파이썬 sourceUnder 가 소유한다.
+  // 구분자를 / 로 맞춘 뒤 정렬한다. 뜻은 파이썬 sourceUnder가 소유한다.
   const posix = (item) => item.split(sep).join("/");
   return found.sort((a, b) => (posix(a) < posix(b) ? -1 : posix(a) > posix(b) ? 1 : 0));
 }
 
-/** 작업 폴더 기준 상대 경로, 구분자는 `/`. 파이썬 relativeLabel 과 같은 글자를 낸다. @param {string} path */
+/** 작업 폴더 기준 상대 경로, 구분자는 `/`. 파이썬 relativeLabel과 같은 글자를 낸다. @param {string} path */
 function relativeLabel(path) {
   const rel = relative(process.cwd(), resolve(path));
   const label = !rel || rel.startsWith("..") || isAbsolute(rel) ? path : rel;
   return label.split(sep).join("/").replaceAll("\\", "/");
 }
 
-/** 표의 자리 글자. 뜻은 파이썬 SheetRow.place 가 소유한다. @param {import("../report/sheet.js").SheetRow} row */
+/** 표의 자리 글자. 뜻은 파이썬 SheetRow.place가 소유한다. @param {import("../report/sheet.js").SheetRow} row */
 function placeOf(row) {
   return row.column > 0 ? `${row.file}:${row.line}:${row.column}` : `${row.file}:${row.line}`;
 }
 
-/** 표의 고침을 파일에 쓴다. 뜻은 파이썬 applySheet 가 소유한다. @param {string} sheetPath @param {boolean} dryRun @returns {[string[], string[]]} */
+/** 표의 고침을 파일에 쓴다. 뜻은 파이썬 applySheet가 소유한다. @param {string} sheetPath @param {boolean} dryRun @returns {[string[], string[]]} */
 function applySheet(sheetPath, dryRun) {
   const parsed = parseSheet(readFileSync(sheetPath, "utf-8"));
   /** @type {string[]} */
@@ -1111,7 +1111,7 @@ function applySheet(sheetPath, dryRun) {
       failed.push(...rows.map((row) => `${placeOf(row)}: 파일이 없다`));
       continue;
     }
-    // 되돌려 쓰는 뜻은 report/sheet.js 의 applyRows 가 소유한다 (브라우저의 저장소 쓰기와 같은 함수).
+    // 되돌려 쓰는 뜻은 report/sheet.js의 applyRows가 소유한다 (브라우저의 저장소 쓰기와 같은 함수).
     const [rewritten, done, problems] = applyRows(readFileSync(file, "utf-8"), rows);
     applied.push(...done);
     failed.push(...problems);
@@ -1120,13 +1120,18 @@ function applySheet(sheetPath, dryRun) {
   return [applied, failed];
 }
 
-/** 색인이 없을 때의 안내. 뜻은 파이썬 cli/commands/usage.py 의 missingIndex 가 소유한다. @param {string} kind @param {string} root */
-function missingIndex(kind, root) {
-  const kinds = listUsageIndexes(root).map((meta) => String(meta.kind)).join(", ") || "없음";
-  return `${kind} 색인이 없다 (있는 것: ${kinds}). hanlint usage build ${kind} <글 폴더> 로 만든다 (txt, md, jsonl. 하위 폴더 포함). 사업보고서는 scripts/fetch/dartReports.py, 위키백과는 scripts/fetch/koWikipedia.py 가 받는다`;
+/** 세 자리마다 쉼표를 찍은 수. 파이썬의 `f"{n:,}"`와 같은 글자다. @param {number} value */
+function comma(value) {
+  return value.toLocaleString("en-US");
 }
 
-/** 함께 쓰는 말 낱말 수 상한. 뜻은 파이썬 QUERY_WORDS 가 소유한다. */
+/** 색인이 없을 때의 안내. 뜻은 파이썬 cli/commands/usage.py의 missingIndex가 소유한다. @param {string} kind @param {string} root */
+function missingIndex(kind, root) {
+  const kinds = listUsageIndexes(root).map((meta) => String(meta.kind)).join(", ") || "없음";
+  return `${kind} 색인이 없다 (있는 것: ${kinds}). hanlint usage build ${kind} <글 폴더>로 만든다 (txt, md, jsonl. 하위 폴더 포함)`;
+}
+
+/** 함께 쓰는 말 단어 수 상한. 뜻은 파이썬 QUERY_WORDS가 소유한다. */
 const USAGE_QUERY_WORDS = 3;
 
 /** @param {[string, number][]} pairs */
@@ -1135,8 +1140,8 @@ function pairText(pairs) {
 }
 
 /**
- * `hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds`. 뜻은 파이썬
- * cli/commands/usage.py 가 소유한다.
+ * `hanlint usage "단어 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds`. 뜻은 파이썬
+ * cli/commands/usage.py가 소유한다.
  * @param {string[]} args
  */
 function runUsage(args) {
@@ -1144,7 +1149,7 @@ function runUsage(args) {
   const output = /** @type {string | undefined} */ (options["--output"]);
   const root = /** @type {string} */ (options["--root"] ?? defaultUsageRoot());
   const format = choose(/** @type {string} */ (options["--format"] ?? "text"), ["text", "json"], "--format");
-  if (!positionals.length) throw new UsageError('hanlint usage "낱말 …" 또는 hanlint usage build <종류> <글 폴더>');
+  if (!positionals.length) throw new UsageError('hanlint usage "단어 …" 또는 hanlint usage build <종류> <글 폴더>');
   if (positionals[0] === "kinds") {
     const found = listUsageIndexes(root);
     if (format === "json") {
@@ -1152,11 +1157,11 @@ function runUsage(args) {
       return 0;
     }
     if (!found.length) {
-      emit(`${root} 에 색인이 없다. hanlint usage build <종류> <글 폴더> 로 만든다`, output);
+      emit(`${root}에 색인이 없다. hanlint usage build <종류> <글 폴더>로 만든다`, output);
       return 0;
     }
     const lines = [`색인 ${found.length}개 (${root})`];
-    for (const meta of found) lines.push(`  ${meta.kind}: 문서 ${meta.documents}편, 문장 ${meta.sentences}개, 토큰 ${meta.terms}종`);
+    for (const meta of found) lines.push(`  ${meta.kind}: 문서 ${comma(meta.documents)}편, 문장 ${comma(meta.sentences)}개, 단어 ${comma(meta.terms)}종`);
     emit(lines.join("\n"), output);
     return 0;
   }
@@ -1167,16 +1172,16 @@ function runUsage(args) {
     }
     const [, kind, folder] = positionals;
     if (!existsSync(folder) || !statSync(folder).isDirectory()) {
-      emit(`${folder} 는 폴더가 아니다`, output);
+      emit(`폴더가 아니다: ${folder}`, output);
       return 2;
     }
     const result = buildUsageIndex(kind, readUsageDocuments(folder), root);
-    emit(`${join(root, kind)}: 문서 ${result.documents}편, 문장 ${result.sentences}개, 토큰 ${result.terms}종. hanlint usage "낱말" --kind ${kind} 로 묻는다`, output);
+    emit(`${join(root, kind)}: 문서 ${comma(result.documents)}편, 문장 ${comma(result.sentences)}개, 단어 ${comma(result.terms)}종. hanlint usage "단어" --kind ${kind}로 찾는다`, output);
     return 0;
   }
   const kind = /** @type {string} */ (options["--kind"] ?? USAGE_KINDS[0]);
   const limit = Math.max(Number(options["--limit"] ?? 5), 0);
-  if (!Number.isInteger(limit)) throw new UsageError("--limit 은 정수다");
+  if (!Number.isInteger(limit)) throw new UsageError("--limit은 정수다");
   const query = positionals.join(" ");
   const index = loadUsageIndex(kind, root);
   if (!index) {
@@ -1201,7 +1206,7 @@ function runUsage(args) {
       if (pairs.length) lines.push(`   ${label}: ${pairText(/** @type {[string, number][]} */ (pairs))}`);
     }
   }
-  if (!hits.length && limit > 0) lines.push("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다");
+  if (!hits.length && limit > 0) lines.push("쓰인 문장이 없다. 단어를 줄이거나 다른 단어로 찾는다");
   hits.forEach((hit, index) => {
     lines.push(`${index + 1}. ${hit.text}`);
     lines.push(`   문서 ${hit.documents}편, 출처 ${hit.source}`);
@@ -1210,7 +1215,7 @@ function runUsage(args) {
   return 0;
 }
 
-/** `hanlint sheet 폴더/ --preset screen` 과 `hanlint sheet apply 시트.md`. 뜻은 파이썬 cli/commands/sheet.py 가 소유한다. @param {string[]} args */
+/** `hanlint sheet 폴더/ --preset screen`과 `hanlint sheet apply 시트.md`. 뜻은 파이썬 cli/commands/sheet.py가 소유한다. @param {string[]} args */
 function runSheet(args) {
   const { options, positionals } = parseArgs(args);
   const output = /** @type {string | undefined} */ (options["--output"]);
@@ -1231,13 +1236,13 @@ function runSheet(args) {
   /** @type {string[]} */
   const files = [];
   for (const target of positionals) {
-    if (!existsSync(target)) throw new Error(`${target} 이 없다`);
+    if (!existsSync(target)) throw new Error(`없는 파일: ${target}`);
     if (statSync(target).isDirectory()) files.push(...sourceUnder(target));
     else files.push(target);
   }
   const config = configFrom(options, files);
   const format = choose(/** @type {string} */ (options["--format"] ?? "markdown"), ["markdown", "json"], "--format");
-  // 디스크의 파일을 읽어 report.sheetRows 에 넘긴다. 행의 뜻은 그쪽이 소유한다.
+  // 디스크의 파일을 읽어 report.sheetRows에 넘긴다. 행의 뜻은 그쪽이 소유한다.
   const rows = sheetRows(files.map((file) => ({ label: relativeLabel(file), source: readFileSync(file, "utf-8") })), config, Boolean(options["--all"]));
   emit(format === "json" ? renderSheetJson(rows, config.preset, files.length) : renderSheet(rows, config.preset, files.length), output);
   return 0;
@@ -1258,8 +1263,14 @@ function dispatch(argv) {
     process.stdout.write(`hanlint ${version}\n`);
     return 0;
   }
+  if (rest.includes("--help") || rest.includes("-h")) {
+    // npm에는 명령마다의 도움말이 없다. 도움말을 찾은 사람에게 '모르는 옵션' 대신 전체 도움말을 보인다
+    process.stdout.write(`${USAGE}
+`);
+    return 0;
+  }
   if (PYTHON_ONLY.includes(command)) {
-    throw new Error(`${command} 는 파이썬 패키지에 있다 (pip install hanlint). npm 은 ${COMMANDS.join(", ")} 을 제공한다`);
+    throw new Error(`${command} 명령은 파이썬 hanlint에만 있다(pip install hanlint). npm hanlint의 명령: ${COMMANDS.join(", ")}`);
   }
   if (command === "lint") return runLint(rest);
   if (command === "contract") return runContract(rest);
@@ -1291,7 +1302,7 @@ export function main(argv) {
     }
     const failure = /** @type {NodeJS.ErrnoException} */ (error);
     if (failure.code === "ENOENT") {
-      process.stderr.write(`${failure.path} 를 찾지 못했다. 경로를 확인하거나 hanlint --help\n`);
+      process.stderr.write(`찾지 못한 파일: ${failure.path}. 경로를 확인하거나 hanlint --help를 본다\n`);
       return 2;
     }
     process.stderr.write(`${failure.message}\n`);

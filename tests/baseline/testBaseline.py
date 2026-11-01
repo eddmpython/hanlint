@@ -81,7 +81,7 @@ def testRenderIsHumanReadableAndStable():
 
 
 def testUnknownVersionIsRefused():
-    with pytest.raises(ValueError, match="모르는 baseline 판"):
+    with pytest.raises(ValueError, match="지원하지 않는 baseline 버전"):
         parse(json.dumps({"version": 99, "files": {}}))
 
 

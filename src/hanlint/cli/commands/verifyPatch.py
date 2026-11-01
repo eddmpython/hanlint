@@ -10,7 +10,7 @@ from ...config import loadContract, loadPatch
 from ...guard import verifyPatch
 from .shared import addCommonOptions, configFrom, emit, readFile, startFolder
 
-HELP = "Patch의 원문 한 자리, reason 감소, 새 보호 원자 위반과 새 error 부재를 검증한다"
+HELP = "patch가 원문 한 곳만 바꾸는지, 까닭이 된 지적이 줄었는지, 지켜야 할 숫자·링크·코드와 새 오류가 없는지 검증한다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

@@ -38,7 +38,7 @@ def testBuildThenQueryTextAndJson(tmp_path, capsys):
     assert main(["usage", "없는낱말", "--root", str(tmp_path), "--limit", "0"]) == 0
     assert capsys.readouterr().out.strip() == "report 용례 (문서 3편, 문장 11개): 없는낱말"
     assert main(["usage", "kinds", "--root", str(tmp_path)]) == 0
-    assert capsys.readouterr().out.strip().endswith("report: 문서 3편, 문장 11개, 토큰 116종")
+    assert capsys.readouterr().out.strip().endswith("report: 문서 3편, 문장 11개, 단어 116종")
     assert main(["usage", "kinds", "--root", str(tmp_path), "--format", "json"]) == 0
     assert json.loads(capsys.readouterr().out)["kinds"][0]["kind"] == "report"
 

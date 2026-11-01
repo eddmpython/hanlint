@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { DOCUMENT, finding } from "../finding.js";
 import { shareOf } from "../shared/repeat.js";
 
@@ -27,7 +28,7 @@ export function run(doc, config) {
   );
   if (count / total >= config.headingUniformRatio) {
     return [
-      finding(name, eligible[0][2], eligible.map(([, text]) => text).join(" / "), `H2 ${eligible.length}개 중 ${count}개가 \`${best}\` 로 끝난다. 목차가 한 어미로 끝나면 과정이 아니라 나열로 읽힌다. 그 문서의 관례라면 둔다`, null, "notice", DOCUMENT, -1),
+      finding(name, eligible[0][2], eligible.map(([, text]) => text).join(" / "), `H2 ${eligible.length}개 가운데 ${count}개가 \`${best}\`${fitJosa(best, "로")} 끝난다. 목차가 한 어미로 끝나면 과정이 아니라 나열로 읽힌다. 그 문서의 관례라면 그대로 둔다`, null, "notice", DOCUMENT, -1),
     ];
   }
   return [];

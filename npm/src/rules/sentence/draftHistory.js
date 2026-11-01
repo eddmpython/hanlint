@@ -1,4 +1,5 @@
 // @ts-check
+import { fitJosa } from "../../analysis/grammar/josa.js";
 import { insideAny, matchedSpans } from "../../fingerprint/markers.js";
 import { SENTENCE, finding } from "../finding.js";
 
@@ -16,7 +17,7 @@ export function run(doc, config) {
     for (const [start, end, text] of matchedSpans(sentence.text, "draftHistory.txt")) {
       if (insideAny(start, end, sentence.quoted)) continue;
       findings.push(
-        finding(name, sentence.line, sentence.text, `\`${text}\` 는 글쓴이의 과정이다. 독자는 초고를 본 적이 없다. 알아낸 사실만 결과 문장으로 남긴다`, null, "error", SENTENCE, sentence.index),
+        finding(name, sentence.line, sentence.text, `\`${text}\`${fitJosa(text, "는")} 글쓴이의 과정이다. 독자는 초고를 본 적이 없다. 알아낸 사실만 결과 문장으로 남긴다`, null, "error", SENTENCE, sentence.index),
       );
     }
   }

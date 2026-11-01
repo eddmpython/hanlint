@@ -38,7 +38,7 @@ class EvidenceLedgerResult:
 
 
 def evidenceLedger(brief: WritingBrief | dict) -> EvidenceLedgerResult:
-    """v2 brief의 근거 원장을 검증하고 사실별 연결을 결정적인 순서로 낸다."""
+    """v2 brief의 근거 목록을 검증하고 사실별 연결을 늘 같은 순서로 낸다."""
     if isinstance(brief, (WritingBrief, dict)):
         raw = brief.asDict() if isinstance(brief, WritingBrief) else brief
         rawVersion = raw.get("version")
@@ -48,7 +48,7 @@ def evidenceLedger(brief: WritingBrief | dict) -> EvidenceLedgerResult:
         except (AttributeError, TypeError, ValueError) as error:
             return EvidenceLedgerResult(False, version, None, {}, 0, 0, (str(error),))
     if not isinstance(brief, WritingBrief):
-        raise ValueError("evidenceLedger 입력은 WritingBrief 또는 brief JSON 객체다")
+        raise ValueError("evidenceLedger 입력은 WritingBrief나 brief JSON 객체여야 한다")
     if brief.version != EVIDENCE_BRIEF_VERSION:
         return EvidenceLedgerResult(
             False,
@@ -57,7 +57,7 @@ def evidenceLedger(brief: WritingBrief | dict) -> EvidenceLedgerResult:
             {},
             0,
             0,
-            (f"근거 원장은 writing brief version {EVIDENCE_BRIEF_VERSION}에서만 쓴다",),
+            (f"근거 목록은 writing brief version {EVIDENCE_BRIEF_VERSION}에서만 쓴다",),
         )
     factEvidence = {fact.id: tuple(record.id for record in brief.evidence if fact.id in record.factIds) for fact in brief.facts}
     return EvidenceLedgerResult(

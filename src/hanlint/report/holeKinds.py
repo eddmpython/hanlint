@@ -1,4 +1,4 @@
-"""구멍 종류. data/holeKinds.toml 을 읽어 규칙 이름을 색과 기호로 잇는다."""
+"""구멍 종류. data/holeKinds.toml을 읽어 규칙 이름을 색과 기호로 잇는다."""
 
 from __future__ import annotations
 

@@ -35,7 +35,8 @@ def testEveryDictionaryEntryHasPatternAndWhy():
         entries = loadToml(name)
         assert entries, name
         for entry in entries:
-            assert entry.get("pattern") and entry.get("why") and entry.get("source"), (name, entry)
+            # source는 비어도 된다. 사용자가 찾아볼 수 없는 내부 자료에서 온 항목은 비우고 출처를 toml 주석에 둔다.
+            assert entry.get("pattern") and entry.get("why") and "source" in entry, (name, entry)
             re.compile(entry["pattern"])
 
 

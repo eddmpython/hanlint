@@ -1,8 +1,8 @@
 """국립국어원 한국어 학습용 어휘 목록.
 
-정본 자료와 필드 계약은 `learningVocabularySource.toml`, 재현 가능한 UTF-8 투영은
-`learningVocabulary.tsv` 다. 이 등급은 한국어 학습자를 위한 것이며 모어 화자의 낱말 난도나 좋은 글의
-점수가 아니다. 문맥으로 동형어를 가르지 않으므로 같은 표층형에 딸린 등급을 전부 보존한다.
+원자료와 필드 규칙은 `learningVocabularySource.toml`에 있고, 다시 만들 수 있는 UTF-8 사본은
+`learningVocabulary.tsv`다. 이 등급은 한국어 학습자를 위한 것이며 모어 화자에게 단어가 어려운 정도나 좋은
+글의 점수가 아니다. 문맥으로 동형어를 가르지 않으므로 글자 모양이 같은 단어에 딸린 등급을 모두 둔다.
 """
 
 from __future__ import annotations
@@ -78,8 +78,8 @@ def gradesByLexeme() -> dict[str, tuple[str, ...]]:
 def termsIn(document: TermDocument, includeOutside: bool = False) -> tuple[Term, ...]:
     """처음 나온 C 전용 화제어와, 요청했을 때 목록 밖 한글 화제어를 문서 순서대로 준다.
 
-    A/C처럼 뜻에 따라 등급이 갈리는 표층형은 C라고 단정하지 않는다. 목록 밖은 전문어일 수도 고유명사일
-    수도 있으므로 후보라고만 부른다. 화제어 추출의 표층 한계는 fingerprint/topics.py가 소유한다.
+    A/C처럼 뜻에 따라 등급이 갈리는 단어는 C라고 단정하지 않는다. 목록 밖은 전문어일 수도 고유명사일
+    수도 있으므로 후보라고만 부른다. 화제어를 글자 모양만으로 뽑는 한계는 fingerprint/topics.py에 적었다.
     """
     grades = gradesByLexeme()
     seen: set[str] = set()
@@ -89,7 +89,7 @@ def termsIn(document: TermDocument, includeOutside: bool = False) -> tuple[Term,
             if word in seen:
                 continue
             seen.add(word)
-            # 한 글자는 조사 제거가 만든 가짜 어간 (`하는` → `하`) 이 섞인다. 용어 후보로는 가치가 낮아 뺀다.
+            # 한 글자는 조사 제거가 만든 가짜 어간(`하는` → `하`)이 섞인다. 용어 후보로는 가치가 낮아 뺀다.
             if len(word) < 2:
                 continue
             wordGrades = grades.get(word)

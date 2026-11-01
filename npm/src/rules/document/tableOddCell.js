@@ -53,7 +53,7 @@ export function run(doc, config) {
       const unit = [...kinds][0];
       const [offset, cell] = odd[0];
       findings.push(
-        finding(name, block.startLine + offset, cell, `이 열의 나머지 ${values.length - 1}칸은 \`${unit}\` 으로 잰 값 하나인데 이 칸만 다르다. 같은 잣대로 다시 재거나 그 줄을 본문 문장으로 옮긴다`, null, NOTICE, DOCUMENT, block.index),
+        finding(name, block.startLine + offset, cell, `이 열의 다른 ${values.length - 1}칸은 모두 \`${unit}\` 단위인데 이 칸만 다르다. 같은 단위로 다시 재거나 그 줄을 본문 문장으로 옮긴다`, null, NOTICE, DOCUMENT, block.index),
       );
     }
   }

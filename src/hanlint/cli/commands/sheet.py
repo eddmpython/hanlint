@@ -1,7 +1,7 @@
-"""`hanlint sheet 폴더/ --preset screen` 과 `hanlint sheet apply 시트.md`.
+"""`hanlint sheet 폴더/ --preset screen`과 `hanlint sheet apply 시트.md`.
 
-소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py) 을 전부 뒤져 사람이 읽는 한국어 글을 표 하나로 내보낸다. 기본은 지적이
-있는 글만, `--all` 은 전부. 사람이 표의 `고침` 칸을 채우면 `apply` 가 그 자리를 파일에 되돌려 쓴다.
+소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py)을 전부 뒤져 사람이 읽는 한국어 글을 표 하나로 내보낸다. 기본은 지적이
+있는 글만, `--all`은 전부. 사람이 표의 `고침` 칸을 채우면 `apply`가 그 자리를 파일에 되돌려 쓴다.
 
 왜 있는가. 화면의 글은 수십 파일에 흩어져 있어 지적을 파일마다 받으면 전체가 안 보인다. 운영자가 표 하나로
 모든 글을 보고 그 자리에서 고치게 한다 (2026-09-17, Taxly 화면 글 1,129건에서 왔다).
@@ -22,14 +22,14 @@ APPLY = "apply"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("targets", nargs="+", help="소스 파일이나 폴더. 첫 인자가 apply 면 다음 인자는 고친 시트다")
+    parser.add_argument("targets", nargs="+", help="소스 파일이나 폴더. 첫 인자가 apply면 다음 인자는 고친 시트다")
     parser.add_argument("--all", dest="everything", action="store_true", help="지적이 없는 글도 표에 넣는다")
-    parser.add_argument("--dry-run", dest="dryRun", action="store_true", help="apply 에서 파일을 쓰지 않고 무엇을 바꿀지만 본다")
+    parser.add_argument("--dry-run", dest="dryRun", action="store_true", help="apply에서 파일을 쓰지 않고 무엇을 바꿀지만 본다")
     addCommonOptions(parser, ("markdown", "json"))
 
 
 def sourceUnder(folder: Path) -> list[str]:
-    """폴더 아래 소스 파일. 점 폴더와 node_modules 는 건너뛴다. 경로 문자열 순이라 두 구현이 같은 차례를 낸다."""
+    """폴더 아래 소스 파일. 점 폴더와 node_modules는 건너뛴다. 경로 문자열 순이라 두 구현이 같은 차례를 낸다."""
     found: list[str] = []
     for child in sorted(folder.iterdir(), key=lambda p: p.name):
         if child.is_dir():
@@ -37,7 +37,7 @@ def sourceUnder(folder: Path) -> list[str]:
                 found.extend(sourceUnder(child))
         elif child.suffix.lower() in SOURCE_SUFFIXES:
             found.append(str(child))
-    # 구분자를 / 로 맞춘 뒤 정렬한다. \\ 는 / 보다 커서 Windows 와 다른 OS 의 순서가 갈리기 때문이다.
+    # 구분자를 / 로 맞춘 뒤 정렬한다. \\ 는 / 보다 커서 Windows와 다른 OS의 순서가 갈리기 때문이다.
     return sorted(found, key=lambda item: PurePath(item).as_posix())
 
 
@@ -63,12 +63,12 @@ def relativeLabel(path: str) -> str:
 
 
 def buildRows(files: list[str], config: Config, everything: bool) -> list[SheetRow]:
-    """디스크의 파일을 읽어 report.sheetRows 에 넘긴다. 행의 뜻은 그쪽이 소유한다."""
+    """디스크의 파일을 읽어 report.sheetRows에 넘긴다. 행의 뜻은 그쪽이 소유한다."""
     return sheetRows(((relativeLabel(file), Path(file).read_text(encoding="utf-8")) for file in files), config, everything)
 
 
 def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
-    """표의 고침을 파일에 쓴다. (적용한 자리, 실패한 자리와 이유). 되돌려 쓰는 뜻은 report.applyRows 가 소유한다."""
+    """표의 고침을 파일에 쓴다. (적용한 자리, 실패한 자리와 이유). 되돌려 쓰는 뜻은 report.applyRows가 소유한다."""
     parsed = parseSheet(sheetPath.read_text(encoding="utf-8"))
     applied: list[str] = []
     failed: list[str] = list(parsed.problems)
@@ -80,7 +80,7 @@ def applySheet(sheetPath: Path, dryRun: bool) -> tuple[list[str], list[str]]:
         if not path.exists():
             failed.extend(f"{row.place}: 파일이 없다" for row in byFile[file])
             continue
-        # newline="" 이라야 \r\n 이 \n 으로 바뀌지 않는다. npm 의 readFileSync 와 같이 줄 끝을 그대로 두고 그대로 쓴다.
+        # newline="" 이라야 \r\n이 \n으로 바뀌지 않는다. npm의 readFileSync와 같이 줄 끝을 그대로 두고 그대로 쓴다.
         with path.open(encoding="utf-8", newline="") as handle:
             source = handle.read()
         rewritten, done, problems = applyRows(source, byFile[file])

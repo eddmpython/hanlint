@@ -64,7 +64,7 @@ def testNpmColumnMatchesNpmCli():
             cwd=ROOT,
         )
         # 파이썬 전용 명령은 무엇을 대신 쓰라는 안내와 함께 2 로 끝난다.
-        missing = done.returncode == 2 and "파이썬 패키지에 있다" in (done.stdout + done.stderr)
+        missing = done.returncode == 2 and "파이썬 hanlint에만 있다" in (done.stdout + done.stderr)
         if claimed == missing:
             wrong.append(f"{command}: 명령 안내 는 npm {'있다' if claimed else '없다'} 라는데 실제는 반대다")
     assert not wrong, "\n".join(wrong)

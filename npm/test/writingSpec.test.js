@@ -34,5 +34,5 @@ test("꺼진 규칙을 사양의 요구라고 말하지 않는다", () => {
 test("프로파일이 없는 대화 프리셋은 사양을 꾸며 내지 않는다", () => {
   const config = defaultConfig();
   config.preset = "chat";
-  assert.throws(() => writingSpec(config), /종류 프로파일이 없어/);
+  assert.throws(() => writingSpec(config), /비교할 프로파일이 없어/);
 });

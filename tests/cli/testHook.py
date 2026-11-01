@@ -38,7 +38,7 @@ def testWrittenMarkdownBecomesAdditionalContext(tmp_path, monkeypatch, capsys):
     result = json.loads(out)
     hookOutput = result["hookSpecificOutput"]
     assert hookOutput["hookEventName"] == "PostToolUse"
-    assert "방금 쓴 마크다운에서 센 Finding" in hookOutput["additionalContext"]
+    assert "방금 쓴 마크다운에서 찾은 지적" in hookOutput["additionalContext"]
     assert f"{draft}:3 [cliche]" in hookOutput["additionalContext"]
 
 
@@ -122,7 +122,7 @@ def testCodexPatchChecksEveryWrittenMarkdown(tmp_path, monkeypatch, capsys):
 
     assert code == 0 and err == ""
     context = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-    assert context.startswith("hanlint가 방금 쓴 마크다운에서 센 Finding입니다.\n")
+    assert context.startswith("hanlint가 방금 쓴 마크다운에서 찾은 지적입니다.\n")
     assert "초안.md:3 [cliche]" in context
     assert "docs/new.md:3 [doublePassive]" in context
     assert "clean.md" not in context and "note.txt" not in context and "old.md" not in context
@@ -167,7 +167,7 @@ def testUnknownAgentIsUsageError(monkeypatch, capsys):
         assert stop.code == 2
     else:
         raise AssertionError("모르는 --agent 를 받았다")
-    assert "invalid choice" in capsys.readouterr().err
+    assert "쓸 수 없는 값" in capsys.readouterr().err
 
 
 def testHookLabelsStyleNotices(tmp_path, monkeypatch, capsys):
@@ -175,7 +175,7 @@ def testHookLabelsStyleNotices(tmp_path, monkeypatch, capsys):
     draft.write_text("가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.", encoding="utf-8")
     code, out, err = runHook(monkeypatch, capsys, [], postPayload(draft))
     assert code == 0 and not err
-    assert "[nounPile] notice:" in json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert "[nounPile] 확인 권고:" in json.loads(out)["hookSpecificOutput"]["additionalContext"]
 
 
 def testHookStaysSilentForCleanOrUnusableInput(tmp_path, monkeypatch, capsys):

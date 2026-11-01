@@ -43,6 +43,6 @@ export function run(doc, config) {
   let best = over[0];
   for (const pair of over) if (pair[1].length > best[1].length) best = pair;
   return [
-    finding(name, best[0], best[1], `마지막 절의 목록 항목 ${over.length}개가 ${config.moreLaterMaxChars}자를 넘는다 (가장 긴 것 ${best[1].length}자). 미룬 것이 아니라 옮겨 적은 것이다. 한 줄과 링크로 줄인다`, null, NOTICE, SECTION, last.index),
+    finding(name, best[0], best[1], `마지막 절의 목록 항목 ${over.length}개가 ${config.moreLaterMaxChars}자를 넘는다. 가장 긴 항목은 ${best[1].length}자다. 미룬 것이 아니라 옮겨 적은 것이다. 한 줄과 링크로 줄인다`, null, NOTICE, SECTION, last.index),
   ];
 }

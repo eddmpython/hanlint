@@ -37,11 +37,11 @@ def renderLearnText(
     beforePath: Path,
     afterPath: Path,
 ) -> str:
-    lines = [f"패치 후보 {len(candidates)}건, 표면 연산 후보 {len(operations)}건  {beforePath} -> {afterPath}"]
+    lines = [f"패치 후보 {len(candidates)}건, 글자 바꾸기 후보 {len(operations)}건  {beforePath} -> {afterPath}"]
     if not candidates and not operations:
-        lines.append("사라진 문장 지적이나 안전한 일대일 표면 치환이 없거나 문장 대응이 모호하다")
+        lines.append("사라진 문장 지적이나 안전한 일대일 글자 바꾸기가 없거나 문장끼리 짝이 분명하지 않다")
         return "\n".join(lines)
-    lines.append("사람이 뜻을 확인하고 적용 범위를 정한 뒤 hanlint.toml 에 승인한다")
+    lines.append("사람이 뜻을 확인하고 적용 범위를 정한 뒤 hanlint.toml에 승인한다")
     for candidate in candidates:
         lines.extend(
             [
@@ -62,7 +62,7 @@ def renderLearnText(
                 f"  증거 {len(operation.evidence)}건, 첫 자리 전 {first.beforeLine}줄 -> 후 {first.afterLine}줄",
                 f"  전  {flat(first.sourceBefore)}",
                 f"  후  {flat(first.sourceAfter)}",
-                "  가드: 32자 이하, 표면 편집 거리 1 이하, 단어 경계 한 자리, 숫자·코드·링크 보존",
+                "  조건: 32자 이하, 글자 편집 거리 1 이하, 단어 경계가 맞는 한 곳, 숫자·코드·링크는 그대로",
             ]
         )
     return "\n".join(lines)
@@ -85,7 +85,7 @@ def renderLearnJson(
 
 
 def tomlString(text: str) -> str:
-    """한 줄 TOML 기본 문자열. JSON 문자열의 이스케이프는 이 범위에서 TOML 과 같다."""
+    """한 줄 TOML 기본 문자열. JSON 문자열의 이스케이프는 이 범위에서 TOML과 같다."""
     return json.dumps(flat(text), ensure_ascii=False)
 
 
@@ -117,7 +117,7 @@ def renderLearnToml(candidates: tuple[LearnedExemplar, ...], operations: tuple[L
             [
                 "",
                 f"# 증거 {len(operation.evidence)}건. 첫 자리 전 {first.beforeLine}줄 -> 후 {first.afterLine}줄.",
-                "# 뜻이 같고 이 낱말의 다른 원문에도 적용해도 되는지 확인한 뒤 승인한다.",
+                "# 뜻이 같고 이 단어의 다른 원문에도 적용해도 되는지 확인한 뒤 승인한다.",
                 "[[operations]]",
                 f"before = {tomlString(operation.before)}",
                 f"after = {tomlString(operation.after)}",

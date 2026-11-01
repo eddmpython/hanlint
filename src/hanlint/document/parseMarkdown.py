@@ -1,7 +1,7 @@
 """마크다운 텍스트를 문서 모델로 바꾼다.
 
-빈 줄로 블록을 나누고 첫 줄로 종류를 정한다. 코드 펜스 안은 통째로 code 다. 제목은 빈 줄 없이 문단에
-붙어 있어도 제 블록이다. H2 가 절을 열고 첫 H2 앞은 도입 절이다.
+빈 줄로 블록을 나누고 첫 줄로 종류를 정한다. 코드 펜스 안은 통째로 code다. 제목은 빈 줄 없이 문단에
+붙어 있어도 제 블록이다. H2가 절을 열고 첫 H2 앞은 도입 절이다.
 """
 
 from __future__ import annotations
@@ -21,18 +21,18 @@ IMAGE_LINE = re.compile(r"^!\[")
 LIST_LINE = re.compile(r"^(?P<indent>\s*)(?:[-*+]|[0-9]+[.)])\s+")
 TABLE_LINE = re.compile(r"^\s*\|")
 URL_LINE = re.compile(r"^\s*https?://\S+\s*$")
-# 링크 하나만 있는 줄. 본문이 아니라 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크) 이라 주소만 있는 줄과 같은 embed 다.
-# 실측: eddmpython-course 01 의 영상 링크 22개가 산문 문장으로 세어져 영상이 셋인 절이 결과 없는 절로 잡혔다.
+# 링크 하나만 있는 줄. 본문이 아니라 끼워 넣은 것 (영상 카드, 실행 칸, 참고 링크)이라 주소만 있는 줄과 같은 embed다.
+# 실측: 강의 글 한 편의 영상 링크 22개가 산문 문장으로 세어져 영상이 셋인 절이 결과 없는 절로 잡혔다.
 LINK_ONLY_LINE = re.compile(r"^\s*\[[^\]\n]+\]\(\S+?(?:\s+\"[^\"\n]*\")?\)\s*$")
 HTML_LINE = re.compile(r"^\s*<")
 META_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
-# 인라인 제어. `<!-- hanlint-disable cliche -->` 부터 `<!-- hanlint-enable cliche -->` 까지, 또는 다음 블록 하나.
+# 인라인 제어. `<!-- hanlint-disable cliche -->`부터 `<!-- hanlint-enable cliche -->`까지, 또는 다음 블록 하나.
 CONTROL = re.compile(r"^\s*<!--\s*hanlint-(disable-next-line|disable-next|disable|enable)\b([^>]*?)-->\s*$")
 ALL_RULES = "*"
 
 
 def parseFrontmatter(text: str) -> tuple[dict[str, str], int]:
-    """frontmatter 를 읽고 본문이 시작하는 줄 번호 (1 부터) 를 함께 준다."""
+    """frontmatter를 읽고 본문이 시작하는 줄 번호(1부터)를 함께 준다."""
     match = FRONTMATTER.match(text)
     if not match:
         return {}, 1
@@ -45,9 +45,9 @@ def parseFrontmatter(text: str) -> tuple[dict[str, str], int]:
 
 
 def classify(firstLine: str, lineCount: int = 1) -> str:
-    """블록의 종류. 링크 하나뿐인 줄은 그 줄이 블록의 전부일 때만 embed 다. 줄바꿈으로 이어지는 문단의 첫 줄이면 산문이다.
+    """블록의 종류. 링크 하나뿐인 줄은 그 줄이 블록의 전부일 때만 embed다. 줄바꿈으로 이어지는 문단의 첫 줄이면 산문이다.
 
-    실측: 기준 말뭉치의 감사(auditing) 문서는 링크로 시작해 다음 줄로 이어지는 문단을 두었고 그것이 embed 가 되자
+    실측: 기준 말뭉치의 감사(auditing) 문서는 링크로 시작해 다음 줄로 이어지는 문단을 두었고 그것이 embed가 되자
     도입 문단 수가 달라졌다.
     """
     if INDENTED_CODE_LINE.match(firstLine):
@@ -144,7 +144,7 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
             flush()
             continue
         if CONTROL.match(line):
-            # 제어 주석은 빈 줄 없이 문단에 붙어 있어도 제 블록이다. 안 그러면 문단째 html 이 되어 검사에서 빠진다.
+            # 제어 주석은 빈 줄 없이 문단에 붙어 있어도 제 블록이다. 안 그러면 문단째 html이 되어 검사에서 빠진다.
             flush()
             blocks.append(Block(HTML, lineNo, lineNo, line, 0, len(blocks)))
             continue
@@ -164,7 +164,7 @@ def splitBlocks(text: str, firstLine: int) -> list[Block]:
             flush()
     flush()
     if fence:
-        # 닫히지 않은 펜스는 코드로 둔다. 닫힘 여부는 이 층의 관심사가 아니다.
+        # 닫히지 않은 펜스는 코드로 둔다. 닫혔는지는 이 부분이 다루지 않는다.
         blocks.append(Block(CODE, fenceStart, lineNo, "\n".join(fenceLines), 0, len(blocks)))
     return blocks
 
@@ -185,7 +185,7 @@ def controlNames(raw: str) -> list[str]:
 
 
 def disabledRanges(blocks: list[Block]) -> list[tuple[str, int, int]]:
-    """제어 주석이 끈 (규칙, 시작 줄, 끝 줄). disable 은 enable 이나 글 끝까지, disable-next 는 다음 블록 하나."""
+    """제어 주석이 끈 (규칙, 시작 줄, 끝 줄). disable은 enable이나 글 끝까지, disable-next는 다음 블록 하나."""
     ranges: list[tuple[str, int, int]] = []
     opened: dict[str, int] = {}
     lastLine = blocks[-1].endLine if blocks else 1
@@ -211,7 +211,7 @@ def disabledRanges(blocks: list[Block]) -> list[tuple[str, int, int]]:
 
 
 def fenceLanguage(blockText: str) -> str:
-    """코드 블록 첫 줄의 언어 표기 (```python 의 python). 없으면 빈 문자열. 소문자로 준다."""
+    """코드 블록 첫 줄의 언어 표기 (```python의 python). 없으면 빈 문자열. 소문자로 준다."""
     opening = FENCE_OPEN.match(blockText.split("\n", 1)[0])
     if not opening:
         return ""
@@ -220,13 +220,13 @@ def fenceLanguage(blockText: str) -> str:
 
 
 def dropFences(doc: Document, languages: list[str] | tuple[str, ...]) -> Document:
-    """언어 표기가 `languages` 에 든 펜스를 없앤 문서. 블록 순서 번호를 다시 매기고 절을 다시 묶는다.
+    """언어 표기가 `languages`에 든 펜스를 없앤 문서. 블록 순서 번호를 다시 매기고 절을 다시 묶는다.
 
-    인라인 제어는 원문 줄 기준이라 그대로 둔다. 다시 계산하면 펜스 앞의 `disable-next` 가 그 다음 문단으로 옮겨 붙는다
-    (실측: 검증에서 잡혔다). 뺀 펜스는 `ignored` 에 남겨 파일 전체를 보는 규칙 (dash) 이 읽는다.
+    인라인 제어는 원문 줄 기준이라 그대로 둔다. 다시 계산하면 펜스 앞의 `disable-next`가 그 다음 문단으로 옮겨 붙는다
+    (실측: 검증에서 잡혔다). 뺀 펜스는 `ignored`에 남겨 파일 전체를 보는 규칙(dash)이 읽는다.
 
-    렌더러가 읽기 본문에서 지우는 펜스 (강의 장면 계약) 나 도표 원문은 코드도 산문도 아니다. 그대로 두면 거의
-    같은 블록, 읽어 주지 않은 출력, 절의 결과로 세어진다. 줄 번호는 원문 그대로라 지적이 가리키는 자리는 안 변한다.
+    렌더러가 읽기 본문에서 지우는 펜스(강의 장면 계약)나 도표 원문은 코드도 산문도 아니다. 그대로 두면 거의
+    같은 블록, 읽어 주지 않은 출력, 절의 결과로 세어진다. 줄 번호는 원문 그대로라 지적이 가리키는 줄은 안 변한다.
     """
     wanted = {name.strip().lower() for name in languages if name.strip()}
     if not wanted:

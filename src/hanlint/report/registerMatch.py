@@ -1,4 +1,4 @@
-"""한 문체로 저장한 본보기와 문형을 검사한 글의 문체에 맞춘다."""
+"""한 문체로 저장한 예시와 문형을 검사한 글의 문체에 맞춘다."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ def exemplarInRegister(exemplar: Exemplar, register: str | None) -> Exemplar:
     before = convertTemplate(exemplar.before, target)
     after = convertTemplate(exemplar.after, target)
     if before.skipped or after.skipped:
-        raise ValueError(f"{exemplar.rule} 본보기의 서술어를 못 풀었다: {before.skipped + after.skipped}")
+        raise ValueError(f"{exemplar.rule} 예시의 서술어를 못 풀었다: {before.skipped + after.skipped}")
     return Exemplar(exemplar.rule, before.text, after.text, exemplar.moved, exemplar.presets)
 
 

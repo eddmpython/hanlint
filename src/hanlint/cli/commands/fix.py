@@ -1,7 +1,7 @@
 """`hanlint fix 글.md`. 기계가 고칠 수 있는 지적을 원문에 적용한다.
 
-바꾼 자리와 건너뛴 자리를 줄마다 보여 준다. `--dry-run` 은 파일을 바꾸지 않고 무엇을 바꿀지만 보여 준다.
-줄 끝 (LF, CRLF) 은 원문 그대로 둔다.
+바꾼 자리와 건너뛴 자리를 줄마다 보여 준다. `--dry-run`은 파일을 바꾸지 않고 무엇을 바꿀지만 보여 준다.
+줄 끝 (LF, CRLF)은 원문 그대로 둔다.
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def run(args: argparse.Namespace) -> int:
     for path in files:
         text = readRaw(Path(path))
         doc = buildFingerprint(parseMarkdown(text, path=path), config)
-        # notice 는 제안이라 손으로 정한다. 확정된 error 만 원문에 넣는다.
+        # notice는 제안이라 손으로 정한다. 확정된 error만 원문에 넣는다.
         errors = [f for f in runAll(doc, config) if f.severity == "error"]
         result = applyFixes(text, errors)
         for line, fragment, replacement in result.applied:
@@ -50,12 +50,12 @@ def run(args: argparse.Namespace) -> int:
             lines.append(f"{path}:{line}  건너뜀 {fragment}: {reason}")
         if result.text != text and not args.dryRun:
             writeRaw(Path(path), result.text)
-        # 남은 수를 함께 말한다. `0곳 고침, 0곳 건너뜀` 만 보면 손볼 것이 없다는 뜻으로 읽힌다
+        # 남은 수를 함께 말한다. `0곳 고침, 0곳 건너뜀`만 보면 손볼 것이 없다는 뜻으로 읽힌다
         left = len(errors) - len(result.applied)
-        rest = f". 손으로 고칠 error {left}건이 남았다 (hanlint {path})" if left else ""
+        rest = f". 손으로 고칠 오류 {left}건이 남았다 (hanlint {path})" if left else ""
         lines.append(
             f"{path}  {len(result.applied)}곳 고침, {len(result.skipped)}곳 건너뜀"
-            + (" (미리보기, 파일은 그대로)" if args.dryRun else "")
+            + (" (미리보기라 파일은 그대로다)" if args.dryRun else "")
             + rest
         )
     print("\n".join(lines))

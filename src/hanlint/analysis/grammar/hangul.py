@@ -1,4 +1,4 @@
-"""한글 음절의 자모 산술. 형태 층 전체가 여기서 초성, 중성, 종성을 읽고 다시 짠다.
+"""한글 음절의 자모 산술. 형태 부분 전체가 여기서 초성, 중성, 종성을 읽고 다시 짠다.
 
 유니코드 한글 음절은 (초성 × 21 + 중성) × 28 + 종성 의 차례로 놓여 있어서 곱셈과 나눗셈으로 쪼개고
 붙일 수 있다. 표를 안 두고 산술로 하는 것은 표가 틀릴 자리를 없애려는 것이다 (십의 종성을 ㄹ 로
@@ -15,7 +15,7 @@ FINALS = 28
 # 중성 자리 번호. ㅏ ㅐ ㅑ ㅒ ㅓ ㅔ ㅕ ㅖ ㅗ ㅘ ㅙ ㅚ ㅛ ㅜ ㅝ ㅞ ㅟ ㅠ ㅡ ㅢ ㅣ 차례다.
 A, AE, YA, YAE, EO, E, YEO, YE, OH, WA, WAE, OE, YO, U, WO, WE, WI, YU, EU, UI, IH = range(VOWELS)
 
-# 종성 자리 번호 가운데 형태 층이 이름으로 부르는 것.
+# 종성 자리 번호 가운데 형태 부분이 이름으로 부르는 것.
 NONE = 0
 GIYEOK = 1
 NIEUN = 4
@@ -29,7 +29,7 @@ IEUNG = 21
 HIEUT = 27
 
 BRIGHT = frozenset({A, OH, YA, YO, WA})
-"""양성 모음. 이 모음 뒤에는 `아` 가 붙고 나머지에는 `어` 가 붙는다."""
+"""양성 모음. 이 모음 뒤에는 `아`가 붙고 나머지에는 `어`가 붙는다."""
 
 
 def isSyllable(ch: str) -> bool:
@@ -68,5 +68,5 @@ def withVowel(ch: str, vowel: int) -> str:
 
 
 def lastSyllable(word: str) -> str | None:
-    """낱말의 마지막 한글 음절. 없으면 None."""
+    """단어의 마지막 한글 음절. 없으면 None."""
     return word[-1] if word and isSyllable(word[-1]) else None

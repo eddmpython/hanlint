@@ -1,4 +1,4 @@
-"""분석 결과의 모양. 숫자와 자리만 있다. 점수도 등급도 없다."""
+"""분석 결과의 모양. 숫자와 위치만 있다. 점수도 등급도 없다."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass
 @dataclass(frozen=True)
 class Rhythm:
     mean: float
-    """문장 길이 (어절) 평균."""
+    """문장 길이(어절) 평균."""
     std: float
     burstiness: float
     """표준편차 / 평균. AI 글이 낮다는 신호가 있지만 점수가 아니다."""
@@ -55,12 +55,12 @@ class Lexicon:
     tokens: int
     """어절 수."""
     types: int
-    """조사를 뗀 낱말 종류 수."""
+    """조사를 뗀 단어 종류 수."""
     typeTokenRatio: float
     foreignRatio: float
-    """영문과 숫자만으로 된 어절의 비율. 외래어와 식별자의 근사다."""
+    """영문과 숫자만으로 된 어절의 비율. 외래어와 식별자의 어림이다."""
     topWords: tuple[tuple[str, int], ...]
-    """자주 쓴 화제어 (낱말, 횟수). 많은 순."""
+    """자주 쓴 화제어(단어, 횟수). 많은 순."""
 
 
 @dataclass(frozen=True)
@@ -77,7 +77,7 @@ class AuditResult:
     commaRatio: float
     """쉼표가 있는 문장의 비율."""
     endingMix: tuple[tuple[str, float], ...]
-    """(종결어미 부류, 비율). 많은 순."""
+    """(종결어미 묶음, 비율). 많은 순."""
     paragraphHistogram: tuple[tuple[str, int], ...]
     shortParagraphRatio: float
     """두 문장 이하 문단의 비율."""

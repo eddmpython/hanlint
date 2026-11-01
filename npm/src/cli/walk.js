@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 폴더에서 검사할 마크다운을 찾는 규칙. 첫 화면과 검사가 **같은 함수**를 쓴다.
- * 무엇을 건너뛰고 왜 그러는지는 파이썬 `cli/commands/shared.py` 의 SKIPPED_FOLDERS 가 소유한다.
+ * 무엇을 건너뛰고 왜 그러는지는 파이썬 `cli/commands/shared.py`의 SKIPPED_FOLDERS가 소유한다.
  */
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";

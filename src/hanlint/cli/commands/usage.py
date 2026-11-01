@@ -1,9 +1,9 @@
-"""`hanlint usage "낱말 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds`.
+"""`hanlint usage "단어 …" --kind report --limit 5`, `hanlint usage build <종류> <글 폴더>`, `hanlint usage kinds`.
 
-그 종류의 실제 글에서 질의의 낱말이 어떻게 쓰였는지를 보인다. 먼저 낱말마다 함께 쓰는 말 (바로 뒤의 용언, 뒤와 앞의
-명사, 문서 수) 을, 그다음 BM25 순서로 문장을 문서 수와 출처와 함께 낸다. 색인은 사용자 기계 (`~/.cache/hanlint/usage/`)
-에만 있고 `build` 가 만든다 (txt, md, jsonl). 색인이 없으면 만드는 법을 알리고 2 로 끝난다. 좋은 문장을 고르지 않는다.
-뜻은 usage/sentences.py 가 소유한다.
+그 종류의 실제 글에서 질의의 단어이 어떻게 쓰였는지를 보인다. 먼저 단어마다 함께 쓰는 말 (바로 뒤의 용언, 뒤와 앞의
+명사, 문서 수)을, 그다음 BM25 순서로 문장을 문서 수와 출처와 함께 낸다. 색인은 사용자 기계 (`~/.cache/hanlint/usage/`)
+에만 있고 `build`가 만든다 (txt, md, jsonl). 색인이 없으면 만드는 법을 알리고 2로 끝난다. 좋은 문장을 고르지 않는다.
+뜻은 usage/sentences.py가 소유한다.
 """
 
 from __future__ import annotations
@@ -16,18 +16,18 @@ from ...config import USAGE_KINDS
 from ...usage import Collocation, Hit, buildIndex, defaultUsageRoot, listIndexes, loadIndex, queryCores, readDocuments
 from .shared import addOutputOption, emit
 
-HELP = '그 종류의 실제 글에서 낱말이 함께 쓰는 말과 쓰인 문장을 보인다 (usage "낱말"). 색인은 usage build <종류> <폴더>'
+HELP = '그 종류의 실제 글에서 단어이 함께 쓰는 말과 쓰인 문장을 보인다 (usage "단어"). 색인은 usage build <종류> <폴더>'
 BUILD = "build"
 KINDS = "kinds"
 DEFAULT_LIMIT = 5
 DEFAULT_KIND = USAGE_KINDS[0]
 QUERY_WORDS = 3
-"""함께 쓰는 말을 낼 낱말 수 상한. 질의 앞에서부터."""
+"""함께 쓰는 말을 낼 단어 수 상한. 질의 앞에서부터."""
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "targets", nargs="+", help="질의 낱말들. build <종류> <글 폴더> 는 색인을 만들고, kinds 는 있는 색인을 센다"
+        "targets", nargs="+", help="질의 단어들. build <종류> <글 폴더> 는 색인을 만들고, kinds는 있는 색인을 센다"
     )
     parser.add_argument("--kind", default=DEFAULT_KIND, help=f"글의 종류. 기본 {DEFAULT_KIND}")
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"보일 문장 수. 기본 {DEFAULT_LIMIT}")
@@ -39,8 +39,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
 def missingIndex(kind: str, root: Path) -> str:
     kinds = ", ".join(str(meta["kind"]) for meta in listIndexes(root)) or "없음"
     return (
-        f"{kind} 색인이 없다 (있는 것: {kinds}). hanlint usage build {kind} <글 폴더> 로 만든다 (txt, md, jsonl. 하위 폴더 "
-        "포함). 사업보고서는 scripts/fetch/dartReports.py, 위키백과는 scripts/fetch/koWikipedia.py 가 받는다"
+        f"{kind} 색인이 없다 (있는 것: {kinds}). hanlint usage build {kind} <글 폴더>로 만든다 (txt, md, jsonl. 하위 폴더 포함)"
     )
 
 
@@ -62,7 +61,7 @@ def renderText(
             if pairs:
                 lines.append(f"   {label}: {pairText(pairs)}")
     if not hits and limit > 0:
-        lines.append("쓰인 문장이 없다. 낱말을 줄이거나 다른 낱말로 묻는다")
+        lines.append("쓰인 문장이 없다. 단어를 줄이거나 다른 단어로 찾는다")
     for number, hit in enumerate(hits, 1):
         lines.append(f"{number}. {hit.text}")
         lines.append(f"   문서 {hit.documents}편, 출처 {hit.source}")
@@ -96,10 +95,10 @@ def renderKinds(root: Path, asJson: bool) -> str:
     if asJson:
         return json.dumps({"version": 1, "root": str(root), "kinds": found}, ensure_ascii=False, indent=2)
     if not found:
-        return f"{root} 에 색인이 없다. hanlint usage build <종류> <글 폴더> 로 만든다"
+        return f"{root}에 색인이 없다. hanlint usage build <종류> <글 폴더>로 만든다"
     lines = [f"색인 {len(found)}개 ({root})"]
     for meta in found:
-        lines.append(f"  {meta['kind']}: 문서 {meta['documents']}편, 문장 {meta['sentences']}개, 토큰 {meta['terms']}종")
+        lines.append(f"  {meta['kind']}: 문서 {meta['documents']:,}편, 문장 {meta['sentences']:,}개, 단어 {meta['terms']:,}종")
     return "\n".join(lines)
 
 
@@ -114,12 +113,12 @@ def run(args: argparse.Namespace) -> int:
             return 2
         kind, folder = args.targets[1], Path(args.targets[2])
         if not folder.is_dir():
-            emit(f"{folder} 는 폴더가 아니다", args.output)
+            emit(f"폴더가 아니다: {folder}", args.output)
             return 2
         result = buildIndex(kind, readDocuments(folder), root)
         emit(
-            f"{root / kind}: 문서 {result.documents}편, 문장 {result.sentences}개, 토큰 {result.terms}종. "
-            f'hanlint usage "낱말" --kind {kind} 로 묻는다',
+            f"{root / kind}: 문서 {result.documents:,}편, 문장 {result.sentences:,}개, 단어 {result.terms:,}종. "
+            f'hanlint usage "단어" --kind {kind}로 찾는다',
             args.output,
         )
         return 0

@@ -27,12 +27,12 @@ class Contract:
 
     def __init__(self, reader: str, goal: str, facts: list[str] | tuple[str, ...], version: int = CONTRACT_VERSION):
         if isinstance(version, bool) or not isinstance(version, int) or version != CONTRACT_VERSION:
-            raise ValueError(f"reader contract version 은 {CONTRACT_VERSION}이다: {version}")
+            raise ValueError(f"reader contract version이 맞지 않다: {version} (맞는 값: {CONTRACT_VERSION})")
         if not isinstance(facts, (list, tuple)) or not facts:
-            raise ValueError("facts 는 비지 않은 문자열 배열이다")
+            raise ValueError("facts는 비지 않은 문자열 배열이어야 한다")
         checkedFacts = tuple(checkedString(item, f"facts {index}번째") for index, item in enumerate(facts, start=1))
         if len(set(checkedFacts)) != len(checkedFacts):
-            raise ValueError("facts 에 같은 값이 두 번 있다")
+            raise ValueError("facts에 같은 값이 두 번 있다")
         object.__setattr__(self, "reader", checkedString(reader, "reader"))
         object.__setattr__(self, "goal", checkedString(goal, "goal"))
         object.__setattr__(self, "facts", checkedFacts)
@@ -41,17 +41,17 @@ class Contract:
     @classmethod
     def fromMapping(cls, data: object) -> Contract:
         if not isinstance(data, dict):
-            raise ValueError("reader contract 는 JSON 객체다")
+            raise ValueError("reader contract는 JSON 객체여야 한다")
         expected = {"version", "reader", "goal", "facts"}
         unknown = sorted(set(data) - expected)
         missing = sorted(expected - set(data))
         if unknown:
-            raise ValueError(f"reader contract 의 모르는 키: {', '.join(unknown)}")
+            raise ValueError(f"reader contract의 모르는 키: {', '.join(unknown)}")
         if missing:
-            raise ValueError(f"reader contract 의 빠진 키: {', '.join(missing)}")
+            raise ValueError(f"reader contract의 빠진 키: {', '.join(missing)}")
         version = data["version"]
         if isinstance(version, bool) or not isinstance(version, int) or version != CONTRACT_VERSION:
-            raise ValueError(f"reader contract version 은 {CONTRACT_VERSION}이다: {version}")
+            raise ValueError(f"reader contract version이 맞지 않다: {version} (맞는 값: {CONTRACT_VERSION})")
         return cls(data["reader"], data["goal"], checkedStrings(data["facts"], "facts"), version)
 
     @property
@@ -99,14 +99,14 @@ class ProtectedSurface:
     @classmethod
     def fromMapping(cls, data: object) -> ProtectedSurface:
         if not isinstance(data, dict):
-            raise ValueError("surface 는 JSON 객체다")
+            raise ValueError("surface는 JSON 객체여야 한다")
         expected = {"numbers", "urls", "code", "links"}
         unknown = sorted(set(data) - expected)
         missing = sorted(expected - set(data))
         if unknown:
-            raise ValueError(f"surface 의 모르는 키: {', '.join(unknown)}")
+            raise ValueError(f"surface의 모르는 키: {', '.join(unknown)}")
         if missing:
-            raise ValueError(f"surface 의 빠진 키: {', '.join(missing)}")
+            raise ValueError(f"surface의 빠진 키: {', '.join(missing)}")
         return cls(data["numbers"], data["urls"], data["code"], data["links"])
 
     @property
@@ -135,7 +135,7 @@ class Outline:
 
     def __init__(self, level: int, headings: list[str] | tuple[str, ...]):
         if isinstance(level, bool) or not isinstance(level, int) or not 1 <= level <= 6:
-            raise ValueError(f"outline.level 은 1~6 정수다: {level}")
+            raise ValueError(f"outline.level은 1~6 정수여야 한다. 받은 값: {level}")
         if isinstance(headings, tuple):
             headings = list(headings)
         object.__setattr__(self, "level", level)
@@ -144,14 +144,14 @@ class Outline:
     @classmethod
     def fromMapping(cls, data: object) -> Outline:
         if not isinstance(data, dict):
-            raise ValueError("outline 은 JSON 객체다")
+            raise ValueError("outline은 JSON 객체여야 한다")
         expected = {"level", "headings"}
         unknown = sorted(set(data) - expected)
         missing = sorted(expected - set(data))
         if unknown:
-            raise ValueError(f"outline 의 모르는 키: {', '.join(unknown)}")
+            raise ValueError(f"outline의 모르는 키: {', '.join(unknown)}")
         if missing:
-            raise ValueError(f"outline 의 빠진 키: {', '.join(missing)}")
+            raise ValueError(f"outline의 빠진 키: {', '.join(missing)}")
         return cls(data["level"], data["headings"])
 
     def asDict(self) -> dict:
@@ -183,7 +183,7 @@ class ContractV2:
         editPolicy: dict | None = None,
     ):
         if isinstance(version, bool) or not isinstance(version, int) or version != LATEST_CONTRACT_VERSION:
-            raise ValueError(f"reader contract version 은 {LATEST_CONTRACT_VERSION}다: {version}")
+            raise ValueError(f"reader contract version이 맞지 않다: {version} (맞는 값: {LATEST_CONTRACT_VERSION})")
         if isinstance(facts, tuple):
             facts = list(facts)
         object.__setattr__(self, "reader", checkedString(reader, "reader"))
@@ -199,7 +199,7 @@ class ContractV2:
             list(lockedFacts) if isinstance(lockedFacts, tuple) else lockedFacts, "lockedFacts", allowEmpty=True
         )
         if any(fact not in self.facts for fact in locked):
-            raise ValueError("lockedFacts must select approved facts")
+            raise ValueError("lockedFacts는 승인한 facts 가운데서 골라야 한다")
         object.__setattr__(self, "lockedFacts", locked)
         policy = checkedEditPolicy(editPolicy if editPolicy is not None else {})
         object.__setattr__(
@@ -210,14 +210,14 @@ class ContractV2:
     @classmethod
     def fromMapping(cls, data: object) -> ContractV2:
         if not isinstance(data, dict):
-            raise ValueError("reader contract 는 JSON 객체다")
+            raise ValueError("reader contract는 JSON 객체여야 한다")
         expected = {"version", "reader", "goal", "facts", "surface", "outline"}
         unknown = sorted(set(data) - expected - {"lockedFacts", "editPolicy"})
         missing = sorted(expected - set(data))
         if unknown:
-            raise ValueError(f"reader contract 의 모르는 키: {', '.join(unknown)}")
+            raise ValueError(f"reader contract의 모르는 키: {', '.join(unknown)}")
         if missing:
-            raise ValueError(f"reader contract 의 빠진 키: {', '.join(missing)}")
+            raise ValueError(f"reader contract의 빠진 키: {', '.join(missing)}")
         return cls(
             data["reader"],
             data["goal"],
@@ -255,13 +255,13 @@ class ContractV2:
 def parseContract(data: object) -> Contract | ContractV2:
     """version 필드로 닫힌 Reader Contract 구현을 고른다."""
     if not isinstance(data, dict):
-        raise ValueError("reader contract 는 JSON 객체다")
+        raise ValueError("reader contract는 JSON 객체여야 한다")
     version = data.get("version")
     if version == CONTRACT_VERSION:
         return Contract.fromMapping(data)
     if version == LATEST_CONTRACT_VERSION:
         return ContractV2.fromMapping(data)
-    raise ValueError(f"reader contract version 은 {CONTRACT_VERSIONS} 가운데 하나다: {version}")
+    raise ValueError(f"reader contract version이 맞지 않다: {version} (맞는 값: {CONTRACT_VERSIONS} 가운데 하나)")
 
 
 def loadContract(path: str | Path) -> Contract | ContractV2:

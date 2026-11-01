@@ -1,5 +1,5 @@
 // @ts-check
-/** 한 문체로 저장한 본보기와 문형을 검사한 글의 문체에 맞춘다. */
+/** 한 문체로 저장한 예시와 문형을 검사한 글의 문체에 맞춘다. */
 import { HAPNIDA, REGISTERS, convertTemplate } from "../analysis/grammar/index.js";
 
 /** 섞임과 없음은 데이터 정본의 합니다체를 유지한다. @param {string | null | undefined} register */
@@ -14,7 +14,7 @@ export function exemplarInRegister(exemplar, register) {
   const after = convertTemplate(exemplar.after, target);
   if (before.skipped || after.skipped) {
     throw new Error(
-      exemplar.rule + " 본보기의 서술어를 못 풀었다: " + (before.skipped + after.skipped),
+      exemplar.rule + " 예시의 서술어를 못 풀었다: " + (before.skipped + after.skipped),
     );
   }
   return { rule: exemplar.rule, before: before.text, after: after.text, moved: exemplar.moved, presets: exemplar.presets };

@@ -2,7 +2,7 @@
 id: start.cli
 title: 명령과 설정
 category: start
-purpose: 파일 검사, 설정, 기존 문서 도입과 명령 선택을 안내한다. 옵션의 기준은 실행한 배포판의 도움말이다.
+purpose: 파일 검사, 설정, 기존 문서 도입과 명령 선택을 안내한다. 옵션의 기준은 설치한 버전의 도움말이다.
 whenToUse:
   - 터미널에서 검사하고 고친다
   - 프리셋과 baseline을 설정한다
@@ -26,8 +26,8 @@ hanlint fix 글.md
 hanlint 글.md
 ```
 
-첫 명령은 글을 읽기만 한다. `fix`는 확정할 수 있는 고침을 파일에 적용한다. 자동으로 고친 뒤에도 남은
-지적과 뜻을 읽는다. 본보기와 후보는 문장을 다시 쓰는 데 참고할 자료이며 자동 적용 결과와 구분한다.
+첫 명령은 글을 읽기만 한다. `fix`는 고칠 문장이 하나로 정해진 고침만 파일에 적용한다. 자동으로 고친 뒤에도 남은
+지적과 뜻을 읽는다. 예시와 후보는 문장을 다시 쓰는 데 참고할 자료이며 자동으로 고친 결과와 구분한다.
 
 ```console
 hanlint explain doublePassive
@@ -45,7 +45,7 @@ hanlint - --path 초안.md
 
 ## 실제 지적 읽기
 
-프로젝트 설정이 없는 폴더에서 기본 blog 프리셋으로 다음 글을 검사한다.
+프로젝트 설정이 없는 폴더에서 기본 blog 프리셋으로 다음 글을 검사한다. 확인 권고까지 펼쳐 보려고 `--notices`를 붙였다.
 
 ```markdown
 결과가 저장되어집니다.
@@ -60,14 +60,14 @@ hanlint - --path 초안.md
 
 글.md:1  [doublePassive]
   결과가 저장되어집니다.
-  `되어지` 는 피동에 어지다 를 또 붙인 이중 피동이다. 하나만 남긴다
+  `되어지`는 피동에 `-어지다`를 또 붙인 이중 피동이다. 하나만 남긴다
   고친 뒤: 결과가 저장됩니다.
 
-글.md:3  [nounPile] 확인
+글.md:3  [nounPile] 확인 권고
   가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.
   명사 6개가 조사 없이 이어진다. 관계가 표시되지 않아 독자가 조사를 끼워 넣는다. 동사로 되돌린다
 
-본보기 (고치기 전, 고친 뒤)
+예시 (고치기 전, 고친 뒤)
   [doublePassive]
     전  결과가 저장되어집니다.
     후  결과가 저장됩니다.
@@ -75,17 +75,17 @@ hanlint - --path 초안.md
     전  가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.
     후  가상환경을 만든 뒤 패키지가 깔렸는지 확인합니다.
 
-다음: error 1건 가운데 1건은 hanlint fix 가 바로 고친다. 나머지는 손으로 고친다
+다음: 오류 1건 가운데 1건은 hanlint fix가 바로 고친다. 나머지는 손으로 고친다
 ```
 
-위치와 규칙, 이유와 고친 표기를 함께 읽는다. error는 고칠 결함이고 notice는 문맥에 따라 판단할 자리다.
-이 출력은 같은 글을 실제로 검사한 결과와 대조하는 게이트로 유지한다.
+위치와 규칙, 이유와 고친 문장을 함께 읽는다. 오류는 고칠 결함이고 확인 권고는 문맥을 보고 판단할 지적이다.
+이 출력이 같은 글을 실제로 검사한 결과와 같은지 게이트가 확인한다.
 
 ## 화면의 글을 표 하나로 보기
 
-앱의 화면 글 (버튼, 라벨, 상태, 안내) 은 수십 소스 파일에 흩어져 있어 파일마다 지적을 받으면 전체가 안 보인다.
-`sheet` 는 소스 파일 (js, jsx, mjs, cjs, ts, tsx, rs, py, html, htm, vue, svelte) 을 전부 뒤져 한국어 문자열과
-태그 사이 글, 속성값을 표 하나로 내보낸다. 같은 줄에서 인라인 태그 (`<strong>`, `<a>`) 만 사이에 둔 글은 한 마디로 잇고
+앱의 화면 글(버튼, 라벨, 상태, 안내)은 수십 소스 파일에 흩어져 있어 파일마다 지적을 받으면 전체가 안 보인다.
+`sheet`는 소스 파일(js, jsx, mjs, cjs, ts, tsx, rs, py, html, htm, vue, svelte)을 전부 뒤져 한국어 문자열과
+태그 사이 글, 속성값을 표 하나로 내보낸다. 같은 줄에서 인라인 태그(`<strong>`, `<a>`)만 사이에 둔 글은 한 마디로 잇고
 (원문은 태그째, 검사는 태그 없이), 마크업 파일의 여러 줄 문단은 줄마다 한 마디다. `<script>` 안은 코드라 따옴표 글만 본다.
 
 ```console
@@ -95,19 +95,19 @@ hanlint sheet apply 시트.md --dry-run
 hanlint sheet apply 시트.md
 ```
 
-표의 칸은 번호, 자리 (`경로:줄:칸`), 글, 지적, 고침이다. 사람이 `고침` 칸에 새 글을 적고 `apply` 를 돌리면 그 줄의 그 칸에
-있는 글을 새 글로 바꿔 쓴다. 칸이 없는 자리 (`경로:줄`) 는 그 줄에서 글이 정확히 한 번 있을 때만 바꾸고, 없거나 두 번이면
+표의 칸은 번호, 위치(`경로:줄:칸`), 글, 지적, 고침이다. 사람이 `고침` 칸에 새 글을 적고 `apply`를 돌리면 그 줄의 그 칸에
+있는 글을 새 글로 바꿔 쓴다. 칸 번호가 없는 위치(`경로:줄`)는 그 줄에서 글이 정확히 한 번 있을 때만 바꾸고, 없거나 두 번이면
 실패로 적는다. 표를 뽑은 뒤 파일이 바뀌어 칸이 어긋나면 표를 다시 뽑는다. 글을 지우거나 요소를 없애는
-일은 코드를 열어 손으로 한다. 주석과 개발자용 줄 (`new Error(`, `console.`, `assert`) 은 표에 안 나온다.
+일은 코드를 열어 손으로 한다. 주석과 개발자용 줄(`new Error(`, `console.`, `assert`)은 표에 안 나온다.
 
-설치 없이 보려면 [브라우저 편집기](https://eddmpython.github.io/hanlint/) 의 원문 칸에 공개 GitHub 저장소 주소를 붙여
-넣는다. 같은 표가 뜨고 다운로드한 시트를 `hanlint sheet apply` 가 그대로 읽는다.
+설치 없이 보려면 [브라우저 편집기](https://eddmpython.github.io/hanlint/)의 원문 칸에 공개 GitHub 저장소 주소를 붙여
+넣는다. 같은 표가 뜨고 다운로드한 시트를 `hanlint sheet apply`가 그대로 읽는다.
 
-## 실제 글에서 낱말의 쓰임 보기
+## 실제 글에서 단어의 쓰임 보기
 
-쓰거나 고칠 때 "이 종류의 실제 글은 이 낱말을 어떻게 쓰나" 가 막히는 자리다. `usage` 는 그 종류의 말뭉치를 문장 단위로
-색인해 두고, 낱말마다 **함께 쓰는 말** (바로 뒤에 오는 용언, 뒤와 앞에 오는 명사, 각각 몇 편의 문서에서) 을 먼저 보이고
-그다음 질의 낱말이 쓰인 문장을 BM25 순서로 보인다. 좋은 문장을 고르지 않는다. 쓰인 것을 세어 보이고 판정은 읽는 쪽이 한다.
+쓰거나 고칠 때 "이 종류의 실제 글은 이 단어를 어떻게 쓰나"에서 막히면 이 명령을 쓴다. `usage`는 그 종류의 말뭉치를 문장 단위로
+색인해 두고, 단어마다 **함께 쓰는 말**(바로 뒤에 오는 용언, 뒤와 앞에 오는 명사, 각각 몇 편의 문서에서)을 먼저 보이고
+이어서 찾은 단어가 쓰인 문장을 BM25 순서로 보인다. 좋은 문장을 고르지 않는다. 쓰인 것을 세어 보이고 판정은 읽는 쪽이 한다.
 같은 질의는 같은 순서다.
 
 ```console
@@ -127,27 +127,27 @@ report 용례 (문서 3193편, 문장 1056316개): 리스부채
 1. …
 ```
 
-색인은 사용자 기계 (`~/.cache/hanlint/usage/<종류>/`) 에만 있고 패키지에 실리지 않는다. `build` 는 폴더 (하위 포함) 의
-txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하나, `{"source": …, "text": …}`) 을 읽어 마침표로 끝난
+색인은 사용자 기계(`~/.cache/hanlint/usage/<종류>/`)에만 있고 패키지에 실리지 않는다. `build`는 폴더(하위 포함)의
+txt와 md(파일 하나가 문서 하나)와 jsonl(줄 하나가 문서 하나, `{"source": …, "text": …}`)을 읽어 마침표로 끝난
 한국어 문장만 색인하고, 같은 문장은 하나로 접어 몇 편의 문서에 나왔는지 센다. 문서 수만큼씩 조각으로 내려 병합하므로
-위키백과 규모 (문서 수십만, 문장 천만) 도 만든다. node 구현이 파이썬보다 빠르다 (`npx hanlint usage build …`). 결과
-줄마다 문서 수와 출처 (파일 이름이나 글 제목) 가 붙는다. 사업보고서는 `scripts/fetch/dartReports.py` 가 받고 출처는
-접수번호라 `https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<접수번호>` 로 원문을 연다. 위키백과는
-`scripts/fetch/koWikipedia.py` 가 덤프를 받아 jsonl 로 내보낸다. 색인이 없으면 있는 종류를 알리고 2 로 끝난다. 규칙
-쪽의 용례 (nounPile 과 사전 규칙이 접는 관용) 는 `operation.usage` 가 설명한다.
+위키백과 규모(문서 수십만, 문장 천만)도 만든다. node 구현이 파이썬보다 빠르다 (`npx hanlint usage build …`). 결과
+줄마다 문서 수와 출처(파일 이름이나 글 제목)가 붙는다. 사업보고서는 `scripts/fetch/dartReports.py`가 받고 출처는
+접수번호라 `https://dart.fss.or.kr/dsaf001/main.do?rcptNo=<접수번호>`로 원문을 연다. 위키백과는
+`scripts/fetch/koWikipedia.py`가 덤프를 받아 jsonl로 내보낸다. 색인이 없으면 있는 종류를 알리고 2로 끝난다. 규칙
+쪽의 용례(nounPile과 사전 규칙이 접는 관용)는 `operation.usage`가 설명한다.
 
 ## 프리셋과 설정
 
-글의 목적이 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
+글의 종류가 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
 `encyclopedia`, `chat`, `screen`을 지원한다. `chat`은 대화 답변용이며 문서의 짜임을 재는 규칙을 줄인다. `screen`은
-화면의 글 (버튼, 라벨, 상태, 빈 상태) 용이며 낱말 자리의 문장, 화면 해설, 접객 말투, 개발 어휘를 잡고 산문 규칙은
-끈다. 프로젝트가 한 이름으로 정한 낱말 (회사 → 수임처) 은 설정의 `dictionary.screenWord` 에 적는다. 프로젝트가 쓰지
-않기로 한 동사와 앞말의 짝 (할 일 판 → 투두리스트) 은 `dictionary.calqueFrame` 에 pattern, fix, why 와 선택인 unless 로
-적는다. 기본 짝은 notice 이고 설정으로 더한 짝은 error 다. `protectedTerms` 에 적은 용어와 한 글자라도 겹치는 자리는
+화면의 글(버튼, 라벨, 상태, 빈 상태)에 쓰며 단어 하나면 될 곳에 쓴 문장, 화면을 설명하는 글, 접객 말투, 개발자가 쓰는 말을 잡고 산문 규칙은
+끈다. 프로젝트가 한 이름으로 정한 단어(`회사` → `수임처`)는 설정의 `dictionary.screenWord`에 적는다. 프로젝트가 쓰지
+않기로 한 동사와 앞말의 짝(`할 일 판` → `투두리스트`)은 `dictionary.calqueFrame`에 pattern, fix, why와 선택인 unless로
+적는다. 기본 짝은 확인 권고(`notice`)이고 설정으로 더한 짝은 오류(`error`)다. `protectedTerms`에 적은 용어와 한 글자라도 겹치는 곳은
 사전 규칙, 지시어, 이중 피동이 짚지 않는다. 산문 프리셋에서
-화면 해설과 접객 말투와 낱말만 잡으려면 `enforceStyle = ["screenNarration", "screenTone", "screenWord"]` 을 둔다.
+화면을 설명하는 글과 접객 말투와 화면 단어만 잡으려면 `enforceStyle = ["screenNarration", "screenTone", "screenWord"]`을 둔다.
 
-| 프리셋 | 글의 목적 | 끄는 규칙 | 견주는 프로파일 |
+| 프리셋 | 글의 종류 | 끄는 규칙 | 비교하는 프로파일 |
 |---|---|---:|---|
 | `blog` | 독자를 부르고 절마다 결과를 남기는 글 | 4개 | 블로그 |
 | `guide` | 단계별 안내서 | 6개 | 안내서 |
@@ -157,9 +157,9 @@ txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하�
 | `docs` | 참고 문서, 명세, README | 14개 | 기술 문서 |
 | `encyclopedia` | 백과 항목 | 15개 | 백과 |
 | `chat` | 대화 답변. 글의 짜임을 재는 규칙을 끈다 | 22개 | 없음 |
-| `screen` | 화면의 글. 낱말 안에서 결정되는 규칙과 화면 규칙만 남긴다 | 42개 | 없음 |
+| `screen` | 화면의 글. 단어 하나 안에서 판정되는 규칙과 화면 규칙만 남긴다 | 42개 | 없음 |
 
-표의 행과 수는 설정 코드와 자동 대조한다. 기본값과 꺼지는 규칙은 [설정 코드](../../../src/hanlint/config/settings.py)와 실행 결과에서 확인한다.
+표의 줄과 수는 게이트가 설정 코드와 자동으로 대조한다. 기본값과 꺼지는 규칙은 [설정 코드](../../../src/hanlint/config/settings.py)와 실행 결과에서 확인한다.
 
 ```console
 hanlint 글.md --preset report
@@ -182,7 +182,7 @@ hanlint rules --preset docs
 ```
 
 `hanlint-disable-next`는 다음 블록 하나에 적용한다. 규칙 이름을 생략하면 그 범위의 규칙 전부에 적용한다.
-프로젝트 전체에서 제외할 규칙은 설정의 `disable`에 적는다. 확정 오탐은 예외 처리와 함께
+프로젝트 전체에서 제외할 규칙은 설정의 `disable`에 적는다. 오탐이 확실하면 예외 처리와 함께
 [개선 사례](../operation/feedback.md)로 남길 수 있다.
 
 문서 형식에 맞춘 설정도 있다. 예를 들어 문장형 부제를 허용할 제목 깊이는 `headingSentenceMaxLevel`,
@@ -206,14 +206,14 @@ preset = "docs"
 baseline = ".hanlint-baseline.json"
 ```
 
-잠금은 줄 번호가 아닌 인용문을 기준으로 한다. 문단을 옮겨도 같은 문장은 유지되고, 문장을 고치거나
+baseline은 줄 번호가 아닌 인용문을 기준으로 지적을 기록한다. 문단을 옮겨도 같은 문장은 유지되고, 문장을 고치거나
 새로 쓰면 다시 검사한다. 삭제된 지적은 같은 파일 범위를 대상으로 정리한다.
 
 ```console
 hanlint baseline 문서들/ --prune
 ```
 
-baseline이 글의 품질을 승인하는 것은 아니다. 잠근 지적도 필요에 따라 다시 검토한다.
+baseline이 글의 품질을 승인하는 것은 아니다. 기준 파일에 든 지적도 필요에 따라 다시 검토한다.
 
 ## 결과를 다른 도구에 전달하기
 
@@ -223,15 +223,15 @@ hanlint 글.md --format json
 hanlint 글.md --format github --errors-only
 ```
 
-`compact`는 지적을 한 줄씩 보여 주고, `json`은 위치와 이유, 본보기와 제공할 수 있는 후보를 담는다.
-`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 notice 표시를 제외한다. 기본 text 출력은 확인 권고
-(notice) 를 규칙과 줄 번호 한 줄로 접는다. `--notices` 가 다 편다.
+`compact`는 지적을 한 줄씩 보여 주고, `json`은 위치와 이유, 예시와 제공할 수 있는 후보를 담는다.
+`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 확인 권고를 보이지 않는다. 기본 text 출력은 확인 권고
+(`notice`)를 규칙마다 개수와 줄 번호 한 줄로 접는다. `--notices`가 다 편다.
 설정 안내 같은 주변 출력을 줄이려면 `--quiet`를 사용한다.
 
 ### 종료 코드
 
-일반 검사는 error가 없으면 0, 하나라도 있으면 1이다. notice만 있어도 0이므로 결과 내용을 함께 읽는다.
-잘못된 인자, 없는 파일이나 지원하지 않는 명령 같은 실행 오류는 2다.
+일반 검사는 오류 지적이 없으면 0, 하나라도 있으면 1이다. 확인 권고만 있어도 0이므로 결과 내용을 함께 읽는다.
+잘못된 인자, 없는 파일이나 지원하지 않는 명령 같은 실행 실패는 2다.
 
 `fix`의 0은 수정 명령이 정상 종료했다는 뜻이다. 남은 지적은 다시 검사한다. `check`와 `verify-patch`는
 [계약의 위반과 검증 조건](readerContract.md)에 따라 종료한다. `hook`은 파일 쓰기나 답변을 막지 않도록
@@ -244,47 +244,47 @@ hanlint 글.md --format github --errors-only
 
 | 명령 | 무엇 | npm |
 |---|---|---|
-| `hanlint` | 첫 화면. 이 폴더의 파일 이름으로 만든 예시와 다음 걸음 | 예 |
-| `hanlint contract init 글.md --reader "독자" --goal "목표"` | 기존 글의 보호 표면에서 호환용 version 1 계약을 만든다 | 예 |
-| `hanlint check contract.json 글.md --format text` | 보호 표면, 제목 구조, Finding, 글 요약과 다음 행동을 한 영수증으로 본다 | 예 |
-| `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 정확 국소 치환이 새 위반을 만드는지 검증한다 | 예 |
+| `hanlint` | 첫 화면. 이 폴더의 파일 이름으로 만든 예시와 다음 할 일 | 예 |
+| `hanlint contract init 글.md --reader "독자" --goal "목표"` | 기존 글의 지켜야 할 숫자·링크·코드로 호환용 version 1 계약을 만든다 | 예 |
+| `hanlint check contract.json 글.md --format text` | 지켜야 할 숫자·링크·코드, 제목 구조, Finding, 글 요약과 다음 할 일을 한 결과로 본다 | 예 |
+| `hanlint verify-patch contract.json 글.md patch.json` | 이유가 붙은 고침 하나가 정확히 한 곳만 바꾸고 새 위반을 만들지 않는지 검증한다 | 예 |
 | `hanlint watch 글.md` | 저장할 때마다 다시 검사한다 | 아니오 |
-| `hanlint hook`, `hanlint hook --reply` | Claude Code와 Codex가 저장한 마크다운과 마지막 답변을 같은 턴에 비차단 검사한다. Codex의 Stop에는 `--agent codex` | 예 |
-| `hanlint hook --prime` | SessionStart와 UserPromptSubmit에 작법서 본문을 싣는다. Claude Code와 Codex가 같은 꼴을 받는다 | 예 |
-| `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 확실한 자리를 고친다 | 예 |
-| `hanlint explain <규칙>` | 규칙의 기술서와 본보기. 오타면 가까운 이름을 준다 | 예 |
-| `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시는 error 0 이 보장된다 | 예 |
-| `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 작법서 일곱 줄과, 켜진 규칙마다 고치는 법과 본보기 전후. 후는 error 0 이 보장된다 | 예 |
-| `hanlint spec --preset blog --chars 800` | 같은 규칙 세트와 종류 프로파일을 쓰기 전 숫자 사양으로 편다 | 예 |
-| `hanlint rules` | 규칙 목록. 부류로 묶고 꺼진 것을 표시한다 | 예 |
-| `hanlint baseline 글들/` | 지금 있는 지적을 잠근다. `--prune` 은 죽은 잠금을 치운다 | 예 |
-| `hanlint sheet src/ --preset screen` | 소스 (js, jsx, ts, rs, py, html, vue, svelte) 의 한국어 글을 표 하나로 내보낸다. `--all` 은 지적 없는 글도 | 예 |
-| `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 자리에 되돌려 쓴다. `--dry-run` 은 보기만 | 예 |
-| `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 낱말이 함께 쓰는 말 (뒤 용언, 앞뒤 명사, 문서 수) 과 쓰인 문장을 BM25 순서로. `--limit`, `--format json` | 예 |
-| `hanlint usage build report 글들/` | 폴더의 txt, md, jsonl 로 사용자 기계에 문장 색인을 만든다. 위키백과 규모도 된다 | 예 |
-| `hanlint usage kinds` | 기계에 있는 색인 (종류, 문서 수, 문장 수) 을 센다 | 예 |
-| `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
-| `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
-| `hanlint audit 글.md` | 분석표의 색 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |
-| `hanlint map 글.md --format html` | 지도를 단일 HTML 로 | 아니오 |
-| `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 분석표를 JSON 으로 | 예 |
-| `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 | 아니오 |
-| `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 | 아니오 |
-| `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 | 아니오 |
-| `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다 | 아니오 |
+| `hanlint hook`, `hanlint hook --reply` | Claude Code와 Codex가 저장한 마크다운과 마지막 답변을 같은 턴 안에서 검사하되 작업을 막지 않는다. Codex의 Stop에는 `--agent codex` | 예 |
+| `hanlint hook --prime` | SessionStart와 UserPromptSubmit에 글쓰기 지침 본문을 싣는다. Claude Code와 Codex가 같은 꼴을 받는다 | 예 |
+| `hanlint fix 글.md` | 번역투, 명령형 뒤 마침표, 이중 부정처럼 고칠 문장이 정해진 곳을 고친다 | 예 |
+| `hanlint explain <규칙>` | 규칙의 설명서와 예시. 이름이 틀리면 가까운 이름을 준다 | 예 |
+| `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시에는 오류 지적이 나오지 않는다 | 예 |
+| `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 글쓰기 지침 일곱 항목과, 켜진 규칙마다 고치는 법과 예시 전후. 고친 뒤 문장에는 오류 지적이 나오지 않는다 | 예 |
+| `hanlint spec --preset blog --chars 800` | 같은 규칙 묶음과 종류 프로파일을 쓰기 전에 볼 수치 목표로 편다 | 예 |
+| `hanlint rules` | 규칙 목록. 묶음별로 나누고 꺼진 것을 표시한다 | 예 |
+| `hanlint baseline 글들/` | 지금 있는 지적을 기준 파일에 넣는다. `--prune`은 더는 나오지 않는 지적을 지운다 | 예 |
+| `hanlint sheet src/ --preset screen` | 소스(js, jsx, ts, rs, py, html, vue, svelte)의 한국어 글을 표 하나로 내보낸다. `--all`은 지적 없는 글도 넣는다 | 예 |
+| `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 위치에 되돌려 쓴다. `--dry-run`은 바꿀 것만 보인다 | 예 |
+| `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 단어와 함께 쓰는 말(뒤 용언, 앞뒤 명사, 문서 수)과 쓰인 문장을 BM25 순서로 보인다. `--limit`, `--format json` | 예 |
+| `hanlint usage build report 글들/` | 폴더의 txt, md, jsonl로 사용자 기계에 문장 색인을 만든다. 위키백과 규모도 된다 | 예 |
+| `hanlint usage kinds` | 기계에 있는 색인(종류, 문서 수, 문장 수)을 센다 | 예 |
+| `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 보인다 | 예 |
+| `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml`을 만든다 | 예 |
+| `hanlint audit 글.md` | 분석표의 색 지도와 분포. 색이 칠해진 곳이 고칠 곳이다 | 아니오 |
+| `hanlint map 글.md --format html` | 지도를 HTML 파일 하나로 낸다 | 아니오 |
+| `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 분석표를 JSON으로 낸다 | 예 |
+| `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수가 어떻게 바뀌었는지 보인다 | 아니오 |
+| `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 패치(같은 원문에서 정확히 다시 적용된다)와 안전한 글자 바꾸기 후보를 낸다 | 아니오 |
+| `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 묶는다 | 아니오 |
+| `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없이 절·문단·문장·위치 예산을 만든다 | 아니오 |
 | `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 버전·인용 조각 해시·라이선스를 검증한다 | 아니오 |
-| `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류와 판정 보류 지표를 집계한다 | 아니오 |
-| `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다 | 아니오 |
-| `hanlint arena panel / assign / review-page / assignment-record` | 같은 사실의 기준과 후보를 평가자별 단일 HTML로 눈가림하고, 회수한 독립 평가를 원래 방향으로 잠근다 | 아니오 |
-| `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 | 아니오 |
-| `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어의 첫 자리를 찾는다. `--outside` 는 목록 밖 후보도 보인다 | 아니오 |
-| `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint 가 같은 자리를 집은 비율 | 아니오 |
+| `hanlint entailment cases / evaluate` | 정답 표시가 없는 근거 쌍 36개를 내고, 외부 평가기의 3분류와 판정 보류 지표를 집계한다 | 아니오 |
+| `hanlint guard brief.json 글.md` | 구조화한 요구와 결과의 꼭 들어갈 글자·숫자·URL·코드·길이·오류 지적을 대조한다 | 아니오 |
+| `hanlint arena panel / assign / review-page / assignment-record` | 같은 사실의 기준과 후보를 평가자마다 HTML 파일 하나로 어느 쪽 글인지 가리고, 돌려받은 독립 평가를 원래 방향으로 되돌려 고정한다 | 아니오 |
+| `hanlint profile build 글들/` | 참조 글의 분포(프로파일). `--profile`로 종류의 프로파일 대신 그것과 비교한다 | 아니오 |
+| `hanlint terms 글.md` | 한국어 학습용 어휘 C에만 등재된 화제어가 처음 나오는 곳을 찾는다. `--outside`는 목록 밖 후보도 보인다 | 아니오 |
+| `hanlint coverage review.json 글.md` | 사람 평가자의 지적 가운데 hanlint가 같은 곳을 짚은 비율을 낸다 | 아니오 |
 
 정확한 인자와 옵션은 `hanlint --help` 또는 `npx hanlint --help`에서 확인한다.
 `spec`의 프로파일은 편집된 글에서 관찰한 분포이며 맞출 정답이 아니다. `chat`에는 비교할 프로파일이
 없어 `spec`을 제공하지 않는다. 생성 결과의 사실 안전이나 자연스러움을 보장하지 않는다.
 
-작문 패킷, 근거 평가와 사람 패널의 사용 절차는 [작문 축](../operation/writingAxis.md)에 있다.
+작문 패킷, 근거 평가와 사람 패널의 사용 절차는 [작문 실험과 평가](../operation/writingAxis.md)에 있다.
 
 직접 만든 프로파일은 `hanlint 새글.md --profile 우리문체.json`으로 사용한다. 종류가 섞인 글은
 적절한 프리셋이나 참조 프로파일별로 나눠 검사한다. `terms`는 국립국어원이 공개한 한국어 학습용 어휘를

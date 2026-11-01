@@ -1,8 +1,8 @@
-"""반복 기제. 같은 모양이 창 안에서 이어지거나 (runsOf) 한 모양이 창을 채우는 (shareOf) 자리를 센다.
+"""반복을 세는 방법. 같은 값이 이어지는 구간(runsOf)과 한 값이 차지하는 비율(shareOf)을 센다.
 
-repeat 기제의 규칙은 무엇을 모양 (열쇠) 으로 볼지와 창과 임계만 선언하고 셈은 여기서 한다. endingRepeat 은
-종결어미, connectorRepeat 은 문두 접속부사, paraFragment 는 짧은 문단, headingUniform 은 H2 끝 글자를 열쇠로
-준다. 같은 셈을 규칙마다 따로 들면 규칙이 늘 때마다 셈도 는다. 셈은 하나고 열쇠만 다르다.
+repeat 방법을 쓰는 규칙은 무엇을 값(열쇠)으로 볼지와 기준값만 정하고 세는 일은 여기서 한다. endingRepeat은
+종결어미, connectorRepeat은 문장 첫머리 접속부사, paraFragment는 짧은 문단, headingUniform은 H2 끝 글자를 열쇠로
+준다. 같은 셈을 규칙마다 따로 두면 규칙이 늘 때마다 셈도 는다. 셈은 하나고 열쇠만 다르다.
 """
 
 from __future__ import annotations

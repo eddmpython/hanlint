@@ -5,7 +5,7 @@ category: operation
 purpose: 지금 실제로 도는 절차의 목록이다. 여기 없는 절차는 아직 없는 것이다.
 whenToUse:
   - 규칙을 더하고 싶다
-  - 층 구조가 뭔가
+  - 모듈 계층 구조가 뭔가
   - 어떻게 검증하나
   - 어떻게 배포하나
 status: curated
@@ -16,12 +16,12 @@ status: curated
 | id | 무엇 |
 |---|---|
 | [`operation.addingARule`](addingARule.md) | 규칙을 더하고 고치고 빼는 절차 |
-| [`operation.moduleLayers`](moduleLayers.md) | 층 구조와 import 방향 |
+| [`operation.moduleLayers`](moduleLayers.md) | 모듈 계층 구조와 import 방향 |
 | [`operation.codeStyle`](codeStyle.md) | 코드 스타일 세부 |
 | [`operation.sourceControl`](sourceControl.md) | 소스 관리와 훅 |
 | [`operation.verify`](verify.md) | 게이트 전체 절차 |
-| [`operation.release`](release.md) | PyPI 와 npm 배포 |
+| [`operation.release`](release.md) | PyPI와 npm 배포 |
 | [`operation.webEditor`](webEditor.md) | 브라우저 편집기와 개인 기록, GitHub Pages 배포 |
-| [`operation.usage`](usage.md) | 용례 엔진. 빈도표와 문장 색인을 만들고 규칙과 명령이 쓰는 경계 |
+| [`operation.usage`](usage.md) | 용례 엔진. 빈도표와 문장 색인을 만드는 법과 규칙·명령이 그것을 쓰는 범위 |
 | [`operation.feedback`](feedback.md) | 오탐과 미탐 신고 |
-| [`operation.writingAxis`](writingAxis.md) | 보류 중인 작문 축 (brief, guard, packet, arena, learn) 의 절차와 다시 들이는 조건 |
+| [`operation.writingAxis`](writingAxis.md) | 보류 중인 작문 실험(brief, guard, packet, arena, learn)의 절차와 기본 절차에 다시 넣는 조건 |

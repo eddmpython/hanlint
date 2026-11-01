@@ -23,19 +23,19 @@ class Patch:
         object.__setattr__(self, "before", checkedString(self.before, "before"))
         object.__setattr__(self, "after", checkedString(self.after, "after"))
         if self.before == self.after:
-            raise ValueError("patch before 와 after 는 달라야 한다")
+            raise ValueError("patch before와 after는 달라야 한다")
 
     @classmethod
     def fromMapping(cls, data: object) -> Patch:
         if not isinstance(data, dict):
-            raise ValueError("patch 는 JSON 객체다")
+            raise ValueError("patch는 JSON 객체여야 한다")
         expected = {"reason", "before", "after"}
         unknown = sorted(set(data) - expected)
         missing = sorted(expected - set(data))
         if unknown:
-            raise ValueError(f"patch 의 모르는 키: {', '.join(unknown)}")
+            raise ValueError(f"patch의 모르는 키: {', '.join(unknown)}")
         if missing:
-            raise ValueError(f"patch 의 빠진 키: {', '.join(missing)}")
+            raise ValueError(f"patch의 빠진 키: {', '.join(missing)}")
         return cls(data["reason"], data["before"], data["after"])
 
     @property

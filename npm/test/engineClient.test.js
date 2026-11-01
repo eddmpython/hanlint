@@ -26,7 +26,7 @@ test("워커 공장을 받으면 시간 초과가 그 요청만 끝내고 워커
   const errors = [];
   const engine = new EngineClient(() => { const worker = fakeWorker(); workers.push(worker); return worker; }, (error) => errors.push(error), 20);
   assert.equal(workers.length, 1);
-  await assert.rejects(engine.request({ action: "analyze" }), /다시 띄웠/);
+  await assert.rejects(engine.request({ action: "analyze" }), /다시 시작했/);
   assert.equal(workers[0].terminated, true);
   assert.equal(workers.length, 2);
   assert.equal(errors.length, 1);

@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * 글 시트. 소스에서 뽑은 글 마디와 지적을 마크다운 표 하나로 내고, 사람이 고친 표를 다시 읽는다.
- * 뜻과 칸의 정본은 파이썬 report/sheet.py 다. 여기는 같은 글자를 낸다.
+ * 뜻과 칸의 정본은 파이썬 report/sheet.py다. 여기는 같은 글자를 낸다.
  */
 
 import { parseMarkdown } from "../document/parseMarkdown.js";
@@ -19,12 +19,12 @@ const ROW_PATTERN = /^\|(.*)\|$/;
  * @property {string} text
  * @property {import("../rules/finding.js").Finding[]} findings
  * @property {string} fix 사람이 표에 적은 고친 글. 뽑을 때는 비어 있다
- * @property {number} column 1부터 세는 칸. 0 이면 모른다
+ * @property {number} column 1부터 세는 칸. 0이면 모른다
  */
 
 /** @param {string} text */
 /**
- * 지적이 하나이고 그 지적에 고침이 있으면 고침 칸에 미리 적는다. 뜻은 파이썬 report/sheet.py 의 prefilledFix 가 소유한다.
+ * 지적이 하나이고 그 지적에 고침이 있으면 고침 칸에 미리 적는다. 뜻은 파이썬 report/sheet.py의 prefilledFix가 소유한다.
  * @param {import("../document/sourceText.js").SourceLiteral} literal
  * @param {import("../rules/finding.js").Finding[]} findings
  */
@@ -35,8 +35,8 @@ function prefilledFix(literal, findings) {
 }
 
 /**
- * (라벨, 소스) 마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error` 만 남긴다.
- * 소스를 읽는 쪽 (CLI 는 디스크, 브라우저는 저장소) 이 다르므로 읽기는 밖에 두고 문자열만 받는다.
+ * (라벨, 소스)마다 글을 뽑아 규칙을 돌리고 표의 행을 만든다. 지적은 `error`만 남긴다.
+ * 소스를 읽는 쪽 (CLI는 디스크, 브라우저는 저장소)이 다르므로 읽기는 밖에 두고 문자열만 받는다.
  * @param {Iterable<{ label: string, source: string }>} sources
  * @param {import("../config/settings.js").Config} config
  * @param {boolean} [everything] 지적이 없는 글도 넣는다
@@ -63,7 +63,7 @@ export function unescapeCell(text) {
   return text.replaceAll("\\|", "|").replaceAll("\\\\", "\\");
 }
 
-/** `| a | b |` 를 칸으로. `\|` 는 칸 경계가 아니다. @param {string} line @returns {string[] | null} */
+/** `| a | b |`를 칸으로. `\|`는 칸 경계가 아니다. @param {string} line @returns {string[] | null} */
 export function splitRow(line) {
   const match = ROW_PATTERN.exec(line.trim());
   if (!match) return null;
@@ -91,7 +91,7 @@ const CUE = /^`[^`]+`/;
 
 
 /**
- * `column` (1부터) 에 `old` 가 그대로 있으면 그 자리만 `new` 로 바꾼다.
+ * `column` (1부터)에 `old`가 그대로 있으면 그 자리만 `new`로 바꾼다.
  * @param {string} lineText @param {number} column @param {string} old @param {string} replacement @returns {[string, boolean]}
  */
 function replaceAt(lineText, column, old, replacement) {
@@ -101,8 +101,8 @@ function replaceAt(lineText, column, old, replacement) {
 }
 
 /**
- * 한 파일의 소스에 표의 행들을 되돌려 쓴다. [새 소스, 적용한 자리, 실패한 자리와 이유]. 뜻은 파이썬 report/sheet.py 의
- * applyRows 가 소유한다. 한 줄에 고침이 여럿이면 뒤 칸부터 바꾼다. 줄은 `\n` 으로만 나누므로 `\r` 은 남아 CRLF 파일이 그대로다.
+ * 한 파일의 소스에 표의 행들을 되돌려 쓴다. [새 소스, 적용한 자리, 실패한 자리와 이유]. 뜻은 파이썬 report/sheet.py의
+ * applyRows가 소유한다. 한 줄에 고침이 여럿이면 뒤 칸부터 바꾼다. 줄은 `\n` 으로만 나누므로 `\r`은 남아 CRLF 파일이 그대로다.
  * @param {string} source @param {SheetRow[]} rows @returns {[string, string[], string[]]}
  */
 export function applyRows(source, rows) {
@@ -140,8 +140,8 @@ export function applyRows(source, rows) {
 }
 
 /**
- * 규칙마다 한 번. 첫 지적의 이유는 온전히, 같은 규칙의 나머지는 단서 (이유 앞의 `…`) 만 `(또 …)` 로 잇는다.
- * 뜻은 파이썬 report/sheet.py 의 findingCell 이 소유한다.
+ * 규칙마다 한 번. 첫 지적의 이유는 온전히, 같은 규칙의 나머지는 단서 (이유 앞의 `…`)만 `(또 …)`로 잇는다.
+ * 뜻은 파이썬 report/sheet.py의 findingCell이 소유한다.
  * @param {import("../rules/finding.js").Finding[]} findings
  */
 function findingCell(findings) {
@@ -168,7 +168,7 @@ function placeOf(row) {
   return row.column > 0 ? `${row.file}:${row.line}:${row.column}` : `${row.file}:${row.line}`;
 }
 
-/** `경로:줄:칸` 이나 `경로:줄` 을 [경로, 줄, 칸] 으로. 칸이 없으면 0. 꼴이 아니면 경로가 null. @param {string} place @returns {[string | null, number, number]} */
+/** `경로:줄:칸`이나 `경로:줄`을 [경로, 줄, 칸]으로. 칸이 없으면 0. 꼴이 아니면 경로가 null. @param {string} place @returns {[string | null, number, number]} */
 export function splitPlace(place) {
   const last = place.lastIndexOf(":");
   if (last < 0 || !/^[0-9]+$/.test(place.slice(last + 1))) return [null, 0, 0];
@@ -185,7 +185,7 @@ export function renderSheet(rows, preset, fileCount) {
     "# hanlint sheet",
     "",
     `프리셋 ${preset}, 파일 ${fileCount}개, 글 ${rows.length}개, 지적 있는 글 ${flagged}개. ` +
-      "고침 칸에 새 글을 적고 `hanlint sheet apply 이파일.md` 로 되돌려 쓴다. 다른 칸은 고치지 않는다.",
+      "고침 칸에 새 글을 적고 `hanlint sheet apply 이파일.md`로 되돌려 쓴다. 다른 칸은 고치지 않는다.",
     "",
     `| ${HEADER.join(" | ")} |`,
     `| ${HEADER.map(() => "---").join(" | ")} |`,
@@ -216,7 +216,7 @@ export function renderSheetJson(rows, preset, fileCount) {
 }
 
 /**
- * 사람이 고친 표를 읽는다. 머리글과 구분선은 넘기고 `고침` 이 있는 줄만 남긴다.
+ * 사람이 고친 표를 읽는다. 머리글과 구분선은 넘기고 `고침`이 있는 줄만 남긴다.
  * @param {string} markdown @returns {{ rows: SheetRow[], problems: string[] }}
  */
 export function parseSheet(markdown) {
@@ -230,13 +230,13 @@ export function parseSheet(markdown) {
     if (cells === null) return;
     if (cells.slice(0, HEADER.length).join(" ") === HEADER.join(" ") || cells.every((cell) => cell.replace(/-/g, "") === "")) return;
     if (cells.length !== HEADER.length) {
-      problems.push(`${lineNumber}행: 칸이 ${cells.length}개다. ${HEADER.length}개여야 한다`);
+      problems.push(`${lineNumber}번째 줄: 칸이 ${cells.length}개다. ${HEADER.length}개여야 한다`);
       return;
     }
     const place = unescapeCell(cells[1]);
     const [file, line, column] = splitPlace(place);
     if (file === null) {
-      problems.push(`${lineNumber}행: 자리 \`${place}\` 가 경로:줄 이나 경로:줄:칸 꼴이 아니다`);
+      problems.push(`${lineNumber}번째 줄: 경로:줄이나 경로:줄:칸 형식이 아닌 자리: \`${place}\``);
       return;
     }
     const fix = unescapeCell(cells[4]);

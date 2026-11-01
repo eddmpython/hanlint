@@ -1,7 +1,7 @@
-"""한 줄에 지적 하나. AI 와 스크립트가 읽는 형식이다. 인용문은 빼고 자리와 규칙과 이유만 둔다.
+"""한 줄에 지적 하나. AI와 스크립트가 읽는 형식이다. 인용문은 빼고 자리와 규칙과 이유만 둔다.
 
 **한 줄은 계약이다.** 실측: 원문에서 두 줄에 걸친 문장의 고침 제안이 그 줄바꿈을 그대로 들고 나와
-지적 하나가 두 줄이 됐다. 둘째 줄에는 파일도 줄 번호도 규칙 이름도 없어서 `grep` 이 반토막을 냈고
+지적 하나가 두 줄이 됐다. 둘째 줄에는 파일도 줄 번호도 규칙 이름도 없어서 `grep`이 반토막을 냈고
 줄을 세면 지적 수와 안 맞았다. 스크립트와 기계가 읽는 형식이라 이 자리에서 눕힌다.
 """
 
@@ -18,10 +18,10 @@ def flat(text: str) -> str:
 def renderCompact(path: str, findings: list[Finding]) -> str:
     lines = []
     for finding in findings:
-        label = "notice: " if finding.severity == "notice" else ""
+        label = "확인 권고: " if finding.severity == "notice" else ""
         line = f"{path}:{finding.line} [{finding.rule}] {label}{flat(finding.why)}"
         if finding.fix:
-            fixLabel = "검토할 대안" if finding.severity == "notice" else "고친 뒤"
+            fixLabel = "제안" if finding.severity == "notice" else "고친 뒤"
             line += f"  {fixLabel}: {flat(finding.fix)}"
         lines.append(line)
     return "\n".join(lines)

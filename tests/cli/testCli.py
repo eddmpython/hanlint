@@ -172,7 +172,7 @@ def testPacketCompilesStructuredBriefWithoutDiagnosticEvidence(tmp_path, capsys)
     assert main(["packet", str(brief), "--purpose", "revise"]) == 2
     assert "purpose draft" in capsys.readouterr().err
     assert main(["packet", str(brief), "--purpose", "draft", "--disable", "없는규칙"]) == 2
-    assert "모르는 규칙 이름" in capsys.readouterr().err
+    assert "없는 규칙 이름" in capsys.readouterr().err
 
 
 def testBlueprintCommandAndOptInPacketShareOneStrategy(tmp_path, capsys):
@@ -218,7 +218,7 @@ def testEvidenceCommandReportsValidAndTamperedLedgers(tmp_path, capsys):
     brief.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     assert main(["evidence", str(brief)]) == 1
     output = capsys.readouterr().out
-    assert "근거 원장 위반" in output and "excerptSha256" in output
+    assert "근거 목록 위반" in output and "excerptSha256" in output
 
 
 def testEntailmentCasesHideGoldAndEvaluatePredictions(tmp_path, capsys):
@@ -286,9 +286,9 @@ def testGuardExitCodesJsonAndPresetConflict(tmp_path, capsys):
     bad = write(tmp_path, "bad.md", "해솔 계획은 2026년 9월에 시작한다. 효과가 입증됐다.\n")
     assert main(["guard", str(brief), str(bad)]) == 1
     output = capsys.readouterr().out
-    assert "표면 계약 위반" in output and "요구 밖 숫자: 9" in output
+    assert "brief 조건 위반" in output and "요구 밖 숫자: 9" in output
     assert main(["guard", str(brief), str(good), "--preset", "blog"]) == 2
-    assert "brief preset report" in capsys.readouterr().err
+    assert "brief의 preset이 다르다: blog, report" in capsys.readouterr().err
 
 
 def testCheckAndVerifyPatchEmitDeterministicReceipts(tmp_path, capsys):
@@ -350,7 +350,7 @@ def testContractInitWritesDraftAndRefusesToOverwrite(tmp_path, capsys):
         ],
     }
     assert main(args) == 2
-    assert "이미 있다" in capsys.readouterr().err
+    assert "이미 있는 파일" in capsys.readouterr().err
     assert main([*args, "--force"]) == 0
 
 
@@ -625,7 +625,7 @@ def testWritingArenaOfflineReviewPageAndAssignmentImport(tmp_path):
         == 0
     )
     html = htmlPath.read_text(encoding="utf-8")
-    assert html.startswith("<!doctype html>") and "브라우저 안에만 임시 저장" in html
+    assert html.startswith("<!doctype html>") and "이 브라우저에만 임시로 저장합니다" in html
     raw = deepcopy(assignment["reviewTemplate"])
     for review in raw["reviews"]:
         review["contentChecks"] = {"left": "pass", "right": "pass"}
@@ -668,12 +668,12 @@ def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     lines = capsys.readouterr().out.splitlines()
     assert any(line.startswith(f"{mixed}:3 [cliche] ") for line in lines)
     assert any("[factListParagraph]" in line or "[endingRepeat]" in line for line in lines)
-    assert lines[-1].startswith("파일 1개, error 1, notice ")
+    assert lines[-1].startswith("파일 1개, 오류 1건, 확인 권고 ")
     # 요약은 거른 뒤가 아니라 글에 있는 것을 센다. 보여 줄 것을 고르는 옵션이 수를 바꾸면 거짓말이다.
     assert main([str(mixed), "--format", "compact", "--errors-only", "--quiet"]) == 1
     lines = capsys.readouterr().out.splitlines()
     assert lines[0].startswith(f"{mixed}:3 [cliche] `핵심은`은 ")
-    assert lines[-1].startswith("파일 1개, error 1, notice ") and not lines[-1].endswith("notice 0")
+    assert lines[-1].startswith("파일 1개, 오류 1건, 확인 권고 ") and not lines[-1].endswith("확인 권고 0건")
     assert main([str(mixed), "--severity", "notice", "--format", "json"]) == 1
     data = json.loads(capsys.readouterr().out)
     assert data["files"][0]["findings"] and all(f["severity"] == "notice" for f in data["files"][0]["findings"])
@@ -690,7 +690,7 @@ def testSummaryForManyFiles(tmp_path, capsys):
     clean = write(tmp_path, "clean.md", CLEAN)
     assert main([str(bad), str(clean), "--quiet"]) == 1
     out = capsys.readouterr().out
-    assert out.rstrip().endswith("파일 2개, error 1, notice 0")
+    assert out.rstrip().endswith("파일 2개, 오류 1건, 확인 권고 0건")
     assert "오류 없음" in out
 
 
@@ -705,7 +705,7 @@ def testDisableAndOutputFile(tmp_path, capsys):
 
 def testMissingFileIsTwo(tmp_path, capsys):
     assert main([str(tmp_path / "없는파일.md")]) == 2
-    assert "찾지 못했다" in capsys.readouterr().err
+    assert "찾지 못한 파일" in capsys.readouterr().err
 
 
 def testRulesAndExplain(capsys):
@@ -714,9 +714,9 @@ def testRulesAndExplain(capsys):
     assert "doublePassive" in out and "규칙 " in out
     assert main(["explain", "doublePassive"]) == 0
     doc = capsys.readouterr().out
-    assert "왜:" in doc and "고치기:" in doc and "기제: dictionary." in doc
+    assert "왜:" in doc and "고치기:" in doc and "찾는 방법: 사전." in doc
     assert main(["explain", "noSuchRule"]) == 2
-    assert "모르는 규칙" in capsys.readouterr().err
+    assert "없는 규칙" in capsys.readouterr().err
 
 
 def testAuditMapAndPrint(tmp_path, capsys):
@@ -814,7 +814,7 @@ def testInitWritesConfigAndRefusesToOverwrite(tmp_path, capsys):
     text = target.read_text(encoding="utf-8")
     assert "disable = []" in text and "#   doublePassive:" in text
     assert main(["init", "--output", str(target)]) == 2
-    assert "이미 있다" in capsys.readouterr().err
+    assert "이미 있는 파일" in capsys.readouterr().err
     assert main(["init", "--output", str(target), "--force"]) == 0
 
 
@@ -859,10 +859,10 @@ def testEmptyFolderSaysWhatToDo(tmp_path, capsys):
 def testNextStepLineTellsWhatToDo(tmp_path, capsys):
     clean = write(tmp_path, "clean.md", CLEAN)
     assert main([str(clean)]) == 0
-    assert "다음: 세어서 잡히는 결함이 없다" in capsys.readouterr().out
+    assert "다음: 규칙으로 찾은 잘못이 없다" in capsys.readouterr().out
     bad = write(tmp_path, "bad.md", BAD)
     assert main([str(bad), "--errors-only"]) == 1
-    assert "다음: error" in capsys.readouterr().out
+    assert "다음: 오류" in capsys.readouterr().out
     assert main([str(bad), "--errors-only", "--quiet"]) == 1
     assert "다음:" not in capsys.readouterr().out
 
@@ -880,7 +880,7 @@ def testPresetTurnsRulesOffAndInitWritesIt(tmp_path, capsys):
     target = tmp_path / "hanlint.toml"
     assert main(["init", "--output", str(target), "--preset", "docs"]) == 0
     assert 'preset = "docs"' in target.read_text(encoding="utf-8")
-    assert "preset docs 이" in capsys.readouterr().out
+    assert "docs 프리셋은 규칙" in capsys.readouterr().out
     reference = write(tmp_path, "참고.md", "## 절\n\n파일을 엽니다. 값을 넣습니다.\n")
     assert main([str(reference), "--config", str(target), "--format", "compact", "--quiet"]) == 0
     assert "noQuestion" not in capsys.readouterr().out
@@ -888,20 +888,20 @@ def testPresetTurnsRulesOffAndInitWritesIt(tmp_path, capsys):
 
 def testExplainSuggestsNearNamesAndListsSiblings(capsys):
     assert main(["explain", "doublePasive"]) == 2
-    assert "이것을 찾았나: doubleNegative, doublePassive" in capsys.readouterr().err
+    assert "비슷한 이름: doubleNegative, doublePassive" in capsys.readouterr().err
     assert main(["explain"]) == 2
-    assert "부류로 묶어 보려면 hanlint rules" in capsys.readouterr().out
+    assert "묶음별로 보려면 hanlint rules" in capsys.readouterr().out
     assert main(["explain", "moreLater"]) == 0
     out = capsys.readouterr().out
-    assert "글의 짜임에서 세는 것" in out and "같은 부류:" in out
+    assert "(글의 짜임)" in out and "같은 묶음:" in out
 
 
 def testRulesGroupsByCategoryAndMarksOff(tmp_path, capsys):
     config = write(tmp_path, "hanlint.toml", 'preset = "report"\n')
     assert main(["rules", "--config", str(config)]) == 0
     out = capsys.readouterr().out
-    assert "문장 안에서 세는 것 (" in out and "표기와 띄어쓰기 (" in out
-    assert "(꺼짐)" in out and "preset report 이" in out
+    assert "문장 (" in out and "표기와 띄어쓰기 (" in out
+    assert "(꺼짐)" in out and "report 프리셋" in out
     assert main(["rules", "--names"]) == 0
     names = capsys.readouterr().out.splitlines()
     assert names == sorted(names) and "moreLater" in names
@@ -916,14 +916,14 @@ def testWatchRunsOnceAndSeesChanges(tmp_path, capsys):
     args = buildParser().parse_args(["watch", str(draft), "--format", "compact", "--quiet"])
     assert watch.run(args, rounds=1) == 0
     first = capsys.readouterr().out
-    assert "[cliche]" in first and "다음: error" in first
+    assert "[cliche]" in first and "다음: 오류" in first
 
     stamps = watch.stampOf([str(draft)])
     draft.write_text(CLEAN, encoding="utf-8")
     assert watch.stampOf([str(draft)]) != stamps
     args = buildParser().parse_args(["watch", str(draft), "--format", "compact", "--quiet"])
     assert watch.run(args, rounds=1) == 0
-    assert "다음: 세어서 잡히는 결함이 없다" in capsys.readouterr().out
+    assert "다음: 규칙으로 찾은 잘못이 없다" in capsys.readouterr().out
 
 
 def testWatchAcceptsFolders(tmp_path, capsys):
@@ -948,12 +948,12 @@ def testBaselineLocksThenLintPasses(tmp_path, capsys):
 
     assert main(["baseline", str(draft), "--output", str(lock)]) == 0
     out = capsys.readouterr().out
-    assert "1건을 적었다" in out and "1개 글의 지적을 잠갔다" in out
+    assert "1건을 적었다" in out and "1개 글에서 지금 있는 지적이다" in out
     assert json.loads(lock.read_text(encoding="utf-8"))["files"]["초안.md"][0]["rule"] == "cliche"
 
     assert main([str(draft), "--baseline", str(lock), "--format", "compact"]) == 0
     out = capsys.readouterr().out
-    assert "error 0" in out and "잠근 자리 1건은 넘겼다" in out
+    assert "오류 0건" in out and "기준 파일에 든 지적 1건은 보이지 않았다" in out
 
 
 def testBaselineDoesNotHideNewProblems(tmp_path, capsys):
@@ -990,18 +990,18 @@ def testDoctorShowsLockedDebt(tmp_path, capsys, monkeypatch):
 
     assert main(["doctor"]) == 0
     out = capsys.readouterr().out
-    assert "잠금      1건이" in out
+    assert "기준 파일 .hanlint-baseline.json에 지적 1건이" in out
 
     (tmp_path / ".hanlint-baseline.json").unlink()
     assert main(["doctor"]) == 0
-    assert "못 읽었다" in capsys.readouterr().out
+    assert "읽지 못했다" in capsys.readouterr().out
 
 
 def testMissingBaselineFileIsAnErrorNotSilence(tmp_path, capsys):
     """없는 잠금 파일을 조용히 빈 잠금으로 보면 CI 가 오타를 못 본다."""
     draft = write(tmp_path, "초안.md", BAD)
     assert main([str(draft), "--baseline", str(tmp_path / "없다.json")]) == 2
-    assert "찾지 못했다" in capsys.readouterr().err
+    assert "찾지 못한 파일" in capsys.readouterr().err
 
 
 def testPresetFlagWorksWithoutAConfigFile(tmp_path, capsys):
@@ -1028,7 +1028,7 @@ def testHeaderAlwaysNamesTheActivePreset(tmp_path, capsys):
 def testRootHelpGroupsCommandsByUserGoal(capsys):
     assert main(["--help"]) == 0
     out = capsys.readouterr().out
-    assert "일상 검사" in out and "요구사항 잠금" in out and "설정과 이해" in out
+    assert "일상 검사" in out and "요구사항 고정" in out and "설정과 이해" in out
     assert "contract init" in out and "--outline h2" in out
 
 
@@ -1036,7 +1036,7 @@ def testUnknownPresetIsRefused(tmp_path, capsys):
     doc = write(tmp_path, "초안.md", CLEAN)
     with __import__("pytest").raises(SystemExit):
         main([str(doc), "--preset", "없는것"])
-    assert "invalid choice" in capsys.readouterr().err
+    assert "쓸 수 없는 값" in capsys.readouterr().err
 
 
 def testNextStepPointsAtTheBiggestPile():
@@ -1061,11 +1061,11 @@ def testFolderWalkSkipsForeignPackages(tmp_path, capsys):
         write(tmp_path / folder, "README.md", BAD)
 
     assert main([str(tmp_path), "--format", "compact", "--quiet"]) == 0
-    assert capsys.readouterr().out.splitlines()[-1] == "파일 1개, error 0, notice 0"
+    assert capsys.readouterr().out.splitlines()[-1] == "파일 1개, 오류 0건, 확인 권고 0건"
 
     # 명시가 규칙을 이긴다. 그 폴더를 직접 주면 검사한다
     assert main([str(tmp_path / "node_modules"), "--format", "compact", "--quiet"]) == 1
-    assert "파일 1개, error 1" in capsys.readouterr().out
+    assert "파일 1개, 오류 1건" in capsys.readouterr().out
 
 
 def testFixDoesNotTouchSkippedFolders(tmp_path, capsys):
@@ -1099,14 +1099,14 @@ def testFolderCommandsSayFolderInsteadOfCrashing(tmp_path, capsys):
     write(tmp_path / "글들", "하나.md", CLEAN)
     for command in ("audit", "map", "print"):
         assert main([command, str(tmp_path / "글들")]) == 2, command
-        assert "는 폴더다" in capsys.readouterr().err, command
+        assert "폴더를 받았다" in capsys.readouterr().err, command
 
 
 def testUnknownSubcommandIsNotTreatedAsAPath(capsys):
     """실측: `hanlint rulez` 가 `경로를 확인하라` 고 해서 엉뚱한 데를 뒤지게 했다."""
     assert main(["rulez"]) == 2
     error = capsys.readouterr().err
-    assert "모르는 명령이다" in error and "rules" in error
+    assert "없는 명령: rulez" in error and "rules" in error
 
 
 def testFixPromiseMatchesWhatFixDoes(tmp_path, capsys):
@@ -1147,7 +1147,7 @@ def testFixSaysWhatIsLeftByHand(tmp_path, capsys):
     draft = write(tmp_path, "초안.md", "# 시험\n\n설계에 대한 이해가 부족했다. 그래서 봅니다. 따라서 씁니다.\n")
     assert main(["fix", str(draft), "--dry-run"]) == 0
     out = capsys.readouterr().out
-    assert "0곳 고침, 0곳 건너뜀" in out and "손으로 고칠 error 1건이 남았다" in out
+    assert "0곳 고침, 0곳 건너뜀" in out and "손으로 고칠 오류 1건이 남았다" in out
 
     clean = write(tmp_path, "깨끗.md", CLEAN)
     assert main(["fix", str(clean), "--dry-run"]) == 0
@@ -1157,7 +1157,7 @@ def testFixSaysWhatIsLeftByHand(tmp_path, capsys):
 def testExplainTellsWhereToReportAFalsePositive(capsys):
     """오탐이라고 판단한 사람에게 끄는 법만 알려 주면 규칙은 틀린 채로 남는다."""
     assert main(["explain", "danglingDeixis"]) == 0
-    assert "알려 준다: github.com/eddmpython/hanlint/issues" in capsys.readouterr().out
+    assert "여기에 알린다: github.com/eddmpython/hanlint/issues" in capsys.readouterr().out
 
 
 def testMapKeepsTheSectionTitleWhole(tmp_path, capsys):

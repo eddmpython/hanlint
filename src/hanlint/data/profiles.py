@@ -1,8 +1,8 @@
-"""참조 분포 (프로파일) 의 자료형과 읽기. 같은 종류의 글 여러 편에서 문장과 문단의 정수 지표를 값마다 세어 둔 표다.
+"""참조 분포(프로파일)의 자료형과 읽기. 같은 종류의 글 여러 편에서 문장과 문단의 정수 지표를 값마다 세어 둔 표다.
 
-hanlint 가 싣는 종류별 프로파일 (`profiles.json`, `scripts/derive/profiles.py` 가 기준 말뭉치에서 만든다) 과 사용자가
-`hanlint profile build 글들/` 로 만드는 파일이 같은 꼴이다. 정수 지표는 정확한 계수 히스토그램이라 오차가 없고 백분위는
-그 히스토그램에서 나온다. 만드는 쪽은 `profile/build.py` 이고 견주는 쪽은 규칙 outsideProfile 이다.
+hanlint가 싣는 종류별 프로파일(`profiles.json`, `scripts/derive/profiles.py`가 기준 말뭉치에서 만든다)과 사용자가
+`hanlint profile build 글들/`로 만드는 파일이 같은 형식이다. 정수 지표는 정확히 센 히스토그램이라 오차가 없고 백분위는
+그 히스토그램에서 나온다. 만드는 쪽은 `profile/build.py`이고 비교하는 쪽은 규칙 outsideProfile이다.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from .load import loadJson
 
 PROFILE_VERSION = 1
 CAP = 200
-"""히스토그램의 상한. 이 값보다 큰 것은 상한에 합친다. 어절 200 을 넘는 문장은 백분위로 가를 것이 없다."""
+"""히스토그램의 상한. 이 값보다 큰 것은 상한에 합친다. 200어절을 넘는 문장은 백분위로 가를 것이 없다."""
 PERCENTILES = (50, 90, 95, 99)
 TYPE_LABELS = {
     "blog": "블로그",
@@ -28,16 +28,16 @@ TYPE_LABELS = {
     "fiction": "소설 (1930년대)",
     "encyclopedia": "백과",
 }
-"""기준 말뭉치 종류의 이름. 지적문에 적는다. 종류의 정본은 corpus/catalogue.toml 의 types 다."""
+"""기준 말뭉치 종류의 이름. 지적에 적는다. 종류 목록은 corpus/catalogue.toml의 types에 있다."""
 
 
 @dataclass(frozen=True)
 class Histogram:
     total: int
     counts: dict[int, int]
-    """값 → 수. 값은 CAP 에서 잘린다."""
+    """값 → 수. 값은 CAP에서 잘린다."""
     percentiles: dict[int, int]
-    """백분위 → 값. 누적 수가 전체의 p% 에 처음 닿는 값이다."""
+    """백분위 → 값. 누적 수가 처음으로 전체의 p%에 이르는 값이다."""
 
     def percentile(self, p: int) -> int:
         return self.percentiles[p]
@@ -88,11 +88,11 @@ class Profile:
     sentence: dict[str, Histogram] = field(default_factory=dict)
     paragraph: dict[str, Histogram] = field(default_factory=dict)
     endingRuns: Histogram | None = None
-    """문단 안에서 같은 종결어미 부류가 이어진 길이."""
+    """문단 안에서 같은 종결어미 묶음이 이어진 길이."""
     endingTransitions: dict[str, int] = field(default_factory=dict)
-    """`앞|뒤` → 수. 문단 안에서 앞 문장의 부류가 다음 문장의 부류로 이어진 횟수."""
+    """`앞|뒤` → 수. 문단 안에서 앞 문장의 묶음이 다음 문장의 묶음으로 이어진 횟수."""
     rates: dict[str, dict[str, float]] = field(default_factory=dict)
-    """글마다의 비율 (문장당 접속부사, 물음, 독자 호출, 지시어) 의 글 단위 백분위."""
+    """글마다의 비율(문장당 접속부사, 물음, 독자 호출, 지시어)을 글 단위로 센 백분위."""
 
     @property
     def label(self) -> str:
@@ -126,7 +126,7 @@ def profileFromDict(kind: str, data: dict) -> Profile:
 
 
 def renderProfiles(profiles: dict[str, Profile]) -> str:
-    """종류별 프로파일 파일 (profiles.json) 의 글자. 결정적이다."""
+    """종류별 프로파일 파일(profiles.json)의 글자. 같은 입력이면 늘 같은 글자가 나온다."""
     data = {
         "version": PROFILE_VERSION,
         "cap": CAP,
@@ -143,7 +143,7 @@ def saveProfile(profile: Profile, path: str | Path) -> None:
 def loadProfile(path: str | Path) -> Profile:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     if data.get("version") != PROFILE_VERSION or "profile" not in data:
-        raise ValueError(f"프로파일 파일이 아니다: {path}. hanlint profile build 로 다시 만든다")
+        raise ValueError(f"프로파일 파일이 아니다: {path}. hanlint profile build로 다시 만든다")
     return profileFromDict("custom", data["profile"])
 
 

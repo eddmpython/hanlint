@@ -18,10 +18,10 @@ BULLET_WITH_EMOJI = re.compile(r"^\s*(?:[-*+]|[0-9]+[.)])\s+" + EMOJI)
 def emojiBullet(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """이모지로 시작하는 목록 항목.
 
-    왜: 불릿마다 이모지를 달면 장식이 정보를 가리고 AI 가 쓴 홍보 글처럼 읽힌다.
-    어디서: Wikipedia Signs of AI writing 4.7 (Emoji as formatting), Bloomberg 2026-01 (LinkedIn AI 게시물).
-    고치기: 이모지를 지우고 항목의 첫 낱말이 내용을 말하게 한다.
-    안 잡는 것: 본문 문장 안의 이모지. 목록 항목의 첫 자리만 본다.
+    왜: 목록 항목마다 이모지를 달면 장식이 정보를 가리고 AI가 쓴 홍보 글처럼 읽힌다.
+    어디서: Wikipedia Signs of AI writing 4.7(Emoji as formatting), Bloomberg 2026-01(LinkedIn AI 게시물).
+    고치기: 이모지를 지우고 항목의 첫 단어가 내용을 말하게 한다.
+    안 잡는 것: 본문 문장 안의 이모지는 잡지 않는다. 목록 항목의 맨 앞만 본다.
     """
     for block in doc.blocks:
         if block.kind != LIST:
@@ -32,7 +32,7 @@ def emojiBullet(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
                     "emojiBullet",
                     block.startLine + offset,
                     lineText.strip(),
-                    "목록 항목이 이모지로 시작한다. 이모지를 지우고 첫 낱말이 내용을 말하게 한다",
+                    "목록 항목이 이모지로 시작한다. 이모지를 지우고 첫 단어가 내용을 말하게 한다",
                     None,
                     "error",
                     DOCUMENT,

@@ -1,4 +1,4 @@
-"""글 지문. 절 지문 열과 글 전체에서만 보이는 것."""
+"""글 분석 결과. 절마다의 분석 결과와, 글 전체에서만 보이는 것."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ class DocumentPrint:
     path: str | None
     frontmatter: dict[str, str]
     blocks: tuple[Block, ...]
-    """원문 블록. 코드 블록까지 보는 규칙 (dash) 이 쓴다."""
+    """원문 블록. 코드 블록까지 보는 규칙(dash)이 쓴다."""
     sentences: tuple[SentencePrint, ...]
     paragraphs: tuple[ParagraphPrint, ...]
     sections: tuple[SectionPrint, ...]
@@ -29,9 +29,9 @@ class DocumentPrint:
     countPromises: tuple[tuple[int, str, int, str], ...]
     """(수, 단위, 줄, 원문)."""
     codeBlocks: tuple[CodeBlock, ...]
-    """코드 펜스를 언어와 본문 줄로 푼 것. code 부류 규칙이 읽는다."""
+    """코드 펜스를 언어와 본문 줄로 푼 것. code 묶음 규칙이 읽는다."""
     reader: ReaderTrail
-    """자리마다의 독자 상태. reader 기제의 규칙이 읽는다. 약속과 회수 표지는 final 에 있다."""
+    """위치마다의 독자 상태. 독자 상태를 보는 규칙(reader)이 읽는다. 약속하는 말과 다시 다루는 말은 final에 있다."""
     register: str = "없음"
     """글의 문체. 평서문 끝 서술어 가운데 가장 많은 것. 합니다, 한다, 해요, 섞임, 없음."""
     registerShare: float = 0.0
@@ -39,7 +39,7 @@ class DocumentPrint:
     disabled: tuple[tuple[str, int, int], ...] = ()
     """인라인 제어가 끈 (규칙 또는 *, 시작 줄, 끝 줄). 등록부가 지적을 거른다."""
     ignored: tuple[Block, ...] = ()
-    """설정이 지문에서 뺀 펜스. 파일 전체를 보는 규칙 (dash) 만 읽는다."""
+    """설정이 글 분석에서 뺀 펜스. 파일 전체를 보는 규칙(dash)만 읽는다."""
 
     @property
     def intro(self) -> SectionPrint:

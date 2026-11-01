@@ -45,8 +45,8 @@ def testTextReportWhenClean():
 def testNoticeFixIsOnlyAReviewAlternative():
     findings = [finding for finding in lintText("금일 회의를 엽니다.", Config(preset="docs")) if finding.rule == "hardWord"]
     assert len(findings) == 1 and findings[0].severity == "notice"
-    assert "검토할 대안: 오늘 회의를 엽니다." in renderText("글.md", findings, unfoldNotices=True)
-    assert "검토할 대안: 오늘 회의를 엽니다." in renderCompact("글.md", findings)
+    assert "제안: 오늘 회의를 엽니다." in renderText("글.md", findings, unfoldNotices=True)
+    assert "제안: 오늘 회의를 엽니다." in renderCompact("글.md", findings)
 
 
 def testJsonReportIsParseableAndCarriesFields():
@@ -140,8 +140,8 @@ def testAuditNamesReaderFindingsAsDebtWithoutANewVerdict():
     findings = lintText(source)
     text = renderAudit(doc, findings, auditText(source), color=False)
 
-    assert "독자 부채   1건" in text
-    assert "1행 [promiseRecall]" in text
+    assert "막힐 곳     1건" in text
+    assert "1줄 [promiseRecall]" in text
 
 
 def testAuditReportKeepsLongSectionTitlesWhole():
@@ -179,8 +179,8 @@ def testTextReportFoldsNoticesUnlessAsked():
     ]
     folded = renderText("글.md", [error, *notices])
     assert "글.md  오류 1건, 확인 권고 3건" in folded
-    assert "확인 권고 3건 (접음. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄" in folded
+    assert "확인 권고 3건 (접어 두었다. 다 보려면 --notices)\n  endingRepeat 2  5, 9줄\n  longSentence 1  7줄" in folded
     assert "[endingRepeat] 확인" not in folded and "[cliche]" in folded
     unfolded = renderText("글.md", [error, *notices], unfoldNotices=True)
-    assert "글.md:5  [endingRepeat] 확인" in unfolded and "(접음" not in unfolded
+    assert "글.md:5  [endingRepeat] 확인 권고" in unfolded and "(접어 두었다" not in unfolded
     assert renderText("글.md", [error]) == renderText("글.md", [error], unfoldNotices=True)

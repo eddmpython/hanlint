@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * 규칙 등록부. 규칙 하나는 파일 하나이고 `name` 과 `run(doc, config)` 을 내보낸다. 파이썬은 폴더를 걸어 찾고
- * 여기는 목록으로 든다. test/rules.test.js 가 목록과 폴더와 ruleDocs.json 이 같은지 본다.
- * 기술서 (왜, 어디서, 고치기, 안 잡는 것) 는 파이썬 docstring 의 투영 data/ruleDocs.json 에서 읽는다.
+ * 규칙 목록. 규칙 하나는 파일 하나이고 `name`과 `run(doc, config)`을 내보낸다. 파이썬은 폴더를 걸어 찾고
+ * 여기는 목록으로 든다. test/rules.test.js가 목록과 폴더와 ruleDocs.json이 같은지 본다.
+ * 규칙 설명(왜, 어디서, 고치기, 안 잡는 것)은 파이썬 docstring을 옮긴 data/ruleDocs.json에서 읽는다.
  */
 import { enabled } from "../config/settings.js";
 import { loadRuleCategories, loadRuleDocs } from "../data/load.js";
@@ -66,7 +66,7 @@ import * as screenWord from "./screen/screenWord.js";
 /**
  * @typedef {object} Rule
  * @property {string} name
- * @property {string} mechanism 세는 방법. MECHANISMS 의 키 하나
+ * @property {string} mechanism 세는 방법. MECHANISMS의 키 하나
  * @property {(doc: import("../fingerprint/build.js").DocumentPrint, config: import("../config/settings.js").Config) => import("./finding.js").Finding[]} run
  */
 
@@ -131,19 +131,19 @@ export const RULES = [
 ];
 
 /**
- * 규칙이 세는 방법의 닫힌 집합. 파이썬 rules/registry.py 의 MECHANISMS 와 같은 값과 같은 순서다.
+ * 규칙이 찾는 방법의 닫힌 목록. 파이썬 rules/registry.py의 MECHANISMS와 같은 값과 같은 순서다.
  * @type {Record<string, string>}
  */
 export const MECHANISMS = {
-  dictionary: "사전. 낱말 목록과 정규식이 맞는 자리",
-  repeat: "반복. 같은 모양이 창 안에서 N 번",
-  threshold: "셈. 분석표의 값이 임계를 넘거나 모양이 계약과 다른 자리",
-  contrast: "대조. 두 자리를 맞대 어긋난 곳",
-  reader: "독자 상태. 문장 순서대로 독자가 손에 든 것과 본 것에 그 자리가 요구하는 것을 맞댄다",
+  dictionary: "사전. 단어 목록과 정규식이 맞는 곳",
+  repeat: "반복. 같은 모양이 가까이에서 여러 번 나오는 곳",
+  threshold: "수치. 글에서 잰 값이 기준값을 넘거나 정해 둔 형식과 다른 곳",
+  contrast: "비교. 두 곳을 비교해 어긋난 곳",
+  reader: "독자. 앞에서 읽은 내용만으로 그 문장을 이해할 수 있는지 문장 순서대로 본다",
 };
 for (const rule of RULES) {
   if (!(rule.mechanism in MECHANISMS)) {
-    throw new Error(`규칙 ${rule.name} 의 기제 ${rule.mechanism} 은 닫힌 집합 밖이다 (${Object.keys(MECHANISMS).join(", ")}). 새 기제는 규칙 하나 때문에 들어오지 않는다. 멈춰서 묻는다`);
+    throw new Error(`규칙 ${rule.name}의 찾는 방법이 닫힌 집합 밖이다: ${rule.mechanism} (있는 것: ${Object.keys(MECHANISMS).join(", ")}). 새 방법은 규칙 하나 때문에 더하지 않는다. 멈추고 묻는다`);
   }
 }
 
@@ -157,7 +157,7 @@ export function ruleNames() {
 /** @param {string} name */
 export function ruleDoc(name) {
   const docs = loadRuleDocs();
-  if (!(name in docs) || !BY_NAME.has(name)) throw new Error(`모르는 규칙: ${name}. hanlint rules 로 목록을 본다`);
+  if (!(name in docs) || !BY_NAME.has(name)) throw new Error(`모르는 규칙: ${name}. hanlint rules로 목록을 본다`);
   return docs[name];
 }
 
@@ -166,10 +166,10 @@ export function ruleSummary(name) {
   return ruleDoc(name).split("\n")[0];
 }
 
-/** 기술서의 네 절 표. 파이썬 rules/registry.py 의 REQUIRED_SECTIONS 와 같다. */
+/** 기술서의 네 절 표. 파이썬 rules/registry.py의 REQUIRED_SECTIONS와 같다. */
 export const REQUIRED_SECTIONS = ["왜:", "어디서:", "고치기:", "안 잡는 것:"];
 
-/** 기술서에서 절 하나의 본문을 한 줄로. 파이썬 docSection 과 같다. @param {string} doc @param {string} label */
+/** 기술서에서 절 하나의 본문을 한 줄로. 파이썬 docSection과 같다. @param {string} doc @param {string} label */
 export function docSection(doc, label) {
   const collected = [];
   let inside = false;
@@ -188,41 +188,41 @@ export function docSection(doc, label) {
   return collected.filter(Boolean).join(" ");
 }
 
-/** 규칙의 고치기 절 한 줄. primer 가 쓰기 전에 읽히는 그 문장이다. @param {string} name */
+/** 규칙의 고치기 절 한 줄. primer가 쓰기 전에 읽히는 그 문장이다. @param {string} name */
 export function ruleFix(name) {
   return docSection(ruleDoc(name), "고치기:");
 }
 
 /**
- * 부류의 사람 이름. 파이썬 rules/registry.py 의 CATEGORY_TITLES 와 같은 값과 같은 순서다.
+ * 묶음의 사람 이름. 파이썬 rules/registry.py의 CATEGORY_TITLES와 같은 값과 같은 순서다.
  * @type {Record<string, string>}
  */
 export const CATEGORY_TITLES = {
-  sentence: "문장 안에서 세는 것",
-  paragraph: "문단 사이에서 세는 것",
-  structure: "글의 짜임에서 세는 것",
-  document: "두 자리를 대조해 세는 것",
+  sentence: "문장",
+  paragraph: "문단",
+  structure: "글의 짜임",
+  document: "앞뒤 맞추기",
   orthography: "표기와 띄어쓰기",
-  code: "코드 블록 사이를 대조하는 것",
-  screen: "화면의 글에서 세는 것",
+  code: "코드 블록",
+  screen: "화면의 글",
 };
 
 /** 규칙이 세는 방법. @param {string} name */
 export function ruleMechanism(name) {
   const rule = BY_NAME.get(name);
-  if (!rule) throw new Error(`모르는 규칙: ${name}. hanlint rules 로 목록을 본다`);
+  if (!rule) throw new Error(`모르는 규칙: ${name}. hanlint rules로 목록을 본다`);
   return rule.mechanism;
 }
 
-/** 규칙이 사는 부류. 정본은 파이썬 쪽 폴더이고 여기는 그 투영을 읽는다. @param {string} name */
+/** 규칙이 사는 묶음. 정본은 파이썬 쪽 폴더이고 여기는 그 투영을 읽는다. @param {string} name */
 export function ruleCategory(name) {
   const categories = loadRuleCategories();
-  if (!(name in categories)) throw new Error(`모르는 규칙: ${name}. hanlint rules 로 목록을 본다`);
+  if (!(name in categories)) throw new Error(`모르는 규칙: ${name}. hanlint rules로 목록을 본다`);
   return categories[name];
 }
 
 /**
- * 인라인 제어가 그 줄에서 그 규칙을 껐는가. `*` 는 전부다.
+ * 인라인 제어가 그 줄에서 그 규칙을 껐는가. `*`는 전부다.
  * @param {import("./finding.js").Finding} f
  * @param {[string, number, number][]} disabled
  */

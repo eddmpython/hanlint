@@ -32,7 +32,7 @@ export function run(doc) {
     if (overlap(reader.recent, sentence.topics) > 0) continue;
     if (isPrompt(reader.previous)) continue;
     findings.push(
-      finding(name, sentence.line, sentence.text, `\`${sentence.deixis[0]}\` ${fitJosa(sentence.deixis[0], "이")} 가리킬 것이 앞 문장에 없다. 가리키는 파일, 값, 코드의 이름을 쓴다`, null, "error", SENTENCE, sentence.index, null, null, danglingDeixisCandidates(sentence, reader.previous)),
+      finding(name, sentence.line, sentence.text, `\`${sentence.deixis[0]}\`${fitJosa(sentence.deixis[0], "이")} 가리킬 것이 앞 문장에 없다. 가리키는 파일, 값, 코드의 이름을 쓴다`, null, "error", SENTENCE, sentence.index, null, null, danglingDeixisCandidates(sentence, reader.previous)),
     );
   }
   return findings;

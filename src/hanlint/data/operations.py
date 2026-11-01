@@ -1,4 +1,4 @@
-"""승인 고침에서 뜻을 추측하지 않고 재사용할 수 있는 표면 치환.
+"""승인한 고침에서 뜻을 추측하지 않고 다시 쓸 수 있는 글자 바꾸기.
 
 공백과 문장부호를 제외한 편집 거리가 한 글자 이내일 때만 서명이 된다. 숫자, URL, 라틴 식별자,
 경로, 코드와 링크 목적지는 바꾸지 않는다. 지시어와 의미 재작성은 여기서 다루지 않고 원문 완전 일치
@@ -28,7 +28,7 @@ MAX_SURFACE_EDIT_DISTANCE = 1
 
 
 def protectedAtoms(text: str) -> tuple[str, ...]:
-    """치환 전후에 같은 다중집합으로 남아야 하는 사실 표면."""
+    """바꾸기 전후에 같은 다중집합으로 남아야 하는 사실의 글자(숫자, URL, 코드 등)."""
     found = []
     for pattern, label in (
         (URL, "url"),
@@ -45,7 +45,7 @@ def protectedAtoms(text: str) -> tuple[str, ...]:
 
 
 def protectedSpans(text: str) -> tuple[tuple[int, int], ...]:
-    """국소 치환이 들어가면 안 되는 마크다운과 HTML 자리."""
+    """글자 바꾸기가 들어가면 안 되는 마크다운과 HTML 구간."""
     spans = []
     for pattern in (INLINE_CODE, URL, HTML_TAG):
         spans.extend((match.start(), match.end()) for match in pattern.finditer(text))
@@ -54,7 +54,7 @@ def protectedSpans(text: str) -> tuple[tuple[int, int], ...]:
 
 
 def protectedTermAtoms(text: str, terms: Iterable[str]) -> tuple[str, ...]:
-    """사용자가 고유명사나 제품명으로 잠근 표면의 다중집합."""
+    """사용자가 고유명사나 제품명으로 지정한 글자의 다중집합."""
     found = []
     for term in terms:
         cursor = 0
@@ -153,7 +153,7 @@ def operationFromApproval(
     presets: Iterable[str] = (),
     protectedTerms: Iterable[str] = (),
 ) -> SurfaceOperation | None:
-    """승인 전후 전체에서 기계가 보증할 수 있는 표면 치환 하나를 추출한다."""
+    """승인 전후 전체에서 기계가 보증할 수 있는 글자 바꾸기 하나를 뽑는다."""
     before = normalize("NFC", before)
     after = normalize("NFC", after)
     protectedTerms = tuple(protectedTerms)
@@ -187,25 +187,25 @@ def operationFromApproval(
 def projectOperations(entries: object, presetNames: Iterable[str]) -> tuple[SurfaceOperation, ...]:
     """설정의 `[[operations]]`를 검증한다. 같은 프리셋과 전 조각의 결과가 갈리면 거부한다."""
     if not isinstance(entries, (list, tuple)):
-        raise ValueError("operations 는 [[operations]] 배열이다")
+        raise ValueError("operations는 [[operations]] 배열이어야 한다")
     knownPresets = set(presetNames)
     selectors: set[tuple[str, str]] = set()
     found = []
     for index, entry in enumerate(entries, start=1):
         if not isinstance(entry, dict):
-            raise ValueError(f"operations {index}번째 항목은 표다")
+            raise ValueError(f"operations {index}번째 항목은 표여야 한다")
         unknown = sorted(set(entry) - {"before", "after", "presets"})
         if unknown:
             raise ValueError(f"operations {index}번째 항목의 모르는 키: {', '.join(unknown)}")
         before = entry.get("before")
         after = entry.get("after")
         if not isinstance(before, str) or not before.strip() or before != before.strip():
-            raise ValueError(f"operations {index}번째 항목의 before 는 양끝 공백 없는 문자열이다")
+            raise ValueError(f"operations {index}번째 항목의 before는 양끝 공백 없는 문자열이어야 한다")
         if not isinstance(after, str) or not after.strip() or after != after.strip():
-            raise ValueError(f"operations {index}번째 항목의 after 는 양끝 공백 없는 문자열이다")
+            raise ValueError(f"operations {index}번째 항목의 after는 양끝 공백 없는 문자열이어야 한다")
         rawPresets = entry.get("presets")
         if not isinstance(rawPresets, list) or not rawPresets or not all(isinstance(item, str) for item in rawPresets):
-            raise ValueError(f"operations {index}번째 항목의 presets 는 비지 않은 문자열 배열이다")
+            raise ValueError(f"operations {index}번째 항목의 presets는 비지 않은 문자열 배열이어야 한다")
         presets = tuple(rawPresets)
         unknownPresets = sorted(set(presets) - knownPresets)
         if unknownPresets:
@@ -214,7 +214,7 @@ def projectOperations(entries: object, presetNames: Iterable[str]) -> tuple[Surf
             raise ValueError(f"operation의 프리셋이 겹친다: {before}")
         operation = operationFromApproval(before, after, presets)
         if operation is None or operation.before != before or operation.after != after:
-            raise ValueError(f"operations {index}번째 항목은 안전한 표면 치환이 아니다: {before} -> {after}")
+            raise ValueError(f"operations {index}번째 항목은 안전한 글자 바꾸기가 아니다: {before} -> {after}")
         for preset in presets:
             selector = (preset, before)
             if selector in selectors:
@@ -264,7 +264,7 @@ def operationPositions(
 
 
 def applyOperation(text: str, operation: SurfaceOperation, protectedTerms: Iterable[str] = ()) -> str | None:
-    """단어 경계를 지킨 한 자리에서만 치환하고 보호 원자가 달라지면 기권한다."""
+    """단어 경계를 지킨 한 곳에서만 바꾸고, 지켜야 할 숫자·링크·코드가 달라지면 바꾸지 않는다."""
     protectedTerms = tuple(protectedTerms)
     positions = operationPositions(text, operation, protectedTerms)
     if len(positions) != 1:

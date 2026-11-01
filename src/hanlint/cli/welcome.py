@@ -1,14 +1,14 @@
-"""`hanlint` 를 인자 없이 쳤을 때의 첫 화면.
+"""`hanlint`를 인자 없이 쳤을 때의 첫 화면.
 
-전에는 argparse 가 `the following arguments are required: files` 를 뱉었다. 그것은 오류이지 안내가
+전에는 argparse가 `the following arguments are required: files`를 뱉었다. 그것은 오류이지 안내가
 아니다. 처음 쓰는 사람이 보는 화면은 무엇을 하는 도구인지, 지금 무엇을 칠 수 있는지, 이 폴더에서
 바로 해 볼 것이 무엇인지를 답해야 한다. 그래서 세 가지만 담는다.
 
-npm 구현 (`npm/src/cli/main.js`) 이 같은 글자를 낸다. 같은 폴더에서 두 구현을 돌리면 결과가 같다.
+npm 구현 (`npm/src/cli/main.js`)이 같은 글자를 낸다. 같은 폴더에서 두 구현을 돌리면 결과가 같다.
 
-파일을 찾는 것은 검사와 **같은 함수** (`commands/shared.markdownUnder`) 다. 전에는 첫 화면이 바로 아래
-한 층만 보고 검사는 끝까지 내려가서, `posts/` 에 글을 둔 보통 블로그 저장소에서 첫 화면은
-`이 폴더에는 마크다운이 없다` 라고 하고 `hanlint .` 은 파일을 찾았다. 같은 자리에서 두 화면이 서로
+파일을 찾는 것은 검사와 **같은 함수** (`commands/shared.markdownUnder`)다. 전에는 첫 화면이 바로 아래
+한 층만 보고 검사는 끝까지 내려가서, `posts/`에 글을 둔 보통 블로그 저장소에서 첫 화면은
+`이 폴더에는 마크다운이 없다`라고 하고 `hanlint .`은 파일을 찾았다. 같은 자리에서 두 화면이 서로
 다른 말을 했다.
 """
 
@@ -36,24 +36,24 @@ def welcome(version: str, folder: Path | None = None) -> str:
     nearby = nearbyMarkdown(folder)
     example = nearby[0] if nearby else "글.md"
     shown = [
-        (f"hanlint {example}", "검사한다. 자리와 이유와 고칠 말이 나온다"),
-        (f"hanlint fix {example}", "기계가 확실히 고칠 수 있는 자리를 원문에 적용한다"),
+        (f"hanlint {example}", "검사한다. 걸린 곳과 까닭과 고칠 말이 나온다"),
+        (f"hanlint fix {example}", "기계가 확실히 고칠 수 있는 곳을 원문에 고친다"),
         (f"hanlint audit {example}", "글의 모양을 지도와 분포로 본다"),
     ]
     width = max(len(command) for command, _ in shown)
     lines = [
-        f"hanlint {version}  한국어 글에서 세면 확정되는 결함을 집는다. 좋은 글인지는 판정하지 않는다",
+        f"hanlint {version}  한국어 글에서 규칙으로 잡을 수 있는 잘못을 찾는다. 좋은 글인지는 판정하지 않는다",
         "",
         *(f"  {command:<{width}}  {why}" for command, why in shown),
     ]
     if nearby:
-        lines.extend(["", f"이 폴더의 마크다운: {', '.join(nearby)}. 폴더를 통째로 줘도 된다 (hanlint .)"])
+        lines.extend(["", f"이 폴더의 마크다운: {', '.join(nearby)}. 폴더를 통째로 줘도 된다(hanlint .)"])
     else:
-        lines.extend(["", "이 폴더에는 검사할 마크다운이 없다. 파일 하나나 폴더 하나를 인자로 준다"])
+        lines.extend(["", "이 폴더에는 검사할 마크다운이 없다. 파일이나 폴더 하나를 인자로 준다"])
     lines.extend(
         [
             "",
-            "처음이면 hanlint init 으로 설정을 만든다. 글의 종류가 블로그가 아니면 --preset report 나 --preset docs",
+            "처음이면 hanlint init으로 설정 파일을 만든다. 블로그 글이 아니면 --preset report나 --preset docs를 붙인다",
             "규칙 목록은 hanlint rules, 규칙 하나가 왜 있는지는 hanlint explain <규칙>, 지금 상태는 hanlint doctor",
             "전체 사용법은 hanlint --help",
         ]
