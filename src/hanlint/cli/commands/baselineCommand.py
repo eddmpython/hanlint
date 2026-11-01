@@ -18,13 +18,13 @@ from ...fingerprint import buildFingerprint
 from ...rules import Finding, runAll
 from .shared import addCommonOptions, collectFiles, configFrom, emit, readInput, startFolder
 
-HELP = "지금 있는 지적을 기준 파일에 적는다. 그다음부터는 새로 생긴 지적만 막는다"
+HELP = "지금 있는 지적을 baseline 파일에 적는다. 그다음부터는 새로 생긴 지적만 막는다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("files", nargs="+", help="잠글 마크다운 파일이나 폴더")
     parser.add_argument(
-        "--prune", action="store_true", help="글에 더 없는 지적을 기준 파일에서 지운다. 이미 있는 파일을 읽어 줄인다"
+        "--prune", action="store_true", help="글에 더 없는 지적을 baseline 파일에서 지운다. 이미 있는 파일을 읽어 줄인다"
     )
     addCommonOptions(parser, ("text",))
 
@@ -48,7 +48,8 @@ def run(args: argparse.Namespace) -> int:
     what = "글에 더 없는 지적을 지웠다" if args.prune else "지금 있는 지적이다"
     emit(
         f"{baseline.source}에 {baseline.count}건을 적었다. {len(files)}개 글에서 {what}.\n"
-        "다음: 검사할 때 --baseline을 붙이거나 설정에 baseline을 적는다. 기준 파일에 든 문장을 고치면 새 지적으로 다시 나온다",
+        "다음: 검사할 때 --baseline을 붙이거나 설정에 baseline을 적는다. "
+        "baseline 파일에 든 문장을 고치면 새 지적으로 다시 나온다",
         None,
     )
     return 0

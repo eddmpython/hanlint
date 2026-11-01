@@ -81,7 +81,7 @@ def proseLines() -> list[str]:
 
 
 def renderPrimer(entries: list[PrimerEntry], preset: str, register: str) -> str:
-    """사람과 AI가 읽는 한 장. 글쓰기 지침 일곱 줄 다음에 읽는 법 한 줄, 묶음마다 제목 하나, 규칙 하나가 한 줄이다."""
+    """사람과 AI가 읽는 한 장. 글쓰기 지침 일곱 줄 다음에 읽는 법 한 줄, 카테고리마다 제목 하나, 규칙 하나가 한 줄이다."""
     lines = [
         *proseLines(),
         "",

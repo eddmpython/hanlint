@@ -35,7 +35,7 @@ def loneSubheading(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     안 잡는 것: 소제목이 둘 이상인 절과 H4 이하는 잡지 않는다. 절 제목에 없는 말이 소제목에 하나라도 있으면 새
         이야기를 여는 것이므로 하나뿐이어도 잡지 않는다. 실제 글 하나에서 `AI에게 원문과 이 페이지 주소 보내기` 아래의
         `AI에게 보낼 요청 예시`는 `AI` 하나만 겹치고 `요청`과 `예시`를 새로 꺼내므로 오탐이었다. 화제어로 어림하는
-        규칙이라 확인 권고로만 낸다.
+        규칙이라 경고로만 낸다.
     """
     for parent, child, line in onlyChild(doc.headings):
         childTopics = topicsOf(child)

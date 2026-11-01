@@ -131,7 +131,7 @@ export const RULES = [
 ];
 
 /**
- * 규칙이 찾는 방법의 닫힌 목록. 파이썬 rules/registry.py의 MECHANISMS와 같은 값과 같은 순서다.
+ * 규칙이 방식의 닫힌 목록. 파이썬 rules/registry.py의 MECHANISMS와 같은 값과 같은 순서다.
  * @type {Record<string, string>}
  */
 export const MECHANISMS = {
@@ -143,7 +143,7 @@ export const MECHANISMS = {
 };
 for (const rule of RULES) {
   if (!(rule.mechanism in MECHANISMS)) {
-    throw new Error(`규칙 ${rule.name}의 찾는 방법이 닫힌 집합 밖이다: ${rule.mechanism} (있는 것: ${Object.keys(MECHANISMS).join(", ")}). 새 방법은 규칙 하나 때문에 더하지 않는다. 멈추고 묻는다`);
+    throw new Error(`규칙 ${rule.name}의 방식이 닫힌 집합 밖이다: ${rule.mechanism} (있는 것: ${Object.keys(MECHANISMS).join(", ")}). 새 방법은 규칙 하나 때문에 더하지 않는다. 멈추고 묻는다`);
   }
 }
 
@@ -201,7 +201,7 @@ export const CATEGORY_TITLES = {
   sentence: "문장",
   paragraph: "문단",
   structure: "글의 짜임",
-  document: "앞뒤 맞추기",
+  document: "문서",
   orthography: "표기와 띄어쓰기",
   code: "코드 블록",
   screen: "화면의 글",

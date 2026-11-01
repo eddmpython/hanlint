@@ -45,7 +45,7 @@ def phraseRepeat(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         나머지를 정규식으로 다시 찾아야 한다. 한 줄에 여러 문장이 있으면 그 줄은 한 번만 적는다.
     안 잡는 것: 산문 문장이 8개보다 적은 글. 종결어미가 없는 줄(제목, 항목명, 표의 칸). 기준값 이하의 되풀이.
         두 번보다 적게 나온 문형: 한 번 쓴 글은 비율이 기준값을 넘어도 잡지 않는다. 겉으로 보이는 글자로
-        어림하는 규칙이라 확인 권고로 낸다.
+        어림하는 규칙이라 경고로 낸다.
     """
     prose = [one for one in doc.sentences if one.length > 0 and one.ending != "없음"]
     if len(prose) < MIN_SENTENCES:

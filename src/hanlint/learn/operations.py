@@ -1,4 +1,4 @@
-"""두 초안의 일대일 문장 고침에서 승인할 글자 바꾸기 후보를 찾는다."""
+"""두 초안의 일대일 문장 고침에서 승인할 치환 후보를 찾는다."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .edits import changedSentencePairs
 
 @dataclass(frozen=True)
 class OperationEvidence:
-    """글자 바꾸기 하나를 실제로 한 원문과 고친 글."""
+    """치환 하나를 실제로 한 원문과 고친 글."""
 
     sourceBefore: str
     sourceAfter: str
@@ -30,7 +30,7 @@ class OperationEvidence:
 
 @dataclass(frozen=True)
 class LearnedOperation:
-    """같은 문서 짝에서 되풀이된 증거를 합친 글자 바꾸기 후보."""
+    """같은 문서 짝에서 되풀이된 증거를 합친 치환 후보."""
 
     before: str
     after: str
@@ -62,7 +62,7 @@ def learnOperations(
     preset: str | None = None,
     protectedTerms: Iterable[str] = (),
 ) -> tuple[LearnedOperation, ...]:
-    """일대일 문장 고침만 보고, 뜻을 추측하지 않는 글자 바꾸기 후보를 만든다."""
+    """일대일 문장 고침만 보고, 뜻을 추측하지 않는 치환 후보를 만든다."""
     pairs = changedSentencePairs(beforeDoc.sentences, afterDoc.sentences)
     rawBefore = sourceSentenceTexts(beforeDoc)
     rawAfter = sourceSentenceTexts(afterDoc)

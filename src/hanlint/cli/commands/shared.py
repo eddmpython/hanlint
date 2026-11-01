@@ -90,7 +90,7 @@ def addOutputOption(parser: argparse.ArgumentParser) -> None:
 def addSeverityOptions(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--severity", choices=SEVERITIES, default="all", help="보여 줄 지적. 기본 all")
     parser.add_argument("--errors-only", dest="errorsOnly", action="store_true", help="--severity error와 같다")
-    parser.add_argument("--notices", action="store_true", help="접힌 확인 권고 (notice)를 다 편다. text 형식에서만")
+    parser.add_argument("--notices", action="store_true", help="접힌 경고 (notice)를 다 편다. text 형식에서만")
 
 
 def severityOf(args: argparse.Namespace) -> str:
@@ -175,7 +175,7 @@ def summary(results: dict[str, list[Finding]]) -> str:
     """
     errors = sum(1 for findings in results.values() for f in findings if f.severity == "error")
     notices = sum(1 for findings in results.values() for f in findings if f.severity == "notice")
-    return f"파일 {len(results)}개, 오류 {errors}건, 확인 권고 {notices}건"
+    return f"파일 {len(results)}개, 오류 {errors}건, 경고 {notices}건"
 
 
 def commonest(findings: list[Finding]) -> str:
@@ -223,7 +223,7 @@ def nextStep(results: dict[str, list[Finding]], fixable: int = 0) -> str:
             return f"다음: 오류 {len(errors)}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule {rule}"
         return f"다음: 오류 {len(errors)}건을 고친다. 규칙이 왜 있는지는 hanlint explain {rule}"
     if notices:
-        return f"다음: 오류는 없다. 확인 권고 {notices}건을 읽고 고칠지 정한다"
+        return f"다음: 오류는 없다. 경고 {notices}건을 읽고 고칠지 정한다"
     return "다음: 규칙으로 찾은 잘못이 없다. 좋은 글이라는 뜻은 아니니 사람이 읽어 본다"
 
 

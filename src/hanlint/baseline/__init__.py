@@ -1,4 +1,4 @@
-"""baseline 부분. 이미 있는 지적을 기준 파일에 적어 두고 새로 생긴 지적만 막는다. 내용은 store.py에 있다."""
+"""baseline 부분. 이미 있는 지적을 baseline 파일에 적어 두고 새로 생긴 지적만 막는다. 내용은 store.py에 있다."""
 
 from __future__ import annotations
 

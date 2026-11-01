@@ -18,7 +18,7 @@ def flat(text: str) -> str:
 def renderCompact(path: str, findings: list[Finding]) -> str:
     lines = []
     for finding in findings:
-        label = "확인 권고: " if finding.severity == "notice" else ""
+        label = "경고: " if finding.severity == "notice" else ""
         line = f"{path}:{finding.line} [{finding.rule}] {label}{flat(finding.why)}"
         if finding.fix:
             fixLabel = "제안" if finding.severity == "notice" else "고친 뒤"

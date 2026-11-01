@@ -44,7 +44,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
         nargs="?",
         const=DEFAULT_NAME,
         type=Path,
-        help=f"기준 파일. 그 안의 지적은 보이지 않는다. 값을 안 주면 {DEFAULT_NAME}",
+        help=f"baseline 파일. 그 안의 지적은 보이지 않는다. 값을 안 주면 {DEFAULT_NAME}",
     )
     addCommonOptions(parser, ("text", "compact", "json", "github"))
     addSeverityOptions(parser)
@@ -112,7 +112,8 @@ def run(args: argparse.Namespace) -> int:
         if not args.quiet:
             if baseline.count:
                 parts.append(
-                    f"기준 파일에 든 지적 {baseline.count}건은 보이지 않았다 ({baseline.source}). 그 문장을 고치면 다시 나온다"
+                    f"baseline 파일에 든 지적 {baseline.count}건은 보이지 않았다 ({baseline.source}). "
+                    "그 문장을 고치면 다시 나온다"
                 )
             parts.append(nextStep(results, fixable))
         emit("\n\n".join(parts) if args.format == "text" else "\n".join(parts), args.output)

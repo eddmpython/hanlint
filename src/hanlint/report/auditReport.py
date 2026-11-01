@@ -39,7 +39,7 @@ def renderAudit(doc: DocumentPrint, findings: list[Finding], audit: AuditResult,
     d = audit.density
     lines.append(
         f"천 어절당   접속사 {d.connectors:.1f}, 지시어 {d.deixis:.1f}, 강조하는 말 {d.emphasis:.1f}, "
-        f"단정을 피하는 말 {d.hedges:.1f}, 수치 {d.numbers:.1f}"
+        f"얼버무리는 말 {d.hedges:.1f}, 수치 {d.numbers:.1f}"
     )
     lines.append(f"독자        질문 {audit.questionCount}, 독자 호출 {audit.readerCallCount}")
     debts = readerDebts(findings)

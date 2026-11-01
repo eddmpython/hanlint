@@ -38,7 +38,7 @@ def testCoverageCountsLocatedAndCovered(tmp_path):
     assert coverage.uncaught[0].kind == "순서와 구조"
     text = renderCoverage(coverage)
     assert "평가자 지적 3건. 본문에서 찾은 인용 2건(본문이 바뀐 1건은 잴 수 없다)" in text
-    assert "hanlint가 같은 곳을 짚은 지적 1건(50%). 오류로 1건, 확인 권고로만 0건" in text and "7줄" in text
+    assert "hanlint가 같은 곳을 짚은 지적 1건(50%). 오류로 1건, 경고로만 0건" in text and "7줄" in text
 
 
 def testFlatListIsAccepted(tmp_path):

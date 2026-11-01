@@ -35,7 +35,7 @@ function candidateLines(findings) {
   return lines;
 }
 
-/** 접은 확인 권고. 규칙마다 개수와 줄 번호 한 줄. 뜻은 파이썬 textReport.py의 noticeLines가 소유한다. @param {import("../rules/finding.js").Finding[]} notices */
+/** 접은 경고. 규칙마다 개수와 줄 번호 한 줄. 뜻은 파이썬 textReport.py의 noticeLines가 소유한다. @param {import("../rules/finding.js").Finding[]} notices */
 function noticeLines(notices) {
   /** @type {Map<string, number[]>} */
   const byRule = new Map();
@@ -43,7 +43,7 @@ function noticeLines(notices) {
     if (!byRule.has(finding.rule)) byRule.set(finding.rule, []);
     /** @type {number[]} */ (byRule.get(finding.rule)).push(finding.line);
   }
-  const lines = [`확인 권고 ${notices.length}건 (접어 두었다. 다 보려면 --notices)`];
+  const lines = [`경고 ${notices.length}건 (접어 두었다. 다 보려면 --notices)`];
   for (const rule of [...byRule.keys()].sort()) {
     const numbers = [...new Set(/** @type {number[]} */ (byRule.get(rule)))].sort((a, b) => a - b);
     lines.push(`  ${rule} ${/** @type {number[]} */ (byRule.get(rule)).length}  ${numbers.join(", ")}줄`);
@@ -56,12 +56,12 @@ export function renderText(path, findings, register = null, preset = null, custo
   if (!findings.length) return `${path}  오류 없음`;
   const errors = findings.filter((f) => f.severity === "error").length;
   const notices = findings.length - errors;
-  const summary = `${path}  오류 ${errors}건` + (notices ? `, 확인 권고 ${notices}건` : "");
+  const summary = `${path}  오류 ${errors}건` + (notices ? `, 경고 ${notices}건` : "");
   const lines = [summary, ""];
   const folded = unfoldNotices ? [] : findings.filter((f) => f.severity === "notice");
   const shown = findings.filter((f) => unfoldNotices || f.severity === "error");
   for (const f of shown) {
-    const tag = `[${f.rule}]` + (f.severity === "notice" ? " 확인 권고" : "");
+    const tag = `[${f.rule}]` + (f.severity === "notice" ? " 경고" : "");
     lines.push(`${path}:${f.line}  ${tag}`, `  ${f.quote}`, `  ${f.why}`);
     if (f.fix) lines.push(`  ${f.severity === "notice" ? "제안" : "고친 뒤"}: ${f.fix}`);
     lines.push("");

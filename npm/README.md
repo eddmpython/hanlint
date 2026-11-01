@@ -27,7 +27,7 @@ npx hanlint 글.md
 
 `fix`는 고칠 문장이 하나로 정해진 곳만 **파일에서 직접 고친다**. 바뀐 곳을 확인하고 다시 검사한다.
 일반 검사는 오류 지적이 없으면 0, 있으면 1, 입력이나 설정이 잘못되면 2로 끝난다.
-확인 권고만 있으면 0이며, `--errors-only`를 주면 확인 권고를 보이지 않는다.
+경고만 있으면 0이며, `--errors-only`를 주면 경고를 보이지 않는다.
 명령마다 다른 판정은 [종료 코드 안내](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/cli.md#종료-코드)를 따른다.
 
 ## JavaScript에서 검사하기
@@ -95,7 +95,7 @@ JSON 형식과 전체 조건은
 | API | 결과 |
 |---|---|
 | `inspectText(text, config)` | 지적, 문체에 맞춘 고친 예시, 승인 고침 후보와 분석표 |
-| `learnText(before, after, config)` | 사람이 확인하고 승인할 문장 고침과 글자 바꾸기 후보 |
+| `learnText(before, after, config)` | 사람이 확인하고 승인할 문장 고침과 치환 후보 |
 | `compareRevision(before, after, config)` | 자유 원고의 숫자, 링크, 코드와 H2 제목 변화 |
 | `sheetRows(sources, config, everything)` | `{ label, source }`마다 화면 글을 뽑아 규칙을 돌린 시트 행. CLI `sheet`와 브라우저가 같은 함수를 쓴다 |
 

@@ -45,4 +45,4 @@ def testExampleCountsMatch():
     block = exampleBlock()
     assert f"글.md  오류 {len(errors)}건" in block, f"요약 줄의 error 수가 실제 {len(errors)}건과 다르다"
     if not notices:
-        assert "확인 권고" not in block, "예시에 없는 확인 권고를 요약 줄이 말한다"
+        assert "경고" not in block, "예시에 없는 경고를 요약 줄이 말한다"

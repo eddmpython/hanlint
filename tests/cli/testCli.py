@@ -668,12 +668,12 @@ def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     lines = capsys.readouterr().out.splitlines()
     assert any(line.startswith(f"{mixed}:3 [cliche] ") for line in lines)
     assert any("[factListParagraph]" in line or "[endingRepeat]" in line for line in lines)
-    assert lines[-1].startswith("파일 1개, 오류 1건, 확인 권고 ")
+    assert lines[-1].startswith("파일 1개, 오류 1건, 경고 ")
     # 요약은 거른 뒤가 아니라 글에 있는 것을 센다. 보여 줄 것을 고르는 옵션이 수를 바꾸면 거짓말이다.
     assert main([str(mixed), "--format", "compact", "--errors-only", "--quiet"]) == 1
     lines = capsys.readouterr().out.splitlines()
     assert lines[0].startswith(f"{mixed}:3 [cliche] `핵심은`은 ")
-    assert lines[-1].startswith("파일 1개, 오류 1건, 확인 권고 ") and not lines[-1].endswith("확인 권고 0건")
+    assert lines[-1].startswith("파일 1개, 오류 1건, 경고 ") and not lines[-1].endswith("경고 0건")
     assert main([str(mixed), "--severity", "notice", "--format", "json"]) == 1
     data = json.loads(capsys.readouterr().out)
     assert data["files"][0]["findings"] and all(f["severity"] == "notice" for f in data["files"][0]["findings"])
@@ -690,7 +690,7 @@ def testSummaryForManyFiles(tmp_path, capsys):
     clean = write(tmp_path, "clean.md", CLEAN)
     assert main([str(bad), str(clean), "--quiet"]) == 1
     out = capsys.readouterr().out
-    assert out.rstrip().endswith("파일 2개, 오류 1건, 확인 권고 0건")
+    assert out.rstrip().endswith("파일 2개, 오류 1건, 경고 0건")
     assert "오류 없음" in out
 
 
@@ -714,7 +714,7 @@ def testRulesAndExplain(capsys):
     assert "doublePassive" in out and "규칙 " in out
     assert main(["explain", "doublePassive"]) == 0
     doc = capsys.readouterr().out
-    assert "왜:" in doc and "고치기:" in doc and "찾는 방법: 사전." in doc
+    assert "왜:" in doc and "고치기:" in doc and "방식: 사전." in doc
     assert main(["explain", "noSuchRule"]) == 2
     assert "없는 규칙" in capsys.readouterr().err
 
@@ -890,10 +890,10 @@ def testExplainSuggestsNearNamesAndListsSiblings(capsys):
     assert main(["explain", "doublePasive"]) == 2
     assert "비슷한 이름: doubleNegative, doublePassive" in capsys.readouterr().err
     assert main(["explain"]) == 2
-    assert "묶음별로 보려면 hanlint rules" in capsys.readouterr().out
+    assert "카테고리별로 보려면 hanlint rules" in capsys.readouterr().out
     assert main(["explain", "moreLater"]) == 0
     out = capsys.readouterr().out
-    assert "(글의 짜임)" in out and "같은 묶음:" in out
+    assert "(글의 짜임)" in out and "같은 카테고리:" in out
 
 
 def testRulesGroupsByCategoryAndMarksOff(tmp_path, capsys):
@@ -953,7 +953,7 @@ def testBaselineLocksThenLintPasses(tmp_path, capsys):
 
     assert main([str(draft), "--baseline", str(lock), "--format", "compact"]) == 0
     out = capsys.readouterr().out
-    assert "오류 0건" in out and "기준 파일에 든 지적 1건은 보이지 않았다" in out
+    assert "오류 0건" in out and "baseline 파일에 든 지적 1건은 보이지 않았다" in out
 
 
 def testBaselineDoesNotHideNewProblems(tmp_path, capsys):
@@ -990,7 +990,7 @@ def testDoctorShowsLockedDebt(tmp_path, capsys, monkeypatch):
 
     assert main(["doctor"]) == 0
     out = capsys.readouterr().out
-    assert "기준 파일 .hanlint-baseline.json에 지적 1건이" in out
+    assert "baseline 파일 .hanlint-baseline.json에 지적 1건이" in out
 
     (tmp_path / ".hanlint-baseline.json").unlink()
     assert main(["doctor"]) == 0
@@ -1061,7 +1061,7 @@ def testFolderWalkSkipsForeignPackages(tmp_path, capsys):
         write(tmp_path / folder, "README.md", BAD)
 
     assert main([str(tmp_path), "--format", "compact", "--quiet"]) == 0
-    assert capsys.readouterr().out.splitlines()[-1] == "파일 1개, 오류 0건, 확인 권고 0건"
+    assert capsys.readouterr().out.splitlines()[-1] == "파일 1개, 오류 0건, 경고 0건"
 
     # 명시가 규칙을 이긴다. 그 폴더를 직접 주면 검사한다
     assert main([str(tmp_path / "node_modules"), "--format", "compact", "--quiet"]) == 1

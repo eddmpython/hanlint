@@ -21,7 +21,7 @@ def blockUnread(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     안 잡는 것: 언어를 밝힌 코드 블록(실행할 것이지 읽을 것이 아니다)은 잡지 않는다. 앞이 코드 블록이 아닌 text
         펜스도 잡지 않는다. 그것은 출력이 아니라 그림이다. 실제 운영 문서 하나가 폴더 구조를 text 펜스로 그렸는데
         그것을 출력으로 보아 오탐이 났다. 출력 바로 뒤에 산문 문단이 오는 곳도 잡지 않는다. 블록 종류로 어림하는
-        규칙이라 확인 권고로만 낸다.
+        규칙이라 경고로만 낸다.
     """
     languages = {block.index: block.language for block in doc.codeBlocks}
     outputs = {index for index, language in languages.items() if language in ("", "text", "output", "console")}

@@ -40,7 +40,7 @@ def inputFileSource(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         읽으며 쌓은 목록에서 찾는다.
     고치기: 파일을 만드는 코드 블록을 앞에 두거나, 산문에서 그 파일을 어떻게 준비하는지 이름을 들어 말한다.
     안 잡는 것: 앞선 코드가 쓴 파일과 앞선 산문이 이름을 든 파일(독자가 준비하는 것으로 본다)은 잡지 않는다. 별표,
-        URL, 서식 자리표시자가 든 경로도 잡지 않는다. 폴더는 오류가 아니라 확인 권고로 낸다.
+        URL, 서식 자리표시자가 든 경로도 잡지 않는다. 폴더는 오류가 아니라 경고로 낸다.
     """
     reported: set[str] = set()  # 이미 짚은 폴더. 같은 폴더를 두 번 짚지 않는다
     for block in doc.codeBlocks:

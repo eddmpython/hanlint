@@ -71,7 +71,7 @@ def selectedProfile(config: Config) -> Profile:
         return userProfile(config.profile)
     kind = PROFILE_OF[config.preset]
     if kind is None:
-        raise ValueError(f"{config.preset} 프리셋은 비교할 프로파일이 없어 수치 목표를 낼 수 없다")
+        raise ValueError(f"{config.preset} 프리셋은 비교할 프로파일이 없어 스펙을 낼 수 없다")
     profile = profileOf(kind)
     if profile is None:
         raise ValueError(f"{kind} 프로파일을 찾지 못했다")
@@ -185,7 +185,7 @@ def writingSpec(
         questionText = (
             "선택한 정책: 절이 2개 이상이면 글 전체에 물음표 최소 1개"
             if "noQuestion" in config.enforceStyle
-            else "물음표가 없으면 확인 권고다. 질문 없이 충분히 설명했다면 그대로 둔다"
+            else "물음표가 없으면 경고다. 질문 없이 충분히 설명했다면 그대로 둔다"
         )
         questionBasis = (f"profile.{profile.kind}.rates.question", "rule.noQuestion")
     else:
@@ -210,7 +210,7 @@ def renderWritingSpec(spec: WritingSpec) -> str:
     lines.extend(
         (
             "",
-            "이 수치 목표는 품질 점수가 아니다. 다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다",
+            "이 스펙은 품질 점수가 아니다. 다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다",
         )
     )
     return "\n".join(lines)

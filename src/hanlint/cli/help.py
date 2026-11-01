@@ -24,11 +24,11 @@ def rootHelp() -> str:
 설정과 이해
   hanlint init                           설정 파일을 만든다
   hanlint doctor                         적용 설정과 꺼진 규칙을 본다
-  hanlint rules                          규칙을 묶음별로 본다
+  hanlint rules                          규칙을 카테고리별로 본다
   hanlint explain <규칙>                 규칙의 이유와 예시를 본다
   hanlint patterns --rule <규칙>         다시 쓸 문장 틀을 본다
   hanlint spec --preset <종류> --chars 800
-                                         쓰기 전에 볼 수치 목표를 만든다
+                                         쓰기 전에 볼 스펙을 만든다
   hanlint primer --preset <종류>         쓰기 전에 규칙의 고치는 법과 예시를 한 장으로 본다
 
 프로젝트와 평가

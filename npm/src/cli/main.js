@@ -287,7 +287,7 @@ function summary(results) {
       else if (f.severity === "notice") notices += 1;
     }
   }
-  return `파일 ${results.size}개, 오류 ${errors}건, 확인 권고 ${notices}건`;
+  return `파일 ${results.size}개, 오류 ${errors}건, 경고 ${notices}건`;
 }
 
 /** (이름, 본문). `-`면 stdin을 UTF-8로 읽는다. @param {string} path @param {string} stdinName @returns {[string, string]} */
@@ -370,13 +370,13 @@ function nextStep(results, fixable = 0) {
     if (patternsAvoiding(rule).length) return `다음: 오류 ${errors.length}건을 고친다. 다시 쓸 틀은 hanlint patterns --rule ${rule}`;
     return `다음: 오류 ${errors.length}건을 고친다. 규칙이 왜 있는지는 hanlint explain ${rule}`;
   }
-  if (notices) return `다음: 오류는 없다. 확인 권고 ${notices}건을 읽고 고칠지 정한다`;
+  if (notices) return `다음: 오류는 없다. 경고 ${notices}건을 읽고 고칠지 정한다`;
   return "다음: 규칙으로 찾은 잘못이 없다. 좋은 글이라는 뜻은 아니니 사람이 읽어 본다";
 }
 
 /** @param {Baseline} baseline */
 function lockedNote(baseline) {
-  return `기준 파일에 든 지적 ${baseline.count}건은 보이지 않았다 (${baseline.source}). 그 문장을 고치면 다시 나온다`;
+  return `baseline 파일에 든 지적 ${baseline.count}건은 보이지 않았다 (${baseline.source}). 그 문장을 고치면 다시 나온다`;
 }
 
 /** 옵션과 설정에서 잠금 파일을 연다. 둘 다 없으면 빈 잠금이다. @param {Record<string, string | string[] | boolean>} options @param {import("../config/settings.js").Config} config */
@@ -404,7 +404,7 @@ function runBaseline(args) {
   const what = options["--prune"] ? "글에 더 없는 지적을 지웠다" : "지금 있는 지적이다";
   process.stdout.write(
     `${baseline.source}에 ${baseline.count}건을 적었다. ${files.length}개 글에서 ${what}.\n` +
-      "다음: 검사할 때 --baseline을 붙이거나 설정에 baseline을 적는다. 기준 파일에 든 문장을 고치면 새 지적으로 다시 나온다\n",
+      "다음: 검사할 때 --baseline을 붙이거나 설정에 baseline을 적는다. baseline 파일에 든 문장을 고치면 새 지적으로 다시 나온다\n",
   );
   return 0;
 }
@@ -671,7 +671,7 @@ function runExplain(args) {
   const names = ruleNames();
   if (!positionals.length) {
     process.stdout.write("규칙 이름 하나가 필요하다. 예: hanlint explain doublePassive\n");
-    process.stdout.write(`\n규칙 ${names.length}개를 묶음별로 보려면 hanlint rules, 이름만 보려면 hanlint rules --names\n`);
+    process.stdout.write(`\n규칙 ${names.length}개를 카테고리별로 보려면 hanlint rules, 이름만 보려면 hanlint rules --names\n`);
     return 2;
   }
   if (positionals.length !== 1) throw new UsageError("규칙 이름 하나가 필요하다. hanlint rules로 목록을 본다");
@@ -698,7 +698,7 @@ function runExplain(args) {
     return 0;
   }
   const mechanism = ruleMechanism(wanted);
-  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n찾는 방법: ${MECHANISMS[mechanism]} (${mechanism})\n\n${ruleDoc(wanted)}\n`);
+  process.stdout.write(`${wanted}  (${CATEGORY_TITLES[category]})\n방식: ${MECHANISMS[mechanism]} (${mechanism})\n\n${ruleDoc(wanted)}\n`);
   const exemplar = exemplarOf ? exemplarInRegister(exemplarOf, register) : undefined;
   if (exemplar) {
     process.stdout.write("\n예시\n");
@@ -707,7 +707,7 @@ function runExplain(args) {
     process.stdout.write(`  달라진 것: ${exemplar.moved}\n`);
   }
   const siblings = names.filter((name) => ruleCategory(name) === category && name !== wanted);
-  process.stdout.write(`\n같은 묶음: ${siblings.join(", ")}\n`);
+  process.stdout.write(`\n같은 카테고리: ${siblings.join(", ")}\n`);
   process.stdout.write(`끄려면 hanlint.toml의 disable 목록에 넣는다: ${wanted}. 한 곳만 끄려면 <!-- hanlint-disable ${wanted} -->\n`);
   process.stdout.write(`맞는 문장인데 잡혔다면 끄기만 하지 말고 여기에 알린다: ${ISSUES}\n`);
   return 0;
@@ -952,7 +952,7 @@ function runDoctor(args) {
     `설정      ${configLabel(config)}`,
     `프리셋    ${config.preset} (${PRESET_NAMES.join(", ")} 가운데)`,
     `규칙      ${names.length - off.length}개 켜짐, ${off.length}개 꺼짐`,
-    `기준 파일 ${baselineState(config)}`,
+    `baseline 파일 ${baselineState(config)}`,
     `폴더      건너뛰는 것: 점으로 시작하는 폴더, ${SKIPPED_FOLDERS.join(", ")}. 직접 주면 검사한다`,
   ];
   if (off.length) lines.push(`꺼진 규칙  ${off.join(", ")}`);
@@ -991,7 +991,7 @@ export function renderInit(preset = "blog") {
     "# hanlint profile build가 만든 파일. 있으면 글 종류의 기본 프로파일 대신 이 파일과 비교한다(outsideProfile)",
     '# profile = "profile.json"',
     "",
-    "# hanlint baseline이 만든 기준 파일. 있으면 그 안의 지적은 보이지 않고 새로 생긴 지적만 막는다",
+    "# hanlint baseline이 만든 baseline 파일. 있으면 그 안의 지적은 보이지 않고 새로 생긴 지적만 막는다",
     '# baseline = ".hanlint-baseline.json"',
     "",
     "# 코드도 산문도 아닌 펜스의 언어 이름. 이 펜스는 코드 블록으로 세지 않고 검사에서도 뺀다",
@@ -1043,7 +1043,7 @@ export function renderInit(preset = "blog") {
     '# reader = "new"',
     '# presets = ["blog"]',
     "",
-    "# 사람이 적용 범위까지 승인한 글자 바꾸기. 단어 경계가 맞고 숫자·링크·코드가 그대로일 때만 바꾼다",
+    "# 사람이 적용 범위까지 승인한 치환. 단어 경계가 맞고 숫자·링크·코드가 그대로일 때만 바꾼다",
     "# [[operations]]",
     '# before = "여러가지"',
     '# after = "여러 가지"',

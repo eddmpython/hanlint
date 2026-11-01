@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * 이미 있는 지적을 기준 파일(baseline)에 적어 두고 새로 생긴 지적만 막는다. 파이썬 `hanlint/baseline/store.py`를 옮긴 것이다.
+ * 이미 있는 지적을 baseline 파일에 적어 두고 새로 생긴 지적만 막는다. 파이썬 `hanlint/baseline/store.py`를 옮긴 것이다.
  * 왜 줄 번호가 아니라 글자인지, 왜 사람이 읽는 형식인지는 그 파일의 docstring에 있다.
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -20,7 +20,7 @@ export function keyOf(finding) {
   return `${finding.rule}\u0000${normalizeQuote(finding.quote)}`;
 }
 
-/** 기준 파일이 있는 폴더에서 본 상대 경로. @param {string} path @param {string | null} target */
+/** baseline 파일이 있는 폴더에서 본 상대 경로. @param {string} path @param {string | null} target */
 export function pathKey(path, target) {
   if (!target || !path || path.startsWith("<")) return path;
   return relative(dirname(resolve(target)), resolve(path)).split(sep).join(posix.sep);
@@ -44,7 +44,7 @@ export class Baseline {
     return (this.locked.get(pathKey(path, this.source)) ?? new Set()).has(keyOf(finding));
   }
 
-  /** 기준 파일에 없는 지적만 남긴다. @param {string} path @param {import("../rules/finding.js").Finding[]} findings */
+  /** baseline 파일에 없는 지적만 남긴다. @param {string} path @param {import("../rules/finding.js").Finding[]} findings */
   keep(path, findings) {
     return findings.filter((finding) => !this.isLocked(path, finding));
   }
@@ -100,7 +100,7 @@ export function load(path) {
   return parse(readFileSync(path, "utf-8"), resolve(path));
 }
 
-/** 지금 글에 더는 없는 지적을 기준 파일에서 지운다. @param {Baseline} baseline @param {Map<string, import("../rules/finding.js").Finding[]>} results */
+/** 지금 글에 더는 없는 지적을 baseline 파일에서 지운다. @param {Baseline} baseline @param {Map<string, import("../rules/finding.js").Finding[]>} results */
 export function prune(baseline, results) {
   const kept = new Map(baseline.locked);
   for (const [path, findings] of results) {

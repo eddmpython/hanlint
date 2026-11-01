@@ -45,7 +45,7 @@ class Coverage:
     located: int
     covered: int
     coveredByError: int
-    """오류 지적이 같은 곳에 있던 것. 확인 권고만 겹친 것은 covered에만 든다."""
+    """오류 지적이 같은 곳에 있던 것. 경고만 겹친 것은 covered에만 든다."""
     byRule: tuple[tuple[str, int], ...]
     uncaught: tuple[Uncaught, ...]
 
@@ -138,7 +138,7 @@ def renderCoverage(coverage: Coverage) -> str:
         f"평가자 지적 {coverage.total}건. 본문에서 찾은 인용 {coverage.located}건"
         + (f"(본문이 바뀐 {coverage.total - coverage.located}건은 잴 수 없다)" if coverage.total > coverage.located else ""),
         f"hanlint가 같은 곳을 짚은 지적 {coverage.covered}건({coverage.ratio:.0%}). "
-        f"오류로 {coverage.coveredByError}건, 확인 권고로만 {coverage.covered - coverage.coveredByError}건"
+        f"오류로 {coverage.coveredByError}건, 경고로만 {coverage.covered - coverage.coveredByError}건"
         + (". 규칙: " + ", ".join(f"{rule} {count}" for rule, count in coverage.byRule) if coverage.byRule else ""),
     ]
     if coverage.uncaught:

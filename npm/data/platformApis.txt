@@ -1,4 +1,4 @@
-# 한 운영체제에서만 도는 API와 경로. `정규식<TAB>플랫폼<TAB>대안`. platformApi가 코드 블록에서 확인 권고로 짚는다.
+# 한 운영체제에서만 도는 API와 경로. `정규식<TAB>플랫폼<TAB>대안`. platformApi가 코드 블록에서 경고로 짚는다.
 # 실측: 블로그 004의 peak_wset은 윈도우에서만 나와 맥과 리눅스 독자가 AttributeError로 멈췄다(사람 평가자 지적).
 peak_wset	윈도우	맥과 리눅스는 memory_info().rss나 resource.getrusage(...).ru_maxrss를 쓴다
 os\.startfile\(	윈도우	subprocess.run(["open", 경로])나 xdg-open을 쓴다

@@ -29,7 +29,7 @@ def platformApi(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     어디서: 실제 블로그 글 하나에서 peak_wset이 윈도우에서만 나와 사람 평가자가 짚었다. 목록은 data/platformApis.txt에
         있다.
     고치기: 그 줄이 어느 운영체제 전용인지 적고 대안을 준다. 또는 여러 운영체제에서 도는 API로 바꾼다.
-    안 잡는 것: 목록에 없는 API와 산문 안의 언급은 잡지 않는다. 확인 권고로만 낸다.
+    안 잡는 것: 목록에 없는 API와 산문 안의 언급은 잡지 않는다. 경고로만 낸다.
     """
     for block in doc.codeBlocks:
         if block.isOutput:

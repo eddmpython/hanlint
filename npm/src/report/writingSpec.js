@@ -27,7 +27,7 @@ function percent(value) {
 function selectedProfile(config) {
   if (config.profile) return userProfile(config.profile);
   const kind = PROFILE_OF[config.preset];
-  if (kind === null) throw new Error(`${config.preset} 프리셋은 비교할 프로파일이 없어 수치 목표를 낼 수 없다`);
+  if (kind === null) throw new Error(`${config.preset} 프리셋은 비교할 프로파일이 없어 스펙을 낼 수 없다`);
   const profile = profileOf(kind);
   if (profile === null) throw new Error(`${kind} 프로파일을 찾지 못했다`);
   return profile;
@@ -142,7 +142,7 @@ export function writingSpec(config = defaultConfig(), register = HAPNIDA, target
   if (enabled(config, "noQuestion")) {
     questionText = config.enforceStyle.includes("noQuestion")
       ? "선택한 정책: 절이 2개 이상이면 글 전체에 물음표 최소 1개"
-      : "물음표가 없으면 확인 권고다. 질문 없이 충분히 설명했다면 그대로 둔다";
+      : "물음표가 없으면 경고다. 질문 없이 충분히 설명했다면 그대로 둔다";
     questionBasis = [`profile.${profile.kind}.rates.question`, "rule.noQuestion"];
   } else {
     questionText = `규칙 요구 없음. 문서 중앙값은 문장의 ${percent(question.p50)}%, 문서 90%가 ${percent(question.p90)}% 이하`;
@@ -169,6 +169,6 @@ export function renderWritingSpec(spec) {
   ];
   const width = Math.max(...spec.rows.map((row) => row.label.length));
   for (const row of spec.rows) lines.push(`  ${row.label.padEnd(width)}  ${row.guidance}`);
-  lines.push("", "이 수치 목표는 품질 점수가 아니다. 다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다");
+  lines.push("", "이 스펙은 품질 점수가 아니다. 다 쓴 뒤 같은 설정으로 hanlint <글.md>를 실행해 지적을 확인한다");
   return lines.join("\n");
 }

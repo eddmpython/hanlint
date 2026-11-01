@@ -78,7 +78,7 @@ def run(args: argparse.Namespace) -> int:
     names = ruleNames()
     if not args.rule:
         print("규칙 이름 하나가 필요하다. 예: hanlint explain doublePassive")
-        print(f"\n규칙 {len(names)}개를 묶음별로 보려면 hanlint rules, 이름만 보려면 hanlint rules --names")
+        print(f"\n규칙 {len(names)}개를 카테고리별로 보려면 hanlint rules, 이름만 보려면 hanlint rules --names")
         return 2
     if args.rule not in names:
         near = nearNames(args.rule, names)
@@ -91,7 +91,7 @@ def run(args: argparse.Namespace) -> int:
     category = ruleCategory(args.rule)
     mechanism = ruleMechanism(args.rule)
     print(f"{args.rule}  ({CATEGORY_TITLES[category]})")
-    print(f"찾는 방법: {MECHANISMS[mechanism]} ({mechanism})\n")
+    print(f"방식: {MECHANISMS[mechanism]} ({mechanism})\n")
     print(ruleDoc(args.rule))
     exemplar = exemplarFor(args.rule, config.preset, config.exemplars)
     if exemplar:
@@ -100,7 +100,7 @@ def run(args: argparse.Namespace) -> int:
         print(indent(exemplar.before, "  전  "))
         print(indent(exemplar.after, "  후  "))
         print(f"  달라진 것: {exemplar.moved}")
-    print(f"\n같은 묶음: {', '.join(n for n in names if ruleCategory(n) == category and n != args.rule)}")
+    print(f"\n같은 카테고리: {', '.join(n for n in names if ruleCategory(n) == category and n != args.rule)}")
     print(f"끄려면 hanlint.toml의 disable 목록에 넣는다: {args.rule}. 한 곳만 끄려면 <!-- hanlint-disable {args.rule} -->")
     print(f"맞는 문장인데 잡혔다면 끄기만 하지 말고 여기에 알린다: {ISSUES}")
     return 0

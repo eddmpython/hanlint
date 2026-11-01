@@ -128,7 +128,7 @@ test("severity, compact, stdin, summary", () => {
   assert.equal(compact.code, 1);
   const compactLines = compact.out.trimEnd().split("\n");
   assert.ok(compactLines[0].startsWith(`${mixed}:3 [cliche] \`핵심은\`은 `), compactLines[0]);
-  assert.match(compactLines[compactLines.length - 1], /^파일 1개, 오류 1건, 확인 권고 [1-9]/);
+  assert.match(compactLines[compactLines.length - 1], /^파일 1개, 오류 1건, 경고 [1-9]/);
   const notices = run([mixed, "--severity", "notice", "--format", "json"]);
   const findings = JSON.parse(notices.out).files[0].findings;
   assert.ok(findings.length && findings.every((f) => f.severity === "notice"));
@@ -140,7 +140,7 @@ test("severity, compact, stdin, summary", () => {
   assert.equal(piped.status, 1);
   assert.ok(piped.stdout.startsWith("초안.md:3 [cliche]"));
   const many = run([bad, clean, "--quiet"]);
-  assert.ok(many.out.trimEnd().endsWith("파일 2개, 오류 1건, 확인 권고 0건"));
+  assert.ok(many.out.trimEnd().endsWith("파일 2개, 오류 1건, 경고 0건"));
 });
 
 test("fix applies fragments and dry run keeps the file", () => {
@@ -350,10 +350,10 @@ test("explain suggests near names and lists siblings", () => {
   assert.ok(typo.err.includes("비슷한 이름: doubleNegative, doublePassive"));
   const bare = run(["explain"]);
   assert.equal(bare.code, 2);
-  assert.ok(bare.out.includes("묶음별로 보려면 hanlint rules"));
+  assert.ok(bare.out.includes("카테고리별로 보려면 hanlint rules"));
   const found = run(["explain", "moreLater"]);
   assert.equal(found.code, 0);
-  assert.ok(found.out.includes("(글의 짜임)") && found.out.includes("같은 묶음:"));
+  assert.ok(found.out.includes("(글의 짜임)") && found.out.includes("같은 카테고리:"));
 });
 
 test("rules groups by category and marks off", () => {

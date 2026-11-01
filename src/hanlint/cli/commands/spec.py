@@ -9,7 +9,7 @@ from ...analysis.grammar import HAPNIDA, REGISTERS
 from ...report import renderWritingSpec, writingSpec
 from .shared import addCommonOptions, configFrom, emit
 
-HELP = "지금 규칙과 글 종류의 평소 수치를 쓰기 전에 볼 수치 목표로 만든다"
+HELP = "지금 규칙과 글 종류의 평소 수치를 쓰기 전에 볼 스펙으로 만든다"
 
 
 def positiveInt(value: str) -> int:

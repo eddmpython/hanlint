@@ -59,7 +59,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     panel.add_argument("--seed", type=int, required=True)
     panel.add_argument("--voice-references", dest="voiceReferences", type=Path)
     outputOptions(panel)
-    panelRecord = commands.add_parser("panel-record", help="사람 한 명의 독립 평가 묶음을 검증하고 고정한다")
+    panelRecord = commands.add_parser("panel-record", help="사람 한 명의 독립 평가 세트를 검증하고 고정한다")
     panelRecord.add_argument("suite", type=Path)
     panelRecord.add_argument("reviewBatch", type=Path)
     outputOptions(panelRecord)
@@ -99,7 +99,7 @@ def addParser(parser: argparse.ArgumentParser) -> None:
     reviewPage.add_argument("assignment", type=Path)
     reviewPage.add_argument("--output", type=Path, required=True)
     assignmentRecord = commands.add_parser(
-        "assignment-record", help="배정 화면의 좌우 선택을 평가 묶음의 방향으로 되돌려 고정한다"
+        "assignment-record", help="배정 화면의 좌우 선택을 평가 세트의 방향으로 되돌려 고정한다"
     )
     assignmentRecord.add_argument("suite", type=Path)
     assignmentRecord.add_argument("assignment", type=Path)

@@ -15,10 +15,10 @@ FILLER = re.compile(r"^(다음으로|이어서|마지막에는|마지막으로)(
 def fillerOpener(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     """`다음으로`, `이어서`, `마지막에는`으로만 잇는 문장.
 
-    왜: 앞에서 무엇을 만들었는지 부르지 않고 순서를 나타내는 말만 붙이면 독자는 무엇을 이어받는지 모른 채 다음
+    왜: 앞에서 무엇을 만들었는지 밝히지 않고 순서를 나타내는 말만 붙이면 독자는 무엇을 이어받는지 모른 채 다음
         행동을 읽는다.
     어디서: 쉬운 말로 바로 쓴다는 글쓰기 원칙.
-    고치기: 앞 절에서 만든 파일이나 확인한 값을 이름으로 다시 부르고 다음 행동을 붙인다. 예: `link.png는
+    고치기: 앞 절에서 만든 파일이나 확인한 값을 이름으로 다시 언급하고 다음 행동을 붙인다. 예: `link.png는
         33픽셀입니다. 명함에 넣기에는 너무 작습니다.`
     안 잡는 것: 문장 중간의 `이어서`. 목록 항목.
     """
@@ -30,7 +30,7 @@ def fillerOpener(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
             "fillerOpener",
             sentence.line,
             sentence.text,
-            f"`{match.group(1)}`만 붙여 잇는 문장이다. 앞에서 만든 파일이나 값을 이름으로 다시 부르고 다음 행동을 붙인다",
+            f"`{match.group(1)}`만 붙여 잇는 문장이다. 앞에서 만든 파일이나 값을 이름으로 다시 언급하고 다음 행동을 붙인다",
             None,
             "error",
             SENTENCE,

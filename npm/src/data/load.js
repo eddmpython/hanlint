@@ -57,7 +57,7 @@ export function loadRuleCategories() {
   return cached("ruleCategories", () => JSON.parse(readText("ruleCategories.json")));
 }
 
-/** @returns {Record<string, string>} 규칙 이름 → 찾는 방법(파이썬 규칙 목록에서 만든 사본) */
+/** @returns {Record<string, string>} 규칙 이름 → 방식(파이썬 규칙 목록에서 만든 사본) */
 export function loadRuleMechanisms() {
   return cached("ruleMechanisms", () => JSON.parse(readText("ruleMechanisms.json")));
 }

@@ -242,7 +242,7 @@ def learnText(before: str, after: str, config: Config | None = None) -> tuple[Le
 
 
 def learnOperationText(before: str, after: str, config: Config | None = None) -> tuple[LearnedOperation, ...]:
-    """앞뒤 문자열의 일대일 고침에서 사람이 승인할 글자 바꾸기 후보를 찾는다."""
+    """앞뒤 문자열의 일대일 고침에서 사람이 승인할 치환 후보를 찾는다."""
     config = config or Config()
     return learnOperations(fingerprint(before, config), fingerprint(after, config), config.preset, config.protectedTerms)
 

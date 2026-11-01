@@ -23,7 +23,7 @@ status: curated
 | 계층 | 무엇 | 아래에 무엇을 두나 |
 |---|---|---|
 | `util`(npm만) | 루트의 `text.js`, `regex.js`. 파이썬 `str`과 `re`의 뜻 | 아무것도 |
-| `data` | 사전과 이음말 목록. 코드는 없다 | 아무것도(npm은 util) |
+| `data` | 사전과 접속사 목록. 코드는 없다 | 아무것도(npm은 util) |
 | `config` | 설정과 기본 기준값 | 아무것도 |
 | `document`, `blueprint`, `evidence`, `entailment` | 문서 모델 / 원문 없는 구조 예산 / 사실별 근거 기록 / 외부 함의 평가기 벤치마크 | config / config, data / config / data |
 | `analysis` | 글자 모양 분석(문장 분리, 어절 판정)과, 어절 판정과 무관한 한국어 형태 부분(grammar). 문서 모델을 모른다 | config, data |

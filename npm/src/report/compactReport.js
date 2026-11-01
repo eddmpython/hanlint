@@ -10,7 +10,7 @@ function flat(text) {
 export function renderCompact(path, findings) {
   return findings
     .map((f) => {
-      const label = f.severity === "notice" ? "확인 권고: " : "";
+      const label = f.severity === "notice" ? "경고: " : "";
       const fixLabel = f.severity === "notice" ? "제안" : "고친 뒤";
       return `${path}:${f.line} [${f.rule}] ${label}${flat(f.why)}` + (f.fix ? `  ${fixLabel}: ${flat(f.fix)}` : "");
     })

@@ -4,7 +4,7 @@
 다른 것, docstring이 없는 것, docstring에 네 절 (왜, 어디서, 고치기, 안 잡는 것)이 없는 것. 규칙의
 docstring은 규칙 설명이라 `hanlint explain`이 그대로 보여 주고 네 절이 빠지면 설명이 되지 않는다.
 
-규칙 모듈은 `loadAll`이 묶음 폴더를 돌며 전부 import 한다. 규칙 파일이 서로를 import 하지 않아도 되는
+규칙 모듈은 `loadAll`이 카테고리 폴더를 돌며 전부 import 한다. 규칙 파일이 서로를 import 하지 않아도 되는
 이유가 이것이다.
 """
 
@@ -27,12 +27,12 @@ CATEGORY_TITLES = {
     "sentence": "문장",
     "paragraph": "문단",
     "structure": "글의 짜임",
-    "document": "앞뒤 맞추기",
+    "document": "문서",
     "orthography": "표기와 띄어쓰기",
     "code": "코드 블록",
     "screen": "화면의 글",
 }
-"""규칙 묶음의 이름. `hanlint rules`가 이 순서로 묶어 보인다."""
+"""규칙 카테고리의 이름. `hanlint rules`가 이 순서로 묶어 보인다."""
 MECHANISMS = {
     "dictionary": "사전. 단어 목록과 정규식이 맞는 곳",
     "repeat": "반복. 같은 모양이 가까이에서 여러 번 나오는 곳",
@@ -40,16 +40,16 @@ MECHANISMS = {
     "contrast": "비교. 두 곳을 비교해 어긋난 곳",
     "reader": "독자. 앞에서 읽은 내용만으로 그 문장을 이해할 수 있는지 문장 순서대로 본다",
 }
-"""규칙이 찾는 방법의 닫힌 목록. 규칙은 늘어도 찾는 방법은 늘지 않는다. 등록할 때 이 밖의 방법을 거부하므로
+"""규칙이 방식의 닫힌 목록. 규칙은 늘어도 방식은 늘지 않는다. 등록할 때 이 밖의 방법을 거부하므로
 여섯째 방법이 규칙 하나 때문에 조용히 들어오지 못한다. 새 방법이 정말 필요하면 여기를 고치기 전에 운영자에게
-묻는다. 규칙과 찾는 방법의 짝은 `hanlint rules --format json`과 npm 자료 `ruleMechanisms.json`에 있다."""
+묻는다. 규칙과 방식의 짝은 `hanlint rules --format json`과 npm 자료 `ruleMechanisms.json`에 있다."""
 MECHANISM_OF: dict[str, str] = {}
 
 
 def rule(name: str, mechanism: str) -> Callable[[Check], Check]:
     if mechanism not in MECHANISMS:
         raise ValueError(
-            f"규칙 {name}의 찾는 방법이 닫힌 집합 밖이다: {mechanism} (있는 것: {', '.join(MECHANISMS)}). "
+            f"규칙 {name}의 방식이 닫힌 집합 밖이다: {mechanism} (있는 것: {', '.join(MECHANISMS)}). "
             "새 방법은 규칙 하나 때문에 더하지 않는다. 멈추고 묻는다"
         )
 
@@ -99,7 +99,7 @@ def ruleNames() -> list[str]:
 
 
 def ruleCategory(name: str) -> str:
-    """규칙이 사는 묶음 폴더 이름. 파일 위치가 정본이라 따로 적지 않는다."""
+    """규칙이 사는 카테고리 폴더 이름. 파일 위치가 정본이라 따로 적지 않는다."""
     loadAll()
     if name not in REGISTRY:
         raise KeyError(f"모르는 규칙: {name}. hanlint rules로 목록을 본다")

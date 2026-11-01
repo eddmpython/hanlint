@@ -14,7 +14,7 @@ from ...data import exemplarFor
 from ...rules import CATEGORY_TITLES, ruleCategories, ruleDoc, ruleMechanism, ruleNames, ruleSummary
 from .shared import addCommonOptions, configFrom, emit
 
-HELP = "규칙 이름과 한 줄 설명을 묶음별로 보인다"
+HELP = "규칙 이름과 한 줄 설명을 카테고리별로 보인다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

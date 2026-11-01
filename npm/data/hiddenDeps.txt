@@ -1,4 +1,4 @@
-# 코드 한 줄이 요구하는데 설치 줄에 드러나지 않는 패키지. `정규식<TAB>패키지[extra]<TAB>왜`. 설치 줄에 없으면 installImport가 확인 권고로 짚는다.
+# 코드 한 줄이 요구하는데 설치 줄에 드러나지 않는 패키지. `정규식<TAB>패키지[extra]<TAB>왜`. 설치 줄에 없으면 installImport가 경고로 짚는다.
 # 실측: 블로그 004가 ibis-framework[duckdb]만 설치하고 ibis.sqlite.connect를 썼고 사람 평가자가 짚었다.
 ibis\.sqlite\.connect	ibis-framework[sqlite]	ibis의 sqlite 백엔드는 extra로 따로 받는다
 ibis\.duckdb\.connect	ibis-framework[duckdb]	ibis의 duckdb 백엔드는 extra로 따로 받는다

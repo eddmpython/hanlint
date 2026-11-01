@@ -88,7 +88,7 @@ def installImport(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         의존성 목록은 data/hiddenDeps.txt에 있다.
     고치기: 설치 줄에 그 패키지를 더한다. 필요하면 extra까지 적는다.
     안 잡는 것: 설치 줄이 하나도 없는 글(판단할 수 없다), 표준 라이브러리, 글이 만드는 .py 파일, 상대 import는
-        잡지 않는다. 숨은 의존성은 확인 권고로 낸다.
+        잡지 않는다. 숨은 의존성은 경고로 낸다.
     """
     packages = installed(doc)
     if packages is None:

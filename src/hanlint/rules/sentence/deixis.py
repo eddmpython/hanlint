@@ -21,7 +21,7 @@ def deixis(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     고치기: 가리키는 파일, 값, 코드의 이름을 쓴다. `이것으로 파일이 만들어집니다`는 `save로 link.png가
         만들어집니다`로 바꾼다.
     안 잡는 것: 앞 문장과 화제어가 하나도 겹치지 않는 지시어. 그것은 danglingDeixis가 따로 짚는다.
-        `앞서 말한 X`처럼 이름을 다시 부르는 말.
+        `앞서 말한 X`처럼 이름을 다시 쓰는 말.
     """
     for sentence in doc.sentences:
         if not sentence.deixis or sentence.index == 0:

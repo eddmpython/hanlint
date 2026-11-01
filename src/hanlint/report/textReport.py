@@ -6,7 +6,7 @@
 전과 후를 제 줄에 둔다. 한 줄에 이어 붙였더니 53개 예시 가운데 23개에서 **답인 `후`가 잘렸다.**
 잘린 짝이 있으면 전문이 어디 있는지 (`hanlint explain`) 예시 제목 줄이 한 번 알린다.
 
-확인 권고 (notice)는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README를 검사할 때마다 같은
+경고 (notice)는 기본으로 접는다. 규칙마다 개수와 줄 번호 한 줄이다. 실측: README를 검사할 때마다 같은
 확인 12개 (endingRepeat, outsideProfile)가 오류와 같은 무게로 나와 눈이 무뎌졌다 (2026-09-18). `--notices`가 편다.
 """
 
@@ -56,11 +56,11 @@ def candidateLines(findings: list[Finding]) -> list[str]:
 
 
 def noticeLines(notices: list[Finding]) -> list[str]:
-    """접은 확인 권고. 규칙마다 개수와 줄 번호 한 줄, 규칙은 이름 순이다."""
+    """접은 경고. 규칙마다 개수와 줄 번호 한 줄, 규칙은 이름 순이다."""
     byRule: dict[str, list[int]] = {}
     for finding in notices:
         byRule.setdefault(finding.rule, []).append(finding.line)
-    lines = [f"확인 권고 {len(notices)}건 (접어 두었다. 다 보려면 --notices)"]
+    lines = [f"경고 {len(notices)}건 (접어 두었다. 다 보려면 --notices)"]
     for rule in sorted(byRule):
         numbers = sorted(set(byRule[rule]))
         lines.append(f"  {rule} {len(byRule[rule])}  {', '.join(str(n) for n in numbers)}줄")
@@ -79,12 +79,12 @@ def renderText(
         return f"{path}  오류 없음"
     errors = sum(1 for f in findings if f.severity == "error")
     notices = len(findings) - errors
-    summary = f"{path}  오류 {errors}건" + (f", 확인 권고 {notices}건" if notices else "")
+    summary = f"{path}  오류 {errors}건" + (f", 경고 {notices}건" if notices else "")
     lines = [summary, ""]
     folded = [f for f in findings if f.severity == "notice"] if not unfoldNotices else []
     shown = [f for f in findings if unfoldNotices or f.severity == "error"]
     for finding in shown:
-        tag = f"[{finding.rule}]" + (" 확인 권고" if finding.severity == "notice" else "")
+        tag = f"[{finding.rule}]" + (" 경고" if finding.severity == "notice" else "")
         lines.append(f"{path}:{finding.line}  {tag}")
         lines.append(f"  {finding.quote}")
         lines.append(f"  {finding.why}")

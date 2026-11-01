@@ -44,7 +44,7 @@ class SentencePrint:
     connectorStart: str | None
     """문두 접속부사."""
     causal: int
-    """까닭과 조건을 잇는 말의 수."""
+    """까닭과 조건을 나타내는 접속사의 수."""
     deixis: tuple[str, ...]
     euiCount: int
     nounRun: int

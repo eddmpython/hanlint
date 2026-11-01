@@ -1,5 +1,5 @@
 // @ts-check
-/** Python learn/operations.py의 글자 바꾸기 후보와 증거 묶음. */
+/** Python learn/operations.py의 치환 후보와 증거 묶음. */
 import { operationFromApproval } from "../data/operations.js";
 import { sourceSentenceTexts } from "../fingerprint/sourceSentence.js";
 import { changedSentencePairs } from "./pairs.js";

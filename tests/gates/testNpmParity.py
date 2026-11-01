@@ -126,7 +126,7 @@ def testBothClisGiveTheSameOutput(tmp_path):
         ["--format", "json"],
         ["--format", "text", "--no-color"],
         ["--format", "compact", "--errors-only"],
-        # 프리셋은 어느 규칙이 도는지를 바꾼다. 두 구현이 같은 묶음을 끄는지 여기서 본다.
+        # 프리셋은 어느 규칙이 도는지를 바꾼다. 두 구현이 같은 카테고리를 끄는지 여기서 본다.
         ["--format", "compact", "--preset", "docs"],
         ["--format", "compact", "--preset", "report"],
     )

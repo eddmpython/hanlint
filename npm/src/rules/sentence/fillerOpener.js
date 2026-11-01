@@ -12,7 +12,7 @@ export function run(doc) {
     const match = FILLER.exec(sentence.text);
     if (!match) continue;
     findings.push(
-      finding(name, sentence.line, sentence.text, `\`${match[1]}\`만 붙여 잇는 문장이다. 앞에서 만든 파일이나 값을 이름으로 다시 부르고 다음 행동을 붙인다`, null, "error", SENTENCE, sentence.index),
+      finding(name, sentence.line, sentence.text, `\`${match[1]}\`만 붙여 잇는 문장이다. 앞에서 만든 파일이나 값을 이름으로 다시 언급하고 다음 행동을 붙인다`, null, "error", SENTENCE, sentence.index),
     );
   }
   return findings;

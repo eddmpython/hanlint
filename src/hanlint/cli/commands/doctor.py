@@ -45,7 +45,7 @@ def run(args: argparse.Namespace) -> int:
         f"설정      {configLabel(config)}",
         f"프리셋    {config.preset} ({', '.join(PRESETS)} 가운데)",
         f"규칙      {len(names) - len(off)}개 켜짐, {len(off)}개 꺼짐",
-        f"기준 파일 {baselineState(config)}",
+        f"baseline 파일 {baselineState(config)}",
         f"폴더      건너뛰는 것: 점으로 시작하는 폴더, {', '.join(SKIPPED_FOLDERS)}. 직접 주면 검사한다",
     ]
     if off:

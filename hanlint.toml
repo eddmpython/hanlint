@@ -1,4 +1,4 @@
 # 이 저장소의 문서를 hanlint 자신이 검사할 때 쓰는 설정이다(tests/gates/testSelfLint.py).
 # README와 specs는 참고 문서다. 독자를 부르지 않고, 절마다 결과를 남기지 않으며, 검증한 사실을 남기고,
-# 폴더 구조를 text 펜스로 그린다. 이런 글에 맞는 규칙 묶음이 docs 프리셋이다.
+# 폴더 구조를 text 펜스로 그린다. 이런 글에 맞는 규칙 카테고리가 docs 프리셋이다.
 preset = "docs"

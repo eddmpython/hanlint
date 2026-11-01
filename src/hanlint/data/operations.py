@@ -1,4 +1,4 @@
-"""승인한 고침에서 뜻을 추측하지 않고 다시 쓸 수 있는 글자 바꾸기.
+"""승인한 고침에서 뜻을 추측하지 않고 다시 쓸 수 있는 치환.
 
 공백과 문장부호를 제외한 편집 거리가 한 글자 이내일 때만 서명이 된다. 숫자, URL, 라틴 식별자,
 경로, 코드와 링크 목적지는 바꾸지 않는다. 지시어와 의미 재작성은 여기서 다루지 않고 원문 완전 일치
@@ -45,7 +45,7 @@ def protectedAtoms(text: str) -> tuple[str, ...]:
 
 
 def protectedSpans(text: str) -> tuple[tuple[int, int], ...]:
-    """글자 바꾸기가 들어가면 안 되는 마크다운과 HTML 구간."""
+    """치환이 들어가면 안 되는 마크다운과 HTML 구간."""
     spans = []
     for pattern in (INLINE_CODE, URL, HTML_TAG):
         spans.extend((match.start(), match.end()) for match in pattern.finditer(text))
@@ -153,7 +153,7 @@ def operationFromApproval(
     presets: Iterable[str] = (),
     protectedTerms: Iterable[str] = (),
 ) -> SurfaceOperation | None:
-    """승인 전후 전체에서 기계가 보증할 수 있는 글자 바꾸기 하나를 뽑는다."""
+    """승인 전후 전체에서 기계가 보증할 수 있는 치환 하나를 뽑는다."""
     before = normalize("NFC", before)
     after = normalize("NFC", after)
     protectedTerms = tuple(protectedTerms)
@@ -214,7 +214,7 @@ def projectOperations(entries: object, presetNames: Iterable[str]) -> tuple[Surf
             raise ValueError(f"operation의 프리셋이 겹친다: {before}")
         operation = operationFromApproval(before, after, presets)
         if operation is None or operation.before != before or operation.after != after:
-            raise ValueError(f"operations {index}번째 항목은 안전한 글자 바꾸기가 아니다: {before} -> {after}")
+            raise ValueError(f"operations {index}번째 항목은 안전한 치환이 아니다: {before} -> {after}")
         for preset in presets:
             selector = (preset, before)
             if selector in selectors:

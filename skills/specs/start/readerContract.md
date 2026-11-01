@@ -154,7 +154,7 @@ surface에는 사용하기로 정한 값만 둔다. 자동 추출 초안은 사�
 
 `check(text, contract)`는 지켜야 할 값의 차이와 기존 hanlint `Finding`을 한 번 계산한다. 출력은
 [checkResult 스키마](../../../src/hanlint/data/checkResult.schema.json)에 맞는다. `violationCount`는 지켜야 할 값이 달라진 것을 담는
-여덟 항목의 수에 오류(`error`) Finding 수를 더한 값이다. 확인 권고(`notice`)는 결과에 남지만 위반 수에는 더하지 않는다.
+여덟 항목의 수에 오류(`error`) Finding 수를 더한 값이다. 경고(`notice`)는 결과에 남지만 위반 수에는 더하지 않는다.
 
 [Finding 스키마](../../../src/hanlint/data/finding.schema.json)의 필수 필드는 규칙 이름, 줄, 심각도, 범위,
 문장 위치, 원문 인용, 이유다. 고칠 문장이 정해질 때만 fix나 한 곳만 바꾸는 fragment와 replacement, 순위 없는 후보를
@@ -174,7 +174,7 @@ CLI가 기본으로 내는 JSON은 자동화 도구가 읽는 검사 결과이�
 
 text 결과는 독자가 막히는 곳을 찾는 규칙의 Finding을 `독자가 막힐 곳`으로도 묶는다. 독자가 앞에서 받은 이름, 수치, 파일과 미룬
 약속만으로 지금 요구를 해결하지 못하는 곳이다. 이 묶음은 네 번째 공개 자료형이나 새 판정이 아니다. 같은 Finding을
-사람이 행동 단위로 읽게 다시 묶은 것이며 JSON의 기준은 계속 `lint.items`다. 확인 권고는 이 목록에는 보이지만
+사람이 행동 단위로 읽게 다시 묶은 것이며 JSON의 기준은 계속 `lint.items`다. 경고는 이 목록에는 보이지만
 `violationCount`에는 더하지 않는다.
 
 ## Patch와 verifyPatch

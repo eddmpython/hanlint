@@ -183,7 +183,7 @@ def renderCheck(result: CheckResult) -> str:
             lines.append(
                 f"  {index}. {section.heading} ({section.line}줄, 문단 {section.paragraphCount}, 코드 {section.codeBlockCount})"
             )
-    lines.append(f"- lint: 오류 {result.errorCount}건, 확인 권고 {result.noticeCount}건")
+    lines.append(f"- lint: 오류 {result.errorCount}건, 경고 {result.noticeCount}건")
     if result.errorCount:
         rules = Counter(finding.rule for finding in result.findings if finding.severity == "error")
         lines.append("  " + ", ".join(f"{rule} {count}" for rule, count in sorted(rules.items())))
@@ -193,7 +193,7 @@ def renderCheck(result: CheckResult) -> str:
     if result.violationCount:
         lines.append("\n다음: 계약과 글 가운데 틀린 쪽을 고치고 같은 check를 다시 돌린다")
     elif result.noticeCount:
-        lines.append("\n다음: 확인 권고를 읽고 고칠지 그대로 둘지 정한다")
+        lines.append("\n다음: 경고를 읽고 고칠지 그대로 둘지 정한다")
     else:
         lines.append("\n다음: 규칙으로 셀 수 있는 계약 위반은 없다. 뜻과 자연스러움은 사람이 읽고 판단한다")
     lines.extend(["", CHECK_MEANING if result.contractVersion == 1 else CHECK_MEANING_V2])

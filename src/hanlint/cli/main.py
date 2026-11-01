@@ -12,15 +12,15 @@ hanlint rules                      규칙 목록을 묶음로 묶어서
 hanlint explain <규칙>             규칙 설명
 hanlint patterns --rule <규칙>     그 규칙을 피하는 문장 틀
 hanlint primer --preset <종류>     쓰기 전에 읽는 한 장. 글쓰기 지침 일곱 줄과 켜진 규칙의 고치는 법, 예시 전후
-hanlint spec --preset <종류>       쓰기 전에 볼 수치 목표
+hanlint spec --preset <종류>       쓰기 전에 볼 스펙
 hanlint hook                       에이전트 훅. --prime은 쓰기 전 글쓰기 지침, 나머지는 쓴 마크다운의 비차단 검사
-hanlint baseline 글들/             지금 있는 지적을 기준 파일에 적는다. 그다음부터 새것만 막는다
+hanlint baseline 글들/             지금 있는 지적을 baseline 파일에 적는다. 그다음부터 새것만 막는다
 hanlint doctor                     설정과 꺼진 규칙
 hanlint init                       주석 달린 hanlint.toml. --output과 --preset blog|report|docs
 hanlint profile build 글들/         승인된 글의 문체 분포. lint의 --profile로 견준다
 hanlint coverage review.json 글.md 평가자 지적 가운데 hanlint가 같은 곳을 짚은 비율
 hanlint diff 전.md 후.md           두 초안에서 잰 값의 차이
-hanlint learn 전.md 후.md          실제 고침에서 승인할 패치와 글자 바꾸기 후보
+hanlint learn 전.md 후.md          실제 고침에서 승인할 패치와 치환 후보
 hanlint packet 글.md              초안과 대조 자료와 고침 근거를 AI용 JSON으로
 hanlint guard brief.json 글.md    구조화한 요구와 결과 글의 사실 대조
 hanlint contract init 글.md      원문에서 최소 Reader Contract 초안
@@ -37,7 +37,7 @@ hanlint entailment cases         정답 표시 없는 한국어 근거 함의 �
 hanlint terms 글.md               한국어 학습자에게 처음 풀어 쓸 단어 후보
 ```
 
-종료 코드는 0(지적 없음), 1(오류 있음), 2(파일이나 설정 문제)다. 확인 권고만 있으면 0이다.
+종료 코드는 0(지적 없음), 1(오류 있음), 2(파일이나 설정 문제)다. 경고만 있으면 0이다.
 게이트에 물릴 수 있게 한 것이지 글의 합격을 판정한 것이 아니다.
 """
 

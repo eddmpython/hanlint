@@ -37,9 +37,9 @@ def renderLearnText(
     beforePath: Path,
     afterPath: Path,
 ) -> str:
-    lines = [f"패치 후보 {len(candidates)}건, 글자 바꾸기 후보 {len(operations)}건  {beforePath} -> {afterPath}"]
+    lines = [f"패치 후보 {len(candidates)}건, 치환 후보 {len(operations)}건  {beforePath} -> {afterPath}"]
     if not candidates and not operations:
-        lines.append("사라진 문장 지적이나 안전한 일대일 글자 바꾸기가 없거나 문장끼리 짝이 분명하지 않다")
+        lines.append("사라진 문장 지적이나 안전한 일대일 치환이 없거나 문장끼리 짝이 분명하지 않다")
         return "\n".join(lines)
     lines.append("사람이 뜻을 확인하고 적용 범위를 정한 뒤 hanlint.toml에 승인한다")
     for candidate in candidates:

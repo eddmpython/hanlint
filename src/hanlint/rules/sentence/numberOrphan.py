@@ -39,7 +39,7 @@ def numberOrphan(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     안 잡는 것: 한 자리 수(재는 값이 아니라 세는 말이다). 앞선 문장, 코드 블록, 출력, 표, 목록, 제목에 이미
         나온 값. 같은 문장 안에서 앞서 나온 값. 값 바로 앞에서 그 값의 출처를 밝힌 경우(`1년 전 26.14%에서
         18.53%로`는 어디서 온 값인지 이미 말했다. 실측에서 오탐이었고 data/baselineAnchors.txt로 걸렀다).
-        겉으로 보이는 글자로 어림해 세는 규칙이라 확인 권고로만 낸다.
+        겉으로 보이는 글자로 어림해 세는 규칙이라 경고로만 낸다.
     """
     for sentence in doc.sentences:
         reader = doc.reader.beforeSentence[sentence.index]

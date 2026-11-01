@@ -23,12 +23,12 @@ status: curated
    늘 같게 갈리는 것만 규칙이 된다. 그 문장을 넣어 실제 판정을 본 뒤 쓴다. 글자 모양으로 가를 수 없으면 뜻을 읽어야 하므로
    규칙을 만들지 않는다. 형태소 분석기는 없다
 4. **`rules/<묶음>/<규칙이름>.py`에 파일 하나로 쓴다.** `@rule("이름", mechanism="repeat")`으로 등록하고
-   docstring에 네 절(왜, 어디서, 고치기, 안 잡는 것)과 1번의 실측 사례를 적는다. 찾는 방법은 `registry.py`의
+   docstring에 네 절(왜, 어디서, 고치기, 안 잡는 것)과 1번의 실측 사례를 적는다. 방식은 `registry.py`의
    `MECHANISMS` 다섯(dictionary, repeat, threshold, contrast, reader) 가운데 하나이고 다섯 밖이면 규칙 목록이 거부한다.
    다섯 밖의
-   세는 방법이 정말 필요하면 규칙을 쓰기 전에 멈추고 저장소 관리자에게 묻는다. 찾는 방법은 규칙 하나 때문에 늘지 않는다
-   (`start.product`의 `규칙이 늘어도 찾는 방법은 다섯이다` 절). 파일이 있는 폴더가 묶음을 정하므로
-   `hanlint rules`의 묶음과 `hanlint explain`의 `같은 묶음`이 거기서 나온다. 기준값이 필요하면
+   세는 방법이 정말 필요하면 규칙을 쓰기 전에 멈추고 저장소 관리자에게 묻는다. 방식은 규칙 하나 때문에 늘지 않는다
+   (`start.product`의 `규칙이 늘어도 방식은 다섯이다` 절). 파일이 있는 폴더가 묶음을 정하므로
+   `hanlint rules`의 묶음과 `hanlint explain`의 `같은 카테고리`이 거기서 나온다. 기준값이 필요하면
    `config/settings.py`에 기본값을 두고 함수는 거기서 읽는다. 함수 안에 숫자를 박지 않는다
 5. **예시를 쓴다.** `data/exemplars.toml`에 그 규칙의 `before`와 `after`와 `moved`를 둔다. before는
    실제로 잡히는 글, after는 같은 뜻인데 안 잡히는 글, moved는 고친 사람이 한 일을 한 문장으로 적은 것이다. `testExemplars`가
@@ -40,7 +40,7 @@ status: curated
    안 되면 규칙을 빼고 사례를 `start.product`의 `잡지 않는 것`에 남긴다
 8. 테스트와 구조 게이트 통과 후 커밋한다
 
-## 사전 항목과 묶음별 주의
+## 사전 항목과 카테고리별 주의
 
 - **사전 규칙**(cliche, translationese, spelling, spacing, confusable, easyWords, calqueFrame): 코드가 아니라
   `data/*.toml`에 항목을 더한다. 항목마다 pattern, fix, why, source를 적고 source에는 국립국어원 조항이나 사전

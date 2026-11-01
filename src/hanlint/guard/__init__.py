@@ -191,7 +191,7 @@ def renderGuard(result: GuardResult) -> str:
         rules = Counter(finding.rule for finding in result.findings if finding.severity == "error")
         lines.append("- hanlint 오류: " + ", ".join(f"{rule} {count}" for rule, count in sorted(rules.items())))
     if result.noticeCount:
-        lines.append(f"- 확인 권고: {result.noticeCount}건")
+        lines.append(f"- 경고: {result.noticeCount}건")
     lines.extend(["", GUARD_MEANING])
     return "\n".join(lines)
 

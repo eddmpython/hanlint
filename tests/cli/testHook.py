@@ -175,7 +175,7 @@ def testHookLabelsStyleNotices(tmp_path, monkeypatch, capsys):
     draft.write_text("가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.", encoding="utf-8")
     code, out, err = runHook(monkeypatch, capsys, [], postPayload(draft))
     assert code == 0 and not err
-    assert "[nounPile] 확인 권고:" in json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert "[nounPile] 경고:" in json.loads(out)["hookSpecificOutput"]["additionalContext"]
 
 
 def testHookStaysSilentForCleanOrUnusableInput(tmp_path, monkeypatch, capsys):

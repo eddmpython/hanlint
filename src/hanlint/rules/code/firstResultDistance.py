@@ -20,7 +20,7 @@ def firstResultDistance(doc: DocumentPrint, config: Config) -> Iterator[Finding]
         시작하고 첫 코드 블록이 도입 안에 온다는 쓰기 방식에서 왔다. 기준값은 설정 firstResultMaxParagraphs(기본 4)다.
     고치기: 첫 실행할 것을 앞으로 당기거나 그 앞의 문단을 뒤로 보낸다.
     안 잡는 것: 코드도 표도 그림도 없는 글(참고 문서)은 잡지 않는다. introLong이 도입만 보는 것과 달리 이 규칙은 절을
-        넘어 센다. 확인 권고로만 낸다.
+        넘어 센다. 경고로만 낸다.
     """
     firstResult = next((b for b in doc.blocks if b.kind in RESULT_KINDS), None)
     if firstResult is None:

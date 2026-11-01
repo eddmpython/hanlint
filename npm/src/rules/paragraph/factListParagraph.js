@@ -20,7 +20,7 @@ export function run(doc, config) {
     if (paragraph.sentenceCount < config.factListMinSentences || isLinked(paragraph)) continue;
     if (paragraph.meanLength <= config.factListMaxMeanLength) {
       findings.push(
-        finding(name, paragraph.startLine, paragraph.sentences[0].text, `문장 ${paragraph.sentenceCount}개에 까닭을 잇는 말이 하나도 없다. 사실만 나열한 문단일 수 있다. \`그래서\`, \`때문에\`로 잇는다`, null, NOTICE, PARAGRAPH, paragraph.index),
+        finding(name, paragraph.startLine, paragraph.sentences[0].text, `문장 ${paragraph.sentenceCount}개에 인과 접속사가 하나도 없다. 사실만 나열한 문단일 수 있다. \`그래서\`, \`때문에\`로 잇는다`, null, NOTICE, PARAGRAPH, paragraph.index),
       );
     }
   }

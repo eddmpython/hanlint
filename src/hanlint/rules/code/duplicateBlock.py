@@ -34,7 +34,7 @@ def duplicateBlock(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         줄이 90% 이상 겹치면 잡는다(설정 duplicateBlockRatio, 기본 0.9). 블록은 넉 줄 이상이어야 한다.
     고치기: 다른 줄만 남기고 나머지는 앞 블록을 가리킨다. 정말 둘 다 필요하면 무엇이 다른지 산문에서 먼저 말한다.
     안 잡는 것: 넉 줄 미만인 블록, 종류가 다른 두 블록(코드와 출력), 겹친 줄이 기준값보다 적은 블록은 잡지 않는다.
-        확인 권고로만 낸다.
+        경고로만 낸다.
     """
     blocks = [b for b in doc.codeBlocks if len([line for _, line in b.lines if line.strip()]) >= MIN_LINES]
     for later in range(len(blocks)):

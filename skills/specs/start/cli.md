@@ -45,7 +45,7 @@ hanlint - --path 초안.md
 
 ## 실제 지적 읽기
 
-프로젝트 설정이 없는 폴더에서 기본 blog 프리셋으로 다음 글을 검사한다. 확인 권고까지 펼쳐 보려고 `--notices`를 붙였다.
+프로젝트 설정이 없는 폴더에서 기본 blog 프리셋으로 다음 글을 검사한다. 경고까지 펼쳐 보려고 `--notices`를 붙였다.
 
 ```markdown
 결과가 저장되어집니다.
@@ -56,14 +56,14 @@ hanlint - --path 초안.md
 ```text
 설정: 기본값, 프리셋 blog
 
-글.md  오류 1건, 확인 권고 1건
+글.md  오류 1건, 경고 1건
 
 글.md:1  [doublePassive]
   결과가 저장되어집니다.
   `되어지`는 피동에 `-어지다`를 또 붙인 이중 피동이다. 하나만 남긴다
   고친 뒤: 결과가 저장됩니다.
 
-글.md:3  [nounPile] 확인 권고
+글.md:3  [nounPile] 경고
   가상환경 생성 후 패키지 설치 확인 절차를 따릅니다.
   명사 6개가 조사 없이 이어진다. 관계가 표시되지 않아 독자가 조사를 끼워 넣는다. 동사로 되돌린다
 
@@ -78,7 +78,7 @@ hanlint - --path 초안.md
 다음: 오류 1건 가운데 1건은 hanlint fix가 바로 고친다. 나머지는 손으로 고친다
 ```
 
-위치와 규칙, 이유와 고친 문장을 함께 읽는다. 오류는 고칠 결함이고 확인 권고는 문맥을 보고 판단할 지적이다.
+위치와 규칙, 이유와 고친 문장을 함께 읽는다. 오류는 고칠 결함이고 경고는 문맥을 보고 판단할 지적이다.
 이 출력이 같은 글을 실제로 검사한 결과와 같은지 게이트가 확인한다.
 
 ## 화면의 글을 표 하나로 보기
@@ -143,7 +143,7 @@ txt와 md(파일 하나가 문서 하나)와 jsonl(줄 하나가 문서 하나, 
 화면의 글(버튼, 라벨, 상태, 빈 상태)에 쓰며 단어 하나면 될 곳에 쓴 문장, 화면을 설명하는 글, 접객 말투, 개발자가 쓰는 말을 잡고 산문 규칙은
 끈다. 프로젝트가 한 이름으로 정한 단어(`회사` → `수임처`)는 설정의 `dictionary.screenWord`에 적는다. 프로젝트가 쓰지
 않기로 한 동사와 앞말의 짝(`할 일 판` → `투두리스트`)은 `dictionary.calqueFrame`에 pattern, fix, why와 선택인 unless로
-적는다. 기본 짝은 확인 권고(`notice`)이고 설정으로 더한 짝은 오류(`error`)다. `protectedTerms`에 적은 용어와 한 글자라도 겹치는 곳은
+적는다. 기본 짝은 경고(`notice`)이고 설정으로 더한 짝은 오류(`error`)다. `protectedTerms`에 적은 용어와 한 글자라도 겹치는 곳은
 사전 규칙, 지시어, 이중 피동이 짚지 않는다. 산문 프리셋에서
 화면을 설명하는 글과 접객 말투와 화면 단어만 잡으려면 `enforceStyle = ["screenNarration", "screenTone", "screenWord"]`을 둔다.
 
@@ -213,7 +213,7 @@ baseline은 줄 번호가 아닌 인용문을 기준으로 지적을 기록한�
 hanlint baseline 문서들/ --prune
 ```
 
-baseline이 글의 품질을 승인하는 것은 아니다. 기준 파일에 든 지적도 필요에 따라 다시 검토한다.
+baseline이 글의 품질을 승인하는 것은 아니다. baseline 파일에 든 지적도 필요에 따라 다시 검토한다.
 
 ## 결과를 다른 도구에 전달하기
 
@@ -224,13 +224,13 @@ hanlint 글.md --format github --errors-only
 ```
 
 `compact`는 지적을 한 줄씩 보여 주고, `json`은 위치와 이유, 예시와 제공할 수 있는 후보를 담는다.
-`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 확인 권고를 보이지 않는다. 기본 text 출력은 확인 권고
+`github`는 Actions에서 읽는 주석 형식이다. `--errors-only`는 경고를 보이지 않는다. 기본 text 출력은 경고
 (`notice`)를 규칙마다 개수와 줄 번호 한 줄로 접는다. `--notices`가 다 편다.
 설정 안내 같은 주변 출력을 줄이려면 `--quiet`를 사용한다.
 
 ### 종료 코드
 
-일반 검사는 오류 지적이 없으면 0, 하나라도 있으면 1이다. 확인 권고만 있어도 0이므로 결과 내용을 함께 읽는다.
+일반 검사는 오류 지적이 없으면 0, 하나라도 있으면 1이다. 경고만 있어도 0이므로 결과 내용을 함께 읽는다.
 잘못된 인자, 없는 파일이나 지원하지 않는 명령 같은 실행 실패는 2다.
 
 `fix`의 0은 수정 명령이 정상 종료했다는 뜻이다. 남은 지적은 다시 검사한다. `check`와 `verify-patch`는
@@ -255,9 +255,9 @@ hanlint 글.md --format github --errors-only
 | `hanlint explain <규칙>` | 규칙의 설명서와 예시. 이름이 틀리면 가까운 이름을 준다 | 예 |
 | `hanlint patterns --rule <규칙>` | 그 규칙을 피하는 문장 틀. 예시에는 오류 지적이 나오지 않는다 | 예 |
 | `hanlint primer --preset docs` | 쓰기 전에 읽는 한 장. 글쓰기 지침 일곱 항목과, 켜진 규칙마다 고치는 법과 예시 전후. 고친 뒤 문장에는 오류 지적이 나오지 않는다 | 예 |
-| `hanlint spec --preset blog --chars 800` | 같은 규칙 묶음과 종류 프로파일을 쓰기 전에 볼 수치 목표로 편다 | 예 |
-| `hanlint rules` | 규칙 목록. 묶음별로 나누고 꺼진 것을 표시한다 | 예 |
-| `hanlint baseline 글들/` | 지금 있는 지적을 기준 파일에 넣는다. `--prune`은 더는 나오지 않는 지적을 지운다 | 예 |
+| `hanlint spec --preset blog --chars 800` | 같은 규칙 카테고리와 종류 프로파일을 쓰기 전에 볼 스펙으로 편다 | 예 |
+| `hanlint rules` | 규칙 목록. 카테고리별로 나누고 꺼진 것을 표시한다 | 예 |
+| `hanlint baseline 글들/` | 지금 있는 지적을 baseline 파일에 넣는다. `--prune`은 더는 나오지 않는 지적을 지운다 | 예 |
 | `hanlint sheet src/ --preset screen` | 소스(js, jsx, ts, rs, py, html, vue, svelte)의 한국어 글을 표 하나로 내보낸다. `--all`은 지적 없는 글도 넣는다 | 예 |
 | `hanlint sheet apply 시트.md` | 표의 고침 칸을 파일의 그 위치에 되돌려 쓴다. `--dry-run`은 바꿀 것만 보인다 | 예 |
 | `hanlint usage "낱말 낱말" --kind report` | 그 종류의 실제 글에서 단어와 함께 쓰는 말(뒤 용언, 앞뒤 명사, 문서 수)과 쓰인 문장을 BM25 순서로 보인다. `--limit`, `--format json` | 예 |
@@ -269,7 +269,7 @@ hanlint 글.md --format github --errors-only
 | `hanlint map 글.md --format html` | 지도를 HTML 파일 하나로 낸다 | 아니오 |
 | `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 분석표를 JSON으로 낸다 | 예 |
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수가 어떻게 바뀌었는지 보인다 | 아니오 |
-| `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 패치(같은 원문에서 정확히 다시 적용된다)와 안전한 글자 바꾸기 후보를 낸다 | 아니오 |
+| `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 패치(같은 원문에서 정확히 다시 적용된다)와 안전한 치환 후보를 낸다 | 아니오 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 묶는다 | 아니오 |
 | `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없이 절·문단·문장·위치 예산을 만든다 | 아니오 |
 | `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 버전·인용 조각 해시·라이선스를 검증한다 | 아니오 |

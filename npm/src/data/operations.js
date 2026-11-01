@@ -1,5 +1,5 @@
 // @ts-check
-/** 승인한 고침에서 뜻을 추측하지 않고 다시 쓸 수 있는 글자 바꾸기. 파이썬 data/operations.py와 같다. */
+/** 승인한 고침에서 뜻을 추측하지 않고 다시 쓸 수 있는 치환. 파이썬 data/operations.py와 같다. */
 
 const URL_PATTERN = /https?:\/\/[^\s)>\]]*[\p{L}\p{N}_/#=%&+~-]/gu;
 const NUMBER_PATTERN = /(?<![A-Za-z가-힣])[-+]?\d+(?:[.,:]\d+)*(?:%|[가-힣]+)?/gu;
@@ -129,7 +129,7 @@ export function surfaceSkeleton(text) {
 }
 
 /**
- * 승인 전후 전체에서 기계가 보증할 수 있는 글자 바꾸기 하나를 뽑는다.
+ * 승인 전후 전체에서 기계가 보증할 수 있는 치환 하나를 뽑는다.
  * @param {string} before @param {string} after @param {string[]} [presets] @param {string[]} [protectedTerms]
  * @returns {SurfaceOperation | undefined}
  */
@@ -195,7 +195,7 @@ export function projectOperations(entries, presetNames) {
     if (new Set(presets).size !== presets.length) throw new Error(`operation의 프리셋이 겹친다: ${before}`);
     const operation = operationFromApproval(before, after, presets);
     if (!operation || operation.before !== before || operation.after !== after) {
-      throw new Error(`operations ${index}번째 항목은 안전한 글자 바꾸기가 아니다: ${before} -> ${after}`);
+      throw new Error(`operations ${index}번째 항목은 안전한 치환이 아니다: ${before} -> ${after}`);
     }
     for (const preset of presets) {
       const selector = JSON.stringify([preset, before]);

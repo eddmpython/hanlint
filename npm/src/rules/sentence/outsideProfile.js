@@ -10,7 +10,7 @@ const FEATURES = [
   ["length", "문장 길이", "어절"],
   ["commas", "쉼표", "개"],
   ["newTopics", "처음 나온 화제어", "개"],
-  ["hedges", "단정을 피하는 말", "개"],
+  ["hedges", "얼버무리는 말", "개"],
 ];
 
 /** 세 자리마다 쉼표를 찍는다. 파이썬 `f"{n:,}"`와 같은 글을 낸다. @param {number} count */
