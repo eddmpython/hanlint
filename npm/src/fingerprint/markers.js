@@ -147,6 +147,28 @@ export function quoteSpans(text) {
   return found.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 }
 
+/**
+ * 설정의 protectedTerms 가 글에 나온 [시작, 끝] 전부. 겹쳐 나온 자리도 따로 센다. 파이썬 termSpans 와 같다.
+ * @param {string} text @param {string[]} terms @returns {[number, number][]}
+ */
+export function termSpans(text, terms) {
+  /** @type {[number, number][]} */
+  const found = [];
+  for (const term of terms) {
+    let start = text.indexOf(term);
+    while (start !== -1) {
+      found.push([start, start + term.length]);
+      start = text.indexOf(term, start + 1);
+    }
+  }
+  return found.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+}
+
+/** 두 구간이 한 글자라도 겹치는가. 파이썬 overlapsAny 와 같다. @param {number} start @param {number} end @param {[number, number][]} spans */
+export function overlapsAny(start, end, spans) {
+  return spans.some(([spanStart, spanEnd]) => spanStart < end && start < spanEnd);
+}
+
 /** @param {number} start @param {number} end @param {[number, number][]} spans */
 export function insideAny(start, end, spans) {
   return spans.some(([spanStart, spanEnd]) => spanStart <= start && end <= spanEnd);

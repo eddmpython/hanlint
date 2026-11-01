@@ -80,7 +80,7 @@ console.log(result);
 사실의 진실, 의미 보존과 자연스러움은 사람이 판단한다.
 
 JSON 형식과 전체 조건은
-[Reader Contract](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/readerContract.md)가 정본이다.
+[Reader Contract](https://github.com/eddmpython/hanlint/blob/main/skills/specs/start/readerContract.md)가 기준이다.
 
 ## 브라우저와 수정 사례
 
@@ -93,7 +93,7 @@ JSON 형식과 전체 조건은
 
 | API | 결과 |
 |---|---|
-| `inspectText(text, config)` | 지적, 문체 본보기, 승인 고침 후보와 지문 |
+| `inspectText(text, config)` | 지적, 문체 본보기, 승인 고침 후보와 분석표 |
 | `learnText(before, after, config)` | 사람이 확인하고 승인할 문장 고침과 표면 치환 후보 |
 | `compareRevision(before, after, config)` | 자유 원고의 숫자, 링크, 코드와 H2 제목 변화 |
 | `sheetRows(sources, config, everything)` | `{ label, source }` 마다 화면 글을 뽑아 규칙을 돌린 시트 행. CLI `sheet` 와 브라우저가 같은 함수를 쓴다 |
@@ -103,8 +103,9 @@ JSON 형식과 전체 조건은
 
 Python의 `hanlint learn 전.md 승인본.md --format toml`로 만든 후보는 사람이 검토한 뒤
 `hanlint.toml`의 `[[patches]]`와 `[[operations]]`로 승인할 수 있다. 두 구현이 같은 설정을 읽는다.
-원문 일치와 문맥 조건을 통과한 고침만 제안하며, 모호한 곳에서는 기권한다.
-보호할 고유명사와 프로젝트 용어는 `protectedTerms`에 넣는다.
+원문 일치와 문맥 조건을 통과한 고침만 제안하며, 모호한 곳에서는 고침을 내지 않는다.
+보호할 고유명사와 프로젝트 용어는 `protectedTerms`에 넣는다. 이 용어와 한 글자라도 겹치는 자리는 사전 규칙,
+지시어, 이중 피동도 짚지 않는다.
 후보 생성, 개인 승인과 공통 규칙 반영은 별도 단계다.
 
 ## 자동화와 지원 범위

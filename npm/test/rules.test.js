@@ -28,6 +28,33 @@ test("technical names require context while explicit project vocabulary stays en
   assert.equal(findings[0].fix, "수임처 선택");
 });
 
+test("calqueFrame builtin pairs are notices and project pairs are errors", () => {
+  const text = "캐스팅 장갑은 아직 원투 글에 잇지 못했습니다. 할 일 판의 이 일은 아직 닫지 않았습니다.";
+  const builtin = lintText(text).filter(f => f.rule === "calqueFrame");
+  assert.deepEqual(builtin.map(f => [f.severity, f.fix]), [["notice", null]]);
+  const config = configFromMapping({ dictionary: { calqueFrame: [{ pattern: "할 일 판", fix: "투두리스트", why: "는 이 프로젝트에서 투두리스트다" }] } });
+  const project = lintText(text, config).filter(f => f.rule === "calqueFrame");
+  assert.deepEqual(project.map(f => f.severity), ["notice", "error"]);
+  assert.equal(project[1].fix, "투두리스트의 이 일은 아직 닫지 않았습니다.");
+});
+
+test("unless skips an entry only in the sentence it matches", () => {
+  const config = configFromMapping({ disable: ["spacing"], dictionary: { cliches: [{ pattern: "맡겼", unless: "(?:에게|한테)(?![가-힣])" }] } });
+  const lines = lintText("발행을 맡겼습니다.\n\n블로그팀에게 발행을 맡겼습니다.\n", config).filter(f => f.rule === "cliche").map(f => f.line);
+  assert.deepEqual(lines, [1]);
+});
+
+test("protectedTerms drop a finding whose span overlaps the term", () => {
+  const spacingOf = (/** @type {Record<string, unknown>} */ mapping) =>
+    lintText("할수있어 앱은 볼수 없습니다.", configFromMapping(mapping)).filter(f => f.rule === "spacing").map(f => f.fragment);
+  assert.deepEqual(spacingOf({}), ["할수있", "볼수 없"]);
+  assert.deepEqual(spacingOf({ protectedTerms: ["할수있어"] }), ["볼수 없"]);
+  assert.deepEqual(spacingOf({ protectedTerms: ["있어 앱"] }), ["볼수 없"]);
+  const project = { dictionary: { spacing: [{ pattern: "물때", fix: "물 때" }] } };
+  assert.equal(lintText("물때는 사리 전후가 좋습니다.", configFromMapping(project)).filter(f => f.rule === "spacing").length, 1);
+  assert.equal(lintText("물때는 사리 전후가 좋습니다.", configFromMapping({ ...project, protectedTerms: ["물때"] })).filter(f => f.rule === "spacing").length, 0);
+});
+
 /** fixture 의 자리표시자. @param {string} text */
 function expandTokens(text) {
   return text.replaceAll("{em}", EM_DASH).replaceAll("{en}", EN_DASH).replaceAll("{dot}", ".");

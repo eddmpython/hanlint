@@ -1,6 +1,7 @@
 {
   "blockUnread": "threshold",
   "bridgeRepeat": "repeat",
+  "calqueFrame": "dictionary",
   "cliche": "dictionary",
   "confusable": "dictionary",
   "connectorRepeat": "repeat",

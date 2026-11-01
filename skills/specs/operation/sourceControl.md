@@ -2,7 +2,7 @@
 id: operation.sourceControl
 title: 소스 관리
 category: operation
-purpose: 브랜치, 커밋 메시지, 커밋 단위, push, 릴리즈, 훅. 판정 정본은 hooks/commitMessage.py 이고 이 문서는 뜻과 절차를 설명한다.
+purpose: 브랜치, 커밋 메시지, 커밋 단위, push, 릴리즈, 훅. 판정 기준은 hooks/commitMessage.py 이고 이 문서는 뜻과 절차를 설명한다.
 whenToUse:
   - 커밋 메시지를 어떻게 쓰나
   - 분류에 무엇을 적나
@@ -44,7 +44,7 @@ status: curated
 - em 대시를 넣지 않는다.
 - `git` 이 스스로 만드는 제목 (Merge, Revert, fixup) 은 형식 검사 밖이고 흔적 검사만 남는다.
 
-판정 정본은 `hooks/commitMessage.py` 이고 `.githooks/commit-msg` 가 부른다. 훅은 얇다. 판정을 sh 와
+판정 기준은 `hooks/commitMessage.py` 이고 `.githooks/commit-msg` 가 부른다. 훅은 얇다. 판정을 sh 와
 파이썬에 이중화하면 두 판정이 표류한다. `tests/gates/testCommitMessage.py` 가 양성·음성 fixture 로
 판정기가 실제로 막는지 매 실행마다 증명한다.
 
@@ -69,11 +69,11 @@ status: curated
 
 ## 릴리즈
 
-`0.0.x` 라인에서 명시 지시가 있을 때만 한다. 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전의 정본은
-`src/hanlint/__init__.py` 의 `__version__` 이고 태그와 항상 같은 값. 체인지로그 정본은 루트
+`0.0.x` 라인에서 명시 지시가 있을 때만 한다. 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전의 기준은
+`src/hanlint/__init__.py` 의 `__version__` 이고 태그와 항상 같은 값. 체인지로그의 기준은 루트
 `CHANGELOG.md` 이다. 릴리즈 메시지는 제목과 버전 절의 CHANGELOG 본문을 한 검토 파일에 둔다. 주석
 태그는 Markdown 제목을 보존하는 정리 방식으로 그 파일을 읽고 GitHub Release도 같은 본문을 쓴다. 전체
-배포 절차는 `operation.release` 가 정본이다.
+배포 절차는 `operation.release` 가 기준이다.
 
 ## 훅
 

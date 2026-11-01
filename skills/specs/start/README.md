@@ -12,7 +12,7 @@ status: curated
 
 # 처음 여는 사람이 읽는 것
 
-1. [`start.hanlintSkillOs`](hanlintSkillOs.md) 이 저장소가 소유하는 것과 어디로 가야 하는지
+1. [`start.hanlintSkillOs`](hanlintSkillOs.md) 이 저장소가 맡는 것과 어디로 가야 하는지
 2. [`start.product`](product.md) 무엇을 잡고 무엇을 잡지 않는가
 3. [`start.cli`](cli.md) 첫 검사, 프리셋, 설정과 명령별 지원 범위
 4. [`start.integrations`](integrations.md) GitHub Actions, pre-commit과 에이전트 훅 연결

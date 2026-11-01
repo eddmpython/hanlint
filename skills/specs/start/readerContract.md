@@ -17,7 +17,7 @@ status: curated
 # Reader Contract 프로토콜
 
 hanlint의 모델 독립적 전면 계약은 `Contract`, `Finding`, `Patch` 세 개념이다. 생성 모델과 프롬프트,
-편집기는 이 프로토콜 밖에 있다. 같은 UTF-8 입력, 같은 설정, 같은 규칙 판이면 Python과 npm이 같은
+편집기는 이 프로토콜 밖에 있다. 같은 UTF-8 입력, 같은 설정, 같은 버전의 규칙이면 Python과 npm이 같은
 JSON 영수증을 낸다.
 
 ## Contract version 1
@@ -157,8 +157,8 @@ surface에는 사용하기로 정한 보호 원자만 둔다. 자동 추출 초�
 보호 원자 차이의 항목 수와 error Finding 수의 합이다. notice는 영수증에 남지만 위반 수에는 더하지 않는다.
 
 [Finding 스키마](../../../src/hanlint/data/finding.schema.json)의 필수 필드는 규칙 이름, 줄, 심각도, 범위,
-지문 위치, 원문 인용, 이유다. 확정할 수 있을 때만 fix나 국소 fragment와 replacement, 순위 없는 후보를
-더한다. Finding이 없다는 것은 이 규칙 판이 세어서 잡는 위반이 없다는 뜻이지 좋은 글이라는 판정이 아니다.
+문장 위치, 원문 인용, 이유다. 확정할 수 있을 때만 fix나 국소 fragment와 replacement, 순위 없는 후보를
+더한다. Finding이 없다는 것은 이 버전의 규칙이 세어서 잡는 위반이 없다는 뜻이지 좋은 글이라는 판정이 아니다.
 
 영수증에는 Contract와 원문 해시가 있고 시각, 호스트, 모델 이름은 없다. 같은 입력을 다시 검사하면 같은
 영수증이 나온다.
@@ -170,11 +170,11 @@ version 2 결과는 [checkResultV2 스키마](../../../src/hanlint/data/checkRes
 
 CLI의 기본 JSON은 자동화용 결정적 영수증이다. `check --format text`는 같은 결과를 결론, 근거, 다음 행동
 순서로 렌더링한다. 별도 lint와 audit를 다시 실행한 결과를 합치는 기능이 아니라 check가 한 번 만든 같은
-지문을 사람이 읽기 쉽게 보여 주는 표현이다.
+분석표를 사람이 읽기 쉽게 보여 주는 표현이다.
 
 text 영수증은 reader 기제 Finding을 `독자 부채`로도 묶는다. 독자가 앞에서 받은 이름, 수치, 파일과 미룬
 약속만으로 현재 요구를 해결하지 못한 자리다. 독자 부채는 네 번째 공개 자료형이나 새 판정이 아니다. 같은 Finding을
-사람이 행동 단위로 읽게 한 투영이며 JSON 정본은 계속 `lint.items`다. notice는 부채 목록에는 보이지만
+사람이 행동 단위로 읽게 다시 묶은 것이며 JSON 의 기준은 계속 `lint.items`다. notice는 부채 목록에는 보이지만
 `violationCount`에는 더하지 않는다.
 
 ## Patch와 verifyPatch
@@ -208,7 +208,7 @@ Python과 npm 테스트가 같은 배포 자료를 각각 독립 실행한다.
 
 ## WritingBrief와의 관계
 
-`WritingBrief`와 `guard`는 생성 패킷, preset, 필수 표면, 금지 표면, 길이, 근거 원장이 필요한 확장 계약이다.
+`WritingBrief`와 `guard`는 생성 패킷, preset, 필수 표면, 금지 표면, 길이, 근거 기록이 필요한 확장 계약이다.
 Reader Contract는 그 기능을 없애지 않는다. 일반 편집기와 에이전트의 최소 교환 표면만 세 의미 필드로
 줄인다. 기존 brief의 `allowedNumbers`는 호환성 때문에 남아 있고 guard와 check는 같은 보호 원자 계산을
 사용한다.

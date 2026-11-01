@@ -1,5 +1,5 @@
 // @ts-check
-/** 사전 넷을 한 번 컴파일하고 문장에서 맞는 자리를 찾는다. 설정의 dictionary 항목을 더한다. */
+/** 사전들을 한 번 컴파일하고 문장에서 맞는 자리를 찾는다. 설정의 dictionary 항목을 더한다. */
 import { loadEntries } from "../data/load.js";
 import { compile } from "../regex.js";
 
@@ -16,6 +16,7 @@ export const DICTIONARY_FILES = {
   screenNarration: "screenNarration.toml",
   screenTone: "screenTone.toml",
   screenWord: "screenWord.toml",
+  calqueFrame: "calqueFrame.toml",
 };
 const GROUP_REF = /\$(\d)/g;
 const FINALS = { ㄴ: 4, ㄹ: 8 };
@@ -46,6 +47,7 @@ export function expandClasses(pattern) {
  * @property {string | null} fix
  * @property {{ pattern: import("../regex.js").Pattern, into: string }[]} to 문장 전체를 다시 쓰는 규칙. 앞의 것부터 시도한다
  * @property {string} raw pattern 의 원문. 내장 항목만 갖고 설정 항목은 빈 글자라 관용으로 접히지 않는다
+ * @property {import("../regex.js").Pattern | null} unless 문장 전체에서 이것이 맞으면 그 문장에서는 항목이 맞지 않는다. 파이썬 Entry.unless 와 같다
  */
 
 /**
@@ -72,6 +74,7 @@ export function entryFrom(dictionary, raw, builtin = false) {
     fix: /** @type {string | null} */ (data.fix ?? null),
     to: (/** @type {[string, string][]} */ (data.to ?? [])).map(([source, into]) => ({ pattern: compile(expandClasses(source)), into })),
     raw: builtin ? /** @type {string} */ (data.pattern) : "",
+    unless: data.unless ? compile(expandClasses(/** @type {string} */ (data.unless))) : null,
   };
 }
 
@@ -125,6 +128,7 @@ export function matchesIn(text, entries) {
   /** @type {DictionaryMatch[]} */
   const found = [];
   for (const entry of entries) {
+    if (entry.unless && entry.unless.search(text)) continue;
     for (const match of entry.pattern.all(text)) {
       const start = /** @type {number} */ (match.index);
       found.push({

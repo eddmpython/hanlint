@@ -19,6 +19,8 @@ def spacing(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         항목마다 근거가 붙어 있다 (data/spacing.toml). 관형형 ㄹ 뒤의 의존 명사는 받침 부류 {ㄹ} 로 잡는다.
     고치기: 항목마다 띄거나 붙인 꼴을 fix 로 낸다. hanlint fix 가 적용한다.
     안 잡는 것: 뿐, 만큼, 대로 (체언 뒤 조사와 관형형 뒤 의존 명사를 표층으로 가르지 못한다). 못하다/못 하다,
-        안되다/안 되다 (뜻이 갈린다). 실수, 술수 처럼 ㄹ 받침 명사 뒤의 수. 백틱과 따옴표 안의 인용.
+        안되다/안 되다 (뜻이 갈린다). 실수, 술수 처럼 ㄹ 받침 명사 뒤의 수. 물때, 밀물때, 썰물때 처럼 한 낱말인
+        때 (`물 때` 와 표층이 같아 그 자리는 둘 다 짚지 않는다). 백틱과 따옴표 안의 인용. 설정의 protectedTerms 와
+        겹치는 자리.
     """
     yield from dictionaryFindings(doc, "spacing", "spacing")

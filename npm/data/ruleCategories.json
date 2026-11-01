@@ -1,6 +1,7 @@
 {
   "blockUnread": "structure",
   "bridgeRepeat": "structure",
+  "calqueFrame": "sentence",
   "cliche": "sentence",
   "confusable": "orthography",
   "connectorRepeat": "sentence",

@@ -28,7 +28,7 @@ status: curated
 2. **GitHub.** 저장소 Settings > Environments > New environment 로 `pypi` 를 만든다. 원하면 Required
    reviewers 에 자신을 넣어 게시 직전에 한 번 더 승인하게 둔다.
 3. **npm 첫 게시.** npm 의 Trusted Publisher 는 이미 있는 패키지의 Settings 에서만 등록할 수 있다. 그래서
-   첫 판 (0.0.1) 은 운영자 기계에서 올린다. `npm login` 뒤 `cd npm && npm publish`. 2FA 가 켜져 있으면
+   첫 버전 (0.0.1) 은 운영자 기계에서 올린다. `npm login` 뒤 `cd npm && npm publish`. 2FA 가 켜져 있으면
    OTP 를 묻는다.
 4. **npm Trusted Publisher.** 패키지가 생기면 npmjs.com > hanlint > Settings > Trusted Publisher >
    GitHub Actions 에 Repository `eddmpython/hanlint`, Workflow `publish.yml` 을 등록한다. 다음 태그부터
@@ -38,12 +38,12 @@ status: curated
 
 버전 +1 과 태그 `v0.0.x` 를 같은 커밋에. 버전을 손으로 적는 곳은 `src/hanlint/__init__.py` 의
 `__version__` 과 `npm/package.json` 둘뿐이다. `pyproject.toml` 은 hatch 가 `__version__` 을 읽고 (dynamic),
-`npm/data/version.json` 은 투영이라 `python scripts/derive/npmData.py` 를 같은 커밋에서 돌린다.
-`npm/package-lock.json`도 `npm install --package-lock-only --ignore-scripts`로 갱신하는 투영이다. 워크플로가
-`__version__`, `package.json`, 태그를 대조하고 `tests/gates/testVersion.py` 가 로컬에서 버전 투영까지 강제한다.
+`npm/data/version.json` 은 파이썬에서 만드는 사본이라 `python scripts/derive/npmData.py` 를 같은 커밋에서 돌린다.
+`npm/package-lock.json`도 `npm install --package-lock-only --ignore-scripts`로 다시 만드는 사본이다. 워크플로가
+`__version__`, `package.json`, 태그를 대조하고 `tests/gates/testVersion.py` 가 로컬에서 버전 사본까지 확인한다.
 0.0.2 에서 pyproject 만 올리고 `__version__` 을 빼먹어 `--version` 이 낡은 채 게시된 것이 이 구조의 이유다.
 
-체인지로그의 정본은 루트 `CHANGELOG.md` (Keep a Changelog 형식) 다. 변경은 `[Unreleased]` 에 쌓고 릴리즈
+체인지로그의 기준은 루트 `CHANGELOG.md` (Keep a Changelog 형식) 다. 변경은 `[Unreleased]` 에 쌓고 릴리즈
 커밋에서 그 내용을 `[X.Y.Z] - 날짜` 절로 내린다. `git log v이전판..HEAD`의 공개 변경이 이 절에 모두
 분류됐는지 검토한다. 내부 작업을 공개 노트에서 뺄 때도 누락으로 두지 않고 검토 기록에 제외 이유를 남긴다.
 
@@ -72,7 +72,7 @@ git push origin main v0.0.x
 
 ## 워크플로가 하는 일
 
-1. `ci.yml` 의 게이트 전부 (세 운영체제와 파이썬 조합, ruff, pytest, npm 테스트, 투영 검사).
+1. `ci.yml` 의 게이트 전부 (세 운영체제와 파이썬 조합, ruff, pytest, npm 테스트, 사본 검사).
 2. 세 버전 일치 검증. wheel 과 sdist 빌드. 그 wheel 을 격리 venv 에 설치해 Requires 가 비어 있는지, 데이터가
    동봉됐는지, `hanlint README.md` 가 통과하는지 본다.
 3. `publish-pypi` (environment `pypi`, OIDC) 와 `publish-npm` (OIDC, npm 11 이상) 이 나란히 올린다.

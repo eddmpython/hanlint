@@ -19,7 +19,7 @@ def screenWord(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
     어디서: 화면 낱말 규약 (운영 중인 세무 앱의 화면에서 실측, 2026-09-17, 운영자 지시).
     실측: 화면 글 4,177개의 검토에서 용어 불일치 224건과
         개발 어휘 77건이 났고 산문 규칙은 하나도 짚지 못했다. 설명이 필요한지 검토할 기본 용어는
-        data/screenWord.toml 이고 프로젝트의 정본 낱말은 설정의 dictionary.screenWord 로 더한다. 같은 자리에 기본 항목과
+        data/screenWord.toml 이고 프로젝트가 정한 낱말은 설정의 dictionary.screenWord 로 더한다. 같은 자리에 기본 항목과
         설정 항목이 함께 걸리면 설정 항목이 이긴다.
     고치기: 기본 사전은 notice로 용어 설명이 필요한지 검토만 요청하며 치환을 제안하지 않는다. 기술 용어를
         설명하는 화면에서는 이름을 유지하고 정의와 예시를 붙인다. 프로젝트가 직접 정한 dictionary.screenWord의

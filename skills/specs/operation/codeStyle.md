@@ -71,7 +71,7 @@ def doublePassive(prints, config):
 
 ## 상수와 값
 
-- 임계는 `config/settings.py` 의 `Config` 필드가 정본이다. 규칙 함수 안에 숫자를 박지 않는다.
+- 임계는 `config/settings.py` 의 `Config` 필드가 기준이다. 규칙 함수 안에 숫자를 박지 않는다.
 - 사전과 표지 목록은 `data/` 다. 코드 안에 낱말 목록을 두지 않는다.
 - 불가피한 상수는 모듈 위에 UPPER_SNAKE 로 한 곳에 두고 출처를 주석으로 남긴다.
 
@@ -98,7 +98,7 @@ def doublePassive(prints, config):
 
 - 런타임 의존성 0. Python dev 도구는 `[dependency-groups]` 의 `dev` 에 둔다. pytest, ruff. `uv sync` 가 깔고 `uv.lock` 이
   정확 버전을 잠근다. pip 로 따로 깔지 않는다.
-- 브라우저 표면 검수 도구는 `npm/package.json` 의 `devDependencies`가 정확 버전을 소유하고
+- 브라우저 표면 검수 도구는 `npm/package.json` 의 `devDependencies`가 정확한 버전을 정하고
   `npm/package-lock.json`이 설치 실물을 잠근다. 제품의 npm `dependencies`에는 넣지 않는다.
 - ruff: 포맷과 E, F, W, I, B, UP. **N (pep8-naming) 은 선택하지 않는다.** camelCase 와 충돌한다. 이름은
   우리 게이트가 본다.
@@ -111,12 +111,12 @@ def doublePassive(prints, config):
 `web/`의 정적 편집기도 아래 이름과 ESM, JSDoc 규칙을 따른다. 브라우저용 규칙을 따로 만들지 않고
 `npm/src/index.js`를 호출한다. 코드 경로 게이트는 `.js`와 `.mjs`, 대시 게이트는 CSS와 SVG도 검사한다.
 
-`npm/` 은 파이썬의 투영이고 같은 이름 규칙을 따른다. 파일과 폴더와 함수와 변수는 camelCase, 테스트 파일은
+`npm/` 은 파이썬을 옮긴 구현이고 같은 이름 규칙을 따른다. 파일과 폴더와 함수와 변수는 camelCase, 테스트 파일은
 `<이름>.test.js` (node 의 관례). 순수 ESM 이고 빌드가 없다. 타입은 JSDoc 과 파일 첫 줄의 `// @ts-check` 로
 편집기가 본다. 런타임 의존성은 0이다. 브라우저 표면 검수용 dev 설치만 `npm/node_modules`에 생기며 배포물에는
 들어가지 않는다. 파이썬 `re` 와 JS `RegExp`, 파이썬 `str` 과 JS `String` 의 뜻 차이는 `npm/src/regex.js` 와
 `npm/src/text.js` 가 흡수하고 규칙 파일은 그 위에서 파이썬과 같은 문장으로 쓴다. 사전과 규칙 기술서는 손으로
-옮기지 않고 `scripts/derive/npmData.py` 가 `npm/data` 로 투영한다.
+옮기지 않고 `scripts/derive/npmData.py` 가 `npm/data` 로 옮긴다.
 
 ## 되돌리기
 

@@ -6,7 +6,7 @@ description: 이미 쓴 한국어 마크다운을 hanlint 로 검사하고 실�
 # hanlint 로 글 검사하기
 
 hanlint 는 한국어 글에서 AI 와 사람이 반복해서 어기는 결함을 결정적으로 잡는다. 좋은 글인지는 판정하지
-않는다. 글쓰기 규칙의 정본은 사용자 저장소의 글쓰기 스킬이고 hanlint 는 그중 기계가 잡을 수 있는 것을 집행한다.
+않는다. 글쓰기 규칙의 기준은 사용자 저장소의 글쓰기 스킬이고 hanlint 는 그중 기계가 잡을 수 있는 것을 집행한다.
 
 설치는 없다. 파이썬이 있으면 `uvx hanlint`, Node 만 있으면 `npx hanlint` 다. 아래의 `hanlint` 를 그것으로 읽는다.
 Claude Code에서는 PostToolUse에 `hanlint hook`, Stop에 `hanlint hook --reply`를 연결할 수 있다. 둘 다 Finding만
@@ -66,5 +66,5 @@ Excel의 셀·행·열·시트도 이름을 유지한다. 파일 내용 수정, 
 절 구조가 요구사항이면 Reader Contract (`hanlint contract init`, `hanlint check`), 조직 문체와 견주려면
 `hanlint profile build`, 한국어 학습자 독자면 `hanlint terms`, 승인한 고침을 다음 글에 남기려면 `hanlint learn`.
 전면 개작 전에 숫자 확인표가 필요하면 `hanlint spec --preset <종류> --chars <글자 수>`를 명시적으로 부른다.
-절차는 `skills/specs/start/readerContract.md` 와 `skills/specs/operation/writingAxis.md` 가 소유한다. 옵션은 파이썬 구현의
+절차는 `skills/specs/start/readerContract.md` 와 `skills/specs/operation/writingAxis.md` 에 있다. 옵션은 파이썬 구현의
 `hanlint <명령> --help` 와 README 의 명령 표에 있다 (npm 구현은 루트 `hanlint --help` 만 낸다).

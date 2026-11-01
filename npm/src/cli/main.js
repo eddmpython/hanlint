@@ -6,7 +6,7 @@
  * hanlint                       인자가 없으면 첫 화면. 무엇을 칠 수 있는지 보인다
  * hanlint 글.md [다른.md ...]   검사. 서브커맨드 없이 파일이나 폴더만 주면 lint 다. `-` 는 stdin
  * hanlint fix 글.md             기계가 고칠 수 있는 지적을 원문에 적용
- * hanlint print 글.md           지문 계층 JSON
+ * hanlint print 글.md           분석표 계층 JSON
  * hanlint rules                 규칙 목록을 부류로 묶어서
  * hanlint explain <규칙>        규칙의 기술서
  * hanlint patterns             문장 틀. --rule 로 그 규칙을 피하는 것만
@@ -994,10 +994,10 @@ export function renderInit(preset = "blog") {
     "# hanlint baseline 이 만든 잠금 파일. 있으면 그 안의 지적은 넘기고 새로 생긴 것만 막는다",
     '# baseline = ".hanlint-baseline.json"',
     "",
-    "# 코드도 산문도 아닌 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록으로 세지 않고 지문에서 뺀다",
+    "# 코드도 산문도 아닌 펜스의 언어 표기. 장면 계약과 도표 원문은 코드 블록으로 세지 않고 분석표에서 뺀다",
     '# ignoreFences = ["course-scene", "mermaid"]',
     "",
-    "# 임계. 기본값의 정본은 hanlint 의 config/settings.py 다",
+    "# 임계. 기본값의 기준은 hanlint 의 config/settings.py 다",
   );
   for (const name of THRESHOLD_FIELDS) {
     const value = /** @type {number} */ (defaults[name]);
@@ -1014,7 +1014,7 @@ export function renderInit(preset = "blog") {
     "# usageShare = 0.9",
     "",
     "# 사전에 더할 항목. 키는 cliches, translationese, redundantPair, japaneseLoan, easyWords,",
-    "# screenSentence, screenNarration, screenTone, screenWord",
+    "# screenSentence, screenNarration, screenTone, screenWord, calqueFrame",
     "# [dictionary]",
     '# cliches = ["우리의 여정"]',
     '# translationese = [{ pattern = "에 대한 이해", fix = "를 아는 것" }]',

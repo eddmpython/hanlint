@@ -101,6 +101,35 @@ def testConfigDictionaryExtends():
     assert doc.sentences[0].matches[0].text == "우리의 여정"
 
 
+def spacingMatches(text: str, config: Config | None = None) -> list[str]:
+    return [m.text for s in build(text, config).sentences for m in s.matches if m.dictionary == "spacing"]
+
+
+def testProtectedTermsDropOverlappingMatches():
+    """protectedTerms 와 한 글자라도 겹치는 사전 매치는 지문에 넣지 않는다. 겹치지 않는 자리는 그대로 남는다."""
+    text = "할수있어 앱은 볼수 없습니다.\n"
+    assert spacingMatches(text) == ["할수있", "볼수 없"]
+    assert spacingMatches(text, Config(protectedTerms=["할수있어"])) == ["볼수 없"]
+    assert spacingMatches(text, Config(protectedTerms=["있어 앱"])) == ["볼수 없"]
+    assert spacingMatches(text, Config(protectedTerms=["앱은"])) == ["할수있", "볼수 없"]
+
+
+def testProtectedTermsSilenceAProjectEntryOnTheTerm():
+    """돈값의 실측: protectedTerms 에 물때 를 넣어도 물때 를 짚던 자리. 항목이 무엇이든 보호한 용어 위에서는 짚지 않는다."""
+    config = Config(dictionary={"spacing": [{"pattern": "물때", "fix": "물 때"}]})
+    assert spacingMatches("물때는 사리 전후가 좋습니다.\n", config) == ["물때"]
+    config.protectedTerms = ["물때"]
+    assert spacingMatches("물때는 사리 전후가 좋습니다.\n", config) == []
+
+
+def testUnlessSkipsTheEntryInThatSentenceOnly():
+    """unless 가 문장 어디에든 맞으면 그 문장에서 항목이 맞지 않는다. 다른 문장은 그대로 본다."""
+    config = Config(dictionary={"calqueFrame": [{"pattern": "맡겼", "unless": "(?:에게|한테)(?![가-힣])"}]})
+    doc = build("발행을 맡겼습니다. 블로그팀에게 발행을 맡겼습니다.\n", config)
+    found = [[m.text for m in s.matches if m.dictionary == "calqueFrame" and not m.pattern] for s in doc.sentences]
+    assert found == [["맡겼"], []]
+
+
 def testEndingsAndMood():
     assert endingOf("파일을 엽니다.") == "니다"
     assert endingOf("파일을 연다.") == "다"

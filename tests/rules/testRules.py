@@ -40,6 +40,25 @@ def testFixture(path: Path):
         assert data["rule"] not in rules, f"잡지 말아야 하는데 잡았다: {text!r}"
 
 
+def testCalqueFrameBuiltinIsNoticeAndProjectEntryIsError():
+    """기본 짝은 문맥을 보고 정할 notice 이고 프로젝트가 설정으로 더한 짝은 error 다. screenWord 와 같은 나눔이다."""
+    text = "캐스팅 장갑은 아직 원투 글에 잇지 못했습니다. 할 일 판의 이 일은 아직 닫지 않았습니다."
+    builtin = [f for f in findingsOf(text) if f.rule == "calqueFrame"]
+    assert [(f.severity, f.fix) for f in builtin] == [("notice", None)]
+    config = Config(
+        dictionary={"calqueFrame": [{"pattern": "할 일 판", "fix": "투두리스트", "why": "는 이 프로젝트에서 투두리스트다"}]}
+    )
+    project = [f for f in findingsOf(text, config) if f.rule == "calqueFrame"]
+    assert [f.severity for f in project] == ["notice", "error"]
+    assert project[1].fix == "투두리스트의 이 일은 아직 닫지 않았습니다."
+
+
+def testCalqueFrameNamesOneSentenceOnce():
+    """`상품을` 과 `글에` 가 둘 다 잇다 의 앞말이어도 한 문장의 한 짝은 한 번만 짚는다 (unless 가 둘째 항목을 넘긴다)."""
+    found = [f for f in findingsOf("돈값트리에 있던 상품을 세 글에 이었습니다.") if f.rule == "calqueFrame"]
+    assert [f.why.split("`")[1] for f in found] == ["글에 이었"]
+
+
 def testEveryRuleHasAFixtureAndEveryFixtureARule():
     rules = set(ruleNames())
     fixtures = {p.stem for p in fixtureFiles()}

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 CODE_DIRS = ("src", "tests", "hooks", "scripts")
 
@@ -24,6 +26,10 @@ def cacheDirs(root: Path, dirs: tuple[str, ...]) -> list[str]:
 
 
 def testNoBytecodeCacheInsideRepository():
+    # 다른 저장소 안에 하위 프로젝트로 들어 있으면(돈값 product/hanlint, 2026-11-01) 그 저장소의 프로그램이 이 패키지를 불러 쓰며
+    # 캐시를 만든다. 그 저장소의 .gitignore가 캐시를 막으니 이 게이트는 hanlint가 제 저장소일 때만 본다.
+    if not (ROOT / ".git").exists():
+        pytest.skip("hanlint가 다른 저장소의 하위 프로젝트라 그 저장소가 캐시를 맡는다")
     found = cacheDirs(ROOT, CODE_DIRS)
     assert found == [], f"저장소 안에 __pycache__ 가 있다. -B 없이 파이썬을 돌린 흔적이다. 지우고 -B 로 돌린다: {found[:5]}"
 

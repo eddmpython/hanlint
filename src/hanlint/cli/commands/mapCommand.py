@@ -11,7 +11,7 @@ from ...report import renderMap, renderMapHtml
 from ...rules import runAll
 from .shared import addCommonOptions, colorEnabled, configFrom, emit, readFile
 
-HELP = "지문 지도만 낸다"
+HELP = "분석표의 색 지도만 낸다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

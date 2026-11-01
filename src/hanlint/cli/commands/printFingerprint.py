@@ -12,7 +12,7 @@ from ...fingerprint import buildFingerprint
 from ...report import LAYERS, renderFingerprintJson
 from .shared import addCommonOptions, configFrom, emit, readInput, startFolder
 
-HELP = "지문 계층을 JSON 으로 낸다"
+HELP = "분석표 계층을 JSON 으로 낸다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

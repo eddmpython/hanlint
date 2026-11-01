@@ -2,7 +2,7 @@
 id: operation.writingAxis
 title: 작문 축
 category: operation
-purpose: 사실 계약 (brief, guard), 근거 원장 (evidence), 작문 패킷 (packet, blueprint), 블라인드 사람 평가 (arena), 승인 고침 기억 (learn) 의 절차. 기본 작문 절차 밖에 두는 이유와 다시 들이는 조건도 여기 있다.
+purpose: 사실 계약 (brief, guard), 근거 기록 (evidence), 작문 패킷 (packet, blueprint), 블라인드 사람 평가 (arena), 승인 고침 기억 (learn) 의 절차. 기본 작문 절차 밖에 두는 이유와 다시 들이는 조건도 여기 있다.
 whenToUse:
   - brief.json 을 어떻게 만드나
   - guard 와 evidence 는 무엇을 보장하나
@@ -17,7 +17,7 @@ status: curated
 
 hanlint 의 작문 축 넷 (arena, guard, blueprint, packet) 과 그 주변 (evidence, entailment, learn) 은 배선이 끝났고
 사람 평가가 0건이다. 향상 근거의 문턱은 사람 평가 30건이다. 그 전에는 기본 작문 절차 (`skills/write-korean`) 에
-넣지 않고 여기서만 절차를 든다. 실측 수는 `tests/_attempts/` 의 각 폴더 기록이 소유한다.
+넣지 않고 여기서만 절차를 든다. 실측 수는 `tests/_attempts/` 의 각 폴더 기록에 있다.
 
 ## 사실 계약: brief 와 guard
 
@@ -76,13 +76,13 @@ assignment 를 보관하고 평가자에게는 해당 HTML 만 보낸다. 가명
 함께 읽는다. 합성 품질 점수를 만들지 않는다. 30개 미만 사례와 낮은 alpha 에서 이겼다는 이유로 기본 작법에
 전략을 넣지 않는다.
 
-자동 심사기는 사람 batch 로 넣지 않는다. 같은 suite 를 두 좌우 순서로 평가하고 순서가 일치하지 않으면 기권한다
+자동 심사기는 사람 batch 로 넣지 않는다. 같은 suite 를 두 좌우 순서로 평가하고 순서가 일치하지 않으면 판정하지 않는다
 (`hanlint arena judge-cases`, `judge-consistency`, `judge-evaluate`). 사람 합의 전에는 위치 일관성과 사용 가능 범위만
 보고, 합의 뒤에 선호가 얼마나 맞았는지 (정확도, macro F1), 얼마나 덮었는지 (coverage), 어디서 헷갈렸는지
 (confusion), 확신이 맞는지 (calibration) 를 읽는다. 지금까지 잰 로컬 모델은
 사람 선호의 대리자로 쓰지 않는다.
 
-근거 관계를 판정할 외부 평가기는 제품 원장과 섞기 전에 고정 벤치마크로 잰다. `hanlint entailment cases --output
+근거 관계를 판정할 외부 평가기는 제품 기록과 섞기 전에 고정 벤치마크로 잰다. `hanlint entailment cases --output
 cases.json` 과 `hanlint entailment evaluate predictions.json --format json` 이다. `cases` 에 없는 gold 를 프롬프트나
 예측 파일에 덧붙이지 않는다. 결과에서는 macro F1 만 보지 말고 coverage, 선택 정확도, selective risk 와 risk-coverage
 곡선을 함께 읽는다. 벤치마크 결과를 출처나 fact 의 진실, 글 품질이나 다른 자료에서의 성능으로 부르지 않는다.

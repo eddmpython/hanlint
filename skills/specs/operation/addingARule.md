@@ -27,7 +27,7 @@ status: curated
    `MECHANISMS` 다섯 (dictionary, repeat, threshold, contrast, reader) 가운데 하나이고 다섯 밖이면 등록부가 거부한다.
    다섯 밖의
    세는 방법이 정말 필요하면 규칙을 쓰기 전에 멈춰서 운영자에게 묻는다. 기제는 규칙 하나 때문에 늘지 않는다
-   (`start.product` 의 규칙은 쌓여도 기제는 다섯이다). 파일이 사는 폴더가 부류의 정본이라
+   (`start.product` 의 규칙은 쌓여도 기제는 다섯이다). 파일이 사는 폴더가 부류를 정하므로
    `hanlint rules` 의 묶음과 `hanlint explain` 의 `같은 부류` 가 거기서 나온다. 임계가 필요하면
    `config/settings.py` 에 기본값을 두고 함수는 거기서 읽는다. 함수 안에 숫자를 박지 않는다
 5. **본보기를 쓴다.** `data/exemplars.toml` 에 그 규칙의 `before` 와 `after` 와 `moved` 를 둔다. before 는
@@ -42,16 +42,18 @@ status: curated
 
 ## 사전 항목과 부류별 주의
 
-- **사전 규칙** (cliche, translationese, spelling, spacing, confusable, easyWords): 코드가 아니라 `data/*.toml`
-  에 항목을 더한다. 항목마다 pattern, fix, why, source 를 적고 source 에는 국립국어원 조항이나 사전 표제어를
-  적는다. `{ㄹ}` `{ㄴ}` 은 그 받침으로 끝나는 음절 부류, `{조사}` 는 낱말 경계다. 뜻에 따라 둘 다 맞는 자리는
+- **사전 규칙** (cliche, translationese, spelling, spacing, confusable, easyWords, calqueFrame): 코드가 아니라
+  `data/*.toml` 에 항목을 더한다. 항목마다 pattern, fix, why, source 를 적고 source 에는 국립국어원 조항이나 사전
+  표제어를 적는다. 같은 문장의 다른 자리 (받는 이, 장소, 관용구) 가 있으면 정상인 항목은 `unless` 에 그 자리의
+  정규식을 둔다. 문장 어디에든 맞으면 그 문장에서는 항목이 맞지 않는다. `{ㄹ}` `{ㄴ}` 은 그 받침으로 끝나는 음절
+  부류, `{조사}` 는 낱말 경계다. 뜻에 따라 둘 다 맞는 자리는
   넣지 않는다 (`start.product` 의 잡지 않는 것). 특히 `easyWords`는 다듬은 말 목록에 대체어가 있어도 그 말이
   모든 분야에서 같은 뜻이라는 보증은 아니다. `fix`가 현재 pattern에 걸리는 정상 문맥에서도 대상과 뜻을 지키는지 본다.
   반례가 나오면 pattern을 좁히고 `catch`와 `spare`를 짝지어 검증한다. 표층으로 못 가르면 기본 사전에서 뺀다.
 - **code 부류** (inputFileSource, installImport, platformApi): 읽기와 쓰기 함수, 모듈과 패키지 대응, 숨은
   의존성, 플랫폼 API 는 각각 규칙 파일의 정규식과 `data/pythonPackages.txt`, `data/hiddenDeps.txt`,
-  `data/platformApis.txt` 가 정본이다.
-- 정본 data 를 고쳤으면 `python scripts/derive/npmData.py` 로 npm 투영을 다시 만든다. 규칙을 더하거나 옮기면
+  `data/platformApis.txt` 가 기준이다.
+- 기준 data 를 고쳤으면 `python scripts/derive/npmData.py` 로 npm 사본을 다시 만든다. 규칙을 더하거나 옮기면
   `ruleCategories.json` 도 같이 바뀐다.
 - **한 종류의 글에만 안 맞는 규칙은 빼지 말고 프리셋에 넣는다.** 참고 문서에 `noQuestion` 이 도는 것은
   규칙이 틀린 것이 아니라 글의 종류가 다른 것이다. `config/settings.py` 의 `PRESETS` 에 그 규칙 이름을

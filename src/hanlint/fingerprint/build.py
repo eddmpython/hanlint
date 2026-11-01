@@ -48,6 +48,8 @@ class Build:
     """
 
     entries: tuple[Entry, ...]
+    protectedTerms: tuple[str, ...] = ()
+    """설정의 protectedTerms. 이 용어와 겹치는 사전 매치, 지시어, 이중 피동은 문장 지문에 넣지 않는다."""
     sentences: list[SentencePrint] = field(default_factory=list)
     paragraphs: list[ParagraphPrint] = field(default_factory=list)
 
@@ -61,10 +63,15 @@ def makeSentencePrint(
     quoted: tuple[tuple[int, int], ...],
 ) -> SentencePrint:
     ending = markers.endingOf(text)
-    deixis = tuple(
-        found for start, end, found in markers.matchedSpans(text, "deixis.txt") if not markers.insideAny(start, end, quoted)
-    )
-    matches = tuple(m for m in matchesIn(text, build.entries) if not markers.insideAny(m.start, m.end, quoted))
+    protected = markers.termSpans(text, build.protectedTerms)
+
+    def kept(start: int, end: int) -> bool:
+        # 인용 안의 것과 보호한 용어에 걸친 것은 뺀다. 실측: protectedTerms 에 물때 를 넣어도 spacing 이
+        # `물때는` 을 `물 때는` 으로 고치라고 했다 (돈값, 2026-11-01). 보호한 용어는 지적의 대상이 아니다.
+        return not markers.insideAny(start, end, quoted) and not markers.overlapsAny(start, end, protected)
+
+    deixis = tuple(found for start, end, found in markers.matchedSpans(text, "deixis.txt") if kept(start, end))
+    matches = tuple(m for m in matchesIn(text, build.entries) if kept(m.start, m.end))
     return SentencePrint(
         index=len(build.sentences),
         line=line,
@@ -82,7 +89,7 @@ def makeSentencePrint(
         deixis=deixis,
         euiCount=euiCount(text),
         nounRun=longestNounRun(text),
-        passives=tuple(surface for start, end, surface in doublePassiveSpans(text) if not markers.insideAny(start, end, quoted)),
+        passives=tuple(surface for start, end, surface in doublePassiveSpans(text) if kept(start, end)),
         hedges=markers.countMatches(text, "hedges.txt"),
         numbers=markers.countNumbers(text),
         topics=topicsOf(text),
@@ -168,7 +175,7 @@ def buildFingerprint(doc: Document, config: Config | None = None) -> DocumentPri
     config = config or Config()
     # 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
     doc = dropFences(doc, config.ignoreFences)
-    build = Build(entriesFor(config))
+    build = Build(entriesFor(config), tuple(config.protectedTerms))
     sections = [buildSection(build, section, index) for index, section in enumerate(doc.sections)]
     sentences, paragraphs = build.sentences, build.paragraphs
     headings = tuple((b.level, b.text, b.startLine) for b in doc.blocks if b.kind == HEADING)

@@ -130,11 +130,15 @@ function quotedIn(sentence, blockSpans) {
 function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
   const { entries } = build;
   const ending = markers.endingOf(text);
+  const protectedSpans = markers.termSpans(text, build.protectedTerms);
+  // 인용 안의 것과 보호한 용어에 걸친 것은 뺀다. 뜻은 파이썬 fingerprint/build.py 의 kept 가 정한다.
+  /** @param {number} start @param {number} end */
+  const kept = (start, end) => !markers.insideAny(start, end, quoted) && !markers.overlapsAny(start, end, protectedSpans);
   const deixis = markers
     .matchedSpans(text, "deixis.txt")
-    .filter(([start, end]) => !markers.insideAny(start, end, quoted))
+    .filter(([start, end]) => kept(start, end))
     .map(([, , found]) => found);
-  const matches = matchesIn(text, entries).filter((m) => !markers.insideAny(m.start, m.end, quoted));
+  const matches = matchesIn(text, entries).filter((m) => kept(m.start, m.end));
   const mood = markers.moodOf(text, ending);
   return {
     index: build.sentences.length,
@@ -154,7 +158,7 @@ function makeSentencePrint(build, text, line, block, sectionIndex, quoted) {
     euiCount: euiCount(text),
     nounRun: longestNounRun(text),
     passives: doublePassiveSpans(text)
-      .filter(([start, end]) => !markers.insideAny(start, end, quoted))
+      .filter(([start, end]) => kept(start, end))
       .map(([, , surface]) => surface),
     hedges: markers.countMatches(text, "hedges.txt"),
     numbers: markers.countNumbers(text),
@@ -267,7 +271,12 @@ function buildSection(build, section, sectionIndex) {
 export function buildFingerprint(doc, config = defaultConfig()) {
   // 코드도 산문도 아닌 펜스는 지문에 들어오기 전에 뺀다. 모든 진입점이 여기를 지나므로 한 자리면 된다.
   doc = dropFences(doc, config.ignoreFences);
-  const build = { entries: entriesFor(config), sentences: /** @type {SentencePrint[]} */ ([]), paragraphs: /** @type {ParagraphPrint[]} */ ([]) };
+  const build = {
+    entries: entriesFor(config),
+    protectedTerms: config.protectedTerms ?? [],
+    sentences: /** @type {SentencePrint[]} */ ([]),
+    paragraphs: /** @type {ParagraphPrint[]} */ ([]),
+  };
   const { sentences, paragraphs } = build;
   const sections = doc.sections.map((section, index) =>
     buildSection(build, section, index),

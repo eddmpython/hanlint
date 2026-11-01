@@ -1,4 +1,4 @@
-"""사전 넷을 한 번 컴파일하고 문장에서 맞는 자리를 찾는다. 설정의 dictionary 항목을 더한다."""
+"""사전들을 한 번 컴파일하고 문장에서 맞는 자리를 찾는다. 설정의 dictionary 항목을 더한다."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ DICTIONARY_FILES = {
     "screenNarration": "screenNarration.toml",
     "screenTone": "screenTone.toml",
     "screenWord": "screenWord.toml",
+    "calqueFrame": "calqueFrame.toml",
 }
 GROUP_REF = re.compile(r"\$([0-9])")
 FINALS = {"ㄴ": 4, "ㄹ": 8}
@@ -53,6 +54,10 @@ class Entry:
     raw: str = ""
     """pattern 의 원문. 자리표시자를 펼치기 전의 글자라 두 구현과 빈도표가 같은 키를 갖는다. 내장 항목만 갖고 설정으로
     더한 항목은 빈 글자라 어떤 종류의 관용으로도 접히지 않는다. 프로젝트가 스스로 넣은 낱말은 프로젝트가 짚고 싶은 것이다."""
+    unless: re.Pattern[str] | None = None
+    """문장 전체에서 이것이 맞으면 그 문장에서는 항목이 맞지 않는다. 인용 안의 글자까지 본다. 같은 낱말이 문장의 다른
+    자리 (받는 이, 장소, 관용구) 에 따라 정상이 되는 항목이 쓴다. 실측: `맡겼습니다` 는 `에게` 가 같은 문장에 있으면
+    정상이고 없으면 누구에게 맡겼는지 묻게 된다 (calqueFrame, 2026-11-01)."""
 
 
 def entryFrom(dictionary: str, raw: dict | str, builtin: bool = False) -> Entry:
@@ -66,6 +71,7 @@ def entryFrom(dictionary: str, raw: dict | str, builtin: bool = False) -> Entry:
         raw.get("fix"),
         tuple((re.compile(expandClasses(source)), into) for source, into in raw.get("to", ())),
         raw["pattern"] if builtin else "",
+        re.compile(expandClasses(raw["unless"])) if raw.get("unless") else None,
     )
 
 
@@ -104,6 +110,8 @@ def rewriteBy(text: str, rules: tuple[tuple[re.Pattern[str], str], ...]) -> str 
 def matchesIn(text: str, entries: tuple[Entry, ...]) -> tuple[DictionaryMatch, ...]:
     found: list[DictionaryMatch] = []
     for entry in entries:
+        if entry.unless is not None and entry.unless.search(text):
+            continue
         for match in entry.pattern.finditer(text):
             fix = applyFix(match, entry.fix) if entry.fix else None
             rewrite = rewriteBy(text, entry.to) if entry.to else None

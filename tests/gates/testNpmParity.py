@@ -335,6 +335,37 @@ def testProtectedSurfacesAgreeOnKoreanPathsAndLinks(tmp_path):
 
 
 @pytest.mark.skipif(NODE is None, reason="node 가 없다")
+def testProtectedTermsAndProjectCalquesAgree(tmp_path):
+    """protectedTerms 가 거두는 지적, 설정으로 더한 calqueFrame 짝의 error, 항목의 unless 를 두 구현이 같이 본다.
+
+    fixture 는 config 가 있으면 sampleTexts 에서 빠지므로 설정이 필요한 세 동작은 여기서 견준다.
+    """
+    config = tmp_path / "hanlint.toml"
+    config.write_text(
+        'protectedTerms = ["할수있어"]\n\n[dictionary]\ncalqueFrame = [{ pattern = "할 일 판", fix = "투두리스트", '
+        'why = "는 이 프로젝트에서 투두리스트다", unless = "보드 게임" }]\n',
+        encoding="utf-8",
+    )
+    page = tmp_path / "page.md"
+    page.write_text(
+        "할수있어 앱은 볼수 없습니다. 할 일 판의 이 일은 아직 닫지 않았습니다. 보드 게임의 할 일 판입니다.\n\n"
+        "캐스팅 장갑은 아직 원투 글에 잇지 못했습니다. 물때는 사리 전후가 좋습니다.\n",
+        encoding="utf-8",
+    )
+    python, node = runBoth([str(page), "--config", str(config), "--format", "json"])
+    assert python.returncode == node.returncode, node.stderr
+    assert python.stdout == node.stdout
+    findings = json.loads(python.stdout)["files"][0]["findings"]
+    spacing = [f["fragment"] for f in findings if f["rule"] == "spacing"]
+    calques = [(f["severity"], f["quote"]) for f in findings if f["rule"] == "calqueFrame"]
+    assert spacing == ["볼수 없"]
+    assert calques == [
+        ("error", "할 일 판의 이 일은 아직 닫지 않았습니다."),
+        ("notice", "캐스팅 장갑은 아직 원투 글에 잇지 못했습니다."),
+    ]
+
+
+@pytest.mark.skipif(NODE is None, reason="node 가 없다")
 def testInitPresetsAgree(tmp_path):
     # 같은 경로에 두 구현을 쓰면 뒤 것이 `이미 있다` 로 막히므로 경로를 나눠 쓰고 내용을 견준다.
     for preset in ("blog", "report", "docs"):

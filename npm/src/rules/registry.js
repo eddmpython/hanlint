@@ -24,6 +24,7 @@ import * as spacing from "./orthography/spacing.js";
 import * as spelling from "./orthography/spelling.js";
 import * as factListParagraph from "./paragraph/factListParagraph.js";
 import * as paraFragment from "./paragraph/paraFragment.js";
+import * as calqueFrame from "./sentence/calqueFrame.js";
 import * as cliche from "./sentence/cliche.js";
 import * as hardWord from "./sentence/hardWord.js";
 import * as connectorRepeat from "./sentence/connectorRepeat.js";
@@ -71,6 +72,7 @@ import * as screenWord from "./screen/screenWord.js";
 
 /** @type {Rule[]} */
 export const RULES = [
+  calqueFrame,
   cliche,
   connectorRepeat,
   phraseRepeat,
@@ -135,7 +137,7 @@ export const RULES = [
 export const MECHANISMS = {
   dictionary: "사전. 낱말 목록과 정규식이 맞는 자리",
   repeat: "반복. 같은 모양이 창 안에서 N 번",
-  threshold: "셈. 지문의 값이 임계를 넘거나 모양이 계약과 다른 자리",
+  threshold: "셈. 분석표의 값이 임계를 넘거나 모양이 계약과 다른 자리",
   contrast: "대조. 두 자리를 맞대 어긋난 곳",
   reader: "독자 상태. 문장 순서대로 독자가 손에 든 것과 본 것에 그 자리가 요구하는 것을 맞댄다",
 };

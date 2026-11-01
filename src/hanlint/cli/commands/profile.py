@@ -15,7 +15,7 @@ from ...fingerprint import buildFingerprint
 from ...profile import buildProfile
 from .shared import configFrom, readFile
 
-HELP = "참조 글들의 지문 분포를 만든다"
+HELP = "참조 글들의 분석표 분포를 만든다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

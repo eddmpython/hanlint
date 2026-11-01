@@ -11,7 +11,7 @@ from ...report import renderDiff
 from ...rules import runAll
 from .shared import addCommonOptions, configFrom, emit, readFile, startFolder
 
-HELP = "두 초안의 지문 차이를 숫자로 보인다"
+HELP = "두 초안의 분석표 차이를 숫자로 보인다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

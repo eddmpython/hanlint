@@ -12,7 +12,7 @@ from ...report import renderAudit, renderJson, renderMapHtml
 from ...rules import runAll
 from .shared import addCommonOptions, colorEnabled, configFrom, emit, readFile
 
-HELP = "지문 지도와 분포를 낸다. 점수는 없다"
+HELP = "분석표의 색 지도와 분포를 낸다. 점수는 없다"
 
 
 def addParser(parser: argparse.ArgumentParser) -> None:

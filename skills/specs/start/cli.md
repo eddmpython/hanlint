@@ -2,7 +2,7 @@
 id: start.cli
 title: 명령과 설정
 category: start
-purpose: 파일 검사, 설정, 기존 문서 도입과 명령 선택을 안내한다. 옵션의 정본은 실행한 배포판의 도움말이다.
+purpose: 파일 검사, 설정, 기존 문서 도입과 명령 선택을 안내한다. 옵션의 기준은 실행한 배포판의 도움말이다.
 whenToUse:
   - 터미널에서 검사하고 고친다
   - 프리셋과 baseline을 설정한다
@@ -141,7 +141,10 @@ txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하�
 글의 목적이 달라지면 프리셋부터 고른다. `blog`, `docs`, `report`, `guide`, `essay`, `fiction`,
 `encyclopedia`, `chat`, `screen`을 지원한다. `chat`은 대화 답변용이며 문서의 짜임을 재는 규칙을 줄인다. `screen`은
 화면의 글 (버튼, 라벨, 상태, 빈 상태) 용이며 낱말 자리의 문장, 화면 해설, 접객 말투, 개발 어휘를 잡고 산문 규칙은
-끈다. 프로젝트가 한 이름으로 정한 낱말 (회사 → 수임처) 은 설정의 `dictionary.screenWord` 에 적는다. 산문 프리셋에서
+끈다. 프로젝트가 한 이름으로 정한 낱말 (회사 → 수임처) 은 설정의 `dictionary.screenWord` 에 적는다. 프로젝트가 쓰지
+않기로 한 동사와 앞말의 짝 (할 일 판 → 투두리스트) 은 `dictionary.calqueFrame` 에 pattern, fix, why 와 선택인 unless 로
+적는다. 기본 짝은 notice 이고 설정으로 더한 짝은 error 다. `protectedTerms` 에 적은 용어와 한 글자라도 겹치는 자리는
+사전 규칙, 지시어, 이중 피동이 짚지 않는다. 산문 프리셋에서
 화면 해설과 접객 말투와 낱말만 잡으려면 `enforceStyle = ["screenNarration", "screenTone", "screenWord"]` 을 둔다.
 
 | 프리셋 | 글의 목적 | 끄는 규칙 | 견주는 프로파일 |
@@ -262,15 +265,15 @@ hanlint 글.md --format github --errors-only
 | `hanlint usage kinds` | 기계에 있는 색인 (종류, 문서 수, 문장 수) 을 센다 | 예 |
 | `hanlint doctor` | 어느 설정을 읽었고 어느 분석기로 돌며 어느 규칙이 꺼져 있는지 | 예 |
 | `hanlint init --preset docs` | 글의 종류에 맞춘 `hanlint.toml` | 예 |
-| `hanlint audit 글.md` | 지문 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |
+| `hanlint audit 글.md` | 분석표의 색 지도와 분포. 색이 있는 자리가 구멍이다 | 아니오 |
 | `hanlint map 글.md --format html` | 지도를 단일 HTML 로 | 아니오 |
-| `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 지문을 JSON 으로 | 예 |
+| `hanlint print 글.md --layer sentences` | 문장, 문단, 절, 글의 분석표를 JSON 으로 | 예 |
 | `hanlint diff 전.md 후.md` | 두 초안의 짜임, 리듬, 지적 수의 변화 | 아니오 |
 | `hanlint learn 전.md 후.md` | 실제 고침에서 승인할 정확 재생 패치와 안전한 표면 치환 후보 | 아니오 |
 | `hanlint packet 글.md` | 초안, 대조 분포, 독자 상태, 고침 근거를 AI용 JSON으로 컴파일 | 아니오 |
 | `hanlint blueprint brief.json` | 1,600편의 종류별 분포에서 원문 없는 절·문단·문장·위치 예산을 만든다 | 아니오 |
 | `hanlint evidence brief.json` | v2 brief의 사실별 고정 출처 버전·인용 조각 해시·라이선스를 검증한다 | 아니오 |
-| `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류·기권 지표를 집계한다 | 아니오 |
+| `hanlint entailment cases / evaluate` | gold 없는 36개 근거 쌍을 내고 외부 평가기의 3분류와 판정 보류 지표를 집계한다 | 아니오 |
 | `hanlint guard brief.json 글.md` | 구조화 요구와 결과의 필수 표면·숫자·URL·코드·길이·error를 대조한다 | 아니오 |
 | `hanlint arena panel / assign / review-page / assignment-record` | 같은 사실의 기준과 후보를 평가자별 단일 HTML로 눈가림하고, 회수한 독립 평가를 원래 방향으로 잠근다 | 아니오 |
 | `hanlint profile build 글들/` | 참조 글의 분포 (프로파일). `--profile` 로 종류의 프로파일 대신 그것과 견준다 | 아니오 |
@@ -281,7 +284,7 @@ hanlint 글.md --format github --errors-only
 `spec`의 프로파일은 편집된 글에서 관찰한 분포이며 맞출 정답이 아니다. `chat`에는 비교할 프로파일이
 없어 `spec`을 제공하지 않는다. 생성 결과의 사실 안전이나 자연스러움을 보장하지 않는다.
 
-작문 패킷, 근거 평가와 사람 패널의 사용 절차는 [작문 축](../operation/writingAxis.md)이 소유한다.
+작문 패킷, 근거 평가와 사람 패널의 사용 절차는 [작문 축](../operation/writingAxis.md)에 있다.
 
 직접 만든 프로파일은 `hanlint 새글.md --profile 우리문체.json`으로 사용한다. 종류가 섞인 글은
 적절한 프리셋이나 참조 프로파일별로 나눠 검사한다. `terms`는 국립국어원이 공개한 한국어 학습용 어휘를

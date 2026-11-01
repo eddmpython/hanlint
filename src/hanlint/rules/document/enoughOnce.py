@@ -20,7 +20,7 @@ def enoughOnce(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         이어지는 꼴이 된다. 표지 목록은 data/enoughMarkers.txt.
     고치기: 기본 사용법이 진짜로 끝나는 자리 하나만 남기고 나머지는 지운다. 지운 자리는 앞 절이 만든 것을
         이름으로 부르고 다음 행동을 붙이는 문장으로 잇는다.
-    안 잡는 것: 한 번만 쓴 글. 인용 안의 같은 문장은 지문이 이미 인용으로 걸러 둔다.
+    안 잡는 것: 한 번만 쓴 글. 인용 안의 같은 문장은 분석표가 이미 인용으로 걸러 둔다.
     """
     found = [(s, matchedTexts(s.text, "enoughMarkers.txt")) for s in doc.sentences]
     breaks = [(s, texts[0]) for s, texts in found if texts]

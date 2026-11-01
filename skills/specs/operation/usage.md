@@ -23,7 +23,7 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 |---|---|---|
 | 명사 연쇄 뽑기 `nounRuns` | `src/hanlint/analysis/tokenize.py`, `npm/src/analysis/tokenize.js` | analysis |
 | 빈도표 읽기와 조회 (`usageKindOf`, `attested`, `conventional`) | `src/hanlint/usage/counts.py`, `npm/src/usage/counts.js` | usage |
-| 빈도표 자료 | `src/hanlint/data/usageCounts.<종류>.json` (npm 은 투영) | data |
+| 빈도표 자료 | `src/hanlint/data/usageCounts.<종류>.json` (npm 은 사본) | data |
 | 빈도표 만들기 | `scripts/derive/usageCounts.py` | 도구 |
 | 말뭉치 받기 | `scripts/fetch/dartReports.py` (report) | 도구 |
 | 실측 | `scripts/measure/reports.py` | 도구 |
@@ -49,7 +49,7 @@ hanlint 는 좋은 글을 판정하지 않는다. 용례 (usage) 는 그 원칙 
 - `patterns` 는 산문 사전 다섯 (translationese, cliches, redundantPair, japaneseLoan, easyWords) 의 내장 항목만 든다. 키는
   사전 파일에 적힌 pattern 원문이라 두 구현이 같은 키를 갖는다. 설정으로 더한 항목은 표에 없어 늘 짚는다.
 - 파일 하나가 256 KiB 를 넘지 않는다. 패키지와 브라우저 묶음에 그대로 실린다.
-- `tests/gates/testUsageCounts.py` 가 위를 지킨다. 상수의 정본은 `scripts/derive/usageCounts.py` 다.
+- `tests/gates/testUsageCounts.py` 가 위를 지킨다. 상수의 기준은 `scripts/derive/usageCounts.py` 다.
 
 ## 규칙이 접는 방식
 
@@ -65,13 +65,13 @@ nounPile 은 문장의 긴 연쇄 (nounPileMin 이상) 가 **전부** 표에 usa
 ## 문장 역인덱스
 
 `hanlint usage build <종류> <글 폴더>` 가 `~/.cache/hanlint/usage/<종류>/` 에 만든다. 파일 꼴과 토큰과 순서는
-`src/hanlint/usage/sentences.py` 의 docstring 이 소유하고 npm 구현은 같은 바이트를 만든다 (`testUsageIndexAgrees`).
+`src/hanlint/usage/sentences.py` 의 docstring 이 정하고 npm 구현은 같은 바이트를 만든다 (`testUsageIndexAgrees`).
 색인이 유일한 구조다. 임베딩과 예측 모델은 두지 않는다. 이 판단은 agipath (같은 운영자의 연구) 가 위키 1,341만 문장과
 우리말샘 134만 문장에서 임베딩과 예측을 다 시도한 뒤 "역인덱스가 유일한 기본 구조" 로 돌아온 기록 위에 있다. 여기서는
 만드는 건 LLM 이고 색인은 사실을 댄다.
 
 - 입력: 폴더의 txt 와 md (파일 하나가 문서 하나) 와 jsonl (줄 하나가 문서 하나). 문서 순서는 폴더 기준 posix 경로의
-  코드 포인트 순이라 OS 와 판이 달라도 같다.
+  코드 포인트 순이라 OS 와 버전이 달라도 같다.
 - 만들기: 문장 표와 위치 표는 바로 파일에 쓰고 postings 는 25만 문장마다 조각으로 내린 뒤 토큰 순으로 병합한다. 결과는
   한 번에 만든 것과 바이트 단위로 같다 (시험이 조각 4 로 줄여 견준다). 같은 문장은 SHA-256 앞 8바이트로 접어 문장
   1,300만 개의 키를 글자로 들지 않는다.

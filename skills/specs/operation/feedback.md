@@ -2,7 +2,7 @@
 id: operation.feedback
 title: 개선 제안을 받는 길
 category: operation
-purpose: 오탐, 미탐, 사용 문제와 수정 사례의 접수 형식. 규칙의 판정과 수리는 operation.addingARule이 소유한다.
+purpose: 오탐, 미탐, 사용 문제와 수정 사례의 접수 형식. 규칙의 판정과 수리는 operation.addingARule이 맡는다.
 whenToUse:
   - 오탐을 신고하고 싶다
   - 규칙을 제안하고 싶다
@@ -41,7 +41,7 @@ status: curated
 
 ‘이 지적은 맞지 않아요’로 남긴 판단은 개인 기록에 들어간다. 이 판단과 고침 기억의 승인도 운영자에게
 자동으로 전달되지 않는다. 보관과 내보내기의 사용 절차는
-[사용과 저장 안내](https://eddmpython.github.io/hanlint/guide.html#contribute)가 소유한다.
+[사용과 저장 안내](https://eddmpython.github.io/hanlint/guide.html#contribute)에 있다.
 
 ## 검토와 반영
 

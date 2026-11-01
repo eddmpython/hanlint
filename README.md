@@ -49,7 +49,7 @@
 | 내 계정에서 편집기 운영 | [Fork와 GitHub Pages][fork] |
 
 Python과 npm은 공통 명령에서 같은 규칙과 출력을 사용하며, 런타임 의존성이 없다.
-브라우저는 같은 npm 엔진으로 검사한다. 지문 지도, 초안 비교와 평가 도구 등 Python 전용 명령의 범위는
+브라우저는 같은 npm 엔진으로 검사한다. `audit` 의 색 지도, 초안 비교와 평가 도구 등 Python 전용 명령의 범위는
 [명령 안내][cli]에서 확인할 수 있다.
 
 ## 터미널에서 첫 검사
@@ -141,7 +141,7 @@ hanlint check contract.json 초안.md --format text
 ```
 
 생성한 계약은 사람이 확인한다. 제목이 없는 자유 원고는 브라우저에서 바로 비교할 수 있다.
-계약 버전, 보호 범위, 입력 조건과 실행 가능한 API 예제는 [Reader Contract 프로토콜][contract]이 소유한다.
+계약 버전, 보호 범위, 입력 조건과 실행 가능한 API 예제는 [Reader Contract 프로토콜][contract]에 있다.
 
 ## Python과 JavaScript에서
 
@@ -254,7 +254,7 @@ python -X utf8 -B tests/_attempts/craftLift/probeCraftLift.py follow <시험 폴
 ```
 
 말뭉치는 `scripts/fetch/` 가 받는다 (위키백과는 `--namespaces` 로 장르를 고른다). 잰 것과 **못 잰 것과 버린
-것**은 [실측 기록][attempts]이 소유한다. 이 방향에서 버린 것이 남긴 것보다 많다.
+것**은 [실측 기록][attempts]에 있다. 이 방향에서 버린 것이 남긴 것보다 많다.
 
 ## 오탐과 개선 사례
 

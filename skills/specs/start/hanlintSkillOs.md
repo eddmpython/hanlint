@@ -1,6 +1,6 @@
 ---
 id: start.hanlintSkillOs
-title: 이 저장소가 소유하는 것
+title: 이 저장소가 맡는 것
 category: start
 purpose: 이 저장소의 경계와 구성, 그리고 어디로 가야 무엇이 있는지 알려준다.
 whenToUse:
@@ -12,30 +12,30 @@ whenToUse:
 status: curated
 ---
 
-# 이 저장소가 소유하는 것
+# 이 저장소가 맡는 것
 
-## 소유하는 것
+## 맡는 것
 
 한국어 글 린터 hanlint의 코어, CLI, Python과 npm 패키지, 브라우저 편집기와 AI 사용 스킬이다.
 
 | 경로 | 무엇 |
 |---|---|
-| `src/hanlint/` | 코어. 층 구조는 `operation.moduleLayers` 가 정본이다 |
-| `npm/` | 파이썬의 투영. 순수 ESM, 빌드 0. `npm/src` 가 제품, `npm/test` 가 테스트, `npm/data` 는 `scripts/derive/npmData.py` 가 만든다 |
-| `web/` | 같은 npm 코어를 쓰는 편집기, 개인 기록, GitHub 보관과 사용 안내. 정적 배포는 `operation.webEditor`가 소유한다 |
+| `src/hanlint/` | 코어. 층 구조는 `operation.moduleLayers` 가 기준이다 |
+| `npm/` | 파이썬을 옮긴 구현. 순수 ESM, 빌드 0. `npm/src` 가 제품, `npm/test` 가 테스트, `npm/data` 는 `scripts/derive/npmData.py` 가 만든다 |
+| `web/` | 같은 npm 코어를 쓰는 편집기, 개인 기록, GitHub 보관과 사용 안내. 정적 배포는 `operation.webEditor`가 맡는다 |
 | `tests/` | 양방향 테스트와 구조 게이트. `tests/_attempts/` 는 실험 기록 |
 | `hooks/` | 훅 판정기. `writeGate.py` 는 Claude 쓰기 훅이, `commitMessage.py` 는 git commit-msg 훅이 부른다. 얇은 셸은 `.githooks/`, 등록은 `.claude/settings.json` |
-| `scripts/` | 도구. 도메인 셋이다. `derive/` 는 정본에서 파생 자료를 만들고, `fetch/` 는 외부 자료를 받고, `measure/` 는 실측 실험 스크립트다 |
-| `corpus/` | 기준 말뭉치의 카탈로그와 고정 판. 원문은 `catalogue.toml` 의 `root` (`~/.cache/hanlint/corpus/`) 에 받는다 |
-| `skills/` | 운영 정본과 AI 사용 스킬 |
+| `scripts/` | 도구. 도메인 셋이다. `derive/` 는 기준 자료에서 파생 자료를 만들고, `fetch/` 는 외부 자료를 받고, `measure/` 는 실측 실험 스크립트다 |
+| `corpus/` | 기준 말뭉치의 카탈로그와 고정한 버전. 원문은 `catalogue.toml` 의 `root` (`~/.cache/hanlint/corpus/`) 에 받는다 |
+| `skills/` | 운영 기준 문서와 AI 사용 스킬 |
 | `.cinch.json` | cinch 선언. 켠 스위치와 코드 뿌리의 역할. 설치된 Stop 게이트가 판정하고 `cinch status` 가 보여 준다 |
 | `mainPlan/` | 끝나지 않은 기획 (추적하지 않음) |
 | `memory/` | 세션 간 약속 (추적하지 않음) |
 
-## 소유하지 않는 것
+## 맡지 않는 것
 
 - **글의 좋고 나쁨.** 판정은 사람과 LLM 평가자가 한다. hanlint 는 세어서 확정할 수 있는 결함만 집는다
-- **글쓰기 규칙의 정본.** 어떤 글이 좋은 글인지는 소비자의 글쓰기 스킬이 정한다. hanlint 는 그중
+- **글쓰기 규칙의 기준.** 어떤 글이 좋은 글인지는 소비자의 글쓰기 스킬이 정한다. hanlint 는 그중
   기계가 잡을 수 있는 것을 집행할 뿐이다. 소비 저장소가 어떤 규칙을 켤지는 그 저장소의 설정이 정한다
 - **맞춤법.** 공식 API 없이 비공식 스크래핑에 기대는 검사기는 넣지 않는다
 
@@ -64,14 +64,14 @@ status: curated
 
 cinch 는 저장소 문서를 여섯 역할로 읽는다. 이 저장소는 새 문서 나무를 만들지 않고 있는 자리를 그 역할에 댄다.
 
-| cinch 역할 | 이 저장소의 정본 |
+| cinch 역할 | 이 저장소의 기준 문서 |
 |---|---|
 | North Star | [`start.product`](product.md) |
 | 기술 명세 | [`start.readerContract`](readerContract.md), `operation.moduleLayers`, 코드 계약 (`tests/gates/layerContract.py`, `src/hanlint/data/*.schema.json`) |
 | 운영 명세 | `skills/specs/operation/` |
 | 이니셔티브 | `mainPlan/` (추적하지 않음. 끝나면 폴더째 지운다) |
-| 세션 메모리 | `memory/` (추적하지 않음. 정본을 덮지 않는다) |
-| 이벤트 원장 | Git 커밋. 형식은 `operation.sourceControl` |
+| 세션 메모리 | `memory/` (추적하지 않음. 기준 문서를 덮지 않는다) |
+| 이벤트 기록 | Git 커밋. 형식은 `operation.sourceControl` |
 
 ## 이 저장소의 실패 방식
 

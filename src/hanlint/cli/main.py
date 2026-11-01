@@ -5,9 +5,9 @@ hanlint                            인자가 없으면 첫 화면. 무엇을 칠
 hanlint 글.md [다른.md ...]        검사. 서브커맨드 없이 파일이나 폴더만 주면 lint 다. `-` 는 stdin
 hanlint watch 글.md                파일이 바뀔 때마다 다시 검사한다
 hanlint fix 글.md                  기계가 고칠 수 있는 지적을 원문에 적용
-hanlint audit 글.md                지문 지도와 분포
+hanlint audit 글.md                분석표의 색 지도와 분포
 hanlint map 글.md                  지도만
-hanlint print 글.md                지문 계층 JSON
+hanlint print 글.md                분석표 계층 JSON
 hanlint rules                      규칙 목록을 부류로 묶어서
 hanlint explain <규칙>             규칙의 기술서
 hanlint patterns --rule <규칙>     그 규칙을 피하는 문장 틀
@@ -19,7 +19,7 @@ hanlint doctor                     설정과 꺼진 규칙
 hanlint init                       주석 달린 hanlint.toml. --output 과 --preset blog|report|docs
 hanlint profile build 글들/         승인된 글의 문체 분포. lint 의 --profile 로 견준다
 hanlint coverage review.json 글.md 평가자 지적 가운데 hanlint 가 같은 자리를 집은 비율
-hanlint diff 전.md 후.md           두 초안의 지문 차이
+hanlint diff 전.md 후.md           두 초안의 분석표 차이
 hanlint learn 전.md 후.md          실제 고침에서 승인할 정확 패치와 표면 치환 후보
 hanlint packet 글.md              초안과 대조 자료와 고침 근거를 AI용 JSON으로
 hanlint guard brief.json 글.md    구조화 요구와 결과의 사실 표면 계약

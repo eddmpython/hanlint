@@ -7,7 +7,7 @@ description: 한국어 글 (블로그, 보고서, 기술 문서, 안내서, 수�
 
 hanlint 는 글을 만들지 않는다. 세어서 확정되는 결함을 잡고, 규칙마다 고치는 법과 본보기를 준다. 이 스킬은
 그것을 쓰기 전에 읽고 쓰는 동안 검사하는 다섯 단계다. 좋은 글의 기준 (독자, 목소리, 구조) 은 사용자
-저장소의 글쓰기 규칙이 소유하고 그것이 이 스킬보다 우선한다.
+저장소의 글쓰기 규칙이 정하고 그것이 이 스킬보다 우선한다.
 
 설치는 없다. 파이썬이 있으면 `uvx hanlint`, Node 만 있으면 `npx hanlint` 다. 아래의 `hanlint` 를 그것으로 읽는다.
 
@@ -22,7 +22,7 @@ Excel의 셀·행·열·시트도 이름을 유지한다. 파일 내용 수정, 
 
 ## 먼저 읽을 것
 
-작법서 일곱 줄이다. `hanlint primer` 의 첫머리에 한 줄씩 나오고, 본문 정본은 `src/hanlint/data/koreanProse.txt`
+작법서 일곱 줄이다. `hanlint primer` 의 첫머리에 한 줄씩 나오고, 본문의 기준은 `src/hanlint/data/koreanProse.txt`
 다. 앞 여섯 항목은 사람이 쓴 한국어 155만 문장과 기계가 쓴 360편을 견줘 뽑았고, 마지막은 과잉 교정을 막는다.
 기존 판본을 읽고 쓴 글은 읽지 않고 쓴 글을 이겼다. 블라인드 심판 96건에서 필자가 claude-opus-5 일 때 67 대 29
 (`tests/_attempts/craftLift`), Codex 일 때 90 대 6 (`tests/_attempts/codexCraft`) 이다. 아래 다섯 단계보다 먼저 읽는다. 에이전트 훅에 `hanlint hook --prime`
@@ -77,5 +77,5 @@ hanlint 가 기계로 잡는 것은 그 가운데 일부다. 나머지는 쓰는
 않는다. 프롬프트에 붙이면 고침이 나아진다는 실측은 없다 (300쌍 실험에서 조건을 하나도 못 넘었다.
 `tests/_attempts/usageLift`). 색인이 없으면 만드는 법을 알리고 2 로 끝나며 만들지는 사용자가 정한다.
 
-사실 계약 (brief, guard), 근거 원장 (evidence), 블라인드 사람 평가 (arena), 승인 고침 기억 (learn) 은
-`skills/specs/operation/writingAxis.md` 가 소유한다. 사람 평가 30건이 모이기 전에는 기본 절차에 넣지 않는다.
+사실 계약 (brief, guard), 근거 기록 (evidence), 블라인드 사람 평가 (arena), 승인 고침 기억 (learn) 은
+`skills/specs/operation/writingAxis.md` 에 있다. 사람 평가 30건이 모이기 전에는 기본 절차에 넣지 않는다.

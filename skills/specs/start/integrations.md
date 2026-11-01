@@ -2,7 +2,7 @@
 id: start.integrations
 title: 자동화 연결
 category: start
-purpose: 소비 저장소에서 GitHub Actions, pre-commit과 에이전트에 hanlint를 연결하는 예제를 소유한다.
+purpose: 소비 저장소에서 GitHub Actions, pre-commit과 에이전트에 hanlint를 연결하는 예제를 모았다.
 whenToUse:
   - PR에서 문서를 검사한다
   - 커밋 전 검사를 설정한다
@@ -42,7 +42,7 @@ jobs:
 ```
 
 예제는 액션과 검사 패키지를 같은 릴리즈에 고정한다. 갱신할 때 둘을 함께 바꾼다. 입력 계약은
-루트 [action.yml](../../../action.yml)이 소유한다. Action은 지적을 GitHub 줄 주석으로 출력하고 error가
+루트 [action.yml](../../../action.yml)이 정한다. Action은 지적을 GitHub 줄 주석으로 출력하고 error가
 있으면 실패한다. PR에 별도 댓글을 게시하거나 원고를 자동 수정하지 않는다.
 
 `files`는 공백으로 구분한 파일 또는 폴더 경로다. 이 입력으로 공백이 든 파일 이름을 정확히 구분할 수
@@ -177,4 +177,4 @@ Stop 입력의 필드 (`last_assistant_message`, `stop_hook_active`, `cwd`) 는 
 
 브라우저는 GitHub Pages에서 정적 파일로 동작한다. 사용자용 [Fork 안내](https://eddmpython.github.io/hanlint/guide.html#fork)에
 따라 사이트를 운영할 수 있다. 사이트 소스와 원고용 저장소의 역할, 저장과 공개 범위도 그 안내에서 확인한다.
-개발자의 로컬 실행과 배포 절차는 [브라우저 편집기 운영](../operation/webEditor.md)이 소유한다.
+개발자의 로컬 실행과 배포 절차는 [브라우저 편집기 운영](../operation/webEditor.md)에 있다.

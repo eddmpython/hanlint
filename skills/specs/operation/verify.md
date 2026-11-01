@@ -44,7 +44,7 @@ node --test npm/test/*.test.js
 | `tests/gates/testCommitMessage.py` | 커밋 메시지 형식, 검증 줄 부재, 도구 흔적 | fixture 로 양방향 |
 | `tests/gates/testSelfLint.py` | README 와 specs 가 hanlint 의 error 지적을 받는 것 | 상투어가 든 문서로 잡히는지 본다 |
 | `tests/gates/testExemplars.py` | 본보기 없는 규칙, before 가 안 잡히거나 after 가 잡히는 본보기 | 규칙을 좁혀 before 가 안 잡히게 하면 red. 만들 때 일곱이 실제로 빨갰다 |
-| `tests/gates/testNpmData.py` | `npm/data` 가 파이썬 정본의 투영과 다른 것 | 정본을 고치고 투영을 안 돌리면 red |
+| `tests/gates/testNpmData.py` | `npm/data` 가 파이썬 기준 자료로 만든 사본과 다른 것 | 기준 자료를 고치고 사본을 다시 만들지 않으면 red |
 | `tests/gates/testNpmParity.py` | npm 구현이 파이썬과 다른 출력을 내는 것. 지적 출력, `print`, `fix`, 규칙 목록과 기술서, 첫 화면, 폴더 인자, 프리셋별 `init` 파일 | 규칙이나 진입점을 한쪽만 고치면 red. node 없으면 건너뛴다 |
 | `npm/test/rules.test.js` | npm 규칙이 같은 fixture 를 어기는 것. 규칙, fixture, 기술서, 파일의 넷이 짝인지 | fixture 로 양방향 |
 | `tests/gates/testWriteGate.py` | 쓰기 훅 `hooks/writeGate.py` 의 판정 | 양방향 |
@@ -71,7 +71,7 @@ node --test npm/test/*.test.js
 - **지도 HTML.** `hanlint map --format html` 산출물은 공통 실행 공간의 pyproc 하네스로 데스크톱 1440 과
   모바일 390 스크린샷을 만들어 눈으로 본다. DOM 확인으로 끝내지 않는다. 범례 색이 0 개로 나온 지도 버그는
   이 눈검수가 찾았다.
-- **평가 작업대 HTML.** `hanlint arena review-page` 산출물은 `npm/package.json`과 잠금 파일이 소유한 정확
+- **평가 작업대 HTML.** `hanlint arena review-page` 산출물은 `npm/package.json`과 잠금 파일이 정한 정확
   버전의 pyproc으로 실제 Chromium에서 확인한다. 고정 일곱 장르를 데스크톱 1440과 모바일 390에서 모두
   캡처해 눈으로 보고, 실제 라디오와 근거 입력, Alt+화살표 뒤 제목 초점, 창을 닫고 다시 연 뒤 진행 복원,
   7건 JSON 다운로드와 해시를 확인한다. 마지막에는 target, session, locator, artifact와 transport 자원 수가

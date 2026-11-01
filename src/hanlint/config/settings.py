@@ -221,7 +221,8 @@ class Config:
     baseline: str | None = None
     """잠근 지적을 적은 파일 경로. 있으면 그 안의 지적은 조용히 넘긴다."""
     dictionary: dict[str, list] = field(default_factory=dict)
-    """사전에 더할 항목. 키는 사전 이름 (cliches, translationese, redundantPair, japaneseLoan)."""
+    """사전에 더할 항목. 키는 사전 이름 (fingerprint/dictionaries.py 의 DICTIONARY_FILES). 항목은 낱말 하나이거나
+    pattern, fix, why, source, unless 를 든 표다."""
     exemplars: tuple[Exemplar, ...] = ()
     """사람이 승인해 `[[exemplars]]` 로 넣은 프로젝트 본보기."""
     patches: tuple[Patch, ...] = ()
@@ -229,7 +230,8 @@ class Config:
     operations: tuple[SurfaceOperation, ...] = ()
     """사람이 승인한 32자 이하 표면 치환. 단어 경계와 보호 원자가 맞는 다른 원문 한 자리에도 쓴다."""
     protectedTerms: list[str] = field(default_factory=list)
-    """표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어. 라틴 식별자와 수치는 자동으로 보호한다."""
+    """표면 치환이 바꾸면 안 되는 한국어 고유명사와 프로젝트 용어. 라틴 식별자와 수치는 자동으로 보호한다. 이 용어와
+    한 글자라도 겹치는 사전 매치, 지시어, 이중 피동은 지적하지 않는다 (물때 를 `물 때` 로 고치라던 자리)."""
     ignoreFences: list[str] = field(default_factory=list)
     """지문에서 뺄 펜스의 언어 표기. 코드도 산문도 아닌 펜스 (강의 장면 계약, 도표 원문) 가 코드 블록으로 세어지면
     거의 같은 블록, 읽어 주지 않은 출력, 절의 결과로 잘못 잡힌다. 실측: eddmpython-course 의 `course-scene` 펜스가

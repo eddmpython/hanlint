@@ -119,6 +119,22 @@ def insideAny(start: int, end: int, spans: tuple[tuple[int, int], ...]) -> bool:
     return any(spanStart <= start and end <= spanEnd for spanStart, spanEnd in spans)
 
 
+def termSpans(text: str, terms: tuple[str, ...]) -> tuple[tuple[int, int], ...]:
+    """설정의 protectedTerms 가 글에 나온 (시작, 끝) 전부. 겹쳐 나온 자리도 따로 센다."""
+    found: list[tuple[int, int]] = []
+    for term in terms:
+        start = text.find(term)
+        while start != -1:
+            found.append((start, start + len(term)))
+            start = text.find(term, start + 1)
+    return tuple(sorted(found))
+
+
+def overlapsAny(start: int, end: int, spans: tuple[tuple[int, int], ...]) -> bool:
+    """두 구간이 한 글자라도 겹치는가. 보호한 용어는 걸린 자리의 일부여도 그 지적을 거둔다."""
+    return any(spanStart < end and start < spanEnd for spanStart, spanEnd in spans)
+
+
 def countPromisesIn(text: str) -> tuple[tuple[int, str, str], ...]:
     found = []
     for match in countPromisePattern().finditer(text):
