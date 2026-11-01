@@ -22,6 +22,11 @@ let workspace = emptyWorkspace(newDraft(SAMPLE, "처음 만나는 한린트"));
 
 function notify(message, error = false) {
   const node = get("notice");
+  // 열린 창(dialog)은 맨 위에 그려져 창 밖의 알림을 가린다. 창이 열려 있으면 알림을 그 창 안에 둔다
+  const home = document.querySelector("dialog[open]") ?? document.body;
+  if (node.parentElement !== home) home.append(node);
+  // 창을 닫으면 알림도 거둬 body로 돌린다. 다시 연 창에 지난 알림이 남지 않게
+  if (home !== document.body) home.addEventListener("close", () => { node.hidden = true; document.body.append(node); }, { once: true });
   clearTimeout(noticeTimer);
   node.textContent = message;
   node.className = `notice${error ? " errorNotice" : ""}`;
