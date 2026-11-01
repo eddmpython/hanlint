@@ -14,7 +14,7 @@ export function run(doc) {
     const start = /** @type {number} */ (match.index);
     const fix = sentence.text.slice(0, start) + match[1] + sentence.text.slice(start + match[0].length);
     findings.push(
-      finding(name, sentence.line, sentence.text, `\`${match[1]}\` 처럼 명령형과 청유형 뒤에는 마침표를 붙이지 않는다`, fix, "error", SENTENCE, sentence.index, match[0], match[1]),
+      finding(name, sentence.line, sentence.text, `명령·청유 문장 끝(\`${match[1]}\`)에 마침표를 붙이지 않는 표기 방침이다`, fix, "error", SENTENCE, sentence.index, match[0], match[1]),
     );
   }
   return findings;

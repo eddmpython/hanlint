@@ -33,8 +33,9 @@ SCREEN = ("screenNarration", "screenSentence", "screenTone", "screenWord")
 산문 프리셋에서 해설과 말투만 잡으려면 enforceStyle 에 screenNarration 과 screenTone 을 넣는다."""
 PRESETS: dict[str, tuple[str, ...]] = {
     "blog": SCREEN,
-    "report": ("noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan") + SCREEN,
+    "report": ("noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan", "imperativePeriod") + SCREEN,
     "docs": (
+        "imperativePeriod",
         "noQuestion",
         "firstResultDistance",
         "introImage",
@@ -79,6 +80,7 @@ CONVERSATION = (
     "headingSentence",
     "headingSkip",
     "headingUniform",
+    "imperativePeriod",
     "inputFileSource",
     "installImport",
     "introLong",
@@ -155,7 +157,9 @@ screenSentence 가 잡는다 (2026-09-17)."""
 PRESETS["screen"] = SCREEN_OFF
 """글의 종류마다 처음부터 끄고 시작할 규칙. `preset` 키가 고르고 `disable` 이 그 위에 더한다.
 
-blog 는 화면 규칙 셋만 끄고 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다.
+blog 는 화면 규칙 셋만 끄고 전부 켠다. 독자를 부르고 절마다 결과를 남기는 글이 기준이다. imperativePeriod 는
+명령·청유 문장 끝에 마침표를 쓰지 않는 블로그 표기 방침이라 blog 와 guide 에서만 켠다 (한글 맞춤법은 그 끝에도
+마침표를 쓴다).
 screen 은 화면의 글이다. 낱말 안에서 결정되는 규칙과 화면 규칙 셋만 남긴다.
 report 는 보고서다. 독자에게 말을 걸지 않고 절이 결과를 남기지 않으며 도입이 짧을 필요가 없다.
 docs 는 참고 문서와 명세다. report 에 더해 검증 사실을 남기는 것 (draftHistory) 과 그림을 text 펜스로
@@ -190,7 +194,7 @@ USAGE_KINDS = tuple(sorted(set(USAGE_OF.values())))
 
 PRESET_NAMES = tuple(PRESETS)
 DEFAULT_PRESET = PRESET_NAMES[0]
-ENFORCEABLE = ("noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord")
+ENFORCEABLE = ("imperativePeriod", "noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord")
 """enforceStyle 에 넣을 수 있는 규칙. 프리셋이 꺼도 사용자가 오류로 되살리는 것들이다."""
 """설정도 옵션도 없을 때의 종류. 이 이름일 때는 출력에 프리셋을 적지 않는다."""
 

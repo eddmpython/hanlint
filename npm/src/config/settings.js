@@ -16,8 +16,9 @@ import { projectPatches } from "../data/patches.js";
 const SCREEN = ["screenNarration", "screenSentence", "screenTone", "screenWord"];
 export const PRESETS = {
   blog: [...SCREEN],
-  report: ["noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan", ...SCREEN],
+  report: ["noQuestion", "firstResultDistance", "introImage", "moreLater", "numberOrphan", "imperativePeriod", ...SCREEN],
   docs: [
+    "imperativePeriod",
     "noQuestion",
     "firstResultDistance",
     "introImage",
@@ -50,6 +51,7 @@ const CONVERSATION = [
   "headingSentence",
   "headingSkip",
   "headingUniform",
+  "imperativePeriod",
   "inputFileSource",
   "installImport",
   "introLong",
@@ -109,7 +111,7 @@ const SCREEN_OFF = [
 ];
 PRESETS.screen = SCREEN_OFF;
 /** enforceStyle 에 넣을 수 있는 규칙. 파이썬 settings.py 의 ENFORCEABLE 과 같다. */
-export const ENFORCEABLE = ["noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord"];
+export const ENFORCEABLE = ["imperativePeriod", "noQuestion", "nounPile", "screenNarration", "screenTone", "screenWord"];
 
 /** 프리셋 → 견줄 프로파일의 종류. 정본은 파이썬 config/settings.py 의 PROFILE_OF 다. @type {Record<string, string>} */
 export const PROFILE_OF = {
