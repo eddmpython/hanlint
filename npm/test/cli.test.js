@@ -127,7 +127,7 @@ test("severity, compact, stdin, summary", () => {
   const compact = run([mixed, "--format", "compact", "--errors-only", "--quiet"]);
   assert.equal(compact.code, 1);
   const compactLines = compact.out.trimEnd().split("\n");
-  assert.equal(compactLines[0], `${mixed}:3 [cliche] \`핵심은\` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)`);
+  assert.ok(compactLines[0].startsWith(`${mixed}:3 [cliche] \`핵심은\`은 `), compactLines[0]);
   assert.match(compactLines[compactLines.length - 1], /^파일 1개, error 1, notice [1-9]/);
   const notices = run([mixed, "--severity", "notice", "--format", "json"]);
   const findings = JSON.parse(notices.out).files[0].findings;

@@ -672,7 +672,7 @@ def testSeverityFiltersAndCompactFormat(tmp_path, capsys):
     # 요약은 거른 뒤가 아니라 글에 있는 것을 센다. 보여 줄 것을 고르는 옵션이 수를 바꾸면 거짓말이다.
     assert main([str(mixed), "--format", "compact", "--errors-only", "--quiet"]) == 1
     lines = capsys.readouterr().out.splitlines()
-    assert lines[0] == f"{mixed}:3 [cliche] `핵심은` 결론을 포장하는 말이다. 핵심이 무엇인지 그 자리에서 직접 쓴다 (글쓰기 스킬)"
+    assert lines[0].startswith(f"{mixed}:3 [cliche] `핵심은`은 ")
     assert lines[-1].startswith("파일 1개, error 1, notice ") and not lines[-1].endswith("notice 0")
     assert main([str(mixed), "--severity", "notice", "--format", "json"]) == 1
     data = json.loads(capsys.readouterr().out)

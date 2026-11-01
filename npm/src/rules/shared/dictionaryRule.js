@@ -18,6 +18,13 @@ function countNewlines(text) {
   return count;
 }
 
+/** 사전 지적의 글. 찾은 말 뒤에 받침에 맞는 은/는을 붙인다. 뜻은 파이썬 rules/shared/dictionaryRule.py 의 message 가 소유한다.
+ * @param {import("../../fingerprint/dictionaries.js").DictionaryMatch} match */
+function message(match) {
+  const source = match.source ? ` (${match.source})` : "";
+  return `\`${match.text}\`${fitJosa(match.text, "는")} ${match.why}${source}`;
+}
+
 /**
  * @param {import("../../fingerprint/build.js").SentencePrint} sentence
  * @param {import("../../fingerprint/dictionaries.js").DictionaryMatch} match
@@ -32,7 +39,7 @@ function matchFinding(sentence, match, ruleName, severity) {
     ruleName,
     sentence.line + countNewlines(sentence.text.slice(0, match.start)),
     sentence.text,
-    `\`${match.text}\` ${match.why} (${match.source})`,
+    message(match),
     fix,
     severity,
     SENTENCE,
@@ -108,7 +115,7 @@ export function firstMatchFindings(doc, dictionary, ruleName, severity = ERROR) 
         ruleName,
         sentence.line + countNewlines(sentence.text.slice(0, match.start)),
         sentence.text,
-        `\`${match.text}\` ${match.why} (${match.source})`,
+        message(match),
         match.rewrite,
         severity,
         SENTENCE,

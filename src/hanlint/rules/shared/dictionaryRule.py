@@ -19,6 +19,13 @@ from ...usage import conventional, usageKindOf
 from ..finding import ERROR, SENTENCE, Finding
 
 
+def message(match) -> str:
+    """사전 지적의 글. 찾은 말 뒤에 받침에 맞는 은/는을 붙이고 사전의 why를 잇는다(`구좌`는 일본어투 한자어다). 출처가 빈 항목은
+    괄호를 달지 않는다."""
+    source = f" ({match.source})" if match.source else ""
+    return f"`{match.text}`{fitJosa(match.text, '는')} {match.why}{source}"
+
+
 def matchFinding(sentence, match, ruleName: str, severity: str) -> Finding:
     fix = None
     if match.fix is not None:
@@ -28,7 +35,7 @@ def matchFinding(sentence, match, ruleName: str, severity: str) -> Finding:
         ruleName,
         sentence.line + sentence.text.count("\n", 0, match.start),
         sentence.text,
-        f"`{match.text}` {match.why} ({match.source})",
+        message(match),
         fix,
         severity,
         SENTENCE,
@@ -91,7 +98,7 @@ def firstMatchFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
             ruleName,
             sentence.line + sentence.text.count("\n", 0, match.start),
             sentence.text,
-            f"`{match.text}` {match.why} ({match.source})",
+            message(match),
             match.rewrite,
             severity,
             SENTENCE,
