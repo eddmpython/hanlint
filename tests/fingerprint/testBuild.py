@@ -130,6 +130,41 @@ def testUnlessSkipsTheEntryInThatSentenceOnly():
     assert found == [["맡겼"], []]
 
 
+def testKeepSkipsOnlyTheOverlappingSpan():
+    """keep에 맞은 곳과 겹치는 매치만 빠진다. 같은 문장의 다른 곳은 그대로 맞는다(unless는 문장 전체를 뺀다)."""
+    entry = {"pattern": "자리", "keep": "그 자리에서|자리가 나", "candidates": ["위치"]}
+    doc = build("그 자리에서 커서 자리를 고칩니다. 대기열에 자리가 나면 넣습니다.\n", Config(dictionary={"calqueFrame": [entry]}))
+    found = [
+        [(m.text, m.start, m.candidates) for m in s.matches if m.dictionary == "calqueFrame" and not m.pattern]
+        for s in doc.sentences
+    ]
+    assert found == [[("자리", 10, ("위치",))], []]
+
+
+def testDictionaryReadsListTableHeadingAndImageText():
+    """사전은 목록 항목, 표 칸, 제목, 그림 설명 글도 한 줄(칸)씩 본다. 인용 블록과 인라인 코드는 보지 않는다. 그 줄은
+    문장 목록에 들지 않고 index가 -1이다(2026-11-02, 캡션의 목록 줄 `2. ○○ : 항구 안쪽`이 사전 규칙을 지나갔다)."""
+    config = Config(dictionary={"calqueFrame": [{"pattern": "자리"}]})
+    text = (
+        "## 위험한 자리\n\n- 서는 자리 보기\n1. 둘째 **자리**\n\n| 칸 | 값 |\n|---|---|\n| 심볼 자리 | `코드 자리` |\n\n"
+        "![구조함 자리](a.png)\n\n> 인용 자리\n"
+    )
+    doc = build(text, config)
+    hits = [
+        (f.line, f.index, f.text)
+        for f in doc.fragments
+        if any(m.dictionary == "calqueFrame" and not m.pattern for m in f.matches)
+    ]
+    assert hits == [
+        (1, -1, "위험한 자리"),
+        (3, -1, "서는 자리 보기"),
+        (4, -1, "둘째 자리"),
+        (8, -1, "심볼 자리"),
+        (10, -1, "구조함 자리"),
+    ]
+    assert doc.sentences == ()
+
+
 def testEndingsAndMood():
     assert endingOf("파일을 엽니다.") == "니다"
     assert endingOf("파일을 연다.") == "다"

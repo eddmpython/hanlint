@@ -18,6 +18,17 @@ function countNewlines(text) {
   return count;
 }
 
+/** 사전 항목의 candidates가 지적의 후보로 나갈 때 붙는 까닭이다. 뜻은 파이썬 rules/shared/dictionaryRule.py 의 CANDIDATE_WHY 가 소유한다. */
+const CANDIDATE_WHY = "사전 항목이 뜻에 따라 쓸 말로 적은 후보";
+
+/**
+ * 사전이 보는 글. 문단의 문장 뒤에 목록·표·제목·그림 설명 줄(fragments)이 온다. 뜻은 파이썬 rules/shared/dictionaryRule.py 의 units 가 소유한다.
+ * @param {import("../../fingerprint/build.js").DocumentPrint} doc
+ */
+function units(doc) {
+  return [...doc.sentences, ...(doc.fragments ?? [])];
+}
+
 /** 사전 지적의 글. 찾은 말 뒤에 받침에 맞는 은/는을 붙인다. 뜻은 파이썬 rules/shared/dictionaryRule.py 의 message 가 소유한다.
  * @param {import("../../fingerprint/dictionaries.js").DictionaryMatch} match */
 function message(match) {
@@ -46,6 +57,7 @@ function matchFinding(sentence, match, ruleName, severity) {
     sentence.index,
     match.fix !== null ? match.text : null,
     match.fix,
+    (match.candidates ?? []).map((text) => ({ text, why: CANDIDATE_WHY })),
   );
 }
 
@@ -62,7 +74,7 @@ function matchFinding(sentence, match, ruleName, severity) {
 export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR, config = null) {
   const findings = [];
   const kind = config ? usageKindOf(config) : null;
-  for (const sentence of doc.sentences) {
+  for (const sentence of units(doc)) {
     for (const match of sentence.matches) {
       if (match.dictionary !== dictionary) continue;
       if (kind && config && conventional(dictionary, match.pattern, kind, config.usageShare)) continue;
@@ -83,7 +95,7 @@ export function dictionaryFindings(doc, dictionary, ruleName, severity = ERROR, 
  */
 export function overridingFindings(doc, dictionary, ruleName, severity = ERROR, builtinSeverity = null) {
   const findings = [];
-  for (const sentence of doc.sentences) {
+  for (const sentence of units(doc)) {
     /** @type {Map<string, import("../../fingerprint/dictionaries.js").DictionaryMatch>} */
     const chosen = new Map();
     for (const match of sentence.matches) {
@@ -106,7 +118,7 @@ export function overridingFindings(doc, dictionary, ruleName, severity = ERROR, 
  */
 export function firstMatchFindings(doc, dictionary, ruleName, severity = ERROR) {
   const findings = [];
-  for (const sentence of doc.sentences) {
+  for (const sentence of units(doc)) {
     const match = sentence.matches.find((m) => m.dictionary === dictionary);
     if (!match) continue;
     const [fragment, replacement] = match.rewrite ? changedSpan(sentence.text, match.rewrite) : [null, null];

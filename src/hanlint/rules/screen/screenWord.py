@@ -25,7 +25,8 @@ def screenWord(doc: DocumentPrint, config: Config) -> Iterator[Finding]:
         설명하는 화면에서는 이름을 그대로 두고 정의와 예시를 붙인다. 프로젝트가 직접 정한 dictionary.screenWord의
         용어 규약만 오류와 고친 글을 낸다. 강의 자료를 검토할 때 `쿼리`를 `조회`로, `원자적`을 `한 번에`로 바꾸는
         기본 사전 항목이 뜻을 바꾼 일이 있었다. 낯선 용어라는 이유로 다른 명사를 만들지 않는다.
-    안 잡는 것: 사전에 없는 말, 다른 단어 안에 든 말(`온라인`에 든 `라인`, `파이프라인`), 백틱과 따옴표로 감싼 인용은
-        잡지 않는다. screen 프리셋이 아니면 enforceStyle에 넣어야 돈다.
+    안 잡는 것: 사전에 없는 말, 다른 단어 안에 든 말(`온라인`에 든 `라인`, `파이프라인`), 백틱과 따옴표로 감싼 인용,
+        인용 블록(`>`)은 잡지 않는다. 목록 항목, 표 칸, 제목, 그림 설명 글은 문단처럼 본다(2026-11-02, 캡션의 목록
+        줄에 든 말이 지나간 뒤). screen 프리셋이 아니면 enforceStyle에 넣어야 돈다.
     """
     yield from overridingFindings(doc, "screenWord", "screenWord", builtinSeverity=NOTICE)

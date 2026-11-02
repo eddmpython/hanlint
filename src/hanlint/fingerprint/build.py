@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass, field, replace
 from statistics import mean, pstdev
 
 from ..analysis import Sentence, doublePassiveSpans, euiCount, longestNounRun, splitSentences
@@ -10,7 +11,7 @@ from ..analysis.grammar import NONE as NO_REGISTER
 from ..analysis.grammar import documentRegister, lastWord, registerOfWord
 from ..config import Config
 from ..document import Block, Document, Section, codeSpans, dropFences, plainText
-from ..document.model import HEADING, PROSE
+from ..document.model import HEADING, IMAGE, LIST, PROSE, TABLE
 from . import markers
 from .codeBlocks import codeBlocksOf
 from .dictionaries import Entry, entriesFor, matchesIn
@@ -52,6 +53,44 @@ class Build:
     """설정의 protectedTerms. 이 용어와 겹치는 사전 매치, 지시어, 이중 피동은 문장 분석 결과에 넣지 않는다."""
     sentences: list[SentencePrint] = field(default_factory=list)
     paragraphs: list[ParagraphPrint] = field(default_factory=list)
+    fragments: list[SentencePrint] = field(default_factory=list)
+    """문단이 아닌 블록의 글 한 줄씩(fragmentLines). 사전 규칙만 본다."""
+
+
+LIST_MARK = re.compile(r"^\s*(?:[-*+]|\d{1,3}[.)])\s+(?:\[[ xX]\]\s+)?")
+TABLE_RULE = re.compile(r"^\s*\|?(?:\s*:?-{3,}:?\s*\|?)+\s*$")
+IMAGE_ALT = re.compile(r"!\[([^\]]*)\]")
+
+
+def fragmentLines(block: Block) -> list[tuple[int, str]]:
+    """사전이 볼 문단 밖의 글. (블록 첫 줄에서 몇 줄 아래인지, 원문 글) 목록이다. 목록은 항목 줄마다 표시를 떼고,
+    표는 칸마다(나눔 줄은 빼고), 제목은 그 글, 그림은 설명 글이다. 인용(quote)과 코드는 남의 말이거나 글이 아니라 보지 않는다."""
+    if block.kind == HEADING:
+        return [(0, block.text)] if block.text.strip() else []
+    if block.kind == IMAGE:
+        return [(0, alt) for alt in IMAGE_ALT.findall(block.text) if alt.strip()]
+    lines = block.text.split("\n")
+    if block.kind == LIST:
+        return [(i, rest) for i, line in enumerate(lines) if (rest := LIST_MARK.sub("", line, count=1).strip())]
+    if block.kind == TABLE:
+        cells = []
+        for i, line in enumerate(lines):
+            if TABLE_RULE.match(line):
+                continue
+            row = line.strip().removeprefix("|").removesuffix("|")
+            cells.extend((i, cell.strip()) for cell in row.split("|") if cell.strip())
+        return cells
+    return []
+
+
+def makeFragments(build: Build, block: Block, sectionIndex: int) -> None:
+    """문단 밖 블록의 글을 사전 규칙이 볼 조각으로 쌓는다. 문장 규칙(길이, 끝맺음)은 목록 한 줄을 문장으로 보면
+    틀리므로 문장 목록에 넣지 않고 index를 -1로 둔다. 인용 구간과 인라인 코드는 문단과 같이 뺀다."""
+    for offset, raw in fragmentLines(block):
+        text = plainText(raw)
+        spans = tuple(sorted(set(codeSpans(raw, text) + markers.quoteSpans(text))))
+        made = makeSentencePrint(build, text, block.startLine + offset, block, sectionIndex, spans)
+        build.fragments.append(replace(made, index=-1))
 
 
 def makeSentencePrint(
@@ -132,8 +171,11 @@ def makeParagraphPrint(
 def buildSection(build: Build, section: Section, sectionIndex: int) -> SectionPrint:
     sectionParagraphs: list[ParagraphPrint] = []
     previousBlock: Block | None = None
+    if section.heading is not None:
+        makeFragments(build, section.heading, sectionIndex)
     for block in section.blocks:
         if block.kind != PROSE:
+            makeFragments(build, block, sectionIndex)
             previousBlock = block
             continue
         text = plainText(block.text)
@@ -200,4 +242,5 @@ def buildFingerprint(doc: Document, config: Config | None = None) -> DocumentPri
         registerShare=registerShare,
         disabled=tuple(doc.disabled),
         ignored=tuple(doc.ignored),
+        fragments=tuple(build.fragments),
     )

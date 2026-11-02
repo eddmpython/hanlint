@@ -48,6 +48,8 @@ export function expandClasses(pattern) {
  * @property {{ pattern: import("../regex.js").Pattern, into: string }[]} to 문장 전체를 다시 쓰는 규칙. 앞의 것부터 시도한다
  * @property {string} raw pattern의 원문. 내장 항목만 갖고 설정 항목은 빈 글자라 관용으로 접히지 않는다
  * @property {import("../regex.js").Pattern | null} unless 문장 전체에서 이것이 맞으면 그 문장에서는 항목이 맞지 않는다. 파이썬 Entry.unless와 같다
+ * @property {import("../regex.js").Pattern | null} keep 맞은 곳이 이것과 겹치면 그 곳만 맞지 않는다. 파이썬 Entry.keep과 같다
+ * @property {string[]} candidates 뜻에 따라 바른 말이 여럿이라 fix를 두지 않는 항목의 후보. 파이썬 Entry.candidates와 같다
  */
 
 /**
@@ -61,6 +63,7 @@ export function expandClasses(pattern) {
  * @property {string | null} fix
  * @property {string | null} rewrite 항목의 to 규칙으로 문장 전체를 다시 쓴 제안. 없거나 안 맞으면 null
  * @property {string} pattern 맞은 항목의 pattern 원문. 용례 빈도표의 키다
+ * @property {string[]} candidates 항목의 candidates
  */
 
 /** @param {string} dictionary @param {Record<string, unknown> | string} raw @param {boolean} [builtin] @returns {Entry} */
@@ -75,6 +78,8 @@ export function entryFrom(dictionary, raw, builtin = false) {
     to: (/** @type {[string, string][]} */ (data.to ?? [])).map(([source, into]) => ({ pattern: compile(expandClasses(source)), into })),
     raw: builtin ? /** @type {string} */ (data.pattern) : "",
     unless: data.unless ? compile(expandClasses(/** @type {string} */ (data.unless))) : null,
+    keep: data.keep ? compile(expandClasses(/** @type {string} */ (data.keep))) : null,
+    candidates: (/** @type {unknown[]} */ (data.candidates ?? [])).map(String),
   };
 }
 
@@ -129,8 +134,10 @@ export function matchesIn(text, entries) {
   const found = [];
   for (const entry of entries) {
     if (entry.unless && entry.unless.search(text)) continue;
+    const kept = entry.keep ? entry.keep.all(text).map((span) => [/** @type {number} */ (span.index), /** @type {number} */ (span.index) + span[0].length]) : [];
     for (const match of entry.pattern.all(text)) {
       const start = /** @type {number} */ (match.index);
+      if (kept.some(([from, to]) => start < to && from < start + match[0].length)) continue;
       found.push({
         dictionary: entry.dictionary,
         text: match[0],
@@ -141,6 +148,7 @@ export function matchesIn(text, entries) {
         fix: entry.fix ? applyFix(match, entry.fix) : null,
         rewrite: entry.to.length ? rewriteBy(text, entry.to) : null,
         pattern: entry.raw,
+        candidates: entry.candidates,
       });
     }
   }

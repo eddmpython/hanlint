@@ -245,7 +245,7 @@ for (const finding of lintText(text)) {
 사람 글 800편에 한 편꼴로 걸린다. `phraseRepeat`는 같은 문형이 **두 번 이상** 나오고 글 안의 비율이 8%를
 넘을 때만 짚는다. 한 번 쓴 글은 짚지 않는다.
 
-### 다시 재기
+### 직접 재 보기
 
 ```console
 python -X utf8 -B tests/_attempts/aiTells/probeAiTells.py many <기계 글 폴더>

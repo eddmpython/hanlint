@@ -226,7 +226,8 @@ class Config:
     """잠근 지적을 적은 파일 경로. 있으면 그 안의 지적은 조용히 넘긴다."""
     dictionary: dict[str, list] = field(default_factory=dict)
     """사전에 더할 항목. 키는 사전 이름 (fingerprint/dictionaries.py의 DICTIONARY_FILES). 항목은 단어 하나이거나
-    pattern, fix, why, source, unless를 든 표다."""
+    pattern, fix, why, source, unless, keep, candidates를 든 표다. keep은 맞은 곳만 빼는 보통 꼴의 정규식이고
+    candidates는 fix 대신 사람이 고를 후보다."""
     exemplars: tuple[Exemplar, ...] = ()
     """사람이 승인해 `[[exemplars]]`로 넣은 프로젝트 예시."""
     patches: tuple[Patch, ...] = ()

@@ -44,6 +44,19 @@ test("unless skips an entry only in the sentence it matches", () => {
   assert.deepEqual(lines, [1]);
 });
 
+test("keep drops only the overlapping span and candidates reach the finding", () => {
+  const config = configFromMapping({ disable: ["spacing"], dictionary: { cliches: [{ pattern: "자리", keep: "그 자리에서|자리가 나", candidates: ["위치"] }] } });
+  const found = lintText("그 자리에서 커서 자리를 고칩니다. 대기열에 자리가 나면 넣습니다.\n", config).filter(f => f.rule === "cliche");
+  assert.deepEqual(found.map(f => [f.quote, f.candidates.map(c => c.text)]), [["그 자리에서 커서 자리를 고칩니다.", ["위치"]]]);
+});
+
+test("dictionary rules read list items, table cells, headings and image text", () => {
+  const config = configFromMapping({ disable: ["spacing"], dictionary: { cliches: [{ pattern: "자리" }] } });
+  const text = "## 위험한 자리\n\n- 서는 자리 보기\n1. 둘째 **자리**\n\n| 칸 | 값 |\n|---|---|\n| 심볼 자리 | `코드 자리` |\n\n![구조함 자리](a.png)\n\n> 인용 자리\n";
+  const found = lintText(text, config).filter(f => f.rule === "cliche").map(f => [f.line, f.at, f.quote]);
+  assert.deepEqual(found, [[1, -1, "위험한 자리"], [3, -1, "서는 자리 보기"], [4, -1, "둘째 자리"], [8, -1, "심볼 자리"], [10, -1, "구조함 자리"]]);
+});
+
 test("protectedTerms drop a finding whose span overlaps the term", () => {
   const spacingOf = (/** @type {Record<string, unknown>} */ mapping) =>
     lintText("할수있어 앱은 볼수 없습니다.", configFromMapping(mapping)).filter(f => f.rule === "spacing").map(f => f.fragment);

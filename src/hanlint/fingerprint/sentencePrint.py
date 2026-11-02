@@ -21,6 +21,8 @@ class DictionaryMatch:
     """항목의 to 규칙으로 문장 전체를 다시 쓴 제안. 화면 문장을 단어로 줄일 때 쓴다. 규칙이 없거나 안 맞으면 없다."""
     pattern: str = ""
     """맞은 항목의 pattern 원문 (사전 파일에 적힌 글자). 용례 빈도표가 이 글자를 키로 들어 그 종류의 관용인지 본다."""
+    candidates: tuple[str, ...] = ()
+    """항목의 candidates. 뜻에 따라 바른 말이 여럿이라 기계가 고르지 않는 항목이 사람에게 보일 후보다."""
 
 
 @dataclass(frozen=True)

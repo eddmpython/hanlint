@@ -3,7 +3,7 @@
 import { defaultConfig } from "../config/settings.js";
 import { NONE as NO_REGISTER, documentRegister, lastWord, registerOfWord } from "../analysis/grammar/register.js";
 import { doublePassiveSpans, euiCount, longestNounRun, splitSentences } from "../analysis/index.js";
-import { HEADING, PROSE, sectionStartLine, sectionTitle } from "../document/model.js";
+import { HEADING, IMAGE, LIST, PROSE, TABLE, sectionStartLine, sectionTitle } from "../document/model.js";
 import { dropFences } from "../document/parseMarkdown.js";
 import { codeSpans, plainText } from "../document/plainText.js";
 import { countIn, mean, pstdev, wordCount } from "../text.js";
@@ -91,6 +91,7 @@ import { overlap, topicsOf, unionOf } from "./topics.js";
  * @property {import("./readerState.js").ReaderTrail} reader 위치마다의 독자 상태. 약속하는 말과 다시 다루는 말은 final에 있다
  * @property {[string, number, number][]} disabled
  * @property {import("../document/model.js").Block[]} ignored 설정이 글 분석에서 뺀 펜스
+ * @property {SentencePrint[]} fragments 문단이 아닌 블록(목록 항목, 표 칸, 제목, 그림 설명)의 글 한 줄씩. 사전 규칙만 보고 index는 -1이다
  * @property {string} register
  * @property {number} registerShare
  * @property {SectionPrint} intro
@@ -203,6 +204,59 @@ function makeParagraphPrint(build, sentences, block, sectionIndex, previous, fol
   };
 }
 
+const LIST_MARK = /^\s*(?:[-*+]|\d{1,3}[.)])\s+(?:\[[ xX]\]\s+)?/;
+const TABLE_RULE = /^\s*\|?(?:\s*:?-{3,}:?\s*\|?)+\s*$/;
+const IMAGE_ALT = /!\[([^\]]*)\]/g;
+
+/**
+ * 사전이 볼 문단 밖의 글. [블록 첫 줄에서 몇 줄 아래인지, 원문 글] 목록이다. 뜻은 파이썬 fingerprint/build.py의 fragmentLines가 정한다.
+ * @param {import("../document/model.js").Block} block
+ * @returns {[number, string][]}
+ */
+function fragmentLines(block) {
+  if (block.kind === HEADING) return block.text.trim() ? [[0, block.text]] : [];
+  if (block.kind === IMAGE) return [...block.text.matchAll(IMAGE_ALT)].map((m) => m[1]).filter((alt) => alt.trim()).map((alt) => [0, alt]);
+  const lines = block.text.split("\n");
+  if (block.kind === LIST) {
+    /** @type {[number, string][]} */
+    const items = [];
+    lines.forEach((line, i) => {
+      const rest = line.replace(LIST_MARK, "").trim();
+      if (rest) items.push([i, rest]);
+    });
+    return items;
+  }
+  if (block.kind === TABLE) {
+    /** @type {[number, string][]} */
+    const cells = [];
+    lines.forEach((line, i) => {
+      if (TABLE_RULE.test(line)) return;
+      let row = line.trim();
+      if (row.startsWith("|")) row = row.slice(1);
+      if (row.endsWith("|")) row = row.slice(0, -1);
+      for (const cell of row.split("|")) if (cell.trim()) cells.push([i, cell.trim()]);
+    });
+    return cells;
+  }
+  return [];
+}
+
+/**
+ * 문단 밖 블록의 글을 사전 규칙이 볼 조각으로 쌓는다. 뜻은 파이썬 fingerprint/build.py의 makeFragments가 정한다.
+ * @param {any} build @param {import("../document/model.js").Block} block @param {number} sectionIndex
+ */
+function makeFragments(build, block, sectionIndex) {
+  for (const [offset, raw] of fragmentLines(block)) {
+    const text = plainText(raw);
+    const seen = new Set();
+    const spans = [...codeSpans(raw, text), ...markers.quoteSpans(text)]
+      .filter(([a, b]) => (seen.has(a + "," + b) ? false : (seen.add(a + "," + b), true)))
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const made = makeSentencePrint(build, text, block.startLine + offset, block, sectionIndex, spans);
+    build.fragments.push({ ...made, index: -1 });
+  }
+}
+
 /**
  * @param {import("../document/model.js").Section} section
  * @param {number} sectionIndex
@@ -217,8 +271,10 @@ function buildSection(build, section, sectionIndex) {
   const sectionParagraphs = [];
   /** @type {import("../document/model.js").Block | null} */
   let previousBlock = null;
+  if (section.heading) makeFragments(build, section.heading, sectionIndex);
   for (const block of section.blocks) {
     if (block.kind !== PROSE) {
+      makeFragments(build, block, sectionIndex);
       previousBlock = block;
       continue;
     }
@@ -276,6 +332,7 @@ export function buildFingerprint(doc, config = defaultConfig()) {
     protectedTerms: config.protectedTerms ?? [],
     sentences: /** @type {SentencePrint[]} */ ([]),
     paragraphs: /** @type {ParagraphPrint[]} */ ([]),
+    fragments: /** @type {SentencePrint[]} */ ([]),
   };
   const { sentences, paragraphs } = build;
   const sections = doc.sections.map((section, index) =>
@@ -308,6 +365,7 @@ export function buildFingerprint(doc, config = defaultConfig()) {
     registerShare,
     disabled: doc.disabled,
     ignored: doc.ignored,
+    fragments: build.fragments,
     intro: sections[0],
     bodySections: sections.filter((s) => !s.isIntro),
   };

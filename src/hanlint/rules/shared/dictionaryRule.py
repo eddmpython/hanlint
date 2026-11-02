@@ -16,7 +16,7 @@ from ...analysis.grammar import fitJosa
 from ...config import Config
 from ...fingerprint import DocumentPrint
 from ...usage import conventional, usageKindOf
-from ..finding import ERROR, SENTENCE, Finding
+from ..finding import ERROR, SENTENCE, Candidate, Finding
 
 
 def message(match) -> str:
@@ -24,6 +24,16 @@ def message(match) -> str:
     괄호를 달지 않는다."""
     source = f" ({match.source})" if match.source else ""
     return f"`{match.text}`{fitJosa(match.text, '는')} {match.why}{source}"
+
+
+# 사전 항목의 candidates가 지적의 후보로 나갈 때 붙는 까닭이다.
+CANDIDATE_WHY = "사전 항목이 뜻에 따라 쓸 말로 적은 후보"
+
+
+def units(doc: DocumentPrint) -> tuple:
+    """사전이 보는 글. 문단의 문장 뒤에 목록·표·제목·그림 설명 줄(fragments)이 온다. 목록 줄도 사람이 읽는 글이라 그 안의 낱말을
+    짚는다. 실측: 돈값 캡션의 목록 줄 `2. 자리 : 항구 안쪽`과 보고의 `- ` 줄이 사전 규칙을 지나갔다 (2026-11-02)."""
+    return (*doc.sentences, *doc.fragments)
 
 
 def matchFinding(sentence, match, ruleName: str, severity: str) -> Finding:
@@ -42,6 +52,7 @@ def matchFinding(sentence, match, ruleName: str, severity: str) -> Finding:
         sentence.index,
         match.text if match.fix is not None else None,
         match.fix,
+        tuple(Candidate(text, CANDIDATE_WHY) for text in match.candidates),
     )
 
 
@@ -54,11 +65,11 @@ def dictionaryFindings(
     모든 글이 쓰는 표현을 그 종류에서 짚는 것은 결함이 아니라 문체를 짚는 것이다. 종류는 프리셋이 정하고 (config.USAGE_OF)
     비율은 config.usageShare 다. 설정의 dictionary 로 더한 항목은 표에 없어 늘 짚는다."""
     kind = usageKindOf(config) if config is not None else None
-    for sentence in doc.sentences:
+    for sentence in units(doc):
         for match in sentence.matches:
             if match.dictionary != dictionary:
                 continue
-            if kind and conventional(dictionary, match.pattern, kind, config.usageShare):
+            if kind and config is not None and conventional(dictionary, match.pattern, kind, config.usageShare):
                 continue
             yield matchFinding(sentence, match, ruleName, severity)
 
@@ -71,7 +82,7 @@ def overridingFindings(
     기본 사전 뒤에 설정의 항목이 오므로 프로젝트가 기본 항목의 낱말을 다른 고침으로 덮는 자리다 (컴포넌트 → 차트).
     자리가 다르면 둘 다 낸다.
     """
-    for sentence in doc.sentences:
+    for sentence in units(doc):
         chosen = {}
         for match in sentence.matches:
             if match.dictionary == dictionary:
@@ -89,7 +100,7 @@ def firstMatchFindings(doc: DocumentPrint, dictionary: str, ruleName: str, sever
     고쳐 쓰는 제안이다. 일반 종결어미처럼 뜻을 골라야 하는 자리는 to 가 없어 fix 도 없다. 실측: 표 146칸이 전부 비어
     사람이 다 타이핑하던 것이 검토로 바뀐다 (2026-09-18).
     """
-    for sentence in doc.sentences:
+    for sentence in units(doc):
         match = next((m for m in sentence.matches if m.dictionary == dictionary), None)
         if match is None:
             continue

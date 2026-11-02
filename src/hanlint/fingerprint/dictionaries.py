@@ -58,6 +58,12 @@ class Entry:
     """문장 전체에서 이것이 맞으면 그 문장에서는 항목이 맞지 않는다. 인용 안의 글자까지 본다. 같은 단어가 문장의 다른
     자리(받는 이, 장소, 관용구)에 따라 정상이 되는 항목이 쓴다. 실측: `맡겼습니다`는 `에게`가 같은 문장에 있으면
     정상이고 없으면 누구에게 맡겼는지 묻게 된다 (calqueFrame, 2026-11-01)."""
+    keep: re.Pattern[str] | None = None
+    """맞은 곳이 이것과 겹치면 그 곳만 맞지 않는다. unless가 문장 전체를 빼는 것과 달리 같은 문장의 다른 곳은 그대로 짚는다.
+    한 낱말을 여러 뜻으로 옮겨 쓰는 항목(낱말 하나를 짚는 pattern)이 보통 한국어인 꼴을 남길 때 쓴다. 실측: 돈값 이름표의
+    `자리` 항목은 `그 자리에서`, `자리가 나다`, `빈 자리`를 keep에 두고 `심볼 자리`, `인명구조함 자리`만 짚는다 (2026-11-02)."""
+    candidates: tuple[str, ...] = ()
+    """바른 말이 뜻에 따라 여럿이라 fix를 두지 않는 항목의 후보. 지적의 candidates로 나가고 기계는 고르지 않는다."""
 
 
 def entryFrom(dictionary: str, raw: dict | str, builtin: bool = False) -> Entry:
@@ -72,6 +78,8 @@ def entryFrom(dictionary: str, raw: dict | str, builtin: bool = False) -> Entry:
         tuple((re.compile(expandClasses(source)), into) for source, into in raw.get("to", ())),
         raw["pattern"] if builtin else "",
         re.compile(expandClasses(raw["unless"])) if raw.get("unless") else None,
+        re.compile(expandClasses(raw["keep"])) if raw.get("keep") else None,
+        tuple(str(item) for item in raw.get("candidates", ())),
     )
 
 
@@ -112,12 +120,24 @@ def matchesIn(text: str, entries: tuple[Entry, ...]) -> tuple[DictionaryMatch, .
     for entry in entries:
         if entry.unless is not None and entry.unless.search(text):
             continue
+        kept = [span.span() for span in entry.keep.finditer(text)] if entry.keep is not None else []
         for match in entry.pattern.finditer(text):
+            if any(match.start() < end and start < match.end() for start, end in kept):
+                continue
             fix = applyFix(match, entry.fix) if entry.fix else None
             rewrite = rewriteBy(text, entry.to) if entry.to else None
             found.append(
                 DictionaryMatch(
-                    entry.dictionary, match.group(0), match.start(), match.end(), entry.why, entry.source, fix, rewrite, entry.raw
+                    entry.dictionary,
+                    match.group(0),
+                    match.start(),
+                    match.end(),
+                    entry.why,
+                    entry.source,
+                    fix,
+                    rewrite,
+                    entry.raw,
+                    entry.candidates,
                 )
             )
     found.sort(key=lambda m: m.start)

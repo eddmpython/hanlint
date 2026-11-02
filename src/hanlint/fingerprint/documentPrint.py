@@ -40,6 +40,9 @@ class DocumentPrint:
     """인라인 제어가 끈 (규칙 또는 *, 시작 줄, 끝 줄). 등록부가 지적을 거른다."""
     ignored: tuple[Block, ...] = ()
     """설정이 글 분석에서 뺀 펜스. 파일 전체를 보는 규칙(dash)만 읽는다."""
+    fragments: tuple[SentencePrint, ...] = ()
+    """문단이 아닌 블록(목록 항목, 표 칸, 제목, 그림 설명)의 글 한 줄씩. 문장이 아니라 문장 규칙은 보지 않고 사전 규칙만 본다.
+    index는 -1이다(문장 순서에 들지 않는다)."""
 
     @property
     def intro(self) -> SectionPrint:
